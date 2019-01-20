@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <AssemblyName>GriffinPlus.Lib.Common</AssemblyName>
+    <RootNamespace>GriffinPlus.Lib</RootNamespace>
+  </PropertyGroup>
+
+</Project>
