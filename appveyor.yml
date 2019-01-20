@@ -37,6 +37,8 @@ test_script:
 
 artifacts:
   - path: '**\*.nupkg'
+    name: Library
+    type: NuGetPackage
 
 #---------------------------------#
 #     deployment configuration    #
