@@ -14,6 +14,7 @@ It contains the following functionality (by class name):
 
 - `BitMask`: A bit mask with variable length that supports all relevant comparisons and logical operations
 - `RegexHelpers`: Helper methods providing common functionality when pattern matching is required.
+- `MonitorSynchronizedEnumerator`: An enumerator that keeps a monitor locked until it is disposed.
 
 ## Supported Platforms
 
