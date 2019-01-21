@@ -6,4 +6,8 @@
     <RootNamespace>GriffinPlus.Lib</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="GriffinPlus.Lib.Io\" />
+  </ItemGroup>
+
 </Project>
