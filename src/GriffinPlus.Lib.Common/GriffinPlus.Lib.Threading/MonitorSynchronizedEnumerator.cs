@@ -17,7 +17,7 @@ using System.Threading;
 using System.Collections;
 using System.Diagnostics;
 
-namespace GriffinPlus.Lib
+namespace GriffinPlus.Lib.Threading
 {
 	/// <summary>
 	/// Provides an enumerator that keeps a monitor synchronized object locked during enumeration.
