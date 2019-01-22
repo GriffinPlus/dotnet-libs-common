@@ -60,9 +60,16 @@ namespace GriffinPlus.Lib.Io
 		/// <exception cref="ArgumentException">The length to st exceeds the capacity of the memory block.</exception>
 		public int Length
 		{
-			get { return mLength; }
-			set {
-				if (value > mBuffer.Length) throw new ArgumentException("The length to set exceeds the capacity of the memory block.");
+			get {
+				return mLength;
+			}
+
+			set
+			{
+				if (value > mBuffer.Length) {
+					throw new ArgumentException("The length to set exceeds the capacity of the memory block.");
+				}
+
 				mLength = value;
 			}
 		}

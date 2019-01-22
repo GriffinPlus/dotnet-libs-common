@@ -110,8 +110,7 @@ namespace GriffinPlus.Lib
 			{
 				for (int i = 0; i < count1; i++)
 				{
-					if (mask1.mBitField[i] != mask2.mBitField[i])
-					{
+					if (mask1.mBitField[i] != mask2.mBitField[i]) {
 						return false;
 					}
 				}
@@ -119,15 +118,16 @@ namespace GriffinPlus.Lib
 				uint padding = mask1.PaddingValue ? uint.MaxValue : 0;
 				for (int i = count1; i < count2; i++)
 				{
-					if (mask2.mBitField[i] != padding) return false;
+					if (mask2.mBitField[i] != padding) {
+						return false;
+					}
 				}
 			}
 			else
 			{
 				for (int i = 0; i < count2; i++)
 				{
-					if (mask1.mBitField[i] != mask2.mBitField[i])
-					{
+					if (mask1.mBitField[i] != mask2.mBitField[i]) {
 						return false;
 					}
 				}
@@ -135,7 +135,9 @@ namespace GriffinPlus.Lib
 				uint padding = mask2.PaddingValue ? uint.MaxValue : 0;
 				for (int i = count2; i < count1; i++)
 				{
-					if (mask1.mBitField[i] != padding) return false;
+					if (mask1.mBitField[i] != padding) {
+						return false;
+					}
 				}
 			}
 
@@ -342,8 +344,7 @@ namespace GriffinPlus.Lib
 			uint mask = ~0u << startBitIndex;
 			for (int i = startArrayIndex; i <= endArrayIndex; i++)
 			{
-				if (i == endArrayIndex)
-				{
+				if (i == endArrayIndex) {
 					mask &= ~(0u) >> (32 - endBitIndex);
 				}
 
@@ -378,8 +379,7 @@ namespace GriffinPlus.Lib
 			unchecked
 			{
 				int hash = 0;
-				for (int i = 0; i < mBitField.Length; i++)
-				{
+				for (int i = 0; i < mBitField.Length; i++) {
 					hash ^= (int)mBitField[i];
 				}
 				return hash;

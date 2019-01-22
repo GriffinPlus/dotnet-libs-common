@@ -125,15 +125,8 @@ namespace GriffinPlus.Lib.Io
 		/// <exception cref="ArgumentException">The position is out of bounds when trying to set it.</exception>
 		public override long Position
 		{
-			get
-			{
-				return mPosition;
-			}
-
-			set
-			{
-				Seek(value, SeekOrigin.Begin);
-			}
+			get { return mPosition; }
+			set { Seek(value, SeekOrigin.Begin); }
 		}
 
 		/// <summary>
@@ -369,12 +362,7 @@ namespace GriffinPlus.Lib.Io
 		/// The total number of bytes read into the buffer. This can be less than the number of requested bytes,
 		/// if that many bytes are not currently available, or zero (0) if the end of the stream has been reached.
 		/// </returns>
-		/// <exception cref="ArgumentException">
-		/// buffer is null and count is not 0 -or-
-		/// offset is less than 0 -or-
-		/// count is less than 0 -or-
-		/// offset + count is greater than the buffer's length.
-		/// </exception>
+		/// <exception cref="ArgumentException">The specified range is out of bounds.</exception>
 		public override int Read(byte[] buffer, int offset, int count)
 		{
 			if (count == 0) return 0;
@@ -542,8 +530,7 @@ namespace GriffinPlus.Lib.Io
 		/// </returns>
 		public override int ReadByte()
 		{
-			if (mPosition == mLength)
-			{
+			if (mPosition == mLength) {
 				return -1; // end of the stream
 			}
 
@@ -598,12 +585,7 @@ namespace GriffinPlus.Lib.Io
 		/// <param name="buffer">Buffer containing data to write to the stream.</param>
 		/// <param name="offset">Offset in the buffer to start writing data from.</param>
 		/// <param name="count">Number of bytes to write.</param>
-		/// <exception cref="ArgumentException">
-		/// buffer is null and count is not 0 -or-
-		/// offset is less than 0 -or-
-		/// count is less than 0 -or-
-		/// offset + count is greater than the buffer's length.
-		/// </exception>
+		/// <exception cref="ArgumentException">The specified range is out of bounds.</exception>
 		public override void Write(byte[] buffer, int offset, int count)
 		{
 			if (count == 0) return;
@@ -982,8 +964,7 @@ namespace GriffinPlus.Lib.Io
 
 			// adjust the capacity, since only the last block must be extended up to its capacity
 			// (the blocks in between must not be changed in length, since this would insert/remove data in the middle of the stream!)
-			if (mLastBlock != null)
-			{
+			if (mLastBlock != null) {
 				mCapacity = mCapacity - mLastBlock.mLength + mLastBlock.Capacity;
 			}
 		}
