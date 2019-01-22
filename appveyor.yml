@@ -29,7 +29,7 @@ build_script:
 #---------------------------------#
 
 test_script:
-  - vstest.console "_build\Common.AnyCPU.Release\netcoreapp2.0\GriffinPlus.Lib.Common.Tests.dll"
+  - vstest.console "%APPVEYOR_BUILD_FOLDER%\_build\Common.AnyCPU.Release\netcoreapp2.0\GriffinPlus.Lib.Common.Tests.dll"
 
 #---------------------------------#
 #      packaging artifacts        #
