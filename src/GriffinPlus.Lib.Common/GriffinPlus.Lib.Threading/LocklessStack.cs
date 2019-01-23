@@ -19,7 +19,7 @@ namespace GriffinPlus.Lib.Threading
 	/// <summary>
 	/// A thread-safe implementation of a stack using non-blocking interlocked operations.
 	/// </summary>
-	internal class LocklessStack<T>
+	public class LocklessStack<T>
 	{
 		private class Item
 		{

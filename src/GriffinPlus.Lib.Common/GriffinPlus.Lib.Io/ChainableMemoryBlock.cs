@@ -18,7 +18,7 @@ namespace GriffinPlus.Lib.Io
 	/// <summary>
 	/// A block of memory that can be chained with others.
 	/// </summary>
-	internal class ChainableMemoryBlock
+	public class ChainableMemoryBlock
 	{
 		internal readonly byte[] mBuffer;
 		internal int mLength;

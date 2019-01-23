@@ -33,7 +33,7 @@ namespace GriffinPlus.Lib.Io
 	/// if the amount of needed memory is not known the <see cref="MemoryBlockStream"/> class is a better choice since
 	/// it can grow without copying any data while resizing.
 	/// </remarks>
-	internal partial class MemoryBlockStream : Stream
+	public class MemoryBlockStream : Stream
 	{
 		/// <summary>
 		/// Default size of block in the stream.
