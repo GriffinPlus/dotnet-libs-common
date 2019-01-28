@@ -11,10 +11,9 @@
 // the specific language governing permissions and limitations under the License.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using GriffinPlus.Lib.Threading;
 using Xunit;
 
-namespace UnitTests
+namespace GriffinPlus.Lib.Threading
 {
 	/// <summary>
 	/// Unit tests targetting the <see cref="MonitorSynchronizedEnumerator{T}"/> class.

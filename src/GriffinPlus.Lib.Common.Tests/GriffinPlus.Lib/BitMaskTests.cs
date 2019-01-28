@@ -11,10 +11,9 @@
 // the specific language governing permissions and limitations under the License.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using GriffinPlus.Lib;
 using Xunit;
 
-namespace UnitTests
+namespace GriffinPlus.Lib
 {
 	/// <summary>
 	/// Unit tests targetting the <see cref="BitMask"/> class.
