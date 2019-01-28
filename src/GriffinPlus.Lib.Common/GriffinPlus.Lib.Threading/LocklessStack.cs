@@ -28,7 +28,7 @@ namespace GriffinPlus.Lib.Threading
 			public Item() { }
 		};
 
-		private bool mResizingAllowed;
+		private bool mCanGrow;
 		private Item mFreeStack;
 		private Item mUsedStack;
 		private int mCapacity;
@@ -39,19 +39,19 @@ namespace GriffinPlus.Lib.Threading
 		/// Initializes a new instance of the <see cref="LocklessStack{T}"/> class.
 		/// </summary>
 		/// <param name="initialCapacity">Maximum number of items the stack can store.</param>
-		/// <param name="resizeOnDemand">
+		/// <param name="growOnDemand">
 		/// true to allow resizing, if the number of items exceeds the specified capacity when pushing an item onto the stack;
 		/// false to reject pushing the new item.
 		/// </param>
-		public LocklessStack(int initialCapacity, bool resizeOnDemand)
+		/// <exception cref="ArgumentOutOfRangeException">The initial capacity is negative or zero.</exception>
+		public LocklessStack(int initialCapacity, bool growOnDemand)
 		{
-			if (initialCapacity <= 0)
-			{
-				throw new ArgumentException("The capacity be greater than 0.", nameof(initialCapacity));
+			if (initialCapacity <= 0) {
+				throw new ArgumentOutOfRangeException(nameof(initialCapacity), "The capacity must be greater than 0.");
 			}
 
 			mCapacity = initialCapacity;
-			mResizingAllowed = resizeOnDemand;
+			mCanGrow = growOnDemand;
 			mFreeItemCount = initialCapacity;
 			mUsedItemCount = 0;
 
@@ -73,6 +73,14 @@ namespace GriffinPlus.Lib.Threading
 
 			// init 'used' stack
 			mUsedStack = null;
+		}
+
+		/// <summary>
+		/// Gets a value indicating whether the stack can grow, if necessary.
+		/// </summary>
+		public bool CanGrow
+		{
+			get { return mCanGrow; }
 		}
 
 		/// <summary>
@@ -126,7 +134,7 @@ namespace GriffinPlus.Lib.Threading
 			{
 				// abort, if no free item left
 				item = Interlocked.CompareExchange<Item>(ref mFreeStack, null, null);
-				if (item == null && !mResizingAllowed)
+				if (item == null && !mCanGrow)
 				{
 					return false;
 				}
@@ -187,7 +195,7 @@ namespace GriffinPlus.Lib.Threading
 			{
 				// abort, if no free item left
 				item = Interlocked.CompareExchange<Item>(ref mFreeStack, null, null);
-				if (item == null && !mResizingAllowed)
+				if (item == null && !mCanGrow)
 				{
 					first = false;
 					return false;
@@ -253,7 +261,7 @@ namespace GriffinPlus.Lib.Threading
 				{
 					// abort, if no free item left
 					item = Interlocked.CompareExchange<Item>(ref mFreeStack, null, null);
-					if (item == null && !mResizingAllowed)
+					if (item == null && !mCanGrow)
 					{
 						// stack does not contain enough free blocks
 						// => release chain
@@ -350,7 +358,7 @@ namespace GriffinPlus.Lib.Threading
 				{
 					// abort, if no free item left
 					item = Interlocked.CompareExchange<Item>(ref mFreeStack, null, null);
-					if (item == null && !mResizingAllowed)
+					if (item == null && !mCanGrow)
 					{
 						// stack does not contain enough free blocks
 						// => release chain
