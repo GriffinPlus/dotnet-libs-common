@@ -57,7 +57,7 @@ namespace GriffinPlus.Lib.Io
 		/// <summary>
 		/// Gets or sets the length of the memory block (must not exceed the size of the underlying buffer).
 		/// </summary>
-		/// <exception cref="ArgumentException">The length to st exceeds the capacity of the memory block.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">The length exceeds the capacity of the memory block.</exception>
 		public int Length
 		{
 			get {
@@ -66,11 +66,28 @@ namespace GriffinPlus.Lib.Io
 
 			set
 			{
+				if (value < 0) {
+					throw new ArgumentOutOfRangeException(nameof(value), "The length must be positive.");
+				}
+
 				if (value > mBuffer.Length) {
-					throw new ArgumentException("The length to set exceeds the capacity of the memory block.");
+					throw new ArgumentOutOfRangeException(nameof(value), "The length to set exceeds the capacity of the memory block.");
 				}
 
 				mLength = value;
+			}
+		}
+
+		/// <summary>
+		/// Gets the length of the current memory block and all linked memory blocks.
+		/// </summary>
+		public long ChainLength
+		{
+			get
+			{
+				long totalLength = mLength;
+				if (mNext != null) totalLength += mNext.ChainLength;
+				return totalLength;
 			}
 		}
 
@@ -82,5 +99,6 @@ namespace GriffinPlus.Lib.Io
 			get { return mNext; }
 			set { mNext = value; }
 		}
+
 	}
 }
