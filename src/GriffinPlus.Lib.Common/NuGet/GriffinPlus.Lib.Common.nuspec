@@ -11,13 +11,17 @@
 		<projectUrl>https://github.com/GriffinPlus/dotnet-libs-common</projectUrl>
 		<iconUrl>https://griffin.plus/img/nuget_icon.png</iconUrl>
 		<tags></tags>
+		<dependencies>
+			<group targetFramework="net461">
+			</group>
+			<group targetFramework="netstandard2.0">
+			</group>
+		</dependencies>
 	</metadata>
 	<files>
-		<file src="..\..\..\_build\Common.AnyCPU.Release\netstandard2.0\GriffinPlus.Lib.Common.dll" target="lib\netstandard2.0"/>
-		<file src="..\..\..\_build\Common.AnyCPU.Release\netstandard2.0\GriffinPlus.Lib.Common.xml" target="lib\netstandard2.0"/>
-		<file src="..\..\..\_build\Common.AnyCPU.Release\netcoreapp2.0\GriffinPlus.Lib.Common.dll" target="lib\netcoreapp2.0"/>
-		<file src="..\..\..\_build\Common.AnyCPU.Release\netcoreapp2.0\GriffinPlus.Lib.Common.xml" target="lib\netcoreapp2.0"/>
 		<file src="..\..\..\_build\Common.AnyCPU.Release\net461\GriffinPlus.Lib.Common.dll" target="lib\net461"/>
 		<file src="..\..\..\_build\Common.AnyCPU.Release\net461\GriffinPlus.Lib.Common.xml" target="lib\net461"/>
+		<file src="..\..\..\_build\Common.AnyCPU.Release\netstandard2.0\GriffinPlus.Lib.Common.dll" target="lib\netstandard2.0"/>
+		<file src="..\..\..\_build\Common.AnyCPU.Release\netstandard2.0\GriffinPlus.Lib.Common.xml" target="lib\netstandard2.0"/>
 	</files>
 </package>
