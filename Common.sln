@@ -13,6 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build (repo)", "build (repo
 		Build.ps1 = Build.ps1
 		LICENSE = LICENSE
 		README.md = README.md
+		THIRD-PARTY-NOTICES.md = THIRD-PARTY-NOTICES.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build (common)", "build (common)", "{94B48F93-6B70-42DA-A27F-0496A8B95FB6}"
