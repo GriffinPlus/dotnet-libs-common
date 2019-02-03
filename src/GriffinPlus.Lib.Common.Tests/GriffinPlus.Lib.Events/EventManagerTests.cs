@@ -11,7 +11,7 @@
 // the specific language governing permissions and limitations under the License.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using Nito.AsyncEx;
+using GriffinPlus.Lib.Threading;
 using System;
 using System.Linq;
 using System.Threading;
