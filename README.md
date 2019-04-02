@@ -91,6 +91,7 @@ This namespace provides threading specific functionality and contains the follow
 - `AsyncContextThread`: Async/await capable worker thread (derived from Stephen Cleary's work)
 - `LocklessStack<T>`: A thread-safe stack implementation using interlocked operations only.
 - `MonitorSynchronizedEnumerator<T>`: An enumerator that keeps a monitor locked until it is disposed.
+- `ReaderWriterLockSlimAutoLock`: A helper that locks a `ReaderWriterLockSlim` when created and releases it appropriately when disposed.
 
 ## Supported Platforms
 
