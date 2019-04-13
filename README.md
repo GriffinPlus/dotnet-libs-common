@@ -46,6 +46,12 @@ Extension methods for common types
 |                   | `GetPublicProperties` Gets public properties of a type (supports extended interfaces).
 |                   | `IsSubclassOfRawGeneric`: Checks whether a type is an instance of a certain generic type definition.
 
+#### Namespace: GriffinPlus.Lib.Collections
+
+This namespace provides common functionality and contains the following classes:
+
+- `Deque`: A double-ended queue that supports adding/removing items at both ends efficiently.
+
 #### Namespace: GriffinPlus.Lib.Conversion
 
 The `Converters` class provides converters for converting objects of the following types to a string and vice versa:
@@ -87,8 +93,10 @@ This namespace provides everything concerning generic i/o operations and contain
 
 This namespace provides threading specific functionality and contains the following classes:
 
-- `AsyncContext`: Async/await capable synchronization context (derived from Stephen Cleary's work)
-- `AsyncContextThread`: Async/await capable worker thread (derived from Stephen Cleary's work)
+- Asynchronous Primitives (derived from Stephen Cleary's [AsyncEx](https://github.com/stephencleary/AsyncEx) library)
+  - `AsyncContext`: Async/await capable synchronization context
+  - `AsyncContextThread`: Async/await capable worker thread
+  - `AsyncReaderWriterLock`: Async/await capable reader-writer-lock (**not recursive**)
 - `LocklessStack<T>`: A thread-safe stack implementation using interlocked operations only.
 - `MonitorSynchronizedEnumerator<T>`: An enumerator that keeps a monitor locked until it is disposed.
 - `ReaderWriterLockSlimAutoLock`: A helper that locks a `ReaderWriterLockSlim` when created and releases it appropriately when disposed.
