@@ -35,9 +35,9 @@
 //     SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+using GriffinPlus.Lib.Tests;
 using System;
 using System.Collections.Generic;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -67,7 +67,7 @@ namespace GriffinPlus.Lib.Threading
 			var rwl = new AsyncReaderWriterLock();
 			await rwl.WriterLockAsync();
 			var task = rwl.WriterLockAsync().AsTask();
-			await NeverCompletesAsync(task);
+			await AsyncAssert.DoesNotCompleteAsync(task);
 		}
 
 		[Fact]
@@ -76,7 +76,7 @@ namespace GriffinPlus.Lib.Threading
 			var rwl = new AsyncReaderWriterLock();
 			await rwl.WriterLockAsync();
 			var task = rwl.ReaderLockAsync().AsTask();
-			await NeverCompletesAsync(task);
+			await AsyncAssert.DoesNotCompleteAsync(task);
 		}
 
 		[Fact]
@@ -106,7 +106,7 @@ namespace GriffinPlus.Lib.Threading
 			var rwl = new AsyncReaderWriterLock();
 			await rwl.ReaderLockAsync();
 			var task = rwl.WriterLockAsync().AsTask();
-			await NeverCompletesAsync(task);
+			await AsyncAssert.DoesNotCompleteAsync(task);
 		}
 
 		[Fact]
@@ -179,7 +179,7 @@ namespace GriffinPlus.Lib.Threading
 				var cts = new CancellationTokenSource();
 				var task = rwl.WriterLockAsync(cts.Token).AsTask();
 				cts.Cancel();
-				await Assert.ThrowsAsync<TaskCanceledException>(() => task);
+				await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
 			}
 
 			await rwl.WriterLockAsync();
@@ -194,7 +194,7 @@ namespace GriffinPlus.Lib.Threading
 				var cts = new CancellationTokenSource();
 				var task = rwl.ReaderLockAsync(cts.Token).AsTask();
 				cts.Cancel();
-				await Assert.ThrowsAsync<TaskCanceledException>(() => task);
+				await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
 			}
 
 			await rwl.ReaderLockAsync();
@@ -212,7 +212,7 @@ namespace GriffinPlus.Lib.Threading
 			}
 
 			await writeLock;
-			await NeverCompletesAsync(readLock);
+			await AsyncAssert.DoesNotCompleteAsync(readLock);
 		}
 
 		[Fact]
@@ -228,8 +228,8 @@ namespace GriffinPlus.Lib.Threading
 			}
 
 			await Task.WhenAll(
-				NeverCompletesAsync(writeLock),
-				NeverCompletesAsync(readLock));
+				AsyncAssert.DoesNotCompleteAsync(writeLock),
+				AsyncAssert.DoesNotCompleteAsync(readLock));
 		}
 
 		[Fact]
@@ -281,28 +281,5 @@ namespace GriffinPlus.Lib.Threading
 			await readerLockTask;
 		}
 
-		/// <summary>
-		/// Attempts to ensure that a task never completes.
-		/// If the task takes a long time to complete, this method may not detect that it (incorrectly) completes.
-		/// </summary>
-		/// <param name="task">The task to observe.</param>
-		/// <param name="timeout">The amount of time to (asynchronously) wait for the task to complete.</param>
-		private static async Task NeverCompletesAsync(Task task, int timeout = 500)
-		{
-			// Wait for the task to complete, or the timeout to fire.
-			var completedTask = await Task.WhenAny(task, Task.Delay(timeout)).ConfigureAwait(false);
-			if (completedTask == task) throw new Exception("Task completed unexpectedly.");
-
-			// If the task didn't complete, attach a continuation that will raise an exception on a random thread pool thread, if it ever does complete.
-			try
-			{
-				throw new Exception("Task completed unexpectedly.");
-			}
-			catch (Exception ex)
-			{
-				var info = ExceptionDispatchInfo.Capture(ex);
-				var __ = task.ContinueWith(_ => info.Throw(), TaskScheduler.Default);
-			}
-		}
 	}
 }
