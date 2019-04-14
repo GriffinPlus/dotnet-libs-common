@@ -25,17 +25,17 @@ namespace GriffinPlus.Lib.Threading
 		/// <summary>
 		/// The reader-writer-lock.
 		/// </summary>
-		public readonly ReaderWriterLockSlim Lock;
+		public ReaderWriterLockSlim Lock { get; }
 
 		/// <summary>
 		/// The operation the lock was acquired for (read-only, upgradeable-read or read-write).
 		/// </summary>
-		public readonly ReaderWriterLockSlimAcquireKind AcquireKind;
+		public ReaderWriterLockSlimAcquireKind AcquireKind { get; }
 
 		/// <summary>
 		/// Indicates whether the lock is acquired.
 		/// </summary>
-		private bool mIsLockAquired;
+		private bool mIsLockAcquired;
 
 		/// <summary>
 		/// Locks the specified reader-writer-lock for the reading, writing or reading-with-write-upgrade-option (without timeout).
@@ -46,7 +46,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			Lock = @lock;
 			AcquireKind = acquireKind;
-			mIsLockAquired = true;
+			mIsLockAcquired = true;
 			switch (AcquireKind)
 			{
 				case ReaderWriterLockSlimAcquireKind.Read:
@@ -75,23 +75,22 @@ namespace GriffinPlus.Lib.Threading
 			Lock = @lock;
 			AcquireKind = acquireKind;
 
-			bool gotLock;
 			switch (AcquireKind)
 			{
 				case ReaderWriterLockSlimAcquireKind.Read:
-					mIsLockAquired = Lock.TryEnterReadLock(timeout);
+					mIsLockAcquired = Lock.TryEnterReadLock(timeout);
 					break;
 				case ReaderWriterLockSlimAcquireKind.UpgradeableRead:
-					mIsLockAquired = Lock.TryEnterUpgradeableReadLock(timeout);
+					mIsLockAcquired = Lock.TryEnterUpgradeableReadLock(timeout);
 					break;
 				case ReaderWriterLockSlimAcquireKind.ReadWrite:
-					mIsLockAquired = Lock.TryEnterWriteLock(timeout);
+					mIsLockAcquired = Lock.TryEnterWriteLock(timeout);
 					break;
 				default:
 					throw new ArgumentException("Invalid acquire type.", nameof (acquireKind));
 			}
 
-			if (!mIsLockAquired) throw new TimeoutException("The locked could not be acquired within the specified time.");
+			if (!mIsLockAcquired) throw new TimeoutException("The locked could not be acquired within the specified time.");
 		}
 
 		/// <summary>
@@ -99,7 +98,7 @@ namespace GriffinPlus.Lib.Threading
 		/// </summary>
 		public void Dispose()
 		{
-			if (mIsLockAquired)
+			if (mIsLockAcquired)
 			{
 				switch (AcquireKind)
 				{
@@ -114,7 +113,7 @@ namespace GriffinPlus.Lib.Threading
 						break;
 				}
 
-				mIsLockAquired = false;
+				mIsLockAcquired = false;
 			}
 		}
 	}
