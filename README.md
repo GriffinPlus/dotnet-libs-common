@@ -94,9 +94,21 @@ This namespace provides everything concerning generic i/o operations and contain
 This namespace provides threading specific functionality and contains the following classes:
 
 - Asynchronous Primitives (derived from Stephen Cleary's [AsyncEx](https://github.com/stephencleary/AsyncEx) library)
-  - `AsyncContext`: Async/await capable synchronization context
-  - `AsyncContextThread`: Async/await capable worker thread
-  - `AsyncReaderWriterLock`: Async/await capable reader-writer-lock (**not recursive**)
+  - Context
+    - `AsyncContext`: Async/await capable synchronization context.
+    - `AsyncContextThread`: Async/await capable worker thread.
+  - Coordination
+    - `AsyncAutoResetEvent`: An async/await capable auto-reset event.
+    - `AsyncConditionVariable`: An async/await capable condition variable.
+    - `AsyncCountdownEvent`: An async/await capable event that fires when signaled a specific number of times.
+    - `AsyncLazy`: Async/await capable lazy initialization.
+    - `AsyncLock`: Async/await capable equivalent of a `lock()` statement.
+    - `AsyncManualResetEvent`: An async/await capable manual-reset event.
+    - `AsyncMonitor`: An async/await capable monitor implementation.
+    - `AsyncProducerConsumerQueue`: An async/await capable producer/consumer queue.
+    - `AsyncReaderWriterLock`: An async/await capable reader-writer-lock.
+    - `AsyncSemaphore`: An async/await capable semaphore.
+    - `PauseToken`: A token source to pause/unpause asynchronous operations.
 - `LocklessStack<T>`: A thread-safe stack implementation using interlocked operations only.
 - `MonitorSynchronizedEnumerator<T>`: An enumerator that keeps a monitor locked until it is disposed.
 - `ReaderWriterLockSlimAutoLock`: A helper that locks a `ReaderWriterLockSlim` when created and releases it appropriately when disposed.
