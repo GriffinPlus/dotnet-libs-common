@@ -1,0 +1,58 @@
+trigger:
+  tags:
+    include:
+    - v*
+  branches:
+    include:
+    - master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  BuildConfiguration: 'Release'
+
+steps:
+- task: GitVersion@5
+  displayName: 'GitVersion'
+  inputs:
+    runtime: 'core'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Restore'
+  inputs:
+    command: restore
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build'
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+    arguments: '--configuration $(BuildConfiguration) /p:InformationalVersion=$(GitVersion.InformationalVersion)'
+    versioningScheme: 'byEnvVar'
+    versionEnvVar: 'GitVersion.SemVer'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Test'
+  inputs:
+    command: 'test'
+    projects: '**/*Tests/*.csproj'
+    nobuild: true
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: NuGetCommand@2
+  displayName: 'Pack'
+  inputs:
+    command: pack
+    packagesToPack: '**/*.nuspec'
+    packDestination: '$(Build.ArtifactStagingDirectory)'
+    buildProperties: 'version=$(GitVersion.NuGetVersion)'
+
+- task: NuGetCommand@2
+  displayName: 'Publish'
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+  inputs:
+    command: push
+    nuGetFeedType: external
+    publishFeedCredentials: 'nuget.org'

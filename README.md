@@ -1,9 +1,9 @@
 # Griffin+ Common Library
 
-[![Build (master)](https://img.shields.io/appveyor/ci/ravenpride/dotnet-libs-common/master.svg?logo=appveyor)](https://ci.appveyor.com/project/ravenpride/dotnet-libs-common/branch/master)
-[![Tests (master)](https://img.shields.io/appveyor/tests/ravenpride/dotnet-libs-common/master.svg?logo=appveyor)](https://ci.appveyor.com/project/ravenpride/dotnet-libs-common/branch/master/tests)
-[![NuGet Version](https://img.shields.io/nuget/v/GriffinPlus.Lib.Common.svg)](https://www.nuget.org/packages/GriffinPlus.Lib.Common)
-[![NuGet Downloads](https://img.shields.io/nuget/dt/GriffinPlus.Lib.Common.svg)](https://www.nuget.org/packages/GriffinPlus.Lib.Common)
+[![Azure DevOps builds (branch)](https://img.shields.io/azure-devops/build/griffinplus/2f589a5e-e2ab-4c08-bee5-5356db2b2aeb/27/master?label=Build)](https://dev.azure.com/griffinplus/DotNET%20Libraries/_build/latest?definitionId=27&branchName=master)
+[![Tests (master)](https://img.shields.io/azure-devops/tests/griffinplus/DotNET%20Libraries/27/master?label=Tests)](https://dev.azure.com/griffinplus/DotNET%20Libraries/_build/latest?definitionId=27&branchName=master)
+[![NuGet Version](https://img.shields.io/nuget/v/GriffinPlus.Lib.Common.svg?label=NuGet%20Version)](https://www.nuget.org/packages/GriffinPlus.Lib.Common)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/GriffinPlus.Lib.Common.svg?label=NuGet%20Downloads)](https://www.nuget.org/packages/GriffinPlus.Lib.Common)
 
 ## Overview
 
