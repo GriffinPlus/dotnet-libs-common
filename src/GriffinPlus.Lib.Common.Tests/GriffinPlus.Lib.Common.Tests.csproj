@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net461; netcoreapp2.0</TargetFrameworks>
+		<TargetFrameworks>net461; netcoreapp2.1</TargetFrameworks>
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
 		<OmitDocumentationFile>true</OmitDocumentationFile>
@@ -14,7 +14,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="GriffinPlus.Lib.XUnitHelpers" Version="0.1.0" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
 		<PackageReference Include="xunit" Version="2.4.1" />
 		<PackageReference Include="xunit.runner.console" Version="2.4.1">
 			<PrivateAssets>all</PrivateAssets>

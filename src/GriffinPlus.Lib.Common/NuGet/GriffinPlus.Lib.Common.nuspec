@@ -4,8 +4,8 @@
 		<id>GriffinPlus.Lib.Common</id>
 		<version>$version$</version>
 		<authors>Sascha Falk</authors>
-		<copyright>Copyright (c) 2018-2019 Sascha Falk</copyright>
-		<requireLicenseAcceptance>true</requireLicenseAcceptance>
+		<copyright>Copyright (c) 2020 Sascha Falk</copyright>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>Very basic functionality that is frequently used in Griffin+ .NET projects.</description>
 		<licenseUrl>https://github.com/GriffinPlus/dotnet-libs-common/blob/master/LICENSE</licenseUrl>
 		<projectUrl>https://github.com/GriffinPlus/dotnet-libs-common</projectUrl>
@@ -13,10 +13,10 @@
 		<tags></tags>
 		<dependencies>
 			<group targetFramework="net461">
-				<dependency id="System.Collections.Immutable" version="1.5.0" />
+				<dependency id="System.Collections.Immutable" version="1.7.0" />
 			</group>
 			<group targetFramework="netstandard2.0">
-				<dependency id="System.Collections.Immutable" version="1.5.0" />
+				<dependency id="System.Collections.Immutable" version="1.7.0" />
 			</group>
 		</dependencies>
 	</metadata>
