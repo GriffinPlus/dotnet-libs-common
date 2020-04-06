@@ -1,7 +1,7 @@
 ﻿///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This file is part of the Griffin+ common library suite (https://github.com/GriffinPlus/dotnet-libs-common)
 //
-// Copyright 2018-2019 Sascha Falk <sascha@falk-online.eu>
+// Copyright 2018-2020 Sascha Falk <sascha@falk-online.eu>
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance
 // with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -19,16 +19,15 @@ namespace GriffinPlus.Lib.Threading
 	/// <summary>
 	/// A thread-safe implementation of a stack using non-blocking interlocked operations.
 	/// </summary>
-	public class LocklessStack<T>
+	class LocklessStack<T>
 	{
 		private class Item
 		{
 			public T Value;
 			public Item NextItem;
-			public Item() { }
-		};
+		}
 
-		private bool mCanGrow;
+		private readonly bool mCanGrow;
 		private Item mFreeStack;
 		private Item mUsedStack;
 		private int mCapacity;
@@ -46,7 +45,8 @@ namespace GriffinPlus.Lib.Threading
 		/// <exception cref="ArgumentOutOfRangeException">The initial capacity is negative or zero.</exception>
 		public LocklessStack(int initialCapacity, bool growOnDemand)
 		{
-			if (initialCapacity <= 0) {
+			if (initialCapacity <= 0)
+			{
 				throw new ArgumentOutOfRangeException(nameof(initialCapacity), "The capacity must be greater than 0.");
 			}
 
@@ -78,45 +78,24 @@ namespace GriffinPlus.Lib.Threading
 		/// <summary>
 		/// Gets a value indicating whether the stack can grow, if necessary.
 		/// </summary>
-		public bool CanGrow
-		{
-			get { return mCanGrow; }
-		}
+		public bool CanGrow => mCanGrow;
 
 		/// <summary>
 		/// Gets the number of items the stack accepts before it rejects pushing an item or before it resizes its
 		/// internal buffer (depending on the setting specified at construction time).
 		/// </summary>
-		public int FreeItemCount
-		{
-			get
-			{
-				return Interlocked.CompareExchange(ref mFreeItemCount, 0, 0);
-			}
-		}
+		public int FreeItemCount => Interlocked.CompareExchange(ref mFreeItemCount, 0, 0);
 
 		/// <summary>
 		/// Gets the number of items on the stack.
 		/// </summary>
-		public int UsedItemCount
-		{
-			get
-			{
-				return Interlocked.CompareExchange(ref mUsedItemCount, 0, 0);
-			}
-		}
+		public int UsedItemCount => Interlocked.CompareExchange(ref mUsedItemCount, 0, 0);
 
 		/// <summary>
 		/// Gets the total number of items that can be pushed onto the stack before the stack rejects pushing an item or
 		/// before it resizes its internal buffer (depending on the setting specified at construction time).
 		/// </summary>
-		public int Capacity
-		{
-			get
-			{
-				return mCapacity;
-			}
-		}
+		public int Capacity => mCapacity;
 
 		/// <summary>
 		/// Pushes an item onto the stack.
@@ -129,11 +108,11 @@ namespace GriffinPlus.Lib.Threading
 		public bool Push(T element)
 		{
 			// get item from the 'free' stack
-			Item item = null;
+			Item item;
 			while (true)
 			{
 				// abort, if no free item left
-				item = Interlocked.CompareExchange<Item>(ref mFreeStack, null, null);
+				item = Interlocked.CompareExchange(ref mFreeStack, null, null);
 				if (item == null && !mCanGrow)
 				{
 					return false;
@@ -142,8 +121,8 @@ namespace GriffinPlus.Lib.Threading
 				if (item != null)
 				{
 					// remove the topmost item from the 'free' stack
-					Item nextItem = Interlocked.CompareExchange<Item>(ref item.NextItem, null, null);
-					if (Interlocked.CompareExchange<Item>(ref mFreeStack, nextItem, item) == item)
+					Item nextItem = Interlocked.CompareExchange(ref item.NextItem, null, null);
+					if (Interlocked.CompareExchange(ref mFreeStack, nextItem, item) == item)
 					{
 						item.NextItem = null;
 						Interlocked.Decrement(ref mFreeItemCount);
@@ -153,8 +132,7 @@ namespace GriffinPlus.Lib.Threading
 				else
 				{
 					// create item
-					item = new Item();
-					item.NextItem = null;
+					item = new Item { NextItem = null };
 					Interlocked.Increment(ref mCapacity);
 					break;
 				}
@@ -166,8 +144,8 @@ namespace GriffinPlus.Lib.Threading
 			// push item onto the 'used' stack
 			while (true)
 			{
-				Item firstItem = item.NextItem = Interlocked.CompareExchange<Item>(ref mUsedStack, null, null);
-				if (Interlocked.CompareExchange<Item>(ref mUsedStack, item, firstItem) == firstItem)
+				Item firstItem = item.NextItem = Interlocked.CompareExchange(ref mUsedStack, null, null);
+				if (Interlocked.CompareExchange(ref mUsedStack, item, firstItem) == firstItem)
 				{
 					Interlocked.Increment(ref mUsedItemCount);
 					return true;
@@ -190,36 +168,13 @@ namespace GriffinPlus.Lib.Threading
 		public bool Push(T element, out bool first)
 		{
 			// get item from the 'free' stack
-			Item item = null;
-			while (true)
-			{
-				// abort, if no free item left
-				item = Interlocked.CompareExchange<Item>(ref mFreeStack, null, null);
-				if (item == null && !mCanGrow)
-				{
-					first = false;
-					return false;
-				}
+			Item item = GetFreeItem();
 
-				if (item != null)
-				{
-					// remove the topmost item from the 'free' stack
-					Item nextItem = Interlocked.CompareExchange<Item>(ref item.NextItem, null, null);
-					if (Interlocked.CompareExchange<Item>(ref mFreeStack, nextItem, item) == item)
-					{
-						item.NextItem = null;
-						Interlocked.Decrement(ref mFreeItemCount);
-						break;
-					}
-				}
-				else
-				{
-					// create item
-					item = new Item();
-					item.NextItem = null;
-					Interlocked.Increment(ref mCapacity);
-					break;
-				}
+			// abort, if the stack is full and growing is not allowed
+			if (item == null)
+			{
+				first = false;
+				return false;
 			}
 
 			// initialize item
@@ -228,10 +183,10 @@ namespace GriffinPlus.Lib.Threading
 			// push item onto the 'used' stack
 			while (true)
 			{
-				Item firstItem = item.NextItem = Interlocked.CompareExchange<Item>(ref mUsedStack, null, null);
-				if (Interlocked.CompareExchange<Item>(ref mUsedStack, item, firstItem) == firstItem)
+				Item firstItem = item.NextItem = Interlocked.CompareExchange(ref mUsedStack, null, null);
+				if (Interlocked.CompareExchange(ref mUsedStack, item, firstItem) == firstItem)
 				{
-					first = (firstItem == null);
+					first = firstItem == null;
 					return true;
 				}
 			}
@@ -247,87 +202,7 @@ namespace GriffinPlus.Lib.Threading
 		/// </returns>
 		public bool PushMany(T[] elements)
 		{
-			Item chainStart = null;
-			Item chainEnd = null;
-			int elementCount = elements.Length;
-
-			// get item from the 'free' stack
-			for (int i = 0; i < elementCount; i++)
-			{
-				T element = elements[i];
-
-				Item item = null;
-				while (true)
-				{
-					// abort, if no free item left
-					item = Interlocked.CompareExchange<Item>(ref mFreeStack, null, null);
-					if (item == null && !mCanGrow)
-					{
-						// stack does not contain enough free blocks
-						// => release chain
-						item = chainStart;
-						while (item != null)
-						{
-							item.Value = default(T);
-							Item next = item.NextItem;
-
-							while (true)
-							{
-								Item firstItem = item.NextItem = Interlocked.CompareExchange<Item>(ref mFreeStack, null, null);
-								if (Interlocked.CompareExchange<Item>(ref mFreeStack, item, firstItem) == firstItem)
-								{
-									Interlocked.Increment(ref mFreeItemCount);
-									break;
-								}
-							}
-
-							item = next;
-						}
-
-						// pushing elements failed...
-						return false;
-					}
-
-					if (item != null)
-					{
-						// remove the topmost item from the 'free' stack
-						Item nextItem = Interlocked.CompareExchange<Item>(ref item.NextItem, null, null);
-						if (Interlocked.CompareExchange<Item>(ref mFreeStack, nextItem, item) == item)
-						{
-							item.NextItem = null;
-							Interlocked.Decrement(ref mFreeItemCount);
-							break;
-						}
-					}
-					else
-					{
-						// create item
-						item = new Item();
-						item.NextItem = null;
-						Interlocked.Increment(ref mCapacity);
-						break;
-					}
-				}
-
-				// initialize item
-				item.Value = element;
-
-				// chain the current item with the existing chain
-				item.NextItem = chainStart;
-				if (chainEnd == null) chainEnd = item;
-				chainStart = item;
-			}
-
-			// push chain onto the 'used' stack
-			while (true)
-			{
-				Item firstItem = chainEnd.NextItem = Interlocked.CompareExchange<Item>(ref mUsedStack, null, null);
-				if (Interlocked.CompareExchange<Item>(ref mUsedStack, chainStart, firstItem) == firstItem)
-				{
-					for (int i = 0; i < elementCount; i++) Interlocked.Increment(ref mUsedItemCount);
-					return true;
-				}
-			}
+			return PushMany(elements, out _);
 		}
 
 		/// <summary>
@@ -344,80 +219,39 @@ namespace GriffinPlus.Lib.Threading
 		/// </returns>
 		public bool PushMany(T[] elements, out bool first)
 		{
-			Item chainStart = null;
-			Item chainEnd = null;
+			// ensure the specified array is not null
+			if (elements == null)
+				throw new ArgumentNullException(nameof(elements));
+
+			// ensure the specified array contains at least one item
 			int elementCount = elements.Length;
+			if (elementCount == 0)
+				throw new ArgumentException("The specified array does not contain any items.", nameof(elements));
 
-			// get item from the 'free' stack
-			for (int i = 0; i < elementCount; i++)
+			// get items from the free stack
+			Item chain = GetFreeItems(elementCount);
+			if (chain == null)
 			{
-				T element = elements[i];
+				first = false;
+				return false;
+			}
 
-				Item item = null;
-				while (true)
-				{
-					// abort, if no free item left
-					item = Interlocked.CompareExchange<Item>(ref mFreeStack, null, null);
-					if (item == null && !mCanGrow)
-					{
-						// stack does not contain enough free blocks
-						// => release chain
-						item = chainStart;
-						while (item != null)
-						{
-							item.Value = default(T);
-							Item next = item.NextItem;
-
-							while (true)
-							{
-								Item firstItem = item.NextItem = Interlocked.CompareExchange<Item>(ref mFreeStack, null, null);
-								if (Interlocked.CompareExchange<Item>(ref mFreeStack, item, firstItem) == firstItem)
-								{
-									Interlocked.Increment(ref mFreeItemCount);
-									break;
-								}
-							}
-
-							item = next;
-						}
-
-						// pushing elements failed...
-						first = false;
-						return false;
-					}
-
-					// remove the topmost item from the 'free' stack
-					Item nextItem = Interlocked.CompareExchange<Item>(ref item.NextItem, null, null);
-					if (Interlocked.CompareExchange<Item>(ref mFreeStack, nextItem, item) == item)
-					{
-						item.NextItem = null;
-						Interlocked.Decrement(ref mFreeItemCount);
-						break;
-					}
-				}
-
-				// create item, if necessary
-				if (item == null)
-				{
-					item = new Item();
-					item.NextItem = null;
-					Interlocked.Increment(ref mCapacity);
-				}
-
-				// initialize item
-				item.Value = element;
-
-				// chain the current item with the existing chain
-				item.NextItem = chainStart;
-				if (chainEnd == null) chainEnd = item;
-				chainStart = item;
+			// populate items with specified elements in reverse order, so they appear in the correct order on the stack
+			Item chainStart = chain;
+			Item chainEnd = chain;
+			Item item = chain;
+			for (int i = elementCount - 1; i >= 0; i--)
+			{
+				item.Value = elements[i];
+				chainEnd = item;
+				item = item.NextItem;
 			}
 
 			// push chain onto the 'used' stack
 			while (true)
 			{
-				Item firstItem = chainEnd.NextItem = Interlocked.CompareExchange<Item>(ref mUsedStack, null, null);
-				if (Interlocked.CompareExchange<Item>(ref mUsedStack, chainStart, firstItem) == firstItem)
+				Item firstItem = chainEnd.NextItem = Interlocked.CompareExchange(ref mUsedStack, null, null);
+				if (Interlocked.CompareExchange(ref mUsedStack, chainStart, firstItem) == firstItem)
 				{
 					for (int i = 0; i < elementCount; i++) Interlocked.Increment(ref mUsedItemCount);
 					first = (firstItem == null);
@@ -437,11 +271,11 @@ namespace GriffinPlus.Lib.Threading
 		public bool Pop(out T element)
 		{
 			// get item from the 'free' stack
-			Item item = null;
+			Item item;
 			while (true)
 			{
 				// abort, if no 'used' item left
-				item = Interlocked.CompareExchange<Item>(ref mUsedStack, null, null);
+				item = Interlocked.CompareExchange(ref mUsedStack, null, null);
 				if (item == null)
 				{
 					element = default(T);
@@ -449,8 +283,8 @@ namespace GriffinPlus.Lib.Threading
 				}
 
 				// remove the topmost item from the 'used' stack
-				Item nextItem = Interlocked.CompareExchange<Item>(ref item.NextItem, null, null);
-				if (Interlocked.CompareExchange<Item>(ref mUsedStack, nextItem, item) == item)
+				Item nextItem = Interlocked.CompareExchange(ref item.NextItem, null, null);
+				if (Interlocked.CompareExchange(ref mUsedStack, nextItem, item) == item)
 				{
 					item.NextItem = null;
 					Interlocked.Decrement(ref mUsedItemCount);
@@ -465,8 +299,8 @@ namespace GriffinPlus.Lib.Threading
 			item.Value = default(T);
 			while (true)
 			{
-				Item firstItem = item.NextItem = Interlocked.CompareExchange<Item>(ref mFreeStack, null, null);
-				if (Interlocked.CompareExchange<Item>(ref mFreeStack, item, firstItem) == firstItem)
+				Item firstItem = item.NextItem = Interlocked.CompareExchange(ref mFreeStack, null, null);
+				if (Interlocked.CompareExchange(ref mFreeStack, item, firstItem) == firstItem)
 				{
 					Interlocked.Increment(ref mFreeItemCount);
 					return true;
@@ -483,7 +317,7 @@ namespace GriffinPlus.Lib.Threading
 		/// </returns>
 		public T[] Flush()
 		{
-			Item firstItem = Interlocked.Exchange<Item>(ref mUsedStack, null);
+			Item firstItem = Interlocked.Exchange(ref mUsedStack, null);
 
 			int count = 0;
 			Item item = firstItem;
@@ -494,9 +328,13 @@ namespace GriffinPlus.Lib.Threading
 				count++;
 			}
 
+			// abort, if there are no items on the stack
+			if (count == 0)
+				return null;
+
 			// initialize the array to deliver back to the caller
 			item = firstItem;
-			T[] result = count > 0 ? new T[count] : null;
+			T[] result = new T[count];
 			for (int i = 0; i < count; i++)
 			{
 				result[i] = item.Value;
@@ -504,8 +342,8 @@ namespace GriffinPlus.Lib.Threading
 				item.Value = default(T);
 				while (true)
 				{
-					firstItem = item.NextItem = Interlocked.CompareExchange<Item>(ref mFreeStack, null, null);
-					if (Interlocked.CompareExchange<Item>(ref mFreeStack, item, firstItem) == firstItem)
+					firstItem = item.NextItem = Interlocked.CompareExchange(ref mFreeStack, null, null);
+					if (Interlocked.CompareExchange(ref mFreeStack, item, firstItem) == firstItem)
 					{
 						Interlocked.Increment(ref mFreeItemCount);
 						break;
@@ -528,7 +366,7 @@ namespace GriffinPlus.Lib.Threading
 		/// </returns>
 		public T[] FlushAndReverse()
 		{
-			Item firstItem = Interlocked.Exchange<Item>(ref mUsedStack, null);
+			Item firstItem = Interlocked.Exchange(ref mUsedStack, null);
 
 			int count = 0;
 			Item item = firstItem;
@@ -539,9 +377,13 @@ namespace GriffinPlus.Lib.Threading
 				count++;
 			}
 
+			// abort, if there are no items on the stack
+			if (count == 0)
+				return null;
+
 			// initialize the array to deliver back to the caller
 			item = firstItem;
-			T[] result = count > 0 ? new T[count] : null;
+			T[] result = new T[count];
 			for (int i = count; i > 0; i--)
 			{
 				result[i - 1] = item.Value;
@@ -549,8 +391,8 @@ namespace GriffinPlus.Lib.Threading
 				item.Value = default(T);
 				while (true)
 				{
-					firstItem = item.NextItem = Interlocked.CompareExchange<Item>(ref mFreeStack, null, null);
-					if (Interlocked.CompareExchange<Item>(ref mFreeStack, item, firstItem) == firstItem)
+					firstItem = item.NextItem = Interlocked.CompareExchange(ref mFreeStack, null, null);
+					if (Interlocked.CompareExchange(ref mFreeStack, item, firstItem) == firstItem)
 					{
 						Interlocked.Increment(ref mFreeItemCount);
 						break;
@@ -562,6 +404,111 @@ namespace GriffinPlus.Lib.Threading
 			}
 
 			return result;
+		}
+
+		/// <summary>
+		/// Gets an item from the free stack, creates a new item, if growing is allowed.
+		/// </summary>
+		/// <returns>
+		/// An item from the free stack;
+		/// null, if the free stack is empty and growing is not allowed.
+		/// </returns>
+		private Item GetFreeItem()
+		{
+			// remove the topmost item from the 'free' stack
+			Item item;
+			while (true)
+			{
+				item = Interlocked.CompareExchange(ref mFreeStack, null, null);
+				if (item == null) break;
+				Item nextItem = Interlocked.CompareExchange(ref item.NextItem, null, null);
+				if (Interlocked.CompareExchange(ref mFreeStack, nextItem, item) == item)
+				{
+					item.NextItem = null;
+					Interlocked.Decrement(ref mFreeItemCount);
+					return item;
+				}
+			}
+
+			// no item on the free stack and growing is not allowed => abort
+			if (!mCanGrow)
+				return null;
+
+			// create item
+			item = new Item { NextItem = null };
+			Interlocked.Increment(ref mCapacity);
+			return item;
+		}
+
+		/// <summary>
+		/// Gets the specified number of items from the free stack, creates a new items, if growing is allowed.
+		/// </summary>
+		/// <param name="count">Number of items to get.</param>
+		/// <returns>
+		/// The first item in the chain of free items;
+		/// null, if the free stack does not contain enough items and growing is not allowed.
+		/// </returns>
+		private Item GetFreeItems(int count)
+		{
+			Item chainStart = null;
+			Item chainEnd = null;
+			int chainLength = 0;
+
+			for (int i = 0; i < count; i++)
+			{
+				// remove the topmost item from the 'free' stack
+				Item item;
+				while (true)
+				{
+					item = Interlocked.CompareExchange(ref mFreeStack, null, null);
+					if (item == null) break;
+					Item nextItem = Interlocked.CompareExchange(ref item.NextItem, null, null);
+					if (Interlocked.CompareExchange(ref mFreeStack, nextItem, item) == item)
+					{
+						item.NextItem = null;
+						Interlocked.Decrement(ref mFreeItemCount);
+						if (chainStart == null) chainStart = item;
+						if (chainEnd != null) chainEnd.NextItem = item;
+						chainEnd = item;
+						chainLength++;
+						break;
+					}
+				}
+
+				if (item == null)
+				{ 
+					// no item on the free stack and resizing is not allowed
+					// => abort
+					if (!mCanGrow)
+					{
+						// push already fetched items back onto the free stack
+						if (chainEnd != null)
+						{
+							while (true)
+							{
+								Item firstItem = chainEnd.NextItem = Interlocked.CompareExchange(ref mFreeStack, null, null);
+								if (Interlocked.CompareExchange(ref mFreeStack, chainStart, firstItem) == firstItem)
+								{
+									Interlocked.Add(ref mFreeItemCount, chainLength);
+									break;
+								}
+							}
+						}
+
+						return null;
+					}
+
+					// create item
+					item = new Item { NextItem = null };
+					if (chainStart == null) chainStart = item;
+					if (chainEnd != null) chainEnd.NextItem = item;
+					chainEnd = item;
+					chainLength++;
+					Interlocked.Increment(ref mCapacity);
+				}
+			}
+
+			return chainStart;
 		}
 
 	}
