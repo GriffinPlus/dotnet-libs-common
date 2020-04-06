@@ -1,7 +1,7 @@
 ﻿///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This file is part of the Griffin+ common library suite (https://github.com/GriffinPlus/dotnet-libs-common)
 //
-// Copyright 2018-2019 Sascha Falk <sascha@falk-online.eu>
+// Copyright 2018-2020 Sascha Falk <sascha@falk-online.eu>
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance
 // with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -13,6 +13,8 @@
 
 using System;
 
+// ReSharper disable NonReadonlyMemberInGetHashCode
+
 namespace GriffinPlus.Lib
 {
 	/// <summary>
@@ -21,7 +23,7 @@ namespace GriffinPlus.Lib
 	/// </summary>
 	public class BitMask
 	{
-		private static uint[] sEmptyBitField = new uint[0];
+		private static readonly uint[] sEmptyBitField = new uint[0];
 		private uint[] mBitField;
 
 		/// <summary>
@@ -70,10 +72,7 @@ namespace GriffinPlus.Lib
 		/// <summary>
 		/// Gets the size of the bit mask (in bits).
 		/// </summary>
-		public int Size
-		{
-			get { return mBitField.Length * 32; }
-		}
+		public int Size => mBitField.Length * 32;
 
 		/// <summary>
 		/// Gets the padding value that is used, when accessing a bit outside the defined mask.
@@ -103,6 +102,9 @@ namespace GriffinPlus.Lib
 		/// <returns>true, if the bit masks are equal; otherwise false.</returns>
 		public static bool operator ==(BitMask mask1, BitMask mask2)
 		{
+			if (mask1 == null) throw new ArgumentNullException(nameof(mask1));
+			if (mask2 == null) throw new ArgumentNullException(nameof(mask2));
+
 			int count1 = mask1.mBitField.Length;
 			int count2 = mask2.mBitField.Length;
 
@@ -110,7 +112,8 @@ namespace GriffinPlus.Lib
 			{
 				for (int i = 0; i < count1; i++)
 				{
-					if (mask1.mBitField[i] != mask2.mBitField[i]) {
+					if (mask1.mBitField[i] != mask2.mBitField[i])
+					{
 						return false;
 					}
 				}
@@ -118,7 +121,8 @@ namespace GriffinPlus.Lib
 				uint padding = mask1.PaddingValue ? uint.MaxValue : 0;
 				for (int i = count1; i < count2; i++)
 				{
-					if (mask2.mBitField[i] != padding) {
+					if (mask2.mBitField[i] != padding)
+					{
 						return false;
 					}
 				}
@@ -127,7 +131,8 @@ namespace GriffinPlus.Lib
 			{
 				for (int i = 0; i < count2; i++)
 				{
-					if (mask1.mBitField[i] != mask2.mBitField[i]) {
+					if (mask1.mBitField[i] != mask2.mBitField[i])
+					{
 						return false;
 					}
 				}
@@ -135,7 +140,8 @@ namespace GriffinPlus.Lib
 				uint padding = mask2.PaddingValue ? uint.MaxValue : 0;
 				for (int i = count2; i < count1; i++)
 				{
-					if (mask1.mBitField[i] != padding) {
+					if (mask1.mBitField[i] != padding)
+					{
 						return false;
 					}
 				}
@@ -246,7 +252,7 @@ namespace GriffinPlus.Lib
 		/// <returns>true, if the specified bit is set; otherwise false.</returns>
 		public bool IsBitSet(int bit)
 		{
-			if (bit < 0) throw new ArgumentException("The bit index must be positive.");
+			if (bit < 0) throw new ArgumentException("The bit index must be positive.", nameof(bit));
 			int arrayIndex = bit / 32;
 			int bitIndex = bit - arrayIndex * 32;
 			return arrayIndex < mBitField.Length ? (mBitField[arrayIndex] & (1u << bitIndex)) != 0 : PaddingValue;
@@ -259,7 +265,7 @@ namespace GriffinPlus.Lib
 		/// <returns>true, if the specified bit is cleared; otherwise false.</returns>
 		public bool IsBitCleared(int bit)
 		{
-			if (bit < 0) throw new ArgumentException("The bit index must be positive.");
+			if (bit < 0) throw new ArgumentException("The bit index must be positive.", nameof(bit));
 			int arrayIndex = bit / 32;
 			int bitIndex = bit - arrayIndex * 32;
 			return arrayIndex < mBitField.Length ? (mBitField[arrayIndex] & (1u << bitIndex)) == 0 : !PaddingValue;
@@ -272,10 +278,10 @@ namespace GriffinPlus.Lib
 		/// <exception cref="ArgumentOutOfRangeException">The specified bit is out of bounds.</exception>
 		public void SetBit(int bit)
 		{
-			if (bit < 0) throw new ArgumentOutOfRangeException("The bit index must be positive.");
+			if (bit < 0) throw new ArgumentOutOfRangeException(nameof(bit), "The bit index must be positive.");
 			int arrayIndex = bit / 32;
 			int bitIndex = bit - arrayIndex * 32;
-			if (arrayIndex >= mBitField.Length) throw new ArgumentOutOfRangeException("The specified bit is out of bounds.", nameof(bit));
+			if (arrayIndex >= mBitField.Length) throw new ArgumentOutOfRangeException(nameof(bit), "The specified bit is out of bounds.");
 			mBitField[arrayIndex] |= 1u << bitIndex;
 		}
 
@@ -286,10 +292,10 @@ namespace GriffinPlus.Lib
 		/// <exception cref="ArgumentOutOfRangeException">The specified bit is out of bounds.</exception>
 		public void ClearBit(int bit)
 		{
-			if (bit < 0) throw new ArgumentOutOfRangeException("The bit index must be positive.");
+			if (bit < 0) throw new ArgumentOutOfRangeException(nameof(bit), "The bit index must be positive.");
 			int arrayIndex = bit / 32;
 			int bitIndex = bit - arrayIndex * 32;
-			if (arrayIndex >= mBitField.Length) throw new ArgumentOutOfRangeException("The specified bit is out of bounds.", nameof(bit));
+			if (arrayIndex >= mBitField.Length) throw new ArgumentOutOfRangeException(nameof(bit), "The specified bit is out of bounds.");
 			mBitField[arrayIndex] &= ~(1u << bitIndex);
 		}
 
@@ -300,21 +306,22 @@ namespace GriffinPlus.Lib
 		/// <param name="count">Number of bits to set.</param>
 		public void SetBits(int bit, int count)
 		{
-			if (bit < 0) throw new ArgumentOutOfRangeException("The bit index must be positive.");
-			if (count < 0) throw new ArgumentOutOfRangeException("The number of bits must be positive.");
+			if (bit < 0) throw new ArgumentOutOfRangeException(nameof(bit), "The bit index must be positive.");
+			if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), "The number of bits must be positive.");
 			if (count == 0) return;
 			int startArrayIndex = bit / 32;
 			int startBitIndex = bit - startArrayIndex * 32;
 			int endArrayIndex = (bit + count) / 32;
 			int endBitIndex = bit + count - endArrayIndex * 32;
-			if (startArrayIndex >= mBitField.Length) throw new ArgumentOutOfRangeException("The start bit is out of bounds.", nameof(bit));
+			if (startArrayIndex >= mBitField.Length) throw new ArgumentOutOfRangeException(nameof(bit), "The start bit is out of bounds.");
 			if (endBitIndex == 0) endArrayIndex--;
-			if (endArrayIndex >= mBitField.Length) throw new ArgumentOutOfRangeException("The end bit is out of bounds.", nameof(count));
+			if (endArrayIndex >= mBitField.Length) throw new ArgumentOutOfRangeException(nameof(count), "The end bit is out of bounds.");
 
 			uint mask = ~0u << startBitIndex;
 			for (int i = startArrayIndex; i <= endArrayIndex; i++)
 			{
-				if (i == endArrayIndex) {
+				if (i == endArrayIndex)
+				{
 					mask &= ~(0u) >> (32 - endBitIndex);
 				}
 
@@ -330,21 +337,22 @@ namespace GriffinPlus.Lib
 		/// <param name="count">Number of bits to clear.</param>
 		public void ClearBits(int bit, int count)
 		{
-			if (bit < 0) throw new ArgumentOutOfRangeException("The bit index must be positive.");
-			if (count < 0) throw new ArgumentOutOfRangeException("The number of bits must be positive.");
+			if (bit < 0) throw new ArgumentOutOfRangeException(nameof(bit), "The bit index must be positive.");
+			if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), "The number of bits must be positive.");
 			if (count == 0) return;
 			int startArrayIndex = bit / 32;
 			int startBitIndex = bit - startArrayIndex * 32;
 			int endArrayIndex = (bit + count) / 32;
 			int endBitIndex = bit + count - endArrayIndex * 32;
-			if (startArrayIndex >= mBitField.Length) throw new ArgumentOutOfRangeException("The start bit is out of bounds.", nameof(bit));
+			if (startArrayIndex >= mBitField.Length) throw new ArgumentOutOfRangeException(nameof(bit), "The start bit is out of bounds.");
 			if (endBitIndex == 0) endArrayIndex--;
-			if (endArrayIndex >= mBitField.Length) throw new ArgumentOutOfRangeException("The end bit is out of bounds.", nameof(count));
+			if (endArrayIndex >= mBitField.Length) throw new ArgumentOutOfRangeException(nameof(count), "The end bit is out of bounds.");
 
 			uint mask = ~0u << startBitIndex;
 			for (int i = startArrayIndex; i <= endArrayIndex; i++)
 			{
-				if (i == endArrayIndex) {
+				if (i == endArrayIndex)
+				{
 					mask &= ~(0u) >> (32 - endBitIndex);
 				}
 
@@ -379,7 +387,8 @@ namespace GriffinPlus.Lib
 			unchecked
 			{
 				int hash = 0;
-				for (int i = 0; i < mBitField.Length; i++) {
+				for (int i = 0; i < mBitField.Length; i++)
+				{
 					hash ^= (int)mBitField[i];
 				}
 				return hash;
