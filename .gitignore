@@ -254,4 +254,5 @@ paket-files/
 # Griffin+ specific stuff
 _build/
 _deploy/
+_obj/
 GitVersion.yml

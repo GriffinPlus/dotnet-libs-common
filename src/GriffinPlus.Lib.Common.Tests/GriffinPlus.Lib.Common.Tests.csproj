@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net461; netcoreapp2.1</TargetFrameworks>
+		<TargetFrameworks>net461; netcoreapp2.1; netcoreapp3.1</TargetFrameworks>
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
-		<OmitDocumentationFile>true</OmitDocumentationFile>
-		<RootNamespace>UnitTests</RootNamespace>
+		<RootNamespace>GriffinPlus.Lib</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>
