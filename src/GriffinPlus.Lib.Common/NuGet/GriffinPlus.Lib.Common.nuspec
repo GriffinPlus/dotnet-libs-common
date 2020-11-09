@@ -4,10 +4,10 @@
 		<id>GriffinPlus.Lib.Common</id>
 		<version>$version$</version>
 		<authors>Sascha Falk</authors>
-		<copyright>Copyright (c) 2020 Sascha Falk</copyright>
+		<copyright>Copyright (c) 2020 Sascha Falk and Contributors</copyright>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>Very basic functionality that is frequently used in Griffin+ .NET projects.</description>
-		<licenseUrl>https://github.com/GriffinPlus/dotnet-libs-common/blob/master/LICENSE</licenseUrl>
+		<license type="expression">MIT</license>
 		<projectUrl>https://github.com/GriffinPlus/dotnet-libs-common</projectUrl>
 		<iconUrl>https://griffin.plus/img/nuget_icon.png</iconUrl>
 		<tags></tags>
