@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Events
 {
@@ -34,27 +35,29 @@ namespace GriffinPlus.Lib.Events
 		/// <summary>
 		/// A weak event handler item in the event manager.
 		/// </summary>
-		private struct Item
+		private readonly struct Item
 		{
 			public readonly SynchronizationContext SynchronizationContext;
 			public readonly WeakEventHandler<T>    Handler;
+			public readonly bool                   ScheduleAlways;
 
-			public Item(SynchronizationContext context, EventHandler<T> handler)
+			public Item(SynchronizationContext context, EventHandler<T> handler, bool scheduleAlways)
 			{
 				SynchronizationContext = context;
 				Handler = new WeakEventHandler<T>(handler);
+				ScheduleAlways = scheduleAlways;
 			}
 
 			public ItemMatchResult IsHandler(EventHandler<T> handler)
 			{
-				if (Handler.mMethod != handler.Method)
+				if (Handler.Method != handler.Method)
 				{
 					return ItemMatchResult.NoMatch;
 				}
 
-				if (Handler.mTarget != null)
+				if (Handler.Target != null)
 				{
-					var target = Handler.mTarget.Target;
+					var target = Handler.Target.Target;
 					if (target == null) return ItemMatchResult.Collected;
 					if (!ReferenceEquals(target, handler.Target)) return ItemMatchResult.NoMatch;
 				}
@@ -74,8 +77,10 @@ namespace GriffinPlus.Lib.Events
 
 		#region Class Variables
 
-		private static readonly ConditionalWeakTable<object, Dictionary<string, Item[]>> mItemsByObject = new ConditionalWeakTable<object, Dictionary<string, Item[]>>();
-		private static readonly object                                                   sSync          = new object();
+		private static readonly ConditionalWeakTable<object, Dictionary<string, Item[]>> sItemsByObject = new ConditionalWeakTable<object, Dictionary<string, Item[]>>();
+
+		// ReSharper disable once StaticMemberInGenericType
+		private static readonly object sSync = new object();
 
 		#endregion
 
@@ -85,18 +90,24 @@ namespace GriffinPlus.Lib.Events
 		/// <param name="obj">Object providing the event.</param>
 		/// <param name="eventName">Name of the event.</param>
 		/// <param name="handler">Event handler to register.</param>
-		/// <param name="context">
-		/// Synchronization context to use when calling the event handler
-		/// (<c>null</c> to execute the event handler in the context of the thread firing the event).
+		/// <param name="context">Synchronization context to use when calling the event handler (may be null).</param>
+		/// <param name="scheduleAlways">
+		/// If <paramref name="context"/> is set:
+		/// <c>true</c> to always schedule the event handler in the specified synchronization context,
+		/// <c>false</c> to schedule the event handler in the specified context only, if the thread firing the event has some other synchronization context.
+		/// If <paramref name="context"/> is <c>null</c>:
+		/// <c>true</c> to always schedule the event handler in a worker thread,
+		/// <c>false</c> to invoke the event handler in the thread that is firing the event (direct call).
 		/// </param>
 		/// <returns>Total number of registered event handlers (including the specified event handler).</returns>
 		public static int RegisterEventHandler(
 			object                 obj,
 			string                 eventName,
 			EventHandler<T>        handler,
-			SynchronizationContext context)
+			SynchronizationContext context,
+			bool                   scheduleAlways)
 		{
-			return RegisterEventHandler(obj, eventName, handler, context, false, null, null);
+			return RegisterEventHandler(obj, eventName, handler, context, scheduleAlways, false, null, null);
 		}
 
 		/// <summary>
@@ -108,6 +119,14 @@ namespace GriffinPlus.Lib.Events
 		/// <param name="context">
 		/// Synchronization context to use when calling the event handler
 		/// (<c>null</c> to execute the event handler in the context of the thread firing the event).
+		/// </param>
+		/// <param name="scheduleAlways">
+		/// If <paramref name="context"/> is set:
+		/// <c>true</c> to always schedule the event handler in the specified synchronization context,
+		/// <c>false</c> to schedule the event handler in the specified context only, if the thread firing the event has some other synchronization context.
+		/// If <paramref name="context"/> is <c>null</c>:
+		/// <c>true</c> to always schedule the event handler in a worker thread,
+		/// <c>false</c> to invoke the event handler in the thread that is firing the event (direct call).
 		/// </param>
 		/// <param name="fireImmediately">
 		/// true to register and fire the event handler immediately after registration;
@@ -121,6 +140,7 @@ namespace GriffinPlus.Lib.Events
 			string                 eventName,
 			EventHandler<T>        handler,
 			SynchronizationContext context,
+			bool                   scheduleAlways,
 			bool                   fireImmediately,
 			object                 sender,
 			T                      e)
@@ -131,25 +151,23 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				Dictionary<string, Item[]> itemsByName;
-				if (!mItemsByObject.TryGetValue(obj, out itemsByName))
+				if (!sItemsByObject.TryGetValue(obj, out var itemsByName))
 				{
 					itemsByName = new Dictionary<string, Item[]>(1);
-					mItemsByObject.Add(obj, itemsByName);
+					sItemsByObject.Add(obj, itemsByName);
 				}
 
-				Item[] items;
-				if (itemsByName.TryGetValue(eventName, out items))
+				if (itemsByName.TryGetValue(eventName, out var items))
 				{
 					newItems = new Item[items.Length + 1];
 					Array.Copy(items, newItems, items.Length);
-					newItems[items.Length] = new Item(context, handler);
+					newItems[items.Length] = new Item(context, handler, scheduleAlways);
 					itemsByName[eventName] = newItems;
 				}
 				else
 				{
 					newItems = new Item[1];
-					newItems[0] = new Item(context, handler);
+					newItems[0] = new Item(context, handler, scheduleAlways);
 					itemsByName[eventName] = newItems;
 				}
 			}
@@ -158,11 +176,13 @@ namespace GriffinPlus.Lib.Events
 			{
 				if (context != null)
 				{
-					context.Post(x => { handler(sender, e); }, null);
+					if (scheduleAlways) context.Post(_ => handler(sender, e), null);
+					else handler(sender, e);
 				}
 				else
 				{
-					handler(sender, e);
+					if (scheduleAlways) Task.Run(() => handler(sender, e));
+					else handler(sender, e);
 				}
 			}
 
@@ -185,13 +205,8 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				Item[] items;
-				Dictionary<string, Item[]> itemsByName;
-				if (!mItemsByObject.TryGetValue(obj, out itemsByName) || !itemsByName.TryGetValue(eventName, out items))
-				{
-					// specified event handler was not registered
-					return -1;
-				}
+				if (!sItemsByObject.TryGetValue(obj, out var itemsByName) || !itemsByName.TryGetValue(eventName, out var items))
+					return -1; // specified event handler was not registered
 
 				// remove specified handler from the handler list and tidy up handlers of collected objects as well
 				var newItems = new List<Item>();
@@ -214,6 +229,7 @@ namespace GriffinPlus.Lib.Events
 				if (newItems.Count == 0)
 				{
 					itemsByName.Remove(eventName);
+					if (itemsByName.Count == 0) sItemsByObject.Remove(obj);
 					if (removed) return 0;
 				}
 				else if (newItems.Count != items.Length)
@@ -228,6 +244,36 @@ namespace GriffinPlus.Lib.Events
 		}
 
 		/// <summary>
+		/// Unregisters all event handlers from the specified event.
+		/// </summary>
+		/// <param name="obj">Object providing the event.</param>
+		/// <param name="eventName">Name of the event (<c>null</c> to remove all handlers attached to events of the specified object).</param>
+		/// <returns>
+		/// true, if a least one event handler has been removed;
+		/// false, if no event handler was registered.
+		/// </returns>
+		public static bool UnregisterEventHandlers(object obj, string eventName)
+		{
+			lock (sSync)
+			{
+				if (eventName != null)
+				{
+					// abort, if there is no event handler attached to the specified event
+					if (!sItemsByObject.TryGetValue(obj, out var itemsByName) || !itemsByName.TryGetValue(eventName, out _))
+						return false;
+
+					// remove all handlers attached to the specified event
+					bool removed = itemsByName.Remove(eventName);
+					if (itemsByName.Count == 0) sItemsByObject.Remove(obj);
+					return removed;
+				}
+
+				// remove all handlers attached to events of the specified object
+				return sItemsByObject.Remove(obj);
+			}
+		}
+
+		/// <summary>
 		/// Checks whether the specified event has event handlers attached to it.
 		/// </summary>
 		/// <param name="obj">Object providing the event.</param>
@@ -237,12 +283,8 @@ namespace GriffinPlus.Lib.Events
 		{
 			lock (sSync)
 			{
-				Item[] items;
-				Dictionary<string, Item[]> itemsByName;
-				if (!mItemsByObject.TryGetValue(obj, out itemsByName) || !itemsByName.TryGetValue(eventName, out items))
-				{
+				if (!sItemsByObject.TryGetValue(obj, out var itemsByName) || !itemsByName.TryGetValue(eventName, out var items))
 					return false;
-				}
 
 				bool valid = true;
 				for (int i = 0; i < items.Length; i++)
@@ -267,6 +309,7 @@ namespace GriffinPlus.Lib.Events
 					if (newItems.Count == 0)
 					{
 						itemsByName.Remove(eventName);
+						if (itemsByName.Count == 0) sItemsByObject.Remove(obj);
 						return false;
 					}
 
@@ -290,12 +333,8 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				Item[] items;
-				Dictionary<string, Item[]> itemsByName;
-				if (!mItemsByObject.TryGetValue(obj, out itemsByName) || !itemsByName.TryGetValue(eventName, out items))
-				{
+				if (!sItemsByObject.TryGetValue(obj, out var itemsByName) || !itemsByName.TryGetValue(eventName, out var items))
 					return false;
-				}
 
 				bool valid = true;
 				for (int i = 0; i < items.Length; i++)
@@ -311,13 +350,15 @@ namespace GriffinPlus.Lib.Events
 					var newItems = new List<Item>();
 					for (int i = 0; i < items.Length; i++)
 					{
-						if (items[i].IsValid) newItems.Add(items[i]);
+						if (items[i].IsValid)
+							newItems.Add(items[i]);
 					}
 
 					// exchange handler list
 					if (newItems.Count == 0)
 					{
 						itemsByName.Remove(eventName);
+						if (itemsByName.Count == 0) sItemsByObject.Remove(obj);
 						return false;
 					}
 
@@ -346,10 +387,7 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				Dictionary<string, Item[]> itemsByName;
-				if (!mItemsByObject.TryGetValue(obj, out itemsByName)) return;
-				if (!itemsByName.TryGetValue(eventName, out items)) return;
-				items = RemoveInvalidHandlers(eventName, items, itemsByName);
+				items = CleanupAndGetHandlers(obj, eventName);
 			}
 
 			// fire event
@@ -357,11 +395,24 @@ namespace GriffinPlus.Lib.Events
 			{
 				if (item.SynchronizationContext != null)
 				{
-					item.SynchronizationContext.Post(x => { ((Item)x).Fire(sender, e); }, item);
+					// synchronization context was specified at registration
+					// => invoke the handler directly, if the current context is the same as the context at registration and scheduling is not enforced;
+					//    otherwise schedule the handler using the context specified at registration
+					if (!item.ScheduleAlways && ReferenceEquals(SynchronizationContext.Current, item.SynchronizationContext))
+					{
+						item.Fire(sender, e);
+					}
+					else
+					{
+						item.SynchronizationContext.Post(x => { ((Item)x).Fire(sender, e); }, item);
+					}
 				}
 				else
 				{
-					item.Fire(sender, e);
+					// synchronization context was not specified at registration
+					// => schedule handler in worker thread or invoke it directly
+					if (item.ScheduleAlways) Task.Run(() => item.Fire(sender, e));
+					else item.Fire(sender, e);
 				}
 			}
 		}
@@ -380,10 +431,7 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				Dictionary<string, Item[]> itemsByName;
-				if (!mItemsByObject.TryGetValue(obj, out itemsByName)) return null;
-				if (!itemsByName.TryGetValue(eventName, out items)) return null;
-				items = RemoveInvalidHandlers(eventName, items, itemsByName);
+				items = CleanupAndGetHandlers(obj, eventName);
 			}
 
 			EventHandler<T> handlers = null;
@@ -392,17 +440,30 @@ namespace GriffinPlus.Lib.Events
 			{
 				if (item.SynchronizationContext != null)
 				{
+					// synchronization context was specified at registration
+					// => invoke the handler directly, if the current context is the same as the context at registration and scheduling is not enforced;
+					//    otherwise schedule the handler using the context specified at registration
 					handlers += (sender, e) =>
 					{
-						item.SynchronizationContext.Post(x => { ((Item)x).Fire(sender, e); }, item);
+						if (!item.ScheduleAlways && ReferenceEquals(SynchronizationContext.Current, item.SynchronizationContext))
+						{
+							item.Fire(sender, e);
+						}
+						else
+						{
+							item.SynchronizationContext.Post(x => { ((Item)x).Fire(sender, e); }, item);
+						}
 					};
 				}
 				else
 				{
+					// synchronization context was not specified at registration
+					// => schedule handler in worker thread or invoke it directly
 					var itemCopy = item;
 					handlers += (sender, e) =>
 					{
-						itemCopy.Fire(sender, e);
+						if (itemCopy.ScheduleAlways) Task.Run(() => itemCopy.Fire(sender, e));
+						else itemCopy.Fire(sender, e);
 					};
 				}
 			}
@@ -413,12 +474,14 @@ namespace GriffinPlus.Lib.Events
 		/// <summary>
 		/// Checks whether registered event handlers are still valid, removes invalid handlers and returns the cleaned up handler items.
 		/// </summary>
-		/// <param name="eventName">Name of the event the handlers belong to.</param>
-		/// <param name="items">Handler items to check.</param>
-		/// <param name="itemsByName">Event name to handler items mapping (will receive the modified handler items).</param>
-		/// <returns>The cleaned up handler items.</returns>
-		private static Item[] RemoveInvalidHandlers(string eventName, Item[] items, Dictionary<string, Item[]> itemsByName)
+		/// <param name="obj">Object providing the event.</param>
+		/// <param name="eventName">Name of the event.</param>
+		/// <returns>The cleaned up handler items; null, if no handlers are left.</returns>
+		private static Item[] CleanupAndGetHandlers(object obj, string eventName)
 		{
+			if (!sItemsByObject.TryGetValue(obj, out var itemsByName)) return null;
+			if (!itemsByName.TryGetValue(eventName, out var items)) return null;
+
 			// check whether the handlers are still valid
 			List<int> itemsToRemove = null;
 			for (int i = 0; i < items.Length; i++)
@@ -431,28 +494,27 @@ namespace GriffinPlus.Lib.Events
 				}
 			}
 
-			// remove handlers that are not valid any more
-			if (itemsToRemove != null)
-			{
-				if (itemsToRemove.Count == items.Length)
-				{
-					// all handlers have to be removed
-					itemsByName.Remove(eventName);
-				}
-				else
-				{
-					// some handlers have to be removed
-					var newItems = new List<Item>(items);
-					for (int i = itemsToRemove.Count - 1; i >= 0; i--)
-					{
-						newItems.RemoveAt(itemsToRemove[i]);
-					}
+			// abort, if all handlers are still valid
+			if (itemsToRemove == null)
+				return items;
 
-					itemsByName[eventName] = newItems.ToArray();
-				}
+			// remove handlers that are not valid any more
+			if (itemsToRemove.Count == items.Length)
+			{
+				// all handlers have to be removed
+				itemsByName.Remove(eventName);
+				if (itemsByName.Count == 0) sItemsByObject.Remove(obj);
+				return null;
 			}
 
-			return items;
+			// some handlers have to be removed
+			var newItems = new List<Item>(items);
+			for (int i = itemsToRemove.Count - 1; i >= 0; i--)
+			{
+				newItems.RemoveAt(itemsToRemove[i]);
+			}
+
+			return itemsByName[eventName] = newItems.ToArray();
 		}
 	}
 

@@ -7,6 +7,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Events
 {
@@ -17,22 +18,24 @@ namespace GriffinPlus.Lib.Events
 	/// Objects firing events do not need to implement own event add/remove logic, especially when it comes to firing
 	/// events asynchronously.
 	/// </summary>
-	public static class PropertyChangedEventManager
+	static class PropertyChangedEventManager
 	{
 		#region Internal Data Types
 
 		/// <summary>
 		/// An event handler item in the event manager.
 		/// </summary>
-		private struct Item
+		private readonly struct Item
 		{
 			public readonly SynchronizationContext      SynchronizationContext;
 			public readonly PropertyChangedEventHandler Handler;
+			public readonly bool                        ScheduleAlways;
 
-			public Item(SynchronizationContext context, PropertyChangedEventHandler handler)
+			public Item(SynchronizationContext context, PropertyChangedEventHandler handler, bool scheduleAlways)
 			{
 				SynchronizationContext = context;
 				Handler = handler;
+				ScheduleAlways = scheduleAlways;
 			}
 		}
 
@@ -40,8 +43,10 @@ namespace GriffinPlus.Lib.Events
 
 		#region Class Variables
 
-		private static readonly ConditionalWeakTable<object, Item[]> mItemsByObject = new ConditionalWeakTable<object, Item[]>();
-		private static readonly object                               sSync          = new object();
+		private static readonly ConditionalWeakTable<object, Item[]> sItemsByObject =
+			new ConditionalWeakTable<object, Item[]>();
+
+		private static readonly object sSync = new object();
 
 		#endregion
 
@@ -54,13 +59,29 @@ namespace GriffinPlus.Lib.Events
 		/// Synchronization context to use when calling the event handler
 		/// (<c>null</c> to execute the event handler in the context of the thread firing the event).
 		/// </param>
+		/// <param name="scheduleAlways">
+		/// If <paramref name="context"/> is set:
+		/// <c>true</c> to always schedule the event handler in the specified synchronization context,
+		/// <c>false</c> to schedule the event handler in the specified context only, if the thread firing the event has some other synchronization context.
+		/// If <paramref name="context"/> is <c>null</c>:
+		/// <c>true</c> to always schedule the event handler in a worker thread,
+		/// <c>false</c> to invoke the event handler in the thread that is firing the event (direct call).
+		/// </param>
 		/// <returns>Total number of registered event handlers (including the specified event handler).</returns>
 		public static int RegisterEventHandler(
 			object                      obj,
 			PropertyChangedEventHandler handler,
-			SynchronizationContext      context)
+			SynchronizationContext      context,
+			bool                        scheduleAlways)
 		{
-			return RegisterEventHandler(obj, handler, context, false, null, null);
+			return RegisterEventHandler(
+				obj,
+				handler,
+				context,
+				scheduleAlways,
+				false,
+				null,
+				null);
 		}
 
 		/// <summary>
@@ -72,6 +93,14 @@ namespace GriffinPlus.Lib.Events
 		/// <param name="context">
 		/// Synchronization context to use when calling the event handler
 		/// (<c>null</c> to execute the event handler in the context of the thread firing the event).
+		/// </param>
+		/// <param name="scheduleAlways">
+		/// If <paramref name="context"/> is set:
+		/// <c>true</c> to always schedule the event handler in the specified synchronization context,
+		/// <c>false</c> to schedule the event handler in the specified context only, if the thread firing the event has some other synchronization context.
+		/// If <paramref name="context"/> is <c>null</c>:
+		/// <c>true</c> to always schedule the event handler in a worker thread,
+		/// <c>false</c> to invoke the event handler in the thread that is firing the event (direct call).
 		/// </param>
 		/// <param name="fireImmediately">
 		/// true to register and fire the event handler immediately after registration;
@@ -90,6 +119,7 @@ namespace GriffinPlus.Lib.Events
 			object                      obj,
 			PropertyChangedEventHandler handler,
 			SynchronizationContext      context,
+			bool                        scheduleAlways,
 			bool                        fireImmediately,
 			object                      sender,
 			string                      propertyName)
@@ -98,20 +128,19 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				Item[] items;
-				if (mItemsByObject.TryGetValue(obj, out items))
+				if (sItemsByObject.TryGetValue(obj, out var items))
 				{
 					newItems = new Item[items.Length + 1];
 					Array.Copy(items, newItems, items.Length);
-					newItems[items.Length] = new Item(context, handler);
-					mItemsByObject.Remove(obj);
-					mItemsByObject.Add(obj, newItems);
+					newItems[items.Length] = new Item(context, handler, scheduleAlways);
+					sItemsByObject.Remove(obj);
+					sItemsByObject.Add(obj, newItems);
 				}
 				else
 				{
-					newItems = new[] { new Item(context, handler) };
-					mItemsByObject.Remove(obj);
-					mItemsByObject.Add(obj, newItems);
+					newItems = new[] { new Item(context, handler, scheduleAlways) };
+					sItemsByObject.Remove(obj);
+					sItemsByObject.Add(obj, newItems);
 				}
 			}
 
@@ -119,11 +148,14 @@ namespace GriffinPlus.Lib.Events
 			{
 				if (context != null)
 				{
-					context.Post(x => { handler(sender, new PropertyChangedEventArgs(propertyName)); }, null);
+					if (scheduleAlways)
+						context.Post(_ => handler(sender, new PropertyChangedEventArgs(propertyName)), null);
+					else handler(sender, new PropertyChangedEventArgs(propertyName));
 				}
 				else
 				{
-					handler(sender, new PropertyChangedEventArgs(propertyName));
+					if (scheduleAlways) Task.Run(() => handler(sender, new PropertyChangedEventArgs(propertyName)));
+					else handler(sender, new PropertyChangedEventArgs(propertyName));
 				}
 			}
 
@@ -131,7 +163,7 @@ namespace GriffinPlus.Lib.Events
 		}
 
 		/// <summary>
-		/// Unregisters an event handler from the specified event.
+		/// Unregisters an event handler from the event.
 		/// </summary>
 		/// <param name="obj">Object providing the event.</param>
 		/// <param name="handler">Event handler to unregister.</param>
@@ -143,12 +175,8 @@ namespace GriffinPlus.Lib.Events
 		{
 			lock (sSync)
 			{
-				Item[] items;
-				if (!mItemsByObject.TryGetValue(obj, out items))
-				{
-					// specified event handler was not registered
-					return -1;
-				}
+				if (!sItemsByObject.TryGetValue(obj, out var items))
+					return -1; // specified event handler was not registered
 
 				for (int i = 0; i < items.Length; i++)
 				{
@@ -163,18 +191,34 @@ namespace GriffinPlus.Lib.Events
 
 						if (newItems.Length > 0)
 						{
-							mItemsByObject.Remove(obj);
-							mItemsByObject.Add(obj, newItems);
+							sItemsByObject.Remove(obj);
+							sItemsByObject.Add(obj, newItems);
 							return newItems.Length;
 						}
 
-						mItemsByObject.Remove(obj);
+						sItemsByObject.Remove(obj);
 						return 0;
 					}
 				}
 
 				// specified event handler was not registered
 				return -1;
+			}
+		}
+
+		/// <summary>
+		/// Unregisters all event handlers associated with the specified object.
+		/// </summary>
+		/// <param name="obj">Object providing the event.</param>
+		/// <returns>
+		/// true, if a least one event handler has been removed;
+		/// false, if no event handler was registered.
+		/// </returns>
+		public static bool UnregisterEventHandlers(object obj)
+		{
+			lock (sSync)
+			{
+				return sItemsByObject.Remove(obj);
 			}
 		}
 
@@ -187,11 +231,8 @@ namespace GriffinPlus.Lib.Events
 		{
 			lock (sSync)
 			{
-				Item[] items;
-				if (!mItemsByObject.TryGetValue(obj, out items))
-				{
+				if (!sItemsByObject.TryGetValue(obj, out _))
 					return false;
-				}
 
 				return true;
 			}
@@ -212,7 +253,8 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				if (!mItemsByObject.TryGetValue(obj, out items)) return;
+				if (!sItemsByObject.TryGetValue(obj, out items))
+					return;
 			}
 
 			var e = new PropertyChangedEventArgs(propertyName);
@@ -220,52 +262,24 @@ namespace GriffinPlus.Lib.Events
 			{
 				if (item.SynchronizationContext != null)
 				{
-					item.SynchronizationContext.Post(x => { ((Item)x).Handler(obj, e); }, item);
+					// synchronization context was specified at registration
+					// => invoke the handler directly, if the current context is the same as the context at registration and scheduling is not enforced;
+					//    otherwise schedule the handler using the context specified at registration
+					if (!item.ScheduleAlways && ReferenceEquals(SynchronizationContext.Current, item.SynchronizationContext))
+					{
+						item.Handler(obj, e);
+					}
+					else
+					{
+						item.SynchronizationContext.Post(x => ((Item)x).Handler(obj, e), item);
+					}
 				}
 				else
 				{
-					item.Handler(obj, e);
-				}
-			}
-		}
-
-		/// <summary>
-		/// Fires the <see cref="INotifyPropertyChanged.PropertyChanged"/> event invoking all event handlers that
-		/// are attached to it (event handlers that are associated with a synchronization context are executed in
-		/// the thread the synchronization context belongs to).
-		/// </summary>
-		/// <param name="obj">
-		/// Object providing the event (is passed as the 'sender' object to the event handler as well).
-		/// </param>
-		/// <param name="propertyName">Name of the property that has changed.</param>
-		/// <param name="objectToKeepAlive">
-		/// Some object to keep alive until all handlers have run (useful when working with weak references).
-		/// </param>
-		public static void FireEvent<T>(object obj, string propertyName, T objectToKeepAlive) where T : class
-		{
-			Item[] items;
-
-			lock (sSync)
-			{
-				if (!mItemsByObject.TryGetValue(obj, out items)) return;
-			}
-
-			var e = new PropertyChangedEventArgs(propertyName);
-			foreach (var item in items)
-			{
-				if (item.SynchronizationContext != null)
-				{
-					item.SynchronizationContext.Post(
-						x =>
-						{
-							((Item)x).Handler(obj, e);
-							GC.KeepAlive(objectToKeepAlive);
-						},
-						item);
-				}
-				else
-				{
-					item.Handler(obj, e);
+					// synchronization context was not specified at registration
+					// => schedule handler in worker thread or invoke it directly
+					if (item.ScheduleAlways) Task.Run(() => item.Handler(obj, e));
+					else item.Handler(obj, e);
 				}
 			}
 		}
@@ -283,10 +297,8 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				if (!mItemsByObject.TryGetValue(obj, out items))
-				{
+				if (!sItemsByObject.TryGetValue(obj, out items))
 					return null;
-				}
 			}
 
 			PropertyChangedEventHandler handlers = null;
@@ -297,7 +309,17 @@ namespace GriffinPlus.Lib.Events
 				{
 					handlers += (sender, e) =>
 					{
-						item.SynchronizationContext.Post(x => { ((Item)x).Handler(sender, e); }, item);
+						// synchronization context was specified at registration
+						// => invoke the handler directly, if the current context is the same as the context at registration and scheduling is not enforced;
+						//    otherwise schedule the handler using the context specified at registration
+						if (!item.ScheduleAlways && ReferenceEquals(SynchronizationContext.Current, item.SynchronizationContext))
+						{
+							item.Handler(sender, e);
+						}
+						else
+						{
+							item.SynchronizationContext.Post(x => ((Item)x).Handler(sender, e), item);
+						}
 					};
 				}
 				else
@@ -305,7 +327,10 @@ namespace GriffinPlus.Lib.Events
 					var itemCopy = item;
 					handlers += (sender, e) =>
 					{
-						itemCopy.Handler(sender, e);
+						// synchronization context was not specified at registration
+						// => schedule handler in worker thread or invoke it directly
+						if (itemCopy.ScheduleAlways) Task.Run(() => itemCopy.Handler(sender, e));
+						else itemCopy.Handler(sender, e);
 					};
 				}
 			}
