@@ -5,6 +5,7 @@
 
 namespace GriffinPlus.Lib
 {
+
 	/// <summary>
 	/// Some extension methods for the <see cref="System.UInt16"/> struct.
 	/// </summary>
@@ -23,4 +24,5 @@ namespace GriffinPlus.Lib
 			return difference <= tolerance;
 		}
 	}
+
 }

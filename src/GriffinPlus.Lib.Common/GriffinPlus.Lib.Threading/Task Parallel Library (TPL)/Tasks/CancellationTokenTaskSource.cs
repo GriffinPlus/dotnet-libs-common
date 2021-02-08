@@ -33,6 +33,7 @@ using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Holds the task for a cancellation token, as well as the token registration.
 	/// The registration is disposed when this instance is disposed.
@@ -65,7 +66,7 @@ namespace GriffinPlus.Lib.Threading
 		/// <summary>
 		/// Gets the task for the source cancellation token.
 		/// </summary>
-		public Task<T> Task { get; private set; }
+		public Task<T> Task { get; }
 
 		/// <summary>
 		/// Disposes the cancellation token registration, if any.
@@ -76,4 +77,5 @@ namespace GriffinPlus.Lib.Threading
 			mRegistration?.Dispose();
 		}
 	}
+
 }

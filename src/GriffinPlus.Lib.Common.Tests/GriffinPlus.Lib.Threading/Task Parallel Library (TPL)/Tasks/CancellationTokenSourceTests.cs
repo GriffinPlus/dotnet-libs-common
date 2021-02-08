@@ -28,10 +28,12 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System.Threading;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class CancellationTokenTaskSourceTests
 	{
 		[Fact]
@@ -39,7 +41,10 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var token = new CancellationToken(true);
 			using (var source = new CancellationTokenTaskSource<object>(token))
+			{
 				Assert.True(source.Task.IsCanceled);
+			}
 		}
 	}
+
 }

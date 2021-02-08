@@ -7,17 +7,17 @@ using System;
 
 namespace GriffinPlus.Lib.Conversion
 {
+
 	/// <summary>
 	/// A converter that can translate a <see cref="System.SByte"/> to a string and vice versa.
 	/// </summary>
-	public class Converter_SByte : Converter_Base<SByte>
+	public class Converter_SByte : Converter_Base<sbyte>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Converter_SByte"/> class.
 		/// </summary>
 		public Converter_SByte()
 		{
-
 		}
 
 		/// <summary>
@@ -31,8 +31,8 @@ namespace GriffinPlus.Lib.Conversion
 		/// <returns>The created object.</returns>
 		public override object ConvertStringToObject(string s, IFormatProvider provider = null)
 		{
-			return SByte.Parse(s, provider);
+			return sbyte.Parse(s, provider);
 		}
-
 	}
+
 }

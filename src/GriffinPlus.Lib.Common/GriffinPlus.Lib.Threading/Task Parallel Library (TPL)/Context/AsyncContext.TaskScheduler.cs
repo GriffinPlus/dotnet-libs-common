@@ -28,10 +28,12 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public sealed partial class AsyncContext
 	{
 		/// <summary>
@@ -58,7 +60,7 @@ namespace GriffinPlus.Lib.Threading
 			/// scheduler waiting to be executed.
 			/// </summary>
 			/// <returns>An enumerable that allows traversal of tasks currently queued to this scheduler.</returns>
-			[System.Diagnostics.DebuggerNonUserCode]
+			[DebuggerNonUserCode]
 			protected override IEnumerable<Task> GetScheduledTasks()
 			{
 				return mContext.mQueue.GetScheduledTasks();
@@ -84,20 +86,18 @@ namespace GriffinPlus.Lib.Threading
 			/// false, if the task is known not to have been queued, and this call is being made in order to execute the task inline without queuing it.
 			/// </param>
 			/// <returns>
-			/// true, if the task was executed inline; otherwise false.</returns>
+			/// true, if the task was executed inline; otherwise false.
+			/// </returns>
 			/// <exception cref="System.InvalidOperationException">The <paramref name="task"/> was already executed.</exception>
 			protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued)
 			{
-				return (AsyncContext.Current == mContext) && TryExecuteTask(task);
+				return AsyncContext.Current == mContext && TryExecuteTask(task);
 			}
 
 			/// <summary>
 			/// Gets the maximum maximum concurrency level this <see cref="System.Threading.Tasks.TaskScheduler"/> is able to support.
 			/// </summary>
-			public override int MaximumConcurrencyLevel
-			{
-				get { return 1; }
-			}
+			public override int MaximumConcurrencyLevel => 1;
 
 			/// <summary>
 			/// Exposes the base <see cref="TaskScheduler.TryExecuteTask"/> method.
@@ -109,4 +109,5 @@ namespace GriffinPlus.Lib.Threading
 			}
 		}
 	}
+
 }

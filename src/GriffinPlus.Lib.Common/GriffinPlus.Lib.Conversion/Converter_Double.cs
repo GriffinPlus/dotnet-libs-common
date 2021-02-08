@@ -7,17 +7,17 @@ using System;
 
 namespace GriffinPlus.Lib.Conversion
 {
+
 	/// <summary>
 	/// A converter that can translate a <see cref="System.Double"/> to a string and vice versa.
 	/// </summary>
-	public class Converter_Double : Converter_Base<Double>
+	public class Converter_Double : Converter_Base<double>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Converter_Double"/> class.
 		/// </summary>
 		public Converter_Double()
 		{
-
 		}
 
 		/// <summary>
@@ -31,8 +31,8 @@ namespace GriffinPlus.Lib.Conversion
 		/// <returns>The created object.</returns>
 		public override object ConvertStringToObject(string s, IFormatProvider provider = null)
 		{
-			return Double.Parse(s, provider);
+			return double.Parse(s, provider);
 		}
-
 	}
+
 }

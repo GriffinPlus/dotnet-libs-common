@@ -7,17 +7,17 @@ using System;
 
 namespace GriffinPlus.Lib.Conversion
 {
+
 	/// <summary>
 	/// A converter that can translate a <see cref="System.Boolean"/> to a string and vice versa.
 	/// </summary>
-	public class Converter_Boolean : Converter_Base<Boolean>
+	public class Converter_Boolean : Converter_Base<bool>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Converter_Boolean"/> class.
 		/// </summary>
 		public Converter_Boolean()
 		{
-
 		}
 
 		/// <summary>
@@ -33,6 +33,6 @@ namespace GriffinPlus.Lib.Conversion
 		{
 			return bool.Parse(s);
 		}
-
 	}
+
 }

@@ -32,6 +32,7 @@ using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// The source (controller) of a "pause token", which can be used to cooperatively pause and unpause operations.
 	/// </summary>
@@ -68,7 +69,7 @@ namespace GriffinPlus.Lib.Threading
 	/// <summary>
 	/// A type that allows an operation to be cooperatively paused.
 	/// </summary>
-	public struct PauseToken
+	public readonly struct PauseToken
 	{
 		/// <summary>
 		/// The manual-reset-event that manages the "pause" logic, or <c>null</c> if this token can never be paused.
@@ -98,7 +99,7 @@ namespace GriffinPlus.Lib.Threading
 		/// The cancellation token to observe.
 		/// If the token is already canceled, this method will first check if the pause token is unpaused, and will return without an exception in that case.
 		/// </param>
-		public Task WaitWhilePausedAsync(CancellationToken token = default(CancellationToken))
+		public Task WaitWhilePausedAsync(CancellationToken token = default)
 		{
 			if (mManualResetEvent == null)
 				return TaskConstants.Completed;
@@ -126,4 +127,5 @@ namespace GriffinPlus.Lib.Threading
 			mManualResetEvent?.Wait(token);
 		}
 	}
+
 }

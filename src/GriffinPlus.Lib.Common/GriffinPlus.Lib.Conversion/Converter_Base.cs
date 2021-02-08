@@ -8,6 +8,7 @@ using System.Diagnostics;
 
 namespace GriffinPlus.Lib.Conversion
 {
+
 	/// <summary>
 	/// Base class for converters implementing common parts of a converter.
 	/// </summary>
@@ -17,10 +18,7 @@ namespace GriffinPlus.Lib.Conversion
 		/// <summary>
 		/// Gets the type of the value the current converter is working with.
 		/// </summary>
-		public Type Type
-		{
-			get { return typeof(T); }
-		}
+		public Type Type => typeof(T);
 
 		/// <summary>
 		/// Converts an object to its string representation.
@@ -30,16 +28,12 @@ namespace GriffinPlus.Lib.Conversion
 		/// A format provider that controls how the conversion is done
 		/// (null to use the current thread's culture to determine the format).
 		/// </param>
-		/// <returns>The string represention of the object.</returns>
+		/// <returns>The string representation of the object.</returns>
 		public virtual string ConvertObjectToString(object obj, IFormatProvider provider = null)
 		{
 			Debug.Assert(obj.GetType() == typeof(T));
-
-			if (provider != null) {
-				return string.Format(provider, "{0}", obj);
-			} else {
-				return string.Format("{0}", obj);
-			}
+			if (provider != null) return string.Format(provider, "{0}", obj);
+			return $"{obj}";
 		}
 
 		/// <summary>
@@ -53,4 +47,5 @@ namespace GriffinPlus.Lib.Conversion
 		/// <returns>The created object.</returns>
 		public abstract object ConvertStringToObject(string s, IFormatProvider provider = null);
 	}
+
 }

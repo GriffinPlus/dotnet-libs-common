@@ -28,10 +28,12 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System.Threading.Tasks;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class TaskFactoryExtensionsTests
 	{
 		[Fact]
@@ -41,10 +43,11 @@ namespace GriffinPlus.Lib.Threading
 			var factory = new TaskFactory(scheduler);
 			TaskScheduler result = null;
 
-			var task = factory.Run(() =>
-			{
-				result = TaskScheduler.Current;
-			});
+			var task = factory.Run(
+				() =>
+				{
+					result = TaskScheduler.Current;
+				});
 			await task;
 
 			Assert.Same(scheduler, result);
@@ -59,16 +62,19 @@ namespace GriffinPlus.Lib.Threading
 			Task task = null;
 			TaskScheduler result = null;
 
-			await testFactory.StartNew(async () =>
-			{
-				Assert.Same(scheduler, TaskScheduler.Current);
-				Assert.Null(Task.Factory.Scheduler);
-				task = Task.Factory.Run(() =>
-				{
-					result = TaskScheduler.Current;
-				});
-				await task;
-			}).Unwrap();
+			await testFactory.StartNew(
+					async () =>
+					{
+						Assert.Same(scheduler, TaskScheduler.Current);
+						Assert.Null(Task.Factory.Scheduler);
+						task = Task.Factory.Run(
+							() =>
+							{
+								result = TaskScheduler.Current;
+							});
+						await task;
+					})
+				.Unwrap();
 
 			Assert.Same(TaskScheduler.Default, result);
 			Assert.True((task.CreationOptions & TaskCreationOptions.DenyChildAttach) == TaskCreationOptions.DenyChildAttach);
@@ -95,13 +101,15 @@ namespace GriffinPlus.Lib.Threading
 			Task<TaskScheduler> task = null;
 			TaskScheduler result = null;
 
-			await testFactory.StartNew(async () =>
-			{
-				Assert.Same(scheduler, TaskScheduler.Current);
-				Assert.Null(Task.Factory.Scheduler);
-				task = Task.Factory.Run(() => TaskScheduler.Current);
-				result = await task;
-			}).Unwrap();
+			await testFactory.StartNew(
+					async () =>
+					{
+						Assert.Same(scheduler, TaskScheduler.Current);
+						Assert.Null(Task.Factory.Scheduler);
+						task = Task.Factory.Run(() => TaskScheduler.Current);
+						result = await task;
+					})
+				.Unwrap();
 
 			Assert.Same(TaskScheduler.Default, result);
 			Assert.True((task.CreationOptions & TaskCreationOptions.DenyChildAttach) == TaskCreationOptions.DenyChildAttach);
@@ -115,12 +123,13 @@ namespace GriffinPlus.Lib.Threading
 			TaskScheduler result = null;
 			TaskScheduler resultAfterAwait = null;
 
-			var task = factory.Run(async () =>
-			{
-				result = TaskScheduler.Current;
-				await Task.Yield();
-				resultAfterAwait = TaskScheduler.Current;
-			});
+			var task = factory.Run(
+				async () =>
+				{
+					result = TaskScheduler.Current;
+					await Task.Yield();
+					resultAfterAwait = TaskScheduler.Current;
+				});
 			await task;
 
 			Assert.Same(scheduler, result);
@@ -135,17 +144,20 @@ namespace GriffinPlus.Lib.Threading
 			TaskScheduler result = null;
 			TaskScheduler resultAfterAwait = null;
 
-			await testFactory.StartNew(async () =>
-			{
-				Assert.Same(scheduler, TaskScheduler.Current);
-				Assert.Null(Task.Factory.Scheduler);
-				await Task.Factory.Run(async () =>
-				{
-					result = TaskScheduler.Current;
-					await Task.Yield();
-					resultAfterAwait = TaskScheduler.Current;
-				});
-			}).Unwrap();
+			await testFactory.StartNew(
+					async () =>
+					{
+						Assert.Same(scheduler, TaskScheduler.Current);
+						Assert.Null(Task.Factory.Scheduler);
+						await Task.Factory.Run(
+							async () =>
+							{
+								result = TaskScheduler.Current;
+								await Task.Yield();
+								resultAfterAwait = TaskScheduler.Current;
+							});
+					})
+				.Unwrap();
 
 			Assert.Same(TaskScheduler.Default, result);
 			Assert.Same(TaskScheduler.Default, resultAfterAwait);
@@ -158,12 +170,13 @@ namespace GriffinPlus.Lib.Threading
 			var factory = new TaskFactory(scheduler);
 			TaskScheduler result = null;
 
-			var resultAfterAwait = await factory.Run(async () =>
-			{
-				result = TaskScheduler.Current;
-				await Task.Yield();
-				return TaskScheduler.Current;
-			});
+			var resultAfterAwait = await factory.Run(
+				                       async () =>
+				                       {
+					                       result = TaskScheduler.Current;
+					                       await Task.Yield();
+					                       return TaskScheduler.Current;
+				                       });
 
 			Assert.Same(scheduler, result);
 			Assert.Same(scheduler, resultAfterAwait);
@@ -177,20 +190,24 @@ namespace GriffinPlus.Lib.Threading
 			TaskScheduler result = null;
 			TaskScheduler resultAfterAwait = null;
 
-			await testFactory.StartNew(async () =>
-			{
-				Assert.Same(scheduler, TaskScheduler.Current);
-				Assert.Null(Task.Factory.Scheduler);
-				resultAfterAwait = await Task.Factory.Run(async () =>
-				{
-					result = TaskScheduler.Current;
-					await Task.Yield();
-					return TaskScheduler.Current;
-				});
-			}).Unwrap();
+			await testFactory.StartNew(
+					async () =>
+					{
+						Assert.Same(scheduler, TaskScheduler.Current);
+						Assert.Null(Task.Factory.Scheduler);
+						resultAfterAwait = await Task.Factory.Run(
+							                   async () =>
+							                   {
+								                   result = TaskScheduler.Current;
+								                   await Task.Yield();
+								                   return TaskScheduler.Current;
+							                   });
+					})
+				.Unwrap();
 
 			Assert.Same(TaskScheduler.Default, result);
 			Assert.Same(TaskScheduler.Default, resultAfterAwait);
 		}
 	}
+
 }

@@ -7,17 +7,17 @@ using System;
 
 namespace GriffinPlus.Lib.Conversion
 {
+
 	/// <summary>
 	/// A converter that can translate a <see cref="System.Int16"/> to a string and vice versa.
 	/// </summary>
-	public class Converter_Int16 : Converter_Base<Int16>
+	public class Converter_Int16 : Converter_Base<short>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Converter_Int16"/> class.
 		/// </summary>
 		public Converter_Int16()
 		{
-
 		}
 
 		/// <summary>
@@ -31,8 +31,8 @@ namespace GriffinPlus.Lib.Conversion
 		/// <returns>The created object.</returns>
 		public override object ConvertStringToObject(string s, IFormatProvider provider = null)
 		{
-			return Int16.Parse(s, provider);
+			return short.Parse(s, provider);
 		}
-
 	}
+
 }

@@ -32,6 +32,7 @@ using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Provides extension methods for task factories.
 	/// </summary>
@@ -88,10 +89,11 @@ namespace GriffinPlus.Lib.Threading
 			if (action == null) throw new ArgumentNullException(nameof(action));
 
 			return @this.StartNew(
-				action,
-				@this.CancellationToken,
-				@this.CreationOptions | TaskCreationOptions.DenyChildAttach,
-				@this.Scheduler ?? TaskScheduler.Default).Unwrap();
+					action,
+					@this.CancellationToken,
+					@this.CreationOptions | TaskCreationOptions.DenyChildAttach,
+					@this.Scheduler ?? TaskScheduler.Default)
+				.Unwrap();
 		}
 
 		/// <summary>
@@ -107,10 +109,12 @@ namespace GriffinPlus.Lib.Threading
 			if (action == null) throw new ArgumentNullException(nameof(action));
 
 			return @this.StartNew(
-				action,
-				@this.CancellationToken,
-				@this.CreationOptions | TaskCreationOptions.DenyChildAttach,
-				@this.Scheduler ?? TaskScheduler.Default).Unwrap();
+					action,
+					@this.CancellationToken,
+					@this.CreationOptions | TaskCreationOptions.DenyChildAttach,
+					@this.Scheduler ?? TaskScheduler.Default)
+				.Unwrap();
 		}
 	}
+
 }

@@ -27,12 +27,15 @@
 //     SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using GriffinPlus.Lib.Tests;
 using System.Threading.Tasks;
+
+using GriffinPlus.Lib.Tests;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class AsyncConditionVariableTests
 	{
 		[Fact]
@@ -55,13 +58,14 @@ namespace GriffinPlus.Lib.Threading
 			await mutex.LockAsync();
 			var task = cv.WaitAsync();
 
-			await Task.Run(async () =>
-			{
-				using (await mutex.LockAsync())
+			await Task.Run(
+				async () =>
 				{
-					cv.Notify();
-				}
-			});
+					using (await mutex.LockAsync())
+					{
+						cv.Notify();
+					}
+				});
 			await task;
 		}
 
@@ -70,13 +74,14 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var mutex = new AsyncLock();
 			var cv = new AsyncConditionVariable(mutex);
-			await Task.Run(async () =>
-			{
-				using (await mutex.LockAsync())
+			await Task.Run(
+				async () =>
 				{
-					cv.Notify();
-				}
-			});
+					using (await mutex.LockAsync())
+					{
+						cv.Notify();
+					}
+				});
 
 			await mutex.LockAsync();
 			var task = cv.WaitAsync();
@@ -96,13 +101,14 @@ namespace GriffinPlus.Lib.Threading
 			var task2 = cv.WaitAsync();
 			var ___ = task2.ContinueWith(_ => key2.Dispose());
 
-			await Task.Run(async () =>
-			{
-				using (await mutex.LockAsync())
+			await Task.Run(
+				async () =>
 				{
-					cv.NotifyAll();
-				}
-			});
+					using (await mutex.LockAsync())
+					{
+						cv.NotifyAll();
+					}
+				});
 
 			await task1;
 			await task2;
@@ -119,13 +125,14 @@ namespace GriffinPlus.Lib.Threading
 			await mutex.LockAsync();
 			var task2 = cv.WaitAsync();
 
-			await Task.Run(async () =>
-			{
-				using (await mutex.LockAsync())
+			await Task.Run(
+				async () =>
 				{
-					cv.Notify();
-				}
-			});
+					using (await mutex.LockAsync())
+					{
+						cv.Notify();
+					}
+				});
 
 			await task1;
 			await AsyncAssert.DoesNotCompleteAsync(task2);
@@ -139,4 +146,5 @@ namespace GriffinPlus.Lib.Threading
 			Assert.NotEqual(0, cv.Id);
 		}
 	}
+
 }

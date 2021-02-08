@@ -7,17 +7,17 @@ using System;
 
 namespace GriffinPlus.Lib.Conversion
 {
+
 	/// <summary>
 	/// A converter that can translate a <see cref="System.UInt64"/> to a string and vice versa.
 	/// </summary>
-	public class Converter_UInt64 : Converter_Base<UInt64>
+	public class Converter_UInt64 : Converter_Base<ulong>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Converter_UInt64"/> class.
 		/// </summary>
 		public Converter_UInt64()
 		{
-
 		}
 
 		/// <summary>
@@ -31,7 +31,8 @@ namespace GriffinPlus.Lib.Conversion
 		/// <returns>The created object.</returns>
 		public override object ConvertStringToObject(string s, IFormatProvider provider = null)
 		{
-			return UInt64.Parse(s, provider);
+			return ulong.Parse(s, provider);
 		}
 	}
+
 }

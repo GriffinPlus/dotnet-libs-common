@@ -8,18 +8,18 @@ using System.Diagnostics;
 
 namespace GriffinPlus.Lib.Conversion
 {
+
 	/// <summary>
 	/// A converter that can translate an array of <see cref="System.Byte"/> to a string and vice versa.
 	/// A byte array is encoded using BASE64 encoding.
 	/// </summary>
-	public class Converter_ByteArray : Converter_Base<Byte[]>
+	public class Converter_ByteArray : Converter_Base<byte[]>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Converter_ByteArray"/> class.
 		/// </summary>
 		public Converter_ByteArray()
 		{
-
 		}
 
 		/// <summary>
@@ -30,7 +30,7 @@ namespace GriffinPlus.Lib.Conversion
 		/// A format provider that controls how the conversion is done
 		/// (null to use the current thread's culture to determine the format).
 		/// </param>
-		/// <returns>The string represention of the object.</returns>
+		/// <returns>The string representation of the object.</returns>
 		public override string ConvertObjectToString(object obj, IFormatProvider provider = null)
 		{
 			Debug.Assert(obj.GetType() == typeof(byte[]));
@@ -50,6 +50,6 @@ namespace GriffinPlus.Lib.Conversion
 		{
 			return Convert.FromBase64String(s);
 		}
-
 	}
+
 }

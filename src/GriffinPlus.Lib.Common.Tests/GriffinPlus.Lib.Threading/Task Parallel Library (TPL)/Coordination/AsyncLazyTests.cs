@@ -30,12 +30,14 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Xunit;
 
 #pragma warning disable CS0162
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class AsyncLazyTests
 	{
 		[Fact]
@@ -53,8 +55,8 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task AsyncLazy_WithCallDirectFlag_CallsFuncDirectly()
 		{
-			var testThread = Thread.CurrentThread.ManagedThreadId;
-			var funcThread = testThread + 1;
+			int testThread = Thread.CurrentThread.ManagedThreadId;
+			int funcThread = testThread + 1;
 
 			Task<int> Func()
 			{
@@ -72,8 +74,8 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task AsyncLazy_ByDefault_CallsFuncOnThreadPool()
 		{
-			var testThread = Thread.CurrentThread.ManagedThreadId;
-			var funcThread = testThread;
+			int testThread = Thread.CurrentThread.ManagedThreadId;
+			int funcThread = testThread;
 
 			Task<int> Func()
 			{
@@ -116,7 +118,7 @@ namespace GriffinPlus.Lib.Threading
 
 			var lazy = new AsyncLazy<int>(Func);
 
-			var result = await lazy;
+			int result = await lazy;
 			Assert.Equal(13, result);
 		}
 
@@ -141,7 +143,7 @@ namespace GriffinPlus.Lib.Threading
 			Assert.False(task1.IsCompleted);
 			Assert.False(task2.IsCompleted);
 			tcs.SetResult(null);
-			var results = await Task.WhenAll(task1, task2);
+			int[] results = await Task.WhenAll(task1, task2);
 			Assert.Equal(new[] { 13, 13 }, results);
 			Assert.Equal(1, invokeCount);
 		}
@@ -215,4 +217,5 @@ namespace GriffinPlus.Lib.Threading
 			Assert.NotEqual(0, lazy.Id);
 		}
 	}
+
 }

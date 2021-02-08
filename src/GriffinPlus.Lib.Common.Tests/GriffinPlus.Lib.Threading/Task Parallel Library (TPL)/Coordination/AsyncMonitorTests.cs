@@ -29,12 +29,14 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+
 using Xunit;
 
 // ReSharper disable file AccessToModifiedClosure
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class AsyncMonitorUnitTests
 	{
 		[Fact]
@@ -53,14 +55,15 @@ namespace GriffinPlus.Lib.Threading
 			var task1HasLock = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 			var task1Continue = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 
-			var unused = Task.Run(async () =>
-			{
-				using (await monitor.EnterAsync())
+			var unused = Task.Run(
+				async () =>
 				{
-					task1HasLock.SetResult(null);
-					await task1Continue.Task;
-				}
-			});
+					using (await monitor.EnterAsync())
+					{
+						task1HasLock.SetResult(null);
+						await task1Continue.Task;
+					}
+				});
 			await task1HasLock.Task;
 
 			var lockTask = monitor.EnterAsync().AsTask();
@@ -76,35 +79,38 @@ namespace GriffinPlus.Lib.Threading
 			int completed = 0;
 			var task1Ready = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 			var task2Ready = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
-			var task1 = Task.Run(async () =>
-			{
-				using (await monitor.EnterAsync())
+			var task1 = Task.Run(
+				async () =>
 				{
-					var waitTask1 = monitor.WaitAsync();
-					task1Ready.SetResult(null);
-					await waitTask1;
-					Interlocked.Increment(ref completed);
-				}
-			});
+					using (await monitor.EnterAsync())
+					{
+						var waitTask1 = monitor.WaitAsync();
+						task1Ready.SetResult(null);
+						await waitTask1;
+						Interlocked.Increment(ref completed);
+					}
+				});
 			await task1Ready.Task;
-			var task2 = Task.Run(async () =>
-			{
-				using (await monitor.EnterAsync())
+			var task2 = Task.Run(
+				async () =>
 				{
-					var waitTask2 = monitor.WaitAsync();
-					task2Ready.SetResult(null);
-					await waitTask2;
-					Interlocked.Increment(ref completed);
-				}
-			});
+					using (await monitor.EnterAsync())
+					{
+						var waitTask2 = monitor.WaitAsync();
+						task2Ready.SetResult(null);
+						await waitTask2;
+						Interlocked.Increment(ref completed);
+					}
+				});
 			await task2Ready.Task;
 
 			using (await monitor.EnterAsync())
 			{
 				monitor.Pulse();
 			}
+
 			await Task.WhenAny(task1, task2);
-			var result = Interlocked.CompareExchange(ref completed, 0, 0);
+			int result = Interlocked.CompareExchange(ref completed, 0, 0);
 
 			Assert.Equal(1, result);
 		}
@@ -117,28 +123,30 @@ namespace GriffinPlus.Lib.Threading
 			var task1Ready = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 			var task2Ready = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 			Task waitTask1;
-			var task1 = Task.Run(async () =>
-			{
-				using (await monitor.EnterAsync())
+			var task1 = Task.Run(
+				async () =>
 				{
-					waitTask1 = monitor.WaitAsync();
-					task1Ready.SetResult(null);
-					await waitTask1;
-					Interlocked.Increment(ref completed);
-				}
-			});
+					using (await monitor.EnterAsync())
+					{
+						waitTask1 = monitor.WaitAsync();
+						task1Ready.SetResult(null);
+						await waitTask1;
+						Interlocked.Increment(ref completed);
+					}
+				});
 			await task1Ready.Task;
 			Task waitTask2;
-			var task2 = Task.Run(async () =>
-			{
-				using (await monitor.EnterAsync())
+			var task2 = Task.Run(
+				async () =>
 				{
-					waitTask2 = monitor.WaitAsync();
-					task2Ready.SetResult(null);
-					await waitTask2;
-					Interlocked.Increment(ref completed);
-				}
-			});
+					using (await monitor.EnterAsync())
+					{
+						waitTask2 = monitor.WaitAsync();
+						task2Ready.SetResult(null);
+						await waitTask2;
+						Interlocked.Increment(ref completed);
+					}
+				});
 			await task2Ready.Task;
 
 			var lockTask3 = monitor.EnterAsync();
@@ -146,8 +154,9 @@ namespace GriffinPlus.Lib.Threading
 			{
 				monitor.PulseAll();
 			}
+
 			await Task.WhenAll(task1, task2);
-			var result = Interlocked.CompareExchange(ref completed, 0, 0);
+			int result = Interlocked.CompareExchange(ref completed, 0, 0);
 
 			Assert.Equal(2, result);
 		}
@@ -159,4 +168,5 @@ namespace GriffinPlus.Lib.Threading
 			Assert.NotEqual(0, monitor.Id);
 		}
 	}
+
 }

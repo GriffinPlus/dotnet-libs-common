@@ -27,20 +27,22 @@
 //     SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class AsyncContextThreadTests
 	{
 		[Fact]
 		public async Task AsyncContextThread_IsAnIndependentThread()
 		{
-			var testThread = Thread.CurrentThread.ManagedThreadId;
+			int testThread = Thread.CurrentThread.ManagedThreadId;
 			var thread = new AsyncContextThread();
-			var contextThread = await thread.Factory.Run(() => Thread.CurrentThread.ManagedThreadId);
+			int contextThread = await thread.Factory.Run(() => Thread.CurrentThread.ManagedThreadId);
 			Assert.NotEqual(testThread, contextThread);
 			await thread.JoinAsync();
 		}
@@ -50,12 +52,13 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var thread = new AsyncContextThread();
 			int contextThread = -1, resumeThread = -1;
-			await thread.Factory.Run(async () =>
-			{
-				contextThread = Thread.CurrentThread.ManagedThreadId;
-				await Task.Yield();
-				resumeThread = Thread.CurrentThread.ManagedThreadId;
-			});
+			await thread.Factory.Run(
+				async () =>
+				{
+					contextThread = Thread.CurrentThread.ManagedThreadId;
+					await Task.Yield();
+					resumeThread = Thread.CurrentThread.ManagedThreadId;
+				});
 			Assert.Equal(contextThread, resumeThread);
 			await thread.JoinAsync();
 		}
@@ -78,4 +81,5 @@ namespace GriffinPlus.Lib.Threading
 			}
 		}
 	}
+
 }

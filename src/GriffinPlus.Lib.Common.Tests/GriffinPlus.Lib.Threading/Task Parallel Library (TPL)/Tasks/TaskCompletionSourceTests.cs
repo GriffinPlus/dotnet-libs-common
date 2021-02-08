@@ -29,10 +29,12 @@
 
 using System;
 using System.Threading.Tasks;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class TaskCompletionSourceExtensionsTests
 	{
 		[Fact]
@@ -40,7 +42,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var tcs = new TaskCompletionSource<int>();
 			tcs.TryCompleteFromCompletedTask(TaskConstants.Int32NegativeOne);
-			var result = await tcs.Task;
+			int result = await tcs.Task;
 			Assert.Equal(-1, result);
 		}
 
@@ -77,7 +79,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var tcs = new TaskCompletionSource<int>();
 			tcs.TryCompleteFromCompletedTask(TaskConstants.Completed, () => -1);
-			var result = await tcs.Task;
+			int result = await tcs.Task;
 			Assert.Equal(-1, result);
 		}
 
@@ -106,4 +108,5 @@ namespace GriffinPlus.Lib.Threading
 			await tcs.Task;
 		}
 	}
+
 }

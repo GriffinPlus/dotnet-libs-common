@@ -8,6 +8,7 @@ using System.Diagnostics;
 
 namespace GriffinPlus.Lib.Conversion
 {
+
 	/// <summary>
 	/// A converter that can translate a <see cref="System.Guid"/> to a string and vice versa.
 	/// </summary>
@@ -34,9 +35,13 @@ namespace GriffinPlus.Lib.Conversion
 		{
 #if DEBUG
 			// test the format to avoid failing later on...
-			try {
+			try
+			{
+				// ReSharper disable once ReturnValueOfPureMethodIsNotUsed
 				Guid.NewGuid().ToString(format);
-			} catch (Exception ex) {
+			}
+			catch (Exception ex)
+			{
 				Debug.Fail("The specified GUID format is invalid.", ex.ToString());
 			}
 #endif
@@ -52,12 +57,12 @@ namespace GriffinPlus.Lib.Conversion
 		/// A format provider that controls how the conversion is done
 		/// (null to use the current thread's culture to determine the format).
 		/// </param>
-		/// <returns>The string represention of the object.</returns>
+		/// <returns>The string representation of the object.</returns>
 		public override string ConvertObjectToString(object obj, IFormatProvider provider = null)
 		{
-			Debug.Assert(obj.GetType() == typeof(Guid));
+			Debug.Assert(obj is Guid);
 
-			Guid guid = (Guid)obj;
+			var guid = (Guid)obj;
 			return guid.ToString(mFormat);
 		}
 
@@ -75,4 +80,5 @@ namespace GriffinPlus.Lib.Conversion
 			return Guid.Parse(s);
 		}
 	}
+
 }

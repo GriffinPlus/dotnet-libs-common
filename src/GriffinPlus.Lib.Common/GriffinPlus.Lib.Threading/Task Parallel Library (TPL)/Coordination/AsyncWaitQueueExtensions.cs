@@ -32,10 +32,11 @@ using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Provides extension methods for wait queues.
 	/// </summary>
-	internal static class AsyncWaitQueueExtensions
+	static class AsyncWaitQueueExtensions
 	{
 		/// <summary>
 		/// Creates a new entry and queues it to this wait queue.
@@ -54,12 +55,15 @@ namespace GriffinPlus.Lib.Threading
 			if (!token.CanBeCanceled)
 				return task;
 
-			var registration = token.Register(() =>
-			{
-				lock (mutex) @this.TryCancel(task, token);
-			}, useSynchronizationContext: false);
+			var registration = token.Register(
+				() =>
+				{
+					lock (mutex) @this.TryCancel(task, token);
+				},
+				useSynchronizationContext: false);
 
-			task.ContinueWith(_ => registration.Dispose(),
+			task.ContinueWith(
+				_ => registration.Dispose(),
 				CancellationToken.None,
 				TaskContinuationOptions.ExecuteSynchronously,
 				TaskScheduler.Default);
@@ -67,4 +71,5 @@ namespace GriffinPlus.Lib.Threading
 			return task;
 		}
 	}
+
 }

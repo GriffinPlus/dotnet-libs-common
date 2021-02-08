@@ -34,6 +34,7 @@ using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Allocates Ids for instances on demand.
 	/// 0 is an invalid/unassigned Id.
@@ -41,13 +42,13 @@ namespace GriffinPlus.Lib.Threading
 	/// This is similar to the Id system used by <see cref="Task"/> and <see cref="TaskScheduler"/>.
 	/// </summary>
 	/// <typeparam name="TTag">The type for which ids are generated.</typeparam>
-	internal static class IdManager<TTag>
+	static class IdManager<TTag>
 	{
 		/// <summary>
 		/// The last id generated for this type.
 		/// This is 0, if no ids have been generated.
 		/// </summary>
-		private static int mLastId;
+		private static int sLastId;
 
 		/// <summary>
 		/// Returns the id, allocating it, if necessary.
@@ -64,8 +65,9 @@ namespace GriffinPlus.Lib.Threading
 			// The Increment is in a while loop to ensure we get a non-zero Id:
 			//  If we are incrementing -1, then we want to skip over 0.
 			//  If there are tons of Id allocations going on, we want to skip over 0 no matter how many times we get it.
-			do {
-				newId = Interlocked.Increment(ref mLastId);
+			do
+			{
+				newId = Interlocked.Increment(ref sLastId);
 			} while (newId == 0);
 
 			// Update the Id unless another thread already updated it.
@@ -75,4 +77,5 @@ namespace GriffinPlus.Lib.Threading
 			return id;
 		}
 	}
+
 }

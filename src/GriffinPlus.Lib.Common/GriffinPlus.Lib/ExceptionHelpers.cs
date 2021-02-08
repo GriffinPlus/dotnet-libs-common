@@ -32,7 +32,8 @@ using System.Runtime.ExceptionServices;
 
 namespace GriffinPlus.Lib
 {
-	internal static class ExceptionHelpers
+
+	static class ExceptionHelpers
 	{
 		/// <summary>
 		/// Attempts to prepare the exception for re-throwing by preserving the stack trace.
@@ -49,4 +50,5 @@ namespace GriffinPlus.Lib
 			return exception;
 		}
 	}
+
 }

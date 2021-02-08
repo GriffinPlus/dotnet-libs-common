@@ -32,11 +32,12 @@ using System.Threading;
 
 namespace GriffinPlus.Lib.Disposables.Internal
 {
+
 	/// <summary>
 	/// A field containing a bound action.
 	/// </summary>
 	/// <typeparam name="T">The type of context for the action.</typeparam>
-	internal sealed class BoundActionField<T>
+	sealed class BoundActionField<T>
 	{
 		private BoundAction mField;
 
@@ -70,7 +71,7 @@ namespace GriffinPlus.Lib.Disposables.Internal
 		/// </summary>
 		/// <param name="contextUpdater">
 		/// The function used to update an existing context.
-		/// This may be called more than once, if more than one thread attempts to simultanously update the context.
+		/// This may be called more than once, if more than one thread attempts to simultaneously update the context.
 		/// </param>
 		public bool TryUpdateContext(Func<T, T> contextUpdater)
 		{
@@ -99,7 +100,7 @@ namespace GriffinPlus.Lib.Disposables.Internal
 		private sealed class BoundAction : IBoundAction
 		{
 			private readonly Action<T> mAction;
-			private readonly T mContext;
+			private readonly T         mContext;
 
 			public BoundAction(Action<T> action, T context)
 			{
@@ -113,7 +114,11 @@ namespace GriffinPlus.Lib.Disposables.Internal
 				mContext = contextUpdater(originalBoundAction.mContext);
 			}
 
-			public void Invoke() => mAction?.Invoke(mContext);
+			public void Invoke()
+			{
+				mAction?.Invoke(mContext);
+			}
 		}
 	}
+
 }

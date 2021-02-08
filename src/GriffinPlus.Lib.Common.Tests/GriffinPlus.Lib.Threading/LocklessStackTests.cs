@@ -5,10 +5,12 @@
 
 using System;
 using System.Linq;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Unit tests targetting the <see cref="LocklessStack{T}"/> class.
 	/// </summary>
@@ -23,13 +25,13 @@ namespace GriffinPlus.Lib.Threading
 		/// false, if the stack keeps its capacity and rejects pushing new items, if it is full.
 		/// </param>
 		[Theory]
-		[InlineData(1,  false)]
-		[InlineData(1,  true )]
+		[InlineData(1, false)]
+		[InlineData(1, true)]
 		[InlineData(10, false)]
-		[InlineData(10, true )]
+		[InlineData(10, true)]
 		public void Create_Success(int initialCapacity, bool canGrow)
 		{
-			LocklessStack<int> stack = new LocklessStack<int>(initialCapacity, canGrow);
+			var stack = new LocklessStack<int>(initialCapacity, canGrow);
 			Assert.Equal(initialCapacity, stack.Capacity);
 			Assert.Equal(canGrow, stack.CanGrow);
 			Assert.Equal(initialCapacity, stack.FreeItemCount);
@@ -46,13 +48,15 @@ namespace GriffinPlus.Lib.Threading
 		/// false, if the stack keeps its capacity and rejects pushing new items, if it is full.
 		/// </param>
 		[Theory]
-		[InlineData(-1,  false)]
-		[InlineData(-1,  true )]
+		[InlineData(-1, false)]
+		[InlineData(-1, true)]
 		public void Create_InvalidCapacity(int initialCapacity, bool canGrow)
 		{
-			var ex = Assert.Throws<ArgumentOutOfRangeException>(() => {
-				new LocklessStack<int>(initialCapacity, canGrow);
-			});
+			var ex = Assert.Throws<ArgumentOutOfRangeException>(
+				() =>
+				{
+					new LocklessStack<int>(initialCapacity, canGrow);
+				});
 
 			Assert.Equal("initialCapacity", ex.ParamName);
 		}
@@ -67,7 +71,7 @@ namespace GriffinPlus.Lib.Threading
 		[InlineData(10)]
 		public void Push_NoGrow(int capacity)
 		{
-			LocklessStack<int> stack = new LocklessStack<int>(capacity, false);
+			var stack = new LocklessStack<int>(capacity, false);
 
 			// populate the stack
 			for (int i = 0; i < capacity; i++)
@@ -94,8 +98,8 @@ namespace GriffinPlus.Lib.Threading
 		[InlineData(10)]
 		public void Push_Grow(int capacity)
 		{
-			LocklessStack<int> stack = new LocklessStack<int>(capacity, true);
-			
+			var stack = new LocklessStack<int>(capacity, true);
+
 			// populate the stack
 			for (int i = 0; i < capacity; i++)
 			{
@@ -111,9 +115,9 @@ namespace GriffinPlus.Lib.Threading
 			Assert.Equal(0, stack.FreeItemCount);
 			Assert.Equal(capacity, stack.UsedItemCount);
 			Assert.True(stack.Push(42));
-			Assert.Equal(capacity+1, stack.Capacity);
+			Assert.Equal(capacity + 1, stack.Capacity);
 			Assert.Equal(0, stack.FreeItemCount);
-			Assert.Equal(capacity+1, stack.UsedItemCount);
+			Assert.Equal(capacity + 1, stack.UsedItemCount);
 		}
 
 
@@ -127,11 +131,11 @@ namespace GriffinPlus.Lib.Threading
 		public void PushMany_NoGrow(int capacity)
 		{
 			// create and populate the stack
-			LocklessStack<int> stack = new LocklessStack<int>(capacity, false);
+			var stack = new LocklessStack<int>(capacity, false);
 			PopulateStack(stack, capacity, capacity);
 
 			// pushing another item should fail
-			int[] data = new[] { 42 };
+			int[] data = { 42 };
 			Assert.False(stack.PushMany(data));
 		}
 
@@ -147,18 +151,18 @@ namespace GriffinPlus.Lib.Threading
 		public void PushMany_Grow(int capacity)
 		{
 			// create and populate the stack
-			LocklessStack<int> stack = new LocklessStack<int>(capacity, true);
+			var stack = new LocklessStack<int>(capacity, true);
 			PopulateStack(stack, capacity, capacity);
 
 			// pushing another item should let the stack grow
-			int[] data = new[] { 42 };
+			int[] data = { 42 };
 			Assert.Equal(capacity, stack.Capacity);
 			Assert.Equal(0, stack.FreeItemCount);
 			Assert.Equal(capacity, stack.UsedItemCount);
 			Assert.True(stack.PushMany(data));
-			Assert.Equal(capacity+1, stack.Capacity);
+			Assert.Equal(capacity + 1, stack.Capacity);
 			Assert.Equal(0, stack.FreeItemCount);
-			Assert.Equal(capacity+1, stack.UsedItemCount);
+			Assert.Equal(capacity + 1, stack.UsedItemCount);
 		}
 
 
@@ -168,15 +172,15 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="capacity">Capacity of the stack.</param>
 		/// <param name="itemCount">Number of items on the stack before popping an item.</param>
 		[Theory]
-		[InlineData(1,   1)]
-		[InlineData(10,  1)]
-		[InlineData(10,  2)]
-		[InlineData(10,  9)]
+		[InlineData(1, 1)]
+		[InlineData(10, 1)]
+		[InlineData(10, 2)]
+		[InlineData(10, 9)]
 		[InlineData(10, 10)]
 		public void Pop(int capacity, int itemCount)
 		{
 			// create and populate the stack
-			LocklessStack<int> stack = new LocklessStack<int>(capacity, true);
+			var stack = new LocklessStack<int>(capacity, true);
 			PopulateStack(stack, capacity, itemCount);
 
 			// pop an item from the stack
@@ -194,15 +198,15 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="capacity">Capacity of the stack.</param>
 		/// <param name="itemCount">Number of items on the stack before flushing the stack .</param>
 		[Theory]
-		[InlineData(1,   1)]
-		[InlineData(10,  1)]
-		[InlineData(10,  2)]
-		[InlineData(10,  9)]
+		[InlineData(1, 1)]
+		[InlineData(10, 1)]
+		[InlineData(10, 2)]
+		[InlineData(10, 9)]
 		[InlineData(10, 10)]
 		public void Flush(int capacity, int itemCount)
 		{
 			// create and populate the stack
-			LocklessStack<int> stack = new LocklessStack<int>(capacity, true);
+			var stack = new LocklessStack<int>(capacity, true);
 			int[] pushedItems = PopulateStack(stack, capacity, itemCount);
 
 			// flush the stack
@@ -220,15 +224,15 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="capacity">Capacity of the stack.</param>
 		/// <param name="itemCount">Number of items on the stack before flushing the stack .</param>
 		[Theory]
-		[InlineData(1,   1)]
-		[InlineData(10,  1)]
-		[InlineData(10,  2)]
-		[InlineData(10,  9)]
+		[InlineData(1, 1)]
+		[InlineData(10, 1)]
+		[InlineData(10, 2)]
+		[InlineData(10, 9)]
 		[InlineData(10, 10)]
 		public void FlushAndReverse(int capacity, int itemCount)
 		{
 			// create and populate the stack
-			LocklessStack<int> stack = new LocklessStack<int>(capacity, true);
+			var stack = new LocklessStack<int>(capacity, true);
 			int[] pushedItems = PopulateStack(stack, capacity, itemCount);
 
 			// flush the stack
@@ -259,4 +263,5 @@ namespace GriffinPlus.Lib.Threading
 			return data;
 		}
 	}
+
 }

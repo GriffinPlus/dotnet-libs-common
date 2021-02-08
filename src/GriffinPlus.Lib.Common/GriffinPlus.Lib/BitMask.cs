@@ -9,6 +9,7 @@ using System;
 
 namespace GriffinPlus.Lib
 {
+
 	/// <summary>
 	/// A bit field of variable size that supports comparisons (equality, inequality), unary logical operations (NOT, XOR)
 	/// and binary logical operations (AND, OR).
@@ -16,7 +17,7 @@ namespace GriffinPlus.Lib
 	public class BitMask
 	{
 		private static readonly uint[] sEmptyBitField = new uint[0];
-		private uint[] mBitField;
+		private                 uint[] mBitField;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="BitMask"/> class.
@@ -48,7 +49,6 @@ namespace GriffinPlus.Lib
 		/// </summary>
 		private BitMask()
 		{
-
 		}
 
 		/// <summary>
@@ -78,7 +78,7 @@ namespace GriffinPlus.Lib
 		/// <returns>The resulting bit mask.</returns>
 		public static BitMask operator ~(BitMask mask)
 		{
-			BitMask result = new BitMask();
+			var result = new BitMask();
 			int count = mask.mBitField.Length;
 			result.mBitField = count > 0 ? new uint[count] : sEmptyBitField;
 			result.PaddingValue = !mask.PaddingValue;
@@ -163,7 +163,7 @@ namespace GriffinPlus.Lib
 		/// </returns>
 		public static BitMask operator |(BitMask mask1, BitMask mask2)
 		{
-			BitMask result = new BitMask();
+			var result = new BitMask();
 			int count1 = mask1.mBitField.Length;
 			int count2 = mask2.mBitField.Length;
 			int count = count1 > count2 ? count1 : count2;
@@ -191,7 +191,7 @@ namespace GriffinPlus.Lib
 		/// </returns>
 		public static BitMask operator &(BitMask mask1, BitMask mask2)
 		{
-			BitMask result = new BitMask();
+			var result = new BitMask();
 			int count1 = mask1.mBitField.Length;
 			int count2 = mask2.mBitField.Length;
 			int count = count1 > count2 ? count1 : count2;
@@ -219,7 +219,7 @@ namespace GriffinPlus.Lib
 		/// </returns>
 		public static BitMask operator ^(BitMask mask1, BitMask mask2)
 		{
-			BitMask result = new BitMask();
+			var result = new BitMask();
 			int count1 = mask1.mBitField.Length;
 			int count2 = mask2.mBitField.Length;
 			int count = count1 > count2 ? count1 : count2;
@@ -314,7 +314,7 @@ namespace GriffinPlus.Lib
 			{
 				if (i == endArrayIndex)
 				{
-					mask &= ~(0u) >> (32 - endBitIndex);
+					mask &= ~0u >> (32 - endBitIndex);
 				}
 
 				mBitField[i] |= mask;
@@ -345,7 +345,7 @@ namespace GriffinPlus.Lib
 			{
 				if (i == endArrayIndex)
 				{
-					mask &= ~(0u) >> (32 - endBitIndex);
+					mask &= ~0u >> (32 - endBitIndex);
 				}
 
 				mBitField[i] &= ~mask;
@@ -379,10 +379,13 @@ namespace GriffinPlus.Lib
 			unchecked
 			{
 				int hash = 0;
+
+				// ReSharper disable once ForCanBeConvertedToForeach
 				for (int i = 0; i < mBitField.Length; i++)
 				{
 					hash ^= (int)mBitField[i];
 				}
+
 				return hash;
 			}
 		}
@@ -394,10 +397,10 @@ namespace GriffinPlus.Lib
 		/// <returns>true, if the specified bit mask equals the current one; otherwise false.</returns>
 		public override bool Equals(object obj)
 		{
-			BitMask other = obj as BitMask;
+			var other = obj as BitMask;
 			if (other == null) return false;
 			return this == other; // use overloaded equality operator
 		}
-
 	}
+
 }

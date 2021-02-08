@@ -3,10 +3,9 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using Xunit;
-
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Unit tests targetting the <see cref="MonitorSynchronizedEnumerator{T}"/> class.
 	/// </summary>
@@ -14,4 +13,5 @@ namespace GriffinPlus.Lib.Threading
 	{
 		// TODO
 	}
+
 }

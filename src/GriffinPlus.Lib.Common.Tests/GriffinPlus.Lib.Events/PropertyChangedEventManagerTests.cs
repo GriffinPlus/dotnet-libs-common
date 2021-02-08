@@ -3,18 +3,21 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using GriffinPlus.Lib.Threading;
 using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
+using GriffinPlus.Lib.Threading;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Events
 {
+
 	/// <summary>
-	/// Unit tests targetting the <see cref="PropertyChangedEventManager" /> class.
+	/// Unit tests targetting the <see cref="PropertyChangedEventManager"/> class.
 	/// </summary>
 	public class PropertyChangedEventManagerTests : IDisposable
 	{
@@ -64,7 +67,8 @@ namespace GriffinPlus.Lib.Events
 		{
 			// the event handler
 			string changedPropertyName = null;
-			PropertyChangedEventHandler handler = (sender, e) => { 
+			PropertyChangedEventHandler handler = (sender, e) =>
+			{
 				changedPropertyName = e.PropertyName;
 			};
 
@@ -97,7 +101,8 @@ namespace GriffinPlus.Lib.Events
 		{
 			// the event handler
 			string changedPropertyName = null;
-			PropertyChangedEventHandler handler = (sender, e) => { 
+			PropertyChangedEventHandler handler = (sender, e) =>
+			{
 				changedPropertyName = e.PropertyName;
 			};
 
@@ -127,18 +132,21 @@ namespace GriffinPlus.Lib.Events
 		{
 			// the event handler
 			string changedPropertyName = null;
-			ManualResetEventSlim gotEventData = new ManualResetEventSlim();
-			PropertyChangedEventHandler handler = (sender, e) => { 
+			var gotEventData = new ManualResetEventSlim();
+			PropertyChangedEventHandler handler = (sender, e) =>
+			{
 				changedPropertyName = e.PropertyName;
 				gotEventData.Set();
 			};
 
 			// register event handler
-			await mThread.Factory.Run(() => {
-				Assert.NotNull(SynchronizationContext.Current);
-				int regCount1 = PropertyChangedEventManager.RegisterEventHandler(this, handler, SynchronizationContext.Current);
-				Assert.Equal(1, regCount1);
-			});
+			await mThread.Factory.Run(
+				() =>
+				{
+					Assert.NotNull(SynchronizationContext.Current);
+					int regCount1 = PropertyChangedEventManager.RegisterEventHandler(this, handler, SynchronizationContext.Current);
+					Assert.Equal(1, regCount1);
+				});
 
 			// check whether the handler is registered
 			Assert.True(PropertyChangedEventManager.IsHandlerRegistered(this));
@@ -166,19 +174,22 @@ namespace GriffinPlus.Lib.Events
 		{
 			// the event handler
 			string changedPropertyName = null;
-			ManualResetEventSlim gotEventData = new ManualResetEventSlim();
-			PropertyChangedEventHandler handler = (sender, e) => { 
+			var gotEventData = new ManualResetEventSlim();
+			PropertyChangedEventHandler handler = (sender, e) =>
+			{
 				changedPropertyName = e.PropertyName;
 				gotEventData.Set();
 			};
 
 			// register event handler and let it fire immediately
 			string testData = Guid.NewGuid().ToString("D");
-			await mThread.Factory.Run(() => {
-				Assert.NotNull(SynchronizationContext.Current);
-				int regCount1 = PropertyChangedEventManager.RegisterEventHandler(this, handler, SynchronizationContext.Current, true, this, PROPERTY_NAME);
-				Assert.Equal(1, regCount1);
-			});
+			await mThread.Factory.Run(
+				() =>
+				{
+					Assert.NotNull(SynchronizationContext.Current);
+					int regCount1 = PropertyChangedEventManager.RegisterEventHandler(this, handler, SynchronizationContext.Current, true, this, PROPERTY_NAME);
+					Assert.Equal(1, regCount1);
+				});
 
 			// check whether the event was fired asynchronously
 			Assert.True(gotEventData.Wait(200), "The event was not called asynchronously.");
@@ -234,21 +245,31 @@ namespace GriffinPlus.Lib.Events
 			// the event handlers
 			string changedPropertyName1 = null;
 			string changedPropertyName2 = null;
-			ManualResetEventSlim gotEventData1 = new ManualResetEventSlim();
-			ManualResetEventSlim gotEventData2 = new ManualResetEventSlim();
-			PropertyChangedEventHandler handler1 = (sender, e) => { changedPropertyName1 = e.PropertyName; gotEventData1.Set(); };
-			PropertyChangedEventHandler handler2 = (sender, e) => { changedPropertyName2 = e.PropertyName; gotEventData2.Set(); };
+			var gotEventData1 = new ManualResetEventSlim();
+			var gotEventData2 = new ManualResetEventSlim();
+			PropertyChangedEventHandler handler1 = (sender, e) =>
+			{
+				changedPropertyName1 = e.PropertyName;
+				gotEventData1.Set();
+			};
+			PropertyChangedEventHandler handler2 = (sender, e) =>
+			{
+				changedPropertyName2 = e.PropertyName;
+				gotEventData2.Set();
+			};
 
 			// register event handlers:
 			// - register handler1 only, but do not trigger firing immediately
 			// - register handler2 and trigger firing immediately
-			await mThread.Factory.Run(() => {
-				Assert.NotNull(SynchronizationContext.Current);
-				PropertyChangedEventManager.RegisterEventHandler(this, handler1, SynchronizationContext.Current);
-				Assert.False(gotEventData1.IsSet, "Event handler was called unexpectedly.");
-				PropertyChangedEventManager.RegisterEventHandler(this, handler2, SynchronizationContext.Current, true, this, "Test2");
-				Assert.False(gotEventData1.IsSet, "Event handler was called immediately, should have been scheduled to be executed...");
-			});
+			await mThread.Factory.Run(
+				() =>
+				{
+					Assert.NotNull(SynchronizationContext.Current);
+					PropertyChangedEventManager.RegisterEventHandler(this, handler1, SynchronizationContext.Current);
+					Assert.False(gotEventData1.IsSet, "Event handler was called unexpectedly.");
+					PropertyChangedEventManager.RegisterEventHandler(this, handler2, SynchronizationContext.Current, true, this, "Test2");
+					Assert.False(gotEventData1.IsSet, "Event handler was called immediately, should have been scheduled to be executed...");
+				});
 
 			// only handler2 should have been called after some time
 			Assert.False(gotEventData1.Wait(200), "The event was called unexpectedly.");
@@ -287,13 +308,14 @@ namespace GriffinPlus.Lib.Events
 
 			// register an event handler to a dummy event provider object
 			// (must not be done in the same method to allow the object to be collected in the next step)
-			WeakReference wrefProvider = new Func<WeakReference>(() =>
-			{
-				object provider = new object();
-				int regCount = PropertyChangedEventManager.RegisterEventHandler(provider, handler, null);
-				Assert.Equal(1, regCount);
-				return new WeakReference(provider);
-			}).Invoke();
+			var wrefProvider = new Func<WeakReference>(
+				() =>
+				{
+					var provider = new object();
+					int regCount = PropertyChangedEventManager.RegisterEventHandler(provider, handler, null);
+					Assert.Equal(1, regCount);
+					return new WeakReference(provider);
+				}).Invoke();
 
 			// kick object out of memory
 			GC.Collect();
@@ -301,6 +323,6 @@ namespace GriffinPlus.Lib.Events
 			// the event provider should now be collected
 			Assert.False(wrefProvider.IsAlive);
 		}
-
 	}
+
 }

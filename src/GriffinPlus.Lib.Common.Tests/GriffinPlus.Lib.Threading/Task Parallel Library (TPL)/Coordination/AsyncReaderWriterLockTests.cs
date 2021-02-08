@@ -27,15 +27,18 @@
 //     SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using GriffinPlus.Lib.Tests;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+
+using GriffinPlus.Lib.Tests;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class AsyncReaderWriterLockTests
 	{
 		[Fact]
@@ -77,14 +80,15 @@ namespace GriffinPlus.Lib.Threading
 			var rwl = new AsyncReaderWriterLock();
 			var firstWriteLockTaken = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 			var releaseFirstWriteLock = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
-			var task = Task.Run(async () =>
-			{
-				using (await rwl.WriterLockAsync())
+			var task = Task.Run(
+				async () =>
 				{
-					firstWriteLockTaken.SetResult(null);
-					await releaseFirstWriteLock.Task;
-				}
-			});
+					using (await rwl.WriterLockAsync())
+					{
+						firstWriteLockTaken.SetResult(null);
+						await releaseFirstWriteLock.Task;
+					}
+				});
 			await firstWriteLockTaken.Task;
 			var lockTask = rwl.WriterLockAsync().AsTask();
 			Assert.False(lockTask.IsCompleted);
@@ -230,17 +234,28 @@ namespace GriffinPlus.Lib.Threading
 			var rwl = new AsyncReaderWriterLock();
 			var readKeys = new List<IDisposable>();
 			for (int i = 0; i != 1000; ++i)
+			{
 				readKeys.Add(rwl.ReaderLock());
+			}
+
 			var writeTask = Task.Run(() => { rwl.WriterLock().Dispose(); });
 			var readTasks = new List<Task>();
 			for (int i = 0; i != 100; ++i)
+			{
 				readTasks.Add(Task.Run(() => rwl.ReaderLock().Dispose()));
+			}
+
 			await Task.Delay(1000);
 			foreach (var readKey in readKeys)
+			{
 				readKey.Dispose();
+			}
+
 			await writeTask;
 			foreach (var readTask in readTasks)
+			{
 				await readTask;
+			}
 		}
 
 		[Fact]
@@ -251,27 +266,29 @@ namespace GriffinPlus.Lib.Threading
 			var cts = new CancellationTokenSource();
 
 			var writerLockReady = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-			var writerLockTask = Task.Run(async () =>
-			{
-				var writeKeyTask = rwl.WriterLockAsync(cts.Token);
-				writerLockReady.SetResult(null);
-				await Assert.ThrowsAnyAsync<OperationCanceledException>(() => writeKeyTask);
-			});
+			var writerLockTask = Task.Run(
+				async () =>
+				{
+					var writeKeyTask = rwl.WriterLockAsync(cts.Token);
+					writerLockReady.SetResult(null);
+					await Assert.ThrowsAnyAsync<OperationCanceledException>(() => writeKeyTask);
+				});
 			await writerLockReady.Task;
 
 			var readerLockReady = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-			var readerLockTask = Task.Run(async () =>
-			{
-				var readKeyTask = rwl.ReaderLockAsync();
-				readerLockReady.SetResult(null);
-				await readKeyTask;
-			});
+			var readerLockTask = Task.Run(
+				async () =>
+				{
+					var readKeyTask = rwl.ReaderLockAsync();
+					readerLockReady.SetResult(null);
+					await readKeyTask;
+				});
 
 			await readerLockReady.Task;
 			cts.Cancel();
 
 			await readerLockTask;
 		}
-
 	}
+
 }

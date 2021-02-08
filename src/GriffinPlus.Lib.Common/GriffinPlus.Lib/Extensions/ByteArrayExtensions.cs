@@ -7,6 +7,7 @@ using System;
 
 namespace GriffinPlus.Lib
 {
+
 	/// <summary>
 	/// Extension methods for arrays of <see cref="System.Byte"/>.
 	/// </summary>
@@ -25,14 +26,13 @@ namespace GriffinPlus.Lib
 		{
 			char[] c = new char[bytes.Length * 2];
 			char offset = upperCase ? 'A' : 'a';
-			byte b;
 
-			for(int bx = 0, cx = 0; bx < bytes.Length; ++bx, ++cx)
+			for (int bx = 0, cx = 0; bx < bytes.Length; ++bx, ++cx)
 			{
-				b = ((byte)(bytes[bx] >> 4));
+				byte b = (byte)(bytes[bx] >> 4);
 				c[cx] = (char)(b > 9 ? b - 10 + offset : b + '0');
 
-				b = ((byte)(bytes[bx] & 0x0F));
+				b = (byte)(bytes[bx] & 0x0F);
 				c[++cx] = (char)(b > 9 ? b - 10 + offset : b + '0');
 			}
 
@@ -49,9 +49,11 @@ namespace GriffinPlus.Lib
 		{
 			if (a1 != null && a2 == null || a1 == null && a2 != null) return false;
 			if (a1.Length != a2.Length) return false;
-			for (int i = 0; i < a1.Length; i++) {
+			for (int i = 0; i < a1.Length; i++)
+			{
 				if (a1[i] != a2[i]) return false;
 			}
+
 			return true;
 		}
 
@@ -79,8 +81,8 @@ namespace GriffinPlus.Lib
 		public static void Swap2(this byte[] buffer, int index)
 		{
 			byte swap = buffer[index];
-			buffer[index] = buffer[index+1];
-			buffer[index+1] = swap;
+			buffer[index] = buffer[index + 1];
+			buffer[index + 1] = swap;
 		}
 
 		/// <summary>
@@ -91,12 +93,12 @@ namespace GriffinPlus.Lib
 		public static void Swap4(this byte[] buffer, int index)
 		{
 			byte swap1 = buffer[index];
-			byte swap2 = buffer[index+1];
-			buffer[index] = buffer[index+3];
-			buffer[index+1] = buffer[index+2];
-			buffer[index+2] = swap2;
-			buffer[index+3] = swap1;
+			byte swap2 = buffer[index + 1];
+			buffer[index] = buffer[index + 3];
+			buffer[index + 1] = buffer[index + 2];
+			buffer[index + 2] = swap2;
+			buffer[index + 3] = swap1;
 		}
-
 	}
+
 }

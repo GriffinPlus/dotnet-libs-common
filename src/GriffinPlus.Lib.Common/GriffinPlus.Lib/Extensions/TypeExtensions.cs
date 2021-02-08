@@ -10,6 +10,7 @@ using System.Reflection;
 
 namespace GriffinPlus.Lib
 {
+
 	/// <summary>
 	/// Extension methods for <see cref="System.Type"/>.
 	/// </summary>
@@ -24,24 +25,24 @@ namespace GriffinPlus.Lib
 		{
 			if (type.IsInterface)
 			{
-				List<PropertyInfo> propertyInfos = new List<PropertyInfo>();
+				var propertyInfos = new List<PropertyInfo>();
 
-				HashSet<Type> considered = new HashSet<Type>();
-				Queue<Type> queue = new Queue<Type>();
+				var considered = new HashSet<Type>();
+				var queue = new Queue<Type>();
 				considered.Add(type);
 				queue.Enqueue(type);
 				while (queue.Count > 0)
 				{
-					Type subType = queue.Dequeue();
-					foreach (Type subInterface in subType.GetInterfaces())
+					var subType = queue.Dequeue();
+					foreach (var subInterface in subType.GetInterfaces())
 					{
 						if (considered.Contains(subInterface)) continue;
 						considered.Add(subInterface);
 						queue.Enqueue(subInterface);
 					}
 
-					PropertyInfo[] typeProperties = subType.GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
-					IEnumerable<PropertyInfo> newPropertyInfos = typeProperties.Where(x => !propertyInfos.Contains(x));
+					var typeProperties = subType.GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
+					var newPropertyInfos = typeProperties.Where(x => !propertyInfos.Contains(x));
 					propertyInfos.InsertRange(0, newPropertyInfos);
 				}
 
@@ -60,24 +61,24 @@ namespace GriffinPlus.Lib
 		{
 			if (type.IsInterface)
 			{
-				List<MethodInfo> methodInfos = new List<MethodInfo>();
+				var methodInfos = new List<MethodInfo>();
 
-				HashSet<Type> considered = new HashSet<Type>();
-				Queue<Type> queue = new Queue<Type>();
+				var considered = new HashSet<Type>();
+				var queue = new Queue<Type>();
 				considered.Add(type);
 				queue.Enqueue(type);
 				while (queue.Count > 0)
 				{
-					Type subType = queue.Dequeue();
-					foreach (Type subInterface in subType.GetInterfaces())
+					var subType = queue.Dequeue();
+					foreach (var subInterface in subType.GetInterfaces())
 					{
 						if (considered.Contains(subInterface)) continue;
 						considered.Add(subInterface);
 						queue.Enqueue(subInterface);
 					}
 
-					MethodInfo[] typeMethods = subType.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
-					IEnumerable<MethodInfo> newMethodInfos = typeMethods.Where(x => !methodInfos.Contains(x));
+					var typeMethods = subType.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
+					var newMethodInfos = typeMethods.Where(x => !methodInfos.Contains(x));
 					methodInfos.InsertRange(0, newMethodInfos);
 				}
 
@@ -101,8 +102,9 @@ namespace GriffinPlus.Lib
 				if (genericType == currentType) return true;
 				typeToCheck = typeToCheck.BaseType;
 			}
+
 			return false;
 		}
-
 	}
+
 }

@@ -29,10 +29,12 @@
 
 using System;
 using System.Threading.Tasks;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class AsyncCountdownEventTests
 	{
 		[Fact]
@@ -191,4 +193,5 @@ namespace GriffinPlus.Lib.Threading
 			Assert.NotEqual(0, ce.Id);
 		}
 	}
+
 }

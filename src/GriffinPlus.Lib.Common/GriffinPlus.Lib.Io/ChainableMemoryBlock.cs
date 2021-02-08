@@ -7,14 +7,15 @@ using System;
 
 namespace GriffinPlus.Lib.Io
 {
+
 	/// <summary>
 	/// A block of memory that can be chained with others.
 	/// </summary>
 	public class ChainableMemoryBlock
 	{
-		internal readonly byte[] mBuffer;
-		internal int mLength;
-		internal ChainableMemoryBlock mNext;
+		internal readonly byte[]               InternalBuffer;
+		internal          int                  InternalLength;
+		internal          ChainableMemoryBlock InternalNext;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ChainableMemoryBlock"/> class.
@@ -22,29 +23,19 @@ namespace GriffinPlus.Lib.Io
 		/// <param name="capacity">Capacity of the memory block to create.</param>
 		public ChainableMemoryBlock(int capacity)
 		{
-			mBuffer = new byte[capacity];
-			mLength = 0;
+			InternalBuffer = new byte[capacity];
+			InternalLength = 0;
 		}
 
 		/// <summary>
 		/// Gets the underlying buffer.
 		/// </summary>
-		public byte[] Buffer
-		{
-			get {
-				return mBuffer;
-			}
-		}
+		public byte[] Buffer => InternalBuffer;
 
 		/// <summary>
 		/// Gets the capacity of the memory block.
 		/// </summary>
-		public int Capacity
-		{
-			get {
-				return mBuffer.Length;
-			}
-		}
+		public int Capacity => InternalBuffer.Length;
 
 		/// <summary>
 		/// Gets or sets the length of the memory block (must not exceed the size of the underlying buffer).
@@ -52,21 +43,21 @@ namespace GriffinPlus.Lib.Io
 		/// <exception cref="ArgumentOutOfRangeException">The length exceeds the capacity of the memory block.</exception>
 		public int Length
 		{
-			get {
-				return mLength;
-			}
+			get => InternalLength;
 
 			set
 			{
-				if (value < 0) {
+				if (value < 0)
+				{
 					throw new ArgumentOutOfRangeException(nameof(value), "The length must be positive.");
 				}
 
-				if (value > mBuffer.Length) {
+				if (value > InternalBuffer.Length)
+				{
 					throw new ArgumentOutOfRangeException(nameof(value), "The length to set exceeds the capacity of the memory block.");
 				}
 
-				mLength = value;
+				InternalLength = value;
 			}
 		}
 
@@ -77,8 +68,8 @@ namespace GriffinPlus.Lib.Io
 		{
 			get
 			{
-				long totalLength = mLength;
-				if (mNext != null) totalLength += mNext.ChainLength;
+				long totalLength = InternalLength;
+				if (InternalNext != null) totalLength += InternalNext.ChainLength;
 				return totalLength;
 			}
 		}
@@ -88,9 +79,9 @@ namespace GriffinPlus.Lib.Io
 		/// </summary>
 		public ChainableMemoryBlock Next
 		{
-			get { return mNext; }
-			set { mNext = value; }
+			get => InternalNext;
+			set => InternalNext = value;
 		}
-
 	}
+
 }

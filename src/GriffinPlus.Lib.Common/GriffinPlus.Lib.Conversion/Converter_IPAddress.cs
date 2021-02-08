@@ -9,18 +9,18 @@ using System.Net;
 
 namespace GriffinPlus.Lib.Conversion
 {
+
 	/// <summary>
 	/// A converter that can translate a <see cref="System.Net.IPAddress"/> to a string and vice versa.
 	/// The ip address is converted to/from IPv4 dotted-quad or IPv6 colon-hexadecimal notation.
 	/// </summary>
-	public class Converter_IPAddress : Converter_Base<IPAddress>
+	public class Converter_IpAddress : Converter_Base<IPAddress>
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Converter_IPAddress"/> class.
+		/// Initializes a new instance of the <see cref="Converter_IpAddress"/> class.
 		/// </summary>
-		public Converter_IPAddress()
+		public Converter_IpAddress()
 		{
-
 		}
 
 		/// <summary>
@@ -31,7 +31,7 @@ namespace GriffinPlus.Lib.Conversion
 		/// A format provider that controls how the conversion is done
 		/// (null to use the current thread's culture to determine the format).
 		/// </param>
-		/// <returns>The string represention of the object.</returns>
+		/// <returns>The string representation of the object.</returns>
 		public override string ConvertObjectToString(object obj, IFormatProvider provider = null)
 		{
 			Debug.Assert(obj.GetType() == typeof(IPAddress));
@@ -52,4 +52,5 @@ namespace GriffinPlus.Lib.Conversion
 			return IPAddress.Parse(s);
 		}
 	}
+
 }

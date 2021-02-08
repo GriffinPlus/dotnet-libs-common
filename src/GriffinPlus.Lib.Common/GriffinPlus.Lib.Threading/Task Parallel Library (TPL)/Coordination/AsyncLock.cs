@@ -32,37 +32,40 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
+using GriffinPlus.Lib.Disposables;
+
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// A mutual exclusion lock that is compatible with async.
 	/// Note that this lock is <b>not</b> recursive!
 	/// </summary>
 	/// <remarks>
-	/// <para>
-	/// This is the async/await-ready almost-equivalent of the <c>lock</c> keyword or the <see cref="Mutex"/> type, similar to
-	/// <a href="http://blogs.msdn.com/b/pfxteam/archive/2012/02/12/10266988.aspx">Stephen Toub´s AsyncLock</a>. It's only
-	/// <i>almost</i> equivalent because the <c>lock</c> keyword permits reentrancy, which is not currently possible to do with
-	/// an <c>async</c>-ready lock.
-	/// </para>
-	/// <para>
-	/// An <see cref="AsyncLock"/> is either taken or not. The lock can be asynchronously acquired by calling <see cref="LockAsync"/>,
-	/// and it is released by disposing the result of that task. It takes an optional <see cref="CancellationToken"/>, which can be used
-	/// to cancel the acquiring of the lock.
-	/// </para>
-	/// <para>
-	/// The task returned from <see cref="LockAsync"/> will enter the <c>Completed</c> state when it has acquired the <see cref="AsyncLock"/>.
-	/// The same task will enter the <c>Canceled</c> state if the <see cref="CancellationToken"/> is signaled before the wait is satisfied;
-	/// in that case, the <see cref="AsyncLock"/> is not taken by that task.
-	/// </para>
-	/// <para>
-	/// You can call <see cref="Lock"/> or <see cref="LockAsync"/> with an already-cancelled <see cref="CancellationToken"/> to attempt to
-	/// acquire the <see cref="AsyncLock"/> immediately without actually entering the wait queue.
-	/// </para>
+	///     <para>
+	///     This is the async/await-ready almost-equivalent of the <c>lock</c> keyword or the <see cref="Mutex"/> type, similar to
+	///     <a href="http://blogs.msdn.com/b/pfxteam/archive/2012/02/12/10266988.aspx">Stephen Toub´s AsyncLock</a>. It's only
+	///     <i>almost</i> equivalent because the <c>lock</c> keyword permits reentrancy, which is not currently possible to do with
+	///     an <c>async</c>-ready lock.
+	///     </para>
+	///     <para>
+	///     An <see cref="AsyncLock"/> is either taken or not. The lock can be asynchronously acquired by calling <see cref="LockAsync"/>,
+	///     and it is released by disposing the result of that task. It takes an optional <see cref="CancellationToken"/>, which can be used
+	///     to cancel the acquiring of the lock.
+	///     </para>
+	///     <para>
+	///     The task returned from <see cref="LockAsync"/> will enter the <c>Completed</c> state when it has acquired the <see cref="AsyncLock"/>.
+	///     The same task will enter the <c>Canceled</c> state if the <see cref="CancellationToken"/> is signaled before the wait is satisfied;
+	///     in that case, the <see cref="AsyncLock"/> is not taken by that task.
+	///     </para>
+	///     <para>
+	///     You can call <see cref="Lock"/> or <see cref="LockAsync"/> with an already-cancelled <see cref="CancellationToken"/> to attempt to
+	///     acquire the <see cref="AsyncLock"/> immediately without actually entering the wait queue.
+	///     </para>
 	/// </remarks>
 	/// <example>
-	/// <para>The vast majority of use cases are to just replace a <c>lock</c> statement. That is, with the original code looking like this:</para>
-	/// <code>
+	///     <para>The vast majority of use cases are to just replace a <c>lock</c> statement. That is, with the original code looking like this:</para>
+	///     <code>
 	/// private readonly object mMutex = new object();
 	/// public void DoStuff()
 	/// {
@@ -72,14 +75,14 @@ namespace GriffinPlus.Lib.Threading
 	///     }
 	/// }
 	/// </code>
-	/// <para>
-	/// If we want to replace the blocking operation <c>Thread.Sleep</c> with an asynchronous equivalent, it's not directly possible because
-	/// of the <c>lock</c> block. We cannot <c>await</c> inside of a <c>lock</c>.
-	/// </para>
-	/// <para>
-	/// So, we use the <c>async</c>-compatible <see cref="AsyncLock"/> instead:
-	/// </para>
-	/// <code>
+	///     <para>
+	///     If we want to replace the blocking operation <c>Thread.Sleep</c> with an asynchronous equivalent, it's not directly possible because
+	///     of the <c>lock</c> block. We cannot <c>await</c> inside of a <c>lock</c>.
+	///     </para>
+	///     <para>
+	///     So, we use the <c>async</c>-compatible <see cref="AsyncLock"/> instead:
+	///     </para>
+	///     <code>
 	/// private readonly AsyncLock mMutex = new AsyncLock();
 	/// public async Task DoStuffAsync()
 	/// {
@@ -174,7 +177,7 @@ namespace GriffinPlus.Lib.Threading
 		/// If this is already set, then this method will attempt to take the lock immediately (succeeding if the lock is currently available).
 		/// </param>
 		/// <returns>A disposable that releases the lock when disposed.</returns>
-		public AwaitableDisposable<IDisposable> LockAsync(CancellationToken cancellationToken = default(CancellationToken))
+		public AwaitableDisposable<IDisposable> LockAsync(CancellationToken cancellationToken = default)
 		{
 			return new AwaitableDisposable<IDisposable>(RequestLockAsync(cancellationToken));
 		}
@@ -188,7 +191,7 @@ namespace GriffinPlus.Lib.Threading
 		/// The cancellation token used to cancel the lock.
 		/// If this is already set, then this method will attempt to take the lock immediately (succeeding if the lock is currently available).
 		/// </param>
-		public IDisposable Lock(CancellationToken cancellationToken = default(CancellationToken))
+		public IDisposable Lock(CancellationToken cancellationToken = default)
 		{
 			return RequestLockAsync(cancellationToken).WaitAndUnwrapException();
 		}
@@ -210,7 +213,7 @@ namespace GriffinPlus.Lib.Threading
 		/// <summary>
 		/// The disposable which releases the lock.
 		/// </summary>
-		private sealed class Key : Disposables.SingleDisposable<AsyncLock>
+		private sealed class Key : SingleDisposable<AsyncLock>
 		{
 			/// <summary>
 			/// Creates the key for a lock.
@@ -238,10 +241,11 @@ namespace GriffinPlus.Lib.Threading
 				mMutex = mutex;
 			}
 
-			public int Id => mMutex.Id;
-			public bool Taken => mMutex.mTaken;
+			public int                          Id        => mMutex.Id;
+			public bool                         Taken     => mMutex.mTaken;
 			public IAsyncWaitQueue<IDisposable> WaitQueue => mMutex.mQueue;
 		}
 		// ReSharper restore UnusedMember.Local
 	}
+
 }

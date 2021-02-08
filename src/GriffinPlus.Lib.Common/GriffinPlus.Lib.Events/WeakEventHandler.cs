@@ -7,16 +7,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Emit;
 
 namespace GriffinPlus.Lib.Events
 {
+
 	/// <summary>
 	/// A weak event handler that provides a way to reference event receipients without preventing them from being
 	/// garbage collected.
 	/// </summary>
 	/// <typeparam name="EVENT_ARGS">Event arguments passed to the event handler.</typeparam>
-	public class WeakEventHandler<EVENT_ARGS> where EVENT_ARGS: EventArgs
+	public class WeakEventHandler<EVENT_ARGS> where EVENT_ARGS : EventArgs
 	{
 		#region Types
 
@@ -29,15 +29,15 @@ namespace GriffinPlus.Lib.Events
 		/// <summary>
 		/// Stores dynamically created delegates (value) that invoke a certain event handler method (key).
 		/// </summary>
-		private static Dictionary<MethodInfo,InvokeDelegate> sInvokeMethods = new Dictionary<MethodInfo,InvokeDelegate>();
+		private static readonly Dictionary<MethodInfo, InvokeDelegate> sInvokeMethods = new Dictionary<MethodInfo, InvokeDelegate>();
 
 		#endregion
 
 		#region Member Variables
 
-		internal readonly WeakReference       mTarget;
-		internal readonly MethodInfo          mMethod;
-		internal readonly InvokeDelegate      mInvoke;
+		internal readonly WeakReference  mTarget;
+		internal readonly MethodInfo     mMethod;
+		internal readonly InvokeDelegate mInvoke;
 
 		#endregion
 
@@ -56,17 +56,20 @@ namespace GriffinPlus.Lib.Events
 			{
 				if (!sInvokeMethods.TryGetValue(handler.Method, out mInvoke))
 				{
-					ParameterExpression[] parameterExpressions = new [] {
+					ParameterExpression[] parameterExpressions =
+					{
 						Expression.Parameter(typeof(object), "target"),
 						Expression.Parameter(typeof(object), "sender"),
 						Expression.Parameter(typeof(EVENT_ARGS), "e")
 					};
 
-					LambdaExpression callerExpression = Expression.Lambda(
+					var callerExpression = Expression.Lambda(
 						typeof(InvokeDelegate),
 						Expression.Call(
 							Expression.Convert(parameterExpressions[0], handler.Method.DeclaringType),
-							handler.Method, parameterExpressions[1], parameterExpressions[2]),
+							handler.Method,
+							parameterExpressions[1],
+							parameterExpressions[2]),
 						parameterExpressions);
 
 
@@ -83,10 +86,7 @@ namespace GriffinPlus.Lib.Events
 		/// <summary>
 		/// Checks whether the event handler is valid (true) or whether the target object has been garbage collected (false).
 		/// </summary>
-		public bool IsValid
-		{
-			get { return mTarget == null || mTarget.IsAlive; }
-		}
+		public bool IsValid => mTarget == null || mTarget.IsAlive;
 
 		#endregion
 
@@ -106,7 +106,7 @@ namespace GriffinPlus.Lib.Events
 			if (mTarget != null)
 			{
 				// event handler is an instance method
-				object target = mTarget.Target;
+				var target = mTarget.Target;
 				if (target != null)
 				{
 					// the target instance is still alive
@@ -114,21 +114,18 @@ namespace GriffinPlus.Lib.Events
 					mInvoke(target, sender, e);
 					return true;
 				}
-				else
-				{
-					// object has been garbage collected
-					return false;
-				}
+
+				// object has been garbage collected
+				return false;
 			}
-			else
-			{
-				// event handler is a static method
-				// => invoke event handler...
-				mInvoke(null, sender, e);
-				return true;
-			}
+
+			// event handler is a static method
+			// => invoke event handler...
+			mInvoke(null, sender, e);
+			return true;
 		}
 
 		#endregion
 	}
+
 }

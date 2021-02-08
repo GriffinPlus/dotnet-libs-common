@@ -4,29 +4,30 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Threading;
-using System.Runtime.CompilerServices;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace GriffinPlus.Lib.Events
 {
+
 	/// <summary>
 	/// Event manager that administrates event handlers in a central place.
-	/// Specifically made for <see cref="INotifyPropertyChanged.PropertyChanged" /> events.
+	/// Specifically made for <see cref="INotifyPropertyChanged.PropertyChanged"/> events.
 	/// Objects firing events do not need to implement own event add/remove logic, especially when it comes to firing
 	/// events asynchronously.
 	/// </summary>
 	public static class PropertyChangedEventManager
 	{
 		#region Internal Data Types
-		
+
 		/// <summary>
 		/// An event handler item in the event manager.
 		/// </summary>
 		private struct Item
 		{
-			public SynchronizationContext SynchronizationContext;
-			public PropertyChangedEventHandler Handler;
+			public readonly SynchronizationContext      SynchronizationContext;
+			public readonly PropertyChangedEventHandler Handler;
 
 			public Item(SynchronizationContext context, PropertyChangedEventHandler handler)
 			{
@@ -39,8 +40,8 @@ namespace GriffinPlus.Lib.Events
 
 		#region Class Variables
 
-		private static ConditionalWeakTable<object,Item[]> mItemsByObject = new ConditionalWeakTable<object,Item[]>();
-		private static object sSync = new object();
+		private static readonly ConditionalWeakTable<object, Item[]> mItemsByObject = new ConditionalWeakTable<object, Item[]>();
+		private static readonly object                               sSync          = new object();
 
 		#endregion
 
@@ -55,9 +56,9 @@ namespace GriffinPlus.Lib.Events
 		/// </param>
 		/// <returns>Total number of registered event handlers (including the specified event handler).</returns>
 		public static int RegisterEventHandler(
-			object obj,
+			object                      obj,
 			PropertyChangedEventHandler handler,
-			SynchronizationContext context)
+			SynchronizationContext      context)
 		{
 			return RegisterEventHandler(obj, handler, context, false, null, null);
 		}
@@ -86,12 +87,12 @@ namespace GriffinPlus.Lib.Events
 		/// Total number of registered event handlers (including the specified event handler).
 		/// </returns>
 		public static int RegisterEventHandler(
-			object obj,
+			object                      obj,
 			PropertyChangedEventHandler handler,
-			SynchronizationContext context,
-			bool fireImmediately,
-			object sender,
-			string propertyName)
+			SynchronizationContext      context,
+			bool                        fireImmediately,
+			object                      sender,
+			string                      propertyName)
 		{
 			Item[] newItems;
 
@@ -100,7 +101,7 @@ namespace GriffinPlus.Lib.Events
 				Item[] items;
 				if (mItemsByObject.TryGetValue(obj, out items))
 				{
-					newItems = new Item[items.Length+1];
+					newItems = new Item[items.Length + 1];
 					Array.Copy(items, newItems, items.Length);
 					newItems[items.Length] = new Item(context, handler);
 					mItemsByObject.Remove(obj);
@@ -108,16 +109,20 @@ namespace GriffinPlus.Lib.Events
 				}
 				else
 				{
-					newItems = new Item[] { new Item(context, handler) };
+					newItems = new[] { new Item(context, handler) };
 					mItemsByObject.Remove(obj);
 					mItemsByObject.Add(obj, newItems);
 				}
 			}
 
-			if (fireImmediately) {
-				if (context != null) {
-					context.Post((x) => { handler(sender, new PropertyChangedEventArgs(propertyName)); }, null);
-				} else {
+			if (fireImmediately)
+			{
+				if (context != null)
+				{
+					context.Post(x => { handler(sender, new PropertyChangedEventArgs(propertyName)); }, null);
+				}
+				else
+				{
 					handler(sender, new PropertyChangedEventArgs(propertyName));
 				}
 			}
@@ -139,29 +144,32 @@ namespace GriffinPlus.Lib.Events
 			lock (sSync)
 			{
 				Item[] items;
-				if (!mItemsByObject.TryGetValue(obj, out items)) {
+				if (!mItemsByObject.TryGetValue(obj, out items))
+				{
 					// specified event handler was not registered
 					return -1;
 				}
 
 				for (int i = 0; i < items.Length; i++)
 				{
-					PropertyChangedEventHandler registeredHandler = items[i].Handler;
+					var registeredHandler = items[i].Handler;
 					if (registeredHandler == handler)
 					{
-						Item[] newItems = new Item[items.Length-1];
-						for (int j = 0, k = 0; j < items.Length; j++) {
+						var newItems = new Item[items.Length - 1];
+						for (int j = 0, k = 0; j < items.Length; j++)
+						{
 							if (j != i) newItems[k++] = items[j];
 						}
 
-						if (newItems.Length > 0) {
+						if (newItems.Length > 0)
+						{
 							mItemsByObject.Remove(obj);
 							mItemsByObject.Add(obj, newItems);
 							return newItems.Length;
-						} else {
-							mItemsByObject.Remove(obj);
-							return 0;
 						}
+
+						mItemsByObject.Remove(obj);
+						return 0;
 					}
 				}
 
@@ -180,7 +188,8 @@ namespace GriffinPlus.Lib.Events
 			lock (sSync)
 			{
 				Item[] items;
-				if (!mItemsByObject.TryGetValue(obj, out items)) {
+				if (!mItemsByObject.TryGetValue(obj, out items))
+				{
 					return false;
 				}
 
@@ -206,11 +215,15 @@ namespace GriffinPlus.Lib.Events
 				if (!mItemsByObject.TryGetValue(obj, out items)) return;
 			}
 
-			PropertyChangedEventArgs e = new PropertyChangedEventArgs(propertyName);
-			foreach (Item item in items) {
-				if (item.SynchronizationContext != null) {
-					item.SynchronizationContext.Post((x) => { ((Item)x).Handler(obj, e); }, item);
-				} else {
+			var e = new PropertyChangedEventArgs(propertyName);
+			foreach (var item in items)
+			{
+				if (item.SynchronizationContext != null)
+				{
+					item.SynchronizationContext.Post(x => { ((Item)x).Handler(obj, e); }, item);
+				}
+				else
+				{
 					item.Handler(obj, e);
 				}
 			}
@@ -228,7 +241,7 @@ namespace GriffinPlus.Lib.Events
 		/// <param name="objectToKeepAlive">
 		/// Some object to keep alive until all handlers have run (useful when working with weak references).
 		/// </param>
-		public static void FireEvent<T>(object obj, string propertyName, T objectToKeepAlive) where T: class
+		public static void FireEvent<T>(object obj, string propertyName, T objectToKeepAlive) where T : class
 		{
 			Item[] items;
 
@@ -237,15 +250,18 @@ namespace GriffinPlus.Lib.Events
 				if (!mItemsByObject.TryGetValue(obj, out items)) return;
 			}
 
-			PropertyChangedEventArgs e = new PropertyChangedEventArgs(propertyName);
-			foreach (Item item in items)
+			var e = new PropertyChangedEventArgs(propertyName);
+			foreach (var item in items)
 			{
 				if (item.SynchronizationContext != null)
 				{
-					item.SynchronizationContext.Post((x) => {
-						((Item)x).Handler(obj, e);
-						GC.KeepAlive(objectToKeepAlive);
-					}, item);
+					item.SynchronizationContext.Post(
+						x =>
+						{
+							((Item)x).Handler(obj, e);
+							GC.KeepAlive(objectToKeepAlive);
+						},
+						item);
 				}
 				else
 				{
@@ -267,25 +283,28 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				if (!mItemsByObject.TryGetValue(obj, out items)) {
+				if (!mItemsByObject.TryGetValue(obj, out items))
+				{
 					return null;
 				}
 			}
 
 			PropertyChangedEventHandler handlers = null;
 
-			foreach (Item item in items)
+			foreach (var item in items)
 			{
 				if (item.SynchronizationContext != null)
 				{
-					handlers += (sender, e) => {
-						item.SynchronizationContext.Post((x) => { ((Item)x).Handler(sender, e); }, item);
+					handlers += (sender, e) =>
+					{
+						item.SynchronizationContext.Post(x => { ((Item)x).Handler(sender, e); }, item);
 					};
 				}
 				else
 				{
-					Item itemCopy = item;
-					handlers += (sender, e) => {
+					var itemCopy = item;
+					handlers += (sender, e) =>
+					{
 						itemCopy.Handler(sender, e);
 					};
 				}

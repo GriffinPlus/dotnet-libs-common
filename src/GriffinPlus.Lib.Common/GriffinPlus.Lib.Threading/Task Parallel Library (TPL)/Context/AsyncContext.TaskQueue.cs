@@ -30,10 +30,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public sealed partial class AsyncContext
 	{
 		/// <summary>
@@ -69,10 +71,11 @@ namespace GriffinPlus.Lib.Threading
 			/// scheduler waiting to be executed.
 			/// </summary>
 			/// <returns>An enumerable that allows traversal of tasks currently queued to this scheduler.</returns>
-			[System.Diagnostics.DebuggerNonUserCode]
+			[DebuggerNonUserCode]
 			internal IEnumerable<Task> GetScheduledTasks()
 			{
-				foreach (var item in mQueue) {
+				foreach (var item in mQueue)
+				{
 					yield return item.Item1;
 				}
 			}
@@ -117,4 +120,5 @@ namespace GriffinPlus.Lib.Threading
 			}
 		}
 	}
+
 }

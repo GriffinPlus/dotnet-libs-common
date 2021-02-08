@@ -30,12 +30,15 @@
 using System;
 using System.Threading;
 
+using GriffinPlus.Lib.Disposables;
+
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Utility class for temporarily switching <see cref="SynchronizationContext"/> implementations.
 	/// </summary>
-	public sealed class SynchronizationContextSwitcher : Disposables.SingleDisposable<object>
+	public sealed class SynchronizationContextSwitcher : SingleDisposable<object>
 	{
 		/// <summary>
 		/// The previous <see cref="SynchronizationContext"/>.
@@ -72,7 +75,8 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="action">The delegate to execute.</param>
 		public static void NoContext(Action action)
 		{
-			using (new SynchronizationContextSwitcher(null)) {
+			using (new SynchronizationContextSwitcher(null))
+			{
 				action();
 			}
 		}
@@ -84,7 +88,8 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="action">The delegate to execute.</param>
 		public static T NoContext<T>(Func<T> action)
 		{
-			using (new SynchronizationContextSwitcher(null)) {
+			using (new SynchronizationContextSwitcher(null))
+			{
 				return action();
 			}
 		}
@@ -97,7 +102,8 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="action">The delegate to execute.</param>
 		public static void ApplyContext(SynchronizationContext context, Action action)
 		{
-			using (new SynchronizationContextSwitcher(context)) {
+			using (new SynchronizationContextSwitcher(context))
+			{
 				action();
 			}
 		}
@@ -110,9 +116,11 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="action">The delegate to execute.</param>
 		public static T ApplyContext<T>(SynchronizationContext context, Func<T> action)
 		{
-			using (new SynchronizationContextSwitcher(context)) {
+			using (new SynchronizationContextSwitcher(context))
+			{
 				return action();
 			}
 		}
 	}
+
 }

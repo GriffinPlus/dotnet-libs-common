@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace GriffinPlus.Lib
 {
+
 	/// <summary>
 	/// Some helper methods around working with regular expressions.
 	/// </summary>
@@ -34,6 +35,6 @@ namespace GriffinPlus.Lib
 			string regex = "^" + Regex.Escape(expression).Replace("\\*", ".*").Replace("\\?", ".") + "$"; // greedy
 			return new Regex(regex, regexOptions);
 		}
-
 	}
+
 }

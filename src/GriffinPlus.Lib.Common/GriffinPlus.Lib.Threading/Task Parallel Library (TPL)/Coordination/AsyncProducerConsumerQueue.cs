@@ -35,6 +35,7 @@ using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// An async-compatible producer/consumer queue.
 	/// </summary>
@@ -174,6 +175,7 @@ namespace GriffinPlus.Lib.Threading
 				while (Full && !mCompleted)
 				{
 					if (sync)
+						// ReSharper disable once MethodHasAsyncOverload
 						mCompletedOrNotFull.Wait(cancellationToken);
 					else
 						await mCompletedOrNotFull.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -195,7 +197,7 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="item">The item to enqueue.</param>
 		/// <param name="cancellationToken">A cancellation token that can be used to abort the enqueue operation.</param>
 		/// <exception cref="InvalidOperationException">The producer/consumer queue has been marked complete for adding.</exception>
-		public Task EnqueueAsync(T item, CancellationToken cancellationToken = default(CancellationToken))
+		public Task EnqueueAsync(T item, CancellationToken cancellationToken = default)
 		{
 			return DoEnqueueAsync(item, cancellationToken, false);
 		}
@@ -208,7 +210,7 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="item">The item to enqueue.</param>
 		/// <param name="cancellationToken">A cancellation token that can be used to abort the enqueue operation.</param>
 		/// <exception cref="InvalidOperationException">The producer/consumer queue has been marked complete for adding.</exception>
-		public void Enqueue(T item, CancellationToken cancellationToken = default(CancellationToken))
+		public void Enqueue(T item, CancellationToken cancellationToken = default)
 		{
 			DoEnqueueAsync(item, cancellationToken, true).WaitAndUnwrapException(CancellationToken.None);
 		}
@@ -229,10 +231,12 @@ namespace GriffinPlus.Lib.Threading
 				while (Empty && !mCompleted)
 				{
 					if (sync)
+						// ReSharper disable once MethodHasAsyncOverload
 						mCompletedOrNotEmpty.Wait(cancellationToken);
 					else
 						await mCompletedOrNotEmpty.WaitAsync(cancellationToken).ConfigureAwait(false);
 				}
+
 				return !Empty;
 			}
 		}
@@ -242,7 +246,7 @@ namespace GriffinPlus.Lib.Threading
 		/// Returns <c>false</c> if the producer/consumer queue has completed adding and there are no more items.
 		/// </summary>
 		/// <param name="cancellationToken">A cancellation token that can be used to abort the asynchronous wait.</param>
-		public Task<bool> OutputAvailableAsync(CancellationToken cancellationToken = default(CancellationToken))
+		public Task<bool> OutputAvailableAsync(CancellationToken cancellationToken = default)
 		{
 			return DoOutputAvailableAsync(cancellationToken, false);
 		}
@@ -252,7 +256,7 @@ namespace GriffinPlus.Lib.Threading
 		/// Returns <c>false</c> if the producer/consumer queue has completed adding and there are no more items.
 		/// </summary>
 		/// <param name="cancellationToken">A cancellation token that can be used to abort the asynchronous wait.</param>
-		public bool OutputAvailable(CancellationToken cancellationToken = default(CancellationToken))
+		public bool OutputAvailable(CancellationToken cancellationToken = default)
 		{
 			return DoOutputAvailableAsync(cancellationToken, true).WaitAndUnwrapException();
 		}
@@ -261,7 +265,7 @@ namespace GriffinPlus.Lib.Threading
 		/// Provides a (synchronous) consuming enumerable for items in the producer/consumer queue.
 		/// </summary>
 		/// <param name="cancellationToken">A cancellation token that can be used to abort the synchronous enumeration.</param>
-		public IEnumerable<T> GetConsumingEnumerable(CancellationToken cancellationToken = default(CancellationToken))
+		public IEnumerable<T> GetConsumingEnumerable(CancellationToken cancellationToken = default)
 		{
 			while (true)
 			{
@@ -289,6 +293,7 @@ namespace GriffinPlus.Lib.Threading
 				while (Empty && !mCompleted)
 				{
 					if (sync)
+						// ReSharper disable once MethodHasAsyncOverload
 						mCompletedOrNotEmpty.Wait(cancellationToken);
 					else
 						await mCompletedOrNotEmpty.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -328,7 +333,7 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="cancellationToken">A cancellation token that can be used to abort the dequeue operation.</param>
 		/// <returns>The dequeued item.</returns>
 		/// <exception cref="InvalidOperationException">The producer/consumer queue has been marked complete for adding and is empty.</exception>
-		public Task<T> DequeueAsync(CancellationToken cancellationToken = default(CancellationToken))
+		public Task<T> DequeueAsync(CancellationToken cancellationToken = default)
 		{
 			return DoDequeueAsync(cancellationToken, false);
 		}
@@ -342,7 +347,7 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="cancellationToken">A cancellation token that can be used to abort the dequeue operation.</param>
 		/// <returns>The dequeued item.</returns>
 		/// <exception cref="InvalidOperationException">The producer/consumer queue has been marked complete for adding and is empty.</exception>
-		public T Dequeue(CancellationToken cancellationToken = default(CancellationToken))
+		public T Dequeue(CancellationToken cancellationToken = default)
 		{
 			return DoDequeueAsync(cancellationToken, true).WaitAndUnwrapException();
 		}

@@ -34,6 +34,7 @@ using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// An async-compatible monitor.
 	/// Note that the monitor is <b>not</b> recursive!
@@ -114,7 +115,7 @@ namespace GriffinPlus.Lib.Threading
 		/// The cancellation token used to cancel the enter.
 		/// If this is already set, then this method will attempt to enter the monitor immediately (succeeding if the monitor is currently available).
 		/// </param>
-		public IDisposable Enter(CancellationToken cancellationToken = default(CancellationToken))
+		public IDisposable Enter(CancellationToken cancellationToken = default)
 		{
 			return mAsyncLock.Lock(cancellationToken);
 		}
@@ -125,7 +126,7 @@ namespace GriffinPlus.Lib.Threading
 		/// This method internally will leave the monitor while waiting for a notification.
 		/// </summary>
 		/// <param name="cancellationToken">The cancellation signal used to cancel this wait.</param>
-		public Task WaitAsync(CancellationToken cancellationToken = default(CancellationToken))
+		public Task WaitAsync(CancellationToken cancellationToken = default)
 		{
 			return mConditionVariable.WaitAsync(cancellationToken);
 		}
@@ -137,7 +138,7 @@ namespace GriffinPlus.Lib.Threading
 		/// This method internally will leave the monitor while waiting for a notification.
 		/// </summary>
 		/// <param name="cancellationToken">The cancellation signal used to cancel this wait.</param>
-		public void Wait(CancellationToken cancellationToken = default(CancellationToken))
+		public void Wait(CancellationToken cancellationToken = default)
 		{
 			mConditionVariable.Wait(cancellationToken);
 		}
@@ -160,4 +161,5 @@ namespace GriffinPlus.Lib.Threading
 			mConditionVariable.NotifyAll();
 		}
 	}
+
 }

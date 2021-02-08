@@ -7,6 +7,7 @@ using System;
 
 namespace GriffinPlus.Lib
 {
+
 	/// <summary>
 	/// Extension methods for <see cref="System.Single"/>.
 	/// </summary>
@@ -26,4 +27,5 @@ namespace GriffinPlus.Lib
 			return difference <= tolerance;
 		}
 	}
+
 }

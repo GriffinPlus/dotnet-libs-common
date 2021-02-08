@@ -27,22 +27,23 @@
 //     SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+
 using GriffinPlus.Lib.Collections;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// The default wait queue implementation, which uses a double-ended queue.
 	/// </summary>
-	/// <typeparam name="T">The type of the results. If this isn't needed, use <see cref="Object"/>.</typeparam>
+	/// <typeparam name="T">The type of the results. If this isn't needed, use <see cref="object"/>.</typeparam>
 	[DebuggerDisplay("Count = {Count}")]
 	[DebuggerTypeProxy(typeof(DefaultAsyncWaitQueue<>.DebugView))]
-	internal sealed class DefaultAsyncWaitQueue<T> : IAsyncWaitQueue<T>
+	sealed class DefaultAsyncWaitQueue<T> : IAsyncWaitQueue<T>
 	{
 		private readonly Deque<TaskCompletionSource<T>> mQueue = new Deque<TaskCompletionSource<T>>();
 
@@ -65,7 +66,10 @@ namespace GriffinPlus.Lib.Threading
 		void IAsyncWaitQueue<T>.DequeueAll(T result)
 		{
 			foreach (var source in mQueue)
+			{
 				source.TrySetResult(result);
+			}
+
 			mQueue.Clear();
 		}
 
@@ -80,13 +84,16 @@ namespace GriffinPlus.Lib.Threading
 					return true;
 				}
 			}
+
 			return false;
 		}
 
 		void IAsyncWaitQueue<T>.CancelAll(CancellationToken cancellationToken)
 		{
 			foreach (var source in mQueue)
+			{
 				source.TrySetCanceled(cancellationToken);
+			}
 
 			mQueue.Clear();
 		}
@@ -108,10 +115,14 @@ namespace GriffinPlus.Lib.Threading
 				{
 					var result = new List<Task<T>>(mQueue.mQueue.Count);
 					foreach (var entry in mQueue.mQueue)
+					{
 						result.Add(entry.Task);
+					}
+
 					return result.ToArray();
 				}
 			}
 		}
 	}
+
 }

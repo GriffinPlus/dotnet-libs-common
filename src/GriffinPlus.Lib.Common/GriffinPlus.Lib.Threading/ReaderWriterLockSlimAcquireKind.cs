@@ -5,6 +5,7 @@
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Acquire type determining how to acquire a <see cref="System.Threading.ReaderWriterLockSlim"/>.
 	/// </summary>
@@ -23,6 +24,7 @@ namespace GriffinPlus.Lib.Threading
 		/// <summary>
 		/// Acquire the lock for reading and writing.
 		/// </summary>
-		ReadWrite,
+		ReadWrite
 	}
+
 }

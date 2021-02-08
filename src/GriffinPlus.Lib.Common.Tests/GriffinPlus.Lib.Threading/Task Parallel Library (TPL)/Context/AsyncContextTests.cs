@@ -28,19 +28,21 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class AsyncContextTests
 	{
 		[Fact]
 		public void AsyncContext_StaysOnSameThread()
 		{
-			var testThread = Thread.CurrentThread.ManagedThreadId;
-			var contextThread = AsyncContext.Run(() => Thread.CurrentThread.ManagedThreadId);
+			int testThread = Thread.CurrentThread.ManagedThreadId;
+			int contextThread = AsyncContext.Run(() => Thread.CurrentThread.ManagedThreadId);
 			Assert.Equal(testThread, contextThread);
 		}
 
@@ -48,11 +50,12 @@ namespace GriffinPlus.Lib.Threading
 		public void Run_AsyncVoid_BlocksUntilCompletion()
 		{
 			bool resumed = false;
-			AsyncContext.Run((Action)(async () =>
-			{
-				await Task.Yield();
-				resumed = true;
-			}));
+			AsyncContext.Run(
+				(Action)(async () =>
+					        {
+						        await Task.Yield();
+						        resumed = true;
+					        }));
 			Assert.True(resumed);
 		}
 
@@ -60,16 +63,17 @@ namespace GriffinPlus.Lib.Threading
 		public void Run_FuncThatCallsAsyncVoid_BlocksUntilCompletion()
 		{
 			bool resumed = false;
-			var result = AsyncContext.Run((Func<int>)(() =>
-			{
-				Action asyncVoid = async () =>
+			int result = AsyncContext.Run(
+				() =>
 				{
-					await Task.Yield();
-					resumed = true;
-				};
-				asyncVoid();
-				return 13;
-			}));
+					Action asyncVoid = async () =>
+					{
+						await Task.Yield();
+						resumed = true;
+					};
+					asyncVoid();
+					return 13;
+				});
 			Assert.True(resumed);
 			Assert.Equal(13, result);
 		}
@@ -78,11 +82,12 @@ namespace GriffinPlus.Lib.Threading
 		public void Run_AsyncTask_BlocksUntilCompletion()
 		{
 			bool resumed = false;
-			AsyncContext.Run(async () =>
-			{
-				await Task.Yield();
-				resumed = true;
-			});
+			AsyncContext.Run(
+				async () =>
+				{
+					await Task.Yield();
+					resumed = true;
+				});
 			Assert.True(resumed);
 		}
 
@@ -90,12 +95,13 @@ namespace GriffinPlus.Lib.Threading
 		public void Run_AsyncTaskWithResult_BlocksUntilCompletion()
 		{
 			bool resumed = false;
-			var result = AsyncContext.Run(async () =>
-			{
-				await Task.Yield();
-				resumed = true;
-				return 17;
-			});
+			int result = AsyncContext.Run(
+				async () =>
+				{
+					await Task.Yield();
+					resumed = true;
+					return 17;
+				});
 			Assert.True(resumed);
 			Assert.Equal(17, result);
 		}
@@ -111,10 +117,11 @@ namespace GriffinPlus.Lib.Threading
 		{
 			AsyncContext observedContext = null;
 			var context = new AsyncContext();
-			context.Factory.Run(() =>
-			{
-				observedContext = AsyncContext.Current;
-			});
+			context.Factory.Run(
+				() =>
+				{
+					observedContext = AsyncContext.Current;
+				});
 
 			context.Execute();
 
@@ -126,10 +133,11 @@ namespace GriffinPlus.Lib.Threading
 		{
 			SynchronizationContext observedContext = null;
 			var context = new AsyncContext();
-			context.Factory.Run(() =>
-			{
-				observedContext = SynchronizationContext.Current;
-			});
+			context.Factory.Run(
+				() =>
+				{
+					observedContext = SynchronizationContext.Current;
+				});
 
 			context.Execute();
 
@@ -141,10 +149,11 @@ namespace GriffinPlus.Lib.Threading
 		{
 			TaskScheduler observedScheduler = null;
 			var context = new AsyncContext();
-			context.Factory.Run(() =>
-			{
-				observedScheduler = TaskScheduler.Current;
-			});
+			context.Factory.Run(
+				() =>
+				{
+					observedScheduler = TaskScheduler.Current;
+				});
 
 			context.Execute();
 
@@ -168,18 +177,24 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void Run_Async_PropagatesException()
 		{
-			Action test = () => AsyncContext.Run(async () => { await Task.Yield(); throw new NotImplementedException(); });
+			Action test = () => AsyncContext.Run(
+				async () =>
+				{
+					await Task.Yield();
+					throw new NotImplementedException();
+				});
 			Assert.Throws<NotImplementedException>(test);
 		}
 
 		[Fact]
 		public void SynchronizationContextPost_PropagatesException()
 		{
-			Action test = () => AsyncContext.Run(async () =>
-			{
-				SynchronizationContext.Current.Post(_ => { throw new NotImplementedException(); }, null);
-				await Task.Yield();
-			});
+			Action test = () => AsyncContext.Run(
+				async () =>
+				{
+					SynchronizationContext.Current.Post(_ => { throw new NotImplementedException(); }, null);
+					await Task.Yield();
+				});
 
 			Assert.Throws<NotImplementedException>(test);
 		}
@@ -202,11 +217,12 @@ namespace GriffinPlus.Lib.Threading
 			using (var thread = new AsyncContextThread())
 			{
 				int value = 0;
-				await thread.Factory.Run(() =>
-				{
-					SynchronizationContext.Current.Send(_ => { value = 13; }, null);
-					Assert.Equal(13, value);
-				});
+				await thread.Factory.Run(
+					() =>
+					{
+						SynchronizationContext.Current.Send(_ => { value = 13; }, null);
+						Assert.Equal(13, value);
+					});
 				Assert.Equal(13, value);
 			}
 		}
@@ -242,4 +258,5 @@ namespace GriffinPlus.Lib.Threading
 			Assert.Equal(context.Scheduler.Id, context.Id);
 		}
 	}
+
 }

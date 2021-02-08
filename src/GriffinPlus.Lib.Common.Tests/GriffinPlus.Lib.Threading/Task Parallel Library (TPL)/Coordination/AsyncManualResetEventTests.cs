@@ -27,12 +27,15 @@
 //     SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using GriffinPlus.Lib.Tests;
 using System.Threading.Tasks;
+
+using GriffinPlus.Lib.Tests;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class AsyncManualResetEventTests
 	{
 		[Fact]
@@ -168,4 +171,5 @@ namespace GriffinPlus.Lib.Threading
 			Assert.NotEqual(0, mre.Id);
 		}
 	}
+
 }

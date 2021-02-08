@@ -4,13 +4,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Provides an enumerator that keeps a monitor synchronized object locked during enumeration.
 	/// </summary>
@@ -18,7 +19,7 @@ namespace GriffinPlus.Lib.Threading
 	{
 		private readonly IEnumerator<T> mInner;
 		private readonly object         mSync;
-		private bool                    mDisposed;
+		private          bool           mDisposed;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MonitorSynchronizedEnumerator{T}"/> class.
@@ -61,9 +62,7 @@ namespace GriffinPlus.Lib.Threading
 				else
 				{
 					// enumerator is finalized, it was not disposed explicitly before
-					Debug.Fail(
-						"The {0} was not disposed. The collection the enumerator is associated with was not unblocked!",
-						typeof(MonitorSynchronizedEnumerator<T>).FullName);
+					Debug.Fail($"The {typeof(MonitorSynchronizedEnumerator<T>).FullName} was not disposed. The collection the enumerator is associated with was not unblocked!");
 				}
 			}
 		}
@@ -98,18 +97,12 @@ namespace GriffinPlus.Lib.Threading
 		/// <summary>
 		/// Gets the element the enumerator points to.
 		/// </summary>
-		public T Current
-		{
-			get { return mInner.Current; }
-		}
+		public T Current => mInner.Current;
 
 		/// <summary>
 		/// Gets the element the enumerator points to.
 		/// </summary>
-		object IEnumerator.Current
-		{
-			get { return Current; }
-		}
-
+		object IEnumerator.Current => Current;
 	}
+
 }

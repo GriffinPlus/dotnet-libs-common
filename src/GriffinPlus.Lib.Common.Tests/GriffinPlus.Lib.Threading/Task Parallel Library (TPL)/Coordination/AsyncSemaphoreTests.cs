@@ -30,11 +30,14 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 using GriffinPlus.Lib.Tests;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class AsyncSemaphoreTests
 	{
 		[Fact]
@@ -104,6 +107,7 @@ namespace GriffinPlus.Lib.Threading
 
 			try { await task; }
 			catch (OperationCanceledException) { }
+
 			semaphore.Release();
 			Assert.Equal(1, semaphore.CurrentCount);
 			Assert.True(task.IsCanceled);
@@ -158,4 +162,5 @@ namespace GriffinPlus.Lib.Threading
 			Assert.NotEqual(0, semaphore.Id);
 		}
 	}
+
 }

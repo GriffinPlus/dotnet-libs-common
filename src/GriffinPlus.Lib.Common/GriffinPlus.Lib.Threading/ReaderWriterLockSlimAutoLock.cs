@@ -8,6 +8,7 @@ using System.Threading;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Helper class that enables a <see cref="ReaderWriterLockSlim"/> to be used in a <c>using</c> statement that
 	/// ensures that the lock is released properly at the end of the <c>using</c> block.
@@ -44,14 +45,17 @@ namespace GriffinPlus.Lib.Threading
 				case ReaderWriterLockSlimAcquireKind.Read:
 					Lock.EnterReadLock();
 					break;
+
 				case ReaderWriterLockSlimAcquireKind.UpgradeableRead:
 					Lock.EnterUpgradeableReadLock();
 					break;
+
 				case ReaderWriterLockSlimAcquireKind.ReadWrite:
 					Lock.EnterWriteLock();
 					break;
+
 				default:
-					throw new ArgumentException("Invalid acquire type.", nameof (acquireKind));
+					throw new ArgumentException("Invalid acquire type.", nameof(acquireKind));
 			}
 		}
 
@@ -72,14 +76,17 @@ namespace GriffinPlus.Lib.Threading
 				case ReaderWriterLockSlimAcquireKind.Read:
 					mIsLockAcquired = Lock.TryEnterReadLock(timeout);
 					break;
+
 				case ReaderWriterLockSlimAcquireKind.UpgradeableRead:
 					mIsLockAcquired = Lock.TryEnterUpgradeableReadLock(timeout);
 					break;
+
 				case ReaderWriterLockSlimAcquireKind.ReadWrite:
 					mIsLockAcquired = Lock.TryEnterWriteLock(timeout);
 					break;
+
 				default:
-					throw new ArgumentException("Invalid acquire type.", nameof (acquireKind));
+					throw new ArgumentException("Invalid acquire type.", nameof(acquireKind));
 			}
 
 			if (!mIsLockAcquired) throw new TimeoutException("The locked could not be acquired within the specified time.");
@@ -97,9 +104,11 @@ namespace GriffinPlus.Lib.Threading
 					case ReaderWriterLockSlimAcquireKind.Read:
 						Lock.ExitReadLock();
 						break;
+
 					case ReaderWriterLockSlimAcquireKind.UpgradeableRead:
 						Lock.ExitUpgradeableReadLock();
 						break;
+
 					case ReaderWriterLockSlimAcquireKind.ReadWrite:
 						Lock.ExitWriteLock();
 						break;
@@ -109,4 +118,5 @@ namespace GriffinPlus.Lib.Threading
 			}
 		}
 	}
+
 }

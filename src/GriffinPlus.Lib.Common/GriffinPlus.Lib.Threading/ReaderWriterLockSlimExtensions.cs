@@ -8,6 +8,7 @@ using System.Threading;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Extension methods for the <see cref="System.Threading.ReaderWriterLockSlim"/> class.
 	/// </summary>
@@ -111,4 +112,5 @@ namespace GriffinPlus.Lib.Threading
 			return new ReaderWriterLockSlimAutoLock(@this, kind, timeout);
 		}
 	}
+
 }

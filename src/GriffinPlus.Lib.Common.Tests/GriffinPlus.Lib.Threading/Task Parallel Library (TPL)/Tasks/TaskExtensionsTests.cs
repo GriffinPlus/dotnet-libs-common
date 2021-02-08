@@ -28,13 +28,15 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Threading.Tasks;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class TaskExtensionsTests
 	{
 		#region Waiting for Task (Synchronous)
@@ -205,7 +207,7 @@ namespace GriffinPlus.Lib.Threading
 			Task sourceTask = new TaskCompletionSource<object>().Task;
 			var cts = new CancellationTokenSource();
 			var task = Task.Run(() => sourceTask.WaitWithoutException(cts.Token));
-			var result = task.Wait(500);
+			bool result = task.Wait(500);
 			Assert.False(result);
 			cts.Cancel();
 			await Assert.ThrowsAsync<OperationCanceledException>(() => task);
@@ -415,19 +417,19 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task OrderByCompletion_OrdersByCompletion()
 		{
-			var tcs = new TaskCompletionSource<int>[] { new TaskCompletionSource<int>(), new TaskCompletionSource<int>() };
+			var tcs = new[] { new TaskCompletionSource<int>(), new TaskCompletionSource<int>() };
 			var results = tcs.Select(x => x.Task).OrderByCompletion();
 
 			Assert.False(results[0].IsCompleted);
 			Assert.False(results[1].IsCompleted);
 
 			tcs[1].SetResult(13);
-			var result0 = await results[0];
+			int result0 = await results[0];
 			Assert.False(results[1].IsCompleted);
 			Assert.Equal(13, result0);
 
 			tcs[0].SetResult(17);
-			var result1 = await results[1];
+			int result1 = await results[1];
 			Assert.Equal(13, result0);
 			Assert.Equal(17, result1);
 		}
@@ -435,7 +437,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task OrderByCompletion_PropagatesFaultOnFirstCompletion()
 		{
-			var tcs = new TaskCompletionSource<int>[] { new TaskCompletionSource<int>(), new TaskCompletionSource<int>() };
+			var tcs = new[] { new TaskCompletionSource<int>(), new TaskCompletionSource<int>() };
 			var results = tcs.Select(x => x.Task).OrderByCompletion();
 
 			tcs[1].SetException(new InvalidOperationException("test message"));
@@ -455,7 +457,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task OrderByCompletion_PropagatesFaultOnSecondCompletion()
 		{
-			var tcs = new TaskCompletionSource<int>[] { new TaskCompletionSource<int>(), new TaskCompletionSource<int>() };
+			var tcs = new[] { new TaskCompletionSource<int>(), new TaskCompletionSource<int>() };
 			var results = tcs.Select(x => x.Task).OrderByCompletion();
 
 			tcs[0].SetResult(13);
@@ -477,7 +479,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task OrderByCompletion_PropagatesCancelOnFirstCompletion()
 		{
-			var tcs = new TaskCompletionSource<int>[] { new TaskCompletionSource<int>(), new TaskCompletionSource<int>() };
+			var tcs = new[] { new TaskCompletionSource<int>(), new TaskCompletionSource<int>() };
 			var results = tcs.Select(x => x.Task).OrderByCompletion();
 
 			tcs[1].SetCanceled();
@@ -496,7 +498,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task OrderByCompletion_PropagatesCancelOnSecondCompletion()
 		{
-			var tcs = new TaskCompletionSource<int>[] { new TaskCompletionSource<int>(), new TaskCompletionSource<int>() };
+			var tcs = new[] { new TaskCompletionSource<int>(), new TaskCompletionSource<int>() };
 			var results = tcs.Select(x => x.Task).OrderByCompletion();
 
 			tcs[0].SetResult(13);
@@ -525,7 +527,9 @@ namespace GriffinPlus.Lib.Threading
 				if (ex.InnerException is OperationCanceledException oce)
 					return oce.CancellationToken;
 			}
+
 			return CancellationToken.None;
 		}
 	}
+
 }

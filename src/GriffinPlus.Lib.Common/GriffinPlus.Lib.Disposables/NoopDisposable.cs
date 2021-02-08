@@ -31,6 +31,7 @@ using System;
 
 namespace GriffinPlus.Lib.Disposables
 {
+
 	/// <summary>
 	/// A singleton disposable that does nothing when disposed.
 	/// </summary>
@@ -52,4 +53,5 @@ namespace GriffinPlus.Lib.Disposables
 		/// </summary>
 		public static NoopDisposable Instance { get; } = new NoopDisposable();
 	}
+
 }

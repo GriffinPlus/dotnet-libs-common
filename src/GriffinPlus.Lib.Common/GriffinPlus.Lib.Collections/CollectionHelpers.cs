@@ -33,6 +33,7 @@ using System.Collections.Generic;
 
 namespace GriffinPlus.Lib.Collections
 {
+
 	/// <summary>
 	/// Common helpers for custom collections.
 	/// </summary>
@@ -75,7 +76,9 @@ namespace GriffinPlus.Lib.Collections
 			public IEnumerator<T> GetEnumerator()
 			{
 				foreach (T item in mCollection)
+				{
 					yield return item;
+				}
 			}
 
 			IEnumerator IEnumerable.GetEnumerator()
@@ -106,4 +109,5 @@ namespace GriffinPlus.Lib.Collections
 			}
 		}
 	}
+
 }

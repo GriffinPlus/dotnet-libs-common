@@ -39,6 +39,7 @@ using System;
 
 namespace GriffinPlus.Lib.Disposables
 {
+
 	/// <summary>
 	/// A disposable that executes a delegate when disposed.
 	/// </summary>
@@ -56,8 +57,11 @@ namespace GriffinPlus.Lib.Disposables
 		{
 		}
 
-		/// <inheritdoc />
-		protected override void Dispose(Action context) => context?.Invoke();
+		/// <inheritdoc/>
+		protected override void Dispose(Action context)
+		{
+			context?.Invoke();
+		}
 
 		/// <summary>
 		/// Adds a delegate to be executed when this instance is disposed.
@@ -77,6 +81,10 @@ namespace GriffinPlus.Lib.Disposables
 		/// Creates a new disposable that executes <paramref name="dispose"/> when disposed.
 		/// </summary>
 		/// <param name="dispose">The delegate to execute when disposed. May not be <c>null</c>.</param>
-		public static AnonymousDisposable Create(Action dispose) => new AnonymousDisposable(dispose);
+		public static AnonymousDisposable Create(Action dispose)
+		{
+			return new AnonymousDisposable(dispose);
+		}
 	}
+
 }

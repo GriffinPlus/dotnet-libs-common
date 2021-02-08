@@ -4,13 +4,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Unit tests targeting the <see cref="ReaderWriterLockSlimExtensions"/> class.
 	/// </summary>
@@ -23,7 +24,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void LockReadOnly_WithoutTimeout()
 		{
-			ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
 			using (rwlock.LockReadOnly())
 			{
@@ -38,7 +39,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void LockReadOnly_WithTimeout_Success()
 		{
-			ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
 			using (rwlock.LockReadOnly(TIMEOUT))
 			{
@@ -53,7 +54,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task LockReadOnly_WithTimeout_Timeout()
 		{
-			ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
 			// let some other thread acquire the lock
 			await Task.Run(() => rwlock.EnterWriteLock());
@@ -69,7 +70,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void LockUpgradeableRead_WithoutTimeout()
 		{
-			ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
 			using (rwlock.LockUpgradeableRead())
 			{
@@ -84,7 +85,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void LockUpgradeableRead_WithoutTimeout_WithUpgradeToWrite()
 		{
-			ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
 			using (rwlock.LockUpgradeableRead())
 			{
@@ -108,7 +109,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void LockUpgradeableRead_WithTimeout_Success()
 		{
-			ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
 			using (rwlock.LockUpgradeableRead(TIMEOUT))
 			{
@@ -123,7 +124,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task LockUpgradeableRead_WithTimeout_Timeout()
 		{
-			ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
 			// let some other thread acquire the lock
 			await Task.Run(() => rwlock.EnterWriteLock());
@@ -139,7 +140,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void LockReadWrite_WithoutTimeout()
 		{
-			ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
 			using (rwlock.LockReadWrite())
 			{
@@ -154,7 +155,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void LockReadWrite_WithTimeout_Success()
 		{
-			ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
 			using (rwlock.LockUpgradeableRead(TIMEOUT))
 			{
@@ -169,7 +170,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task LockReadWrite_WithTimeout_Timeout()
 		{
-			ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
 			// let some other thread acquire the lock
 			await Task.Run(() => rwlock.EnterWriteLock());
@@ -180,4 +181,5 @@ namespace GriffinPlus.Lib.Threading
 
 		#endregion
 	}
+
 }

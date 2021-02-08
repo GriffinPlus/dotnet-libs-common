@@ -3,13 +3,13 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Linq;
 using System.Threading;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Unit tests targeting the <see cref="ReaderWriterLockSlimAutoLock"/> struct.
 	/// </summary>
@@ -21,8 +21,8 @@ namespace GriffinPlus.Lib.Threading
 		[InlineData(ReaderWriterLockSlimAcquireKind.ReadWrite)]
 		public void Create(ReaderWriterLockSlimAcquireKind kind)
 		{
-			ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
-			ReaderWriterLockSlimAutoLock autolock = new ReaderWriterLockSlimAutoLock(rwlock, kind);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var autolock = new ReaderWriterLockSlimAutoLock(rwlock, kind);
 
 			Assert.Same(rwlock, autolock.Lock);
 			Assert.Equal(kind, autolock.AcquireKind);
@@ -37,8 +37,8 @@ namespace GriffinPlus.Lib.Threading
 		[InlineData(ReaderWriterLockSlimAcquireKind.ReadWrite)]
 		public void Dispose(ReaderWriterLockSlimAcquireKind kind)
 		{
-			ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
-			ReaderWriterLockSlimAutoLock autolock = new ReaderWriterLockSlimAutoLock(rwlock, kind);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var autolock = new ReaderWriterLockSlimAutoLock(rwlock, kind);
 			autolock.Dispose();
 
 			Assert.Same(rwlock, autolock.Lock);
@@ -48,4 +48,5 @@ namespace GriffinPlus.Lib.Threading
 			Assert.False(rwlock.IsWriteLockHeld);
 		}
 	}
+
 }

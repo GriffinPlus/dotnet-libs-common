@@ -32,6 +32,7 @@ using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Provides completed task constants.
 	/// </summary>
@@ -84,4 +85,5 @@ namespace GriffinPlus.Lib.Threading
 		/// </summary>
 		public static Task<T> Canceled { get; } = Task.FromCanceled<T>(new CancellationToken(true));
 	}
+
 }

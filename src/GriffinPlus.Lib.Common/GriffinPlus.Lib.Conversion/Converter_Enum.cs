@@ -8,6 +8,7 @@ using System.Diagnostics;
 
 namespace GriffinPlus.Lib.Conversion
 {
+
 	/// <summary>
 	/// A converter that can translate an enumeration value to a string and vice versa.
 	/// </summary>
@@ -35,7 +36,7 @@ namespace GriffinPlus.Lib.Conversion
 		/// A format provider that controls how the conversion is done
 		/// (null to use the current thread's culture to determine the format).
 		/// </param>
-		/// <returns>The string represention of the object.</returns>
+		/// <returns>The string representation of the object.</returns>
 		public string ConvertObjectToString(object obj, IFormatProvider provider = null)
 		{
 			Debug.Assert(obj.GetType() == Type);
@@ -55,6 +56,6 @@ namespace GriffinPlus.Lib.Conversion
 		{
 			return Enum.Parse(Type, s);
 		}
-
 	}
+
 }

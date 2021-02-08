@@ -7,11 +7,12 @@ using System.Collections.Generic;
 
 namespace GriffinPlus.Lib
 {
+
 	/// <summary>
 	/// An equality comparer that checks whether the identity of two objects is the same.
 	/// </summary>
 	/// <typeparam name="T">Type to compare.</typeparam>
-	public class IdentityComparer<T> : IEqualityComparer<T> where T: class
+	public class IdentityComparer<T> : IEqualityComparer<T> where T : class
 	{
 		/// <summary>
 		/// Gets the default instance of the comparer.
@@ -26,7 +27,7 @@ namespace GriffinPlus.Lib
 		/// <returns>true if the specified objects are the same; otherwise, false.</returns>
 		public bool Equals(T x, T y)
 		{
-			return object.ReferenceEquals(x,y);
+			return ReferenceEquals(x, y);
 		}
 
 		/// <summary>
@@ -39,4 +40,5 @@ namespace GriffinPlus.Lib
 			return obj.GetHashCode();
 		}
 	}
+
 }

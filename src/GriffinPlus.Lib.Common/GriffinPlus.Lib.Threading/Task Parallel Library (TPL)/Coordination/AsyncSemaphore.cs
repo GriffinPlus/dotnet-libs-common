@@ -32,8 +32,11 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
+using GriffinPlus.Lib.Disposables;
+
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// An async-compatible semaphore. Alternatively, you could use <c>SemaphoreSlim</c>.
 	/// </summary>
@@ -103,7 +106,10 @@ namespace GriffinPlus.Lib.Threading
 		/// </summary>
 		public long CurrentCount
 		{
-			get { lock (mMutex) return mCount; }
+			get
+			{
+				lock (mMutex) return mCount;
+			}
 		}
 
 		/// <summary>
@@ -150,7 +156,7 @@ namespace GriffinPlus.Lib.Threading
 		/// The cancellation token used to cancel the wait.
 		/// If this is already set, then this method will attempt to take the slot immediately (succeeding if a slot is currently available).
 		/// </param>
-		public void Wait(CancellationToken cancellationToken = default(CancellationToken))
+		public void Wait(CancellationToken cancellationToken = default)
 		{
 			WaitAsync(cancellationToken).WaitAndUnwrapException(CancellationToken.None);
 		}
@@ -167,7 +173,7 @@ namespace GriffinPlus.Lib.Threading
 			{
 				checked
 				{
-					var unused = mCount + releaseCount;
+					long unused = mCount + releaseCount;
 				}
 
 				while (releaseCount != 0 && !mQueue.IsEmpty)
@@ -191,32 +197,34 @@ namespace GriffinPlus.Lib.Threading
 		private async Task<IDisposable> DoLockAsync(CancellationToken cancellationToken)
 		{
 			await WaitAsync(cancellationToken).ConfigureAwait(false);
-			return Disposables.AnonymousDisposable.Create(Release);
+			return AnonymousDisposable.Create(Release);
 		}
 
 		/// <summary>
-		/// Asynchronously waits on the semaphore, and returns a disposable that releases the semaphore when disposed, thus treating this semaphore as a "multi-lock".
+		/// Asynchronously waits on the semaphore, and returns a disposable that releases the semaphore when disposed, thus treating this semaphore as a
+		/// "multi-lock".
 		/// </summary>
 		/// <param name="cancellationToken">
 		/// The cancellation token used to cancel the wait.
 		/// If this is already set, then this method will attempt to take the slot immediately (succeeding if a slot is currently available).
 		/// </param>
-		public AwaitableDisposable<IDisposable> LockAsync(CancellationToken cancellationToken = default(CancellationToken))
+		public AwaitableDisposable<IDisposable> LockAsync(CancellationToken cancellationToken = default)
 		{
 			return new AwaitableDisposable<IDisposable>(DoLockAsync(cancellationToken));
 		}
 
 		/// <summary>
-		/// Synchronously waits on the semaphore, and returns a disposable that releases the semaphore when disposed, thus treating this semaphore as a "multi-lock".
+		/// Synchronously waits on the semaphore, and returns a disposable that releases the semaphore when disposed, thus treating this semaphore as a
+		/// "multi-lock".
 		/// </summary>
 		/// <param name="cancellationToken">
 		/// The cancellation token used to cancel the wait.
 		/// If this is already set, then this method will attempt to take the slot immediately (succeeding if a slot is currently available).
 		/// </param>
-		public IDisposable Lock(CancellationToken cancellationToken = default(CancellationToken))
+		public IDisposable Lock(CancellationToken cancellationToken = default)
 		{
 			Wait(cancellationToken);
-			return Disposables.AnonymousDisposable.Create(Release);
+			return AnonymousDisposable.Create(Release);
 		}
 
 		// ReSharper disable UnusedMember.Local
@@ -230,10 +238,11 @@ namespace GriffinPlus.Lib.Threading
 				mSemaphore = semaphore;
 			}
 
-			public int Id => mSemaphore.Id;
-			public long CurrentCount => mSemaphore.mCount;
-			public IAsyncWaitQueue<object> WaitQueue => mSemaphore.mQueue;
+			public int                     Id           => mSemaphore.Id;
+			public long                    CurrentCount => mSemaphore.mCount;
+			public IAsyncWaitQueue<object> WaitQueue    => mSemaphore.mQueue;
 		}
 		// ReSharper restore UnusedMember.Local
 	}
+
 }

@@ -7,6 +7,7 @@ using System;
 
 namespace GriffinPlus.Lib.Conversion
 {
+
 	/// <summary>
 	/// A converter that can translate a <see cref="System.TimeSpan"/> to a string and vice versa.
 	/// The common timespan format is used ('c', i.e. [-][d.]hh:mm:ss[.fffffff]).
@@ -18,7 +19,6 @@ namespace GriffinPlus.Lib.Conversion
 		/// </summary>
 		public Converter_TimeSpan()
 		{
-
 		}
 
 		/// <summary>
@@ -29,12 +29,12 @@ namespace GriffinPlus.Lib.Conversion
 		/// A format provider that controls how the conversion is done
 		/// (null to use the current thread's culture to determine the format).
 		/// </param>
-		/// <returns>The string represention of the object.</returns>
+		/// <returns>The string representation of the object.</returns>
 		public override string ConvertObjectToString(object obj, IFormatProvider provider = null)
 		{
-			TimeSpan span = (TimeSpan)obj;
+			var span = (TimeSpan)obj;
 			if (provider != null) return span.ToString("c", provider);
-			else                  return span.ToString("c");
+			return span.ToString("c");
 		}
 
 		/// <summary>
@@ -49,7 +49,8 @@ namespace GriffinPlus.Lib.Conversion
 		public override object ConvertStringToObject(string s, IFormatProvider provider = null)
 		{
 			if (provider != null) return TimeSpan.Parse(s, provider);
-			else                  return TimeSpan.Parse(s);
+			return TimeSpan.Parse(s);
 		}
 	}
+
 }

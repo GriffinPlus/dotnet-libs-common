@@ -31,6 +31,7 @@ using System.Threading;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public sealed partial class AsyncContext
 	{
 		/// <summary>
@@ -50,7 +51,7 @@ namespace GriffinPlus.Lib.Threading
 			/// <summary>
 			/// Gets the async context.
 			/// </summary>
-			public AsyncContext Context { get; private set; }
+			public AsyncContext Context { get; }
 
 			/// <summary>
 			/// Dispatches an asynchronous message to the async context.
@@ -130,8 +131,9 @@ namespace GriffinPlus.Lib.Threading
 			{
 				var other = obj as AsyncContextSynchronizationContext;
 				if (other == null) return false;
-				return (Context == other.Context);
+				return Context == other.Context;
 			}
 		}
 	}
+
 }

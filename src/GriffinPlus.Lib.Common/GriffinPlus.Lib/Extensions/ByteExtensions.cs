@@ -5,6 +5,7 @@
 
 namespace GriffinPlus.Lib
 {
+
 	/// <summary>
 	/// Extension methods for <see cref="System.Byte"/>.
 	/// </summary>
@@ -26,4 +27,5 @@ namespace GriffinPlus.Lib
 			return difference <= tolerance;
 		}
 	}
+
 }

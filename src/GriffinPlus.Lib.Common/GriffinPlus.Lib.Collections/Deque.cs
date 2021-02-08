@@ -34,6 +34,7 @@ using System.Diagnostics;
 
 namespace GriffinPlus.Lib.Collections
 {
+
 	/// <summary>
 	/// A double-ended queue (deque), which provides O(1) indexed access, O(1) removals from the front and back, amortized
 	/// O(1) insertions to the front and back, and O(N) insertions and removals anywhere else (with the operations getting
@@ -77,7 +78,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			if (collection == null) throw new ArgumentNullException(nameof(collection));
 
-			IReadOnlyCollection<T> source = CollectionHelpers.ReifyCollection(collection);
+			var source = CollectionHelpers.ReifyCollection(collection);
 			int count = source.Count;
 			if (count > 0)
 			{
@@ -242,7 +243,8 @@ namespace GriffinPlus.Lib.Collections
 		/// <exception cref="ArgumentException">
 		/// <paramref name="arrayIndex"/> is equal to or greater than the length of <paramref name="array"/>.
 		/// -or-
-		/// The number of elements in the source <see cref="ICollection{T}"/> is greater than the available space from <paramref name="arrayIndex"/> to the end of the destination <paramref name="array"/>.
+		/// The number of elements in the source <see cref="ICollection{T}"/> is greater than the available space from <paramref name="arrayIndex"/> to the end
+		/// of the destination <paramref name="array"/>.
 		/// </exception>
 		void ICollection<T>.CopyTo(T[] array, int arrayIndex)
 		{
@@ -342,18 +344,18 @@ namespace GriffinPlus.Lib.Collections
 			if (!IsT(value))
 				throw new ArgumentException("Value is of incorrect type.", nameof(value));
 
-			AddToBack((T) value);
+			AddToBack((T)value);
 			return Count - 1;
 		}
 
 		bool IList.Contains(object value)
 		{
-			return IsT(value) && ((ICollection<T>) this).Contains((T) value);
+			return IsT(value) && ((ICollection<T>)this).Contains((T)value);
 		}
 
 		int IList.IndexOf(object value)
 		{
-			return IsT(value) ? IndexOf((T) value) : -1;
+			return IsT(value) ? IndexOf((T)value) : -1;
 		}
 
 		void IList.Insert(int index, object value)
@@ -364,7 +366,7 @@ namespace GriffinPlus.Lib.Collections
 			if (!IsT(value))
 				throw new ArgumentException("Value is of incorrect type.", nameof(value));
 
-			Insert(index, (T) value);
+			Insert(index, (T)value);
 		}
 
 		bool IList.IsFixedSize => false;
@@ -374,7 +376,7 @@ namespace GriffinPlus.Lib.Collections
 		void IList.Remove(object value)
 		{
 			if (IsT(value))
-				Remove((T) value);
+				Remove((T)value);
 		}
 
 		object IList.this[int index]
@@ -389,7 +391,7 @@ namespace GriffinPlus.Lib.Collections
 				if (!IsT(value))
 					throw new ArgumentException("Value is of incorrect type.", nameof(value));
 
-				this[index] = (T) value;
+				this[index] = (T)value;
 			}
 		}
 
@@ -434,7 +436,8 @@ namespace GriffinPlus.Lib.Collections
 		{
 			if (index < 0 || index > sourceLength)
 			{
-				throw new ArgumentOutOfRangeException(nameof(index),
+				throw new ArgumentOutOfRangeException(
+					nameof(index),
 					$"Invalid new index {index} for source length {sourceLength}");
 			}
 		}
@@ -451,7 +454,8 @@ namespace GriffinPlus.Lib.Collections
 		{
 			if (index < 0 || index >= sourceLength)
 			{
-				throw new ArgumentOutOfRangeException(nameof(index),
+				throw new ArgumentOutOfRangeException(
+					nameof(index),
 					$"Invalid existing index {index} for source length {sourceLength}");
 			}
 		}
@@ -479,8 +483,7 @@ namespace GriffinPlus.Lib.Collections
 
 			if (sourceLength - offset < count)
 			{
-				throw new ArgumentException(
-					$"Invalid offset ({offset}) or count ({count}) for source length ({sourceLength})");
+				throw new ArgumentException($"Invalid offset ({offset}) or count ({count}) for source length ({sourceLength})");
 			}
 		}
 
@@ -517,11 +520,11 @@ namespace GriffinPlus.Lib.Collections
 				if (value < Count) throw new ArgumentOutOfRangeException(nameof(value), "Capacity cannot be set to a value less than Count");
 				if (value == mBuffer.Length) return;
 
-				// Create the new mBuffer and copy our existing range.
-				T[] newBuffer = new T[value];
+				// Create the new InternalBuffer and copy our existing range.
+				var newBuffer = new T[value];
 				CopyToArray(newBuffer);
 
-				// Set up to use the new mBuffer.
+				// Set up to use the new InternalBuffer.
 				mBuffer = newBuffer;
 				mOffset = 0;
 			}
@@ -593,7 +596,7 @@ namespace GriffinPlus.Lib.Collections
 				return;
 			}
 
-			DoInsertRange(index, new[] {item});
+			DoInsertRange(index, new[] { item });
 		}
 
 		/// <summary>
@@ -680,7 +683,7 @@ namespace GriffinPlus.Lib.Collections
 		/// <returns>The former last element.</returns>
 		private T DoRemoveFromBack()
 		{
-			T ret = mBuffer[DequeIndexToBufferIndex(Count - 1)];
+			var ret = mBuffer[DequeIndexToBufferIndex(Count - 1)];
 			--Count;
 			return ret;
 		}
@@ -706,7 +709,7 @@ namespace GriffinPlus.Lib.Collections
 		/// </param>
 		private void DoInsertRange(int index, IReadOnlyCollection<T> collection)
 		{
-			var collectionCount = collection.Count;
+			int collectionCount = collection.Count;
 
 			// make room in the existing list
 			if (index < Count / 2)
@@ -719,7 +722,9 @@ namespace GriffinPlus.Lib.Collections
 				int copyCount = index;
 				int writeIndex = Capacity - collectionCount;
 				for (int j = 0; j != copyCount; ++j)
+				{
 					mBuffer[DequeIndexToBufferIndex(writeIndex + j)] = mBuffer[DequeIndexToBufferIndex(j)];
+				}
 
 				// Rotate to the new view
 				PreDecrement(collectionCount);
@@ -732,12 +737,14 @@ namespace GriffinPlus.Lib.Collections
 				int copyCount = Count - index;
 				int writeIndex = index + collectionCount;
 				for (int j = copyCount - 1; j != -1; --j)
+				{
 					mBuffer[DequeIndexToBufferIndex(writeIndex + j)] = mBuffer[DequeIndexToBufferIndex(index + j)];
+				}
 			}
 
 			// Copy new items into place
 			int i = index;
-			foreach (T item in collection)
+			foreach (var item in collection)
 			{
 				mBuffer[DequeIndexToBufferIndex(i)] = item;
 				++i;
@@ -780,7 +787,9 @@ namespace GriffinPlus.Lib.Collections
 				int copyCount = index;
 				int writeIndex = collectionCount;
 				for (int j = copyCount - 1; j != -1; --j)
+				{
 					mBuffer[DequeIndexToBufferIndex(writeIndex + j)] = mBuffer[DequeIndexToBufferIndex(j)];
+				}
 
 				// Rotate to new view
 				PostIncrement(collectionCount);
@@ -793,7 +802,9 @@ namespace GriffinPlus.Lib.Collections
 				int copyCount = Count - collectionCount - index;
 				int readIndex = index + collectionCount;
 				for (int j = 0; j != copyCount; ++j)
+				{
 					mBuffer[DequeIndexToBufferIndex(index + j)] = mBuffer[DequeIndexToBufferIndex(readIndex + j)];
+				}
 			}
 
 			// Adjust valid count
@@ -808,7 +819,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			if (IsFull)
 			{
-				Capacity = (Capacity == 0) ? 1 : Capacity * 2;
+				Capacity = Capacity == 0 ? 1 : Capacity * 2;
 			}
 		}
 
@@ -915,22 +926,23 @@ namespace GriffinPlus.Lib.Collections
 		public T[] ToArray()
 		{
 			var result = new T[Count];
-			((ICollection<T>) this).CopyTo(result, 0);
+			((ICollection<T>)this).CopyTo(result, 0);
 			return result;
 		}
 
 		[DebuggerNonUserCode]
 		private sealed class DebugView
 		{
-			private readonly Deque<T> deque;
+			private readonly Deque<T> mDeque;
 
 			public DebugView(Deque<T> deque)
 			{
-				this.deque = deque;
+				mDeque = deque;
 			}
 
 			[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-			public T[] Items => deque.ToArray();
+			public T[] Items => mDeque.ToArray();
 		}
 	}
+
 }

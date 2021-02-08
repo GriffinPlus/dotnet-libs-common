@@ -36,6 +36,7 @@ using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Provides extension methods for the <see cref="Task"/> and <see cref="Task{T}"/> types.
 	/// </summary>
@@ -95,7 +96,10 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="task">The task. May not be <c>null</c>.</param>
 		/// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
 		/// <returns>The result of the task.</returns>
-		/// <exception cref="OperationCanceledException">The <paramref name="cancellationToken"/> was cancelled before the <paramref name="task"/> completed, or the <paramref name="task"/> raised an <see cref="OperationCanceledException"/>.</exception>
+		/// <exception cref="OperationCanceledException">
+		/// The <paramref name="cancellationToken"/> was cancelled before the <paramref name="task"/> completed, or
+		/// the <paramref name="task"/> raised an <see cref="OperationCanceledException"/>.
+		/// </exception>
 		public static TResult WaitAndUnwrapException<TResult>(this Task<TResult> task, CancellationToken cancellationToken)
 		{
 			if (task == null) throw new ArgumentNullException(nameof(task));
@@ -319,29 +323,31 @@ namespace GriffinPlus.Lib.Threading
 			var taskArray = @this.ToArray();
 
 			// Allocate a TCS array and an array of the resulting tasks.
-			var numTasks = taskArray.Length;
+			int numTasks = taskArray.Length;
 			var tcs = new TaskCompletionSource<T>[numTasks];
 			var ret = new List<Task<T>>(numTasks);
 
 			// As each task completes, complete the next tcs.
-			var lastIndex = -1;
-			Action<Task<T>> continuation = task =>
+			int lastIndex = -1;
+
+			void Continuation(Task<T> task)
 			{
-				var index = Interlocked.Increment(ref lastIndex);
+				int index = Interlocked.Increment(ref lastIndex);
 				tcs[index].TryCompleteFromCompletedTask(task);
-			};
+			}
 
 			// Fill out the arrays and attach the continuations.
-			for (var i = 0; i != numTasks; ++i)
+			for (int i = 0; i != numTasks; ++i)
 			{
 				tcs[i] = new TaskCompletionSource<T>();
 				ret.Add(tcs[i].Task);
 
-				taskArray[i].ContinueWith(
-					continuation,
-					CancellationToken.None,
-					TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.DenyChildAttach,
-					TaskScheduler.Default);
+				taskArray[i]
+					.ContinueWith(
+						Continuation,
+						CancellationToken.None,
+						TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.DenyChildAttach,
+						TaskScheduler.Default);
 			}
 
 			return ret;
@@ -363,21 +369,21 @@ namespace GriffinPlus.Lib.Threading
 			var taskArray = @this.ToArray();
 
 			// Allocate a TCS array and an array of the resulting tasks.
-			var numTasks = taskArray.Length;
+			int numTasks = taskArray.Length;
 			var tcs = new TaskCompletionSource<object>[numTasks];
 			var ret = new List<Task>(numTasks);
 
 			// As each task completes, complete the next tcs.
-			var lastIndex = -1;
+			int lastIndex = -1;
 			// ReSharper disable once ConvertToLocalFunction
 			Action<Task> continuation = task =>
 			{
-				var index = Interlocked.Increment(ref lastIndex);
+				int index = Interlocked.Increment(ref lastIndex);
 				tcs[index].TryCompleteFromCompletedTask(task, NullResultFunc);
 			};
 
 			// Fill out the arrays and attach the continuations.
-			for (var i = 0; i != numTasks; ++i)
+			for (int i = 0; i != numTasks; ++i)
 			{
 				tcs[i] = new TaskCompletionSource<object>();
 				ret.Add(tcs[i].Task);
@@ -391,4 +397,5 @@ namespace GriffinPlus.Lib.Threading
 
 		#endregion
 	}
+
 }

@@ -7,6 +7,7 @@ using System;
 
 namespace GriffinPlus.Lib.Events
 {
+
 	public class EventManagerEventArgs : EventArgs
 	{
 		public EventManagerEventArgs(string myString)
@@ -16,4 +17,5 @@ namespace GriffinPlus.Lib.Events
 
 		public string MyString { get; }
 	}
+
 }

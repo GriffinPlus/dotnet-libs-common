@@ -27,15 +27,18 @@
 //     SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using GriffinPlus.Lib.Tests;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+
+using GriffinPlus.Lib.Tests;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class AsyncProducerConsumerQueueTests
 	{
 		[Fact]
@@ -61,9 +64,9 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var queue = new AsyncProducerConsumerQueue<int>(new[] { 3, 5, 7 });
 
-			var result1 = await queue.DequeueAsync();
-			var result2 = await queue.DequeueAsync();
-			var result3 = await queue.DequeueAsync();
+			int result1 = await queue.DequeueAsync();
+			int result2 = await queue.DequeueAsync();
+			int result3 = await queue.DequeueAsync();
 
 			Assert.Equal(3, result1);
 			Assert.Equal(5, result2);
@@ -76,7 +79,7 @@ namespace GriffinPlus.Lib.Threading
 			var queue = new AsyncProducerConsumerQueue<int>();
 
 			await queue.EnqueueAsync(3);
-			var result = await queue.DequeueAsync();
+			int result = await queue.DequeueAsync();
 
 			Assert.Equal(3, result);
 		}
@@ -116,7 +119,7 @@ namespace GriffinPlus.Lib.Threading
 			var task = queue.DequeueAsync();
 
 			await queue.EnqueueAsync(13);
-			var result = await task;
+			int result = await task;
 
 			Assert.Equal(13, result);
 		}
@@ -191,7 +194,7 @@ namespace GriffinPlus.Lib.Threading
 			var queue = new AsyncProducerConsumerQueue<int>();
 			queue.Enqueue(13);
 
-			var result = await queue.OutputAvailableAsync();
+			bool result = await queue.OutputAvailableAsync();
 			Assert.True(result);
 		}
 
@@ -201,7 +204,7 @@ namespace GriffinPlus.Lib.Threading
 			var queue = new AsyncProducerConsumerQueue<int>();
 			queue.CompleteAdding();
 
-			var result = await queue.OutputAvailableAsync();
+			bool result = await queue.OutputAvailableAsync();
 			Assert.False(result);
 		}
 
@@ -212,7 +215,7 @@ namespace GriffinPlus.Lib.Threading
 			queue.Enqueue(13);
 			queue.CompleteAdding();
 
-			var result = await queue.OutputAvailableAsync();
+			bool result = await queue.OutputAvailableAsync();
 			Assert.True(result);
 		}
 
@@ -222,13 +225,14 @@ namespace GriffinPlus.Lib.Threading
 			var queue = new AsyncProducerConsumerQueue<int>();
 
 			// producer
-			var unused = Task.Run(() =>
-			{
-				queue.Enqueue(3);
-				queue.Enqueue(13);
-				queue.Enqueue(17);
-				queue.CompleteAdding();
-			});
+			var unused = Task.Run(
+				() =>
+				{
+					queue.Enqueue(3);
+					queue.Enqueue(13);
+					queue.Enqueue(17);
+					queue.CompleteAdding();
+				});
 
 			// consumer
 			var results = new List<int>();
@@ -243,4 +247,5 @@ namespace GriffinPlus.Lib.Threading
 			Assert.Equal(17, results[2]);
 		}
 	}
+
 }

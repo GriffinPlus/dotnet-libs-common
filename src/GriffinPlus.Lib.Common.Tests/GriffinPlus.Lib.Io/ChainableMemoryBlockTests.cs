@@ -4,10 +4,12 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Io
 {
+
 	/// <summary>
 	/// Unit tests targetting the <see cref="ChainableMemoryBlock"/> class.
 	/// </summary>
@@ -23,7 +25,7 @@ namespace GriffinPlus.Lib.Io
 		// [InlineData(int.MaxValue)] // will cause problems on build servers with low memory
 		public void Create(int capacity)
 		{
-			ChainableMemoryBlock block = new ChainableMemoryBlock(capacity);
+			var block = new ChainableMemoryBlock(capacity);
 			Assert.Equal(capacity, block.Capacity);
 			Assert.NotNull(block.Buffer);
 			Assert.Equal(capacity, block.Buffer.Length);
@@ -41,18 +43,18 @@ namespace GriffinPlus.Lib.Io
 		/// <param name="capacity">Capacity of the memory block to test.</param>
 		/// <param name="length">Length to try to set on the memory block.</param>
 		[Theory]
-		[InlineData(true,    0,    0)]
-		[InlineData(true,  100,    0)]
-		[InlineData(true,  100,    1)]
-		[InlineData(true,  100,   99)]
-		[InlineData(true,  100,  100)]
-		[InlineData(false,   0,   -1)]
-		[InlineData(false,   0,    1)]
-		[InlineData(false, 100,   -1)]
-		[InlineData(false, 100,  101)]
+		[InlineData(true, 0, 0)]
+		[InlineData(true, 100, 0)]
+		[InlineData(true, 100, 1)]
+		[InlineData(true, 100, 99)]
+		[InlineData(true, 100, 100)]
+		[InlineData(false, 0, -1)]
+		[InlineData(false, 0, 1)]
+		[InlineData(false, 100, -1)]
+		[InlineData(false, 100, 101)]
 		public void Length(bool valid, int capacity, int length)
 		{
-			ChainableMemoryBlock block1 = new ChainableMemoryBlock(capacity);
+			var block1 = new ChainableMemoryBlock(capacity);
 			if (valid)
 			{
 				// setting is expected to succeed
@@ -62,9 +64,11 @@ namespace GriffinPlus.Lib.Io
 			else
 			{
 				// setting is expected to fail
-				ArgumentOutOfRangeException ex = Assert.Throws<ArgumentOutOfRangeException>(() => {
-					block1.Length = length;
-				});
+				var ex = Assert.Throws<ArgumentOutOfRangeException>(
+					() =>
+					{
+						block1.Length = length;
+					});
 
 				Assert.Equal("value", ex.ParamName);
 			}
@@ -77,12 +81,12 @@ namespace GriffinPlus.Lib.Io
 		public void ChainLength()
 		{
 			// create the first block
-			ChainableMemoryBlock block1 = new ChainableMemoryBlock(100);
+			var block1 = new ChainableMemoryBlock(100);
 			block1.Length = 10;
 			Assert.Equal(10, block1.ChainLength);
 
 			// create the second block
-			ChainableMemoryBlock block2 = new ChainableMemoryBlock(200);
+			var block2 = new ChainableMemoryBlock(200);
 			block2.Length = 20;
 			Assert.Equal(20, block2.ChainLength);
 
@@ -91,7 +95,6 @@ namespace GriffinPlus.Lib.Io
 			Assert.Equal(30, block1.ChainLength);
 			Assert.Equal(20, block2.ChainLength);
 		}
-
-
 	}
+
 }

@@ -27,11 +27,13 @@
 //     SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using GriffinPlus.Lib.Disposables.Internal;
 using System;
+
+using GriffinPlus.Lib.Disposables.Internal;
 
 namespace GriffinPlus.Lib.Disposables
 {
+
 	/// <summary>
 	/// A base class for disposables that need exactly-once semantics in a thread-safe way.
 	/// </summary>
@@ -43,7 +45,7 @@ namespace GriffinPlus.Lib.Disposables
 	/// If <see cref="Dispose()"/> is called multiple times, only the first call will execute the disposal code.
 	/// Other calls to <see cref="Dispose()"/> will not wait for the disposal to complete.
 	/// </remarks>
-	public abstract class SingleNonblockingDisposable<T> : IDisposable
+	public abstract class SingleNonBlockingDisposable<T> : IDisposable
 	{
 		/// <summary>
 		/// The context.
@@ -56,7 +58,7 @@ namespace GriffinPlus.Lib.Disposables
 		/// Initializes a disposable for the specified context.
 		/// </summary>
 		/// <param name="context">The context passed to <see cref="Dispose(T)"/>.</param>
-		protected SingleNonblockingDisposable(T context)
+		protected SingleNonBlockingDisposable(T context)
 		{
 			mContext = new BoundActionField<T>(Dispose, context);
 		}
@@ -79,7 +81,10 @@ namespace GriffinPlus.Lib.Disposables
 		/// If <see cref="Dispose()"/> is called multiple times, only the first call will execute the disposal code.
 		/// Other calls to <see cref="Dispose()"/> will not wait for the disposal to complete.
 		/// </remarks>
-		public void Dispose() => mContext.TryGetAndUnset()?.Invoke();
+		public void Dispose()
+		{
+			mContext.TryGetAndUnset()?.Invoke();
+		}
 
 		/// <summary>
 		/// Attempts to update the stored context.
@@ -87,8 +92,12 @@ namespace GriffinPlus.Lib.Disposables
 		/// </summary>
 		/// <param name="contextUpdater">
 		/// The function used to update an existing context.
-		/// This may be called more than once, if more than one thread attempts to simultanously update the context.
+		/// This may be called more than once, if more than one thread attempts to simultaneously update the context.
 		/// </param>
-		protected bool TryUpdateContext(Func<T, T> contextUpdater) => mContext.TryUpdateContext(contextUpdater);
+		protected bool TryUpdateContext(Func<T, T> contextUpdater)
+		{
+			return mContext.TryUpdateContext(contextUpdater);
+		}
 	}
+
 }

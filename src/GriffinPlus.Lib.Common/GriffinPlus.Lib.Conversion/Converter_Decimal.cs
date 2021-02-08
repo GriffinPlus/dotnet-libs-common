@@ -7,17 +7,17 @@ using System;
 
 namespace GriffinPlus.Lib.Conversion
 {
+
 	/// <summary>
 	/// A converter that can translate a <see cref="System.Decimal"/> to a string and vice versa.
 	/// </summary>
-	public class Converter_Decimal : Converter_Base<Decimal>
+	public class Converter_Decimal : Converter_Base<decimal>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Converter_Decimal"/> class.
 		/// </summary>
 		public Converter_Decimal()
 		{
-
 		}
 
 		/// <summary>
@@ -31,8 +31,8 @@ namespace GriffinPlus.Lib.Conversion
 		/// <returns>The created object.</returns>
 		public override object ConvertStringToObject(string s, IFormatProvider provider = null)
 		{
-			return Decimal.Parse(s, provider);
+			return decimal.Parse(s, provider);
 		}
-
 	}
+
 }

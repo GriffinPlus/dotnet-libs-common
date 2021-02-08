@@ -30,11 +30,14 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 using GriffinPlus.Lib.Tests;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class AsyncWaitQueueTests
 	{
 		[Fact]
@@ -216,4 +219,5 @@ namespace GriffinPlus.Lib.Threading
 			Assert.True(queue.IsEmpty);
 		}
 	}
+
 }

@@ -33,6 +33,7 @@ using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// An async-compatible condition variable.
 	/// This type uses Mesa-style semantics (the notifying tasks do not yield).
@@ -192,8 +193,8 @@ namespace GriffinPlus.Lib.Threading
 				mCv = cv;
 			}
 
-			public int Id => mCv.Id;
-			public AsyncLock AsyncLock => mCv.mAsyncLock;
+			public int                     Id        => mCv.Id;
+			public AsyncLock               AsyncLock => mCv.mAsyncLock;
 			public IAsyncWaitQueue<object> WaitQueue => mCv.mQueue;
 		}
 		// ReSharper restore UnusedMember.Local

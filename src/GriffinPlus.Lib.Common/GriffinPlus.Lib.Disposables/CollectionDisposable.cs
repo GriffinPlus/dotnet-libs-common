@@ -33,6 +33,7 @@ using System.Collections.Immutable;
 
 namespace GriffinPlus.Lib.Disposables
 {
+
 	/// <summary>
 	/// Disposes a collection of disposables.
 	/// </summary>
@@ -56,11 +57,13 @@ namespace GriffinPlus.Lib.Disposables
 		{
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		protected override void Dispose(ImmutableQueue<IDisposable> context)
 		{
 			foreach (var disposable in context)
+			{
 				disposable.Dispose();
+			}
 		}
 
 		/// <summary>
@@ -70,6 +73,7 @@ namespace GriffinPlus.Lib.Disposables
 		/// <param name="disposable">The disposable to add to our collection.</param>
 		public void Add(IDisposable disposable)
 		{
+			// ReSharper disable once AccessToDisposedClosure
 			if (!TryUpdateContext(x => x.Enqueue(disposable)))
 				disposable.Dispose();
 		}
@@ -78,12 +82,19 @@ namespace GriffinPlus.Lib.Disposables
 		/// Creates a disposable that disposes a collection of disposables.
 		/// </summary>
 		/// <param name="disposables">The disposables to dispose.</param>
-		public static CollectionDisposable Create(params IDisposable[] disposables) => new CollectionDisposable(disposables);
+		public static CollectionDisposable Create(params IDisposable[] disposables)
+		{
+			return new CollectionDisposable(disposables);
+		}
 
 		/// <summary>
 		/// Creates a disposable that disposes a collection of disposables.
 		/// </summary>
 		/// <param name="disposables">The disposables to dispose.</param>
-		public static CollectionDisposable Create(IEnumerable<IDisposable> disposables) => new CollectionDisposable(disposables);
+		public static CollectionDisposable Create(IEnumerable<IDisposable> disposables)
+		{
+			return new CollectionDisposable(disposables);
+		}
 	}
+
 }

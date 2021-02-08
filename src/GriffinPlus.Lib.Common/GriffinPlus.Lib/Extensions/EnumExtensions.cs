@@ -8,6 +8,7 @@ using System.Collections.Generic;
 
 namespace GriffinPlus.Lib
 {
+
 	/// <summary>
 	/// Extension methods for enumeration types.
 	/// </summary>
@@ -20,12 +21,14 @@ namespace GriffinPlus.Lib
 		/// <returns>The separated enumeration values.</returns>
 		public static Enum[] ToSeparateFlags(this Enum self)
 		{
-			List<Enum> result = new List<Enum>();
-			foreach(Enum flag in Enum.GetValues(self.GetType())) {
+			var result = new List<Enum>();
+			foreach (Enum flag in Enum.GetValues(self.GetType()))
+			{
 				if (self.HasFlag(flag)) result.Add(flag);
 			}
+
 			return result.ToArray();
 		}
-
 	}
+
 }

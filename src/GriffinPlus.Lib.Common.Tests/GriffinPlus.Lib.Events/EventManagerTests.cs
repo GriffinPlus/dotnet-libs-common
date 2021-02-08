@@ -3,22 +3,25 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using GriffinPlus.Lib.Threading;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
+using GriffinPlus.Lib.Threading;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Events
 {
+
 	/// <summary>
 	/// Unit tests targetting the <see cref="EventManager{T}"/> class.
 	/// </summary>
 	public class EventManagerTests : IDisposable
 	{
 		private const string EVENT_NAME = "MyEvent";
-		
+
 		private AsyncContextThread mThread;
 
 		public class TestEventRecipient
@@ -63,7 +66,8 @@ namespace GriffinPlus.Lib.Events
 		{
 			// the event handler
 			string eventData = null;
-			EventHandler<EventManagerEventArgs> handler = (sender, e) => { 
+			EventHandler<EventManagerEventArgs> handler = (sender, e) =>
+			{
 				eventData = e.MyString;
 			};
 
@@ -99,7 +103,8 @@ namespace GriffinPlus.Lib.Events
 		{
 			// the event handler
 			string eventData = null;
-			EventHandler<EventManagerEventArgs> handler = (sender, e) => { 
+			EventHandler<EventManagerEventArgs> handler = (sender, e) =>
+			{
 				eventData = e.MyString;
 			};
 
@@ -132,18 +137,21 @@ namespace GriffinPlus.Lib.Events
 		{
 			// the event handler
 			string eventData = null;
-			ManualResetEventSlim gotEventData = new ManualResetEventSlim();
-			EventHandler<EventManagerEventArgs> handler = (sender, e) => { 
+			var gotEventData = new ManualResetEventSlim();
+			EventHandler<EventManagerEventArgs> handler = (sender, e) =>
+			{
 				eventData = e.MyString;
 				gotEventData.Set();
 			};
 
 			// register event handler
-			await mThread.Factory.Run(() => {
-				Assert.NotNull(SynchronizationContext.Current);
-				int regCount1 = EventManager<EventManagerEventArgs>.RegisterEventHandler(this, EVENT_NAME, handler, SynchronizationContext.Current);
-				Assert.Equal(1, regCount1);
-			});
+			await mThread.Factory.Run(
+				() =>
+				{
+					Assert.NotNull(SynchronizationContext.Current);
+					int regCount1 = EventManager<EventManagerEventArgs>.RegisterEventHandler(this, EVENT_NAME, handler, SynchronizationContext.Current);
+					Assert.Equal(1, regCount1);
+				});
 
 			// fire event (handler is called asynchronously)
 			string testData = Guid.NewGuid().ToString("D");
@@ -174,20 +182,23 @@ namespace GriffinPlus.Lib.Events
 		{
 			// the event handler
 			string eventData = null;
-			ManualResetEventSlim gotEventData = new ManualResetEventSlim();
-			EventHandler<EventManagerEventArgs> handler = (sender, e) => { 
+			var gotEventData = new ManualResetEventSlim();
+			EventHandler<EventManagerEventArgs> handler = (sender, e) =>
+			{
 				eventData = e.MyString;
 				gotEventData.Set();
 			};
 
 			// register event handler and let it fire immediately
 			string testData = Guid.NewGuid().ToString("D");
-			await mThread.Factory.Run(() => {
-				Assert.NotNull(SynchronizationContext.Current);
-				int regCount1 = EventManager<EventManagerEventArgs>.RegisterEventHandler(this, EVENT_NAME, handler, SynchronizationContext.Current, true, this, new EventManagerEventArgs(testData));
-				Assert.Equal(1, regCount1);
-			});
-			
+			await mThread.Factory.Run(
+				() =>
+				{
+					Assert.NotNull(SynchronizationContext.Current);
+					int regCount1 = EventManager<EventManagerEventArgs>.RegisterEventHandler(this, EVENT_NAME, handler, SynchronizationContext.Current, true, this, new EventManagerEventArgs(testData));
+					Assert.Equal(1, regCount1);
+				});
+
 			// check whether the event was fired asynchronously
 			Assert.True(gotEventData.Wait(200), "The event was not called asynchronously.");
 			Assert.Equal(testData, eventData);
@@ -244,21 +255,31 @@ namespace GriffinPlus.Lib.Events
 			// the event handlers
 			string eventData1 = null;
 			string eventData2 = null;
-			ManualResetEventSlim gotEventData1 = new ManualResetEventSlim();
-			ManualResetEventSlim gotEventData2 = new ManualResetEventSlim();
-			EventHandler<EventManagerEventArgs> handler1 = (sender, e) => { eventData1 = e.MyString; gotEventData1.Set(); };
-			EventHandler<EventManagerEventArgs> handler2 = (sender, e) => { eventData2 = e.MyString; gotEventData2.Set(); };
+			var gotEventData1 = new ManualResetEventSlim();
+			var gotEventData2 = new ManualResetEventSlim();
+			EventHandler<EventManagerEventArgs> handler1 = (sender, e) =>
+			{
+				eventData1 = e.MyString;
+				gotEventData1.Set();
+			};
+			EventHandler<EventManagerEventArgs> handler2 = (sender, e) =>
+			{
+				eventData2 = e.MyString;
+				gotEventData2.Set();
+			};
 
 			// register event handlers:
 			// - register handler1 only, but do not trigger firing immediately
 			// - register handler2 and trigger firing immediately
-			await mThread.Factory.Run(() => {
-				Assert.NotNull(SynchronizationContext.Current);
-				EventManager<EventManagerEventArgs>.RegisterEventHandler(this, EVENT_NAME, handler1, SynchronizationContext.Current);
-				Assert.False(gotEventData1.IsSet, "Event handler was called unexpectedly.");
-				EventManager<EventManagerEventArgs>.RegisterEventHandler(this, EVENT_NAME, handler2, SynchronizationContext.Current, true, this, new EventManagerEventArgs("Test2"));
-				Assert.False(gotEventData1.IsSet, "Event handler was called immediately, should have been scheduled to be executed...");
-			});
+			await mThread.Factory.Run(
+				() =>
+				{
+					Assert.NotNull(SynchronizationContext.Current);
+					EventManager<EventManagerEventArgs>.RegisterEventHandler(this, EVENT_NAME, handler1, SynchronizationContext.Current);
+					Assert.False(gotEventData1.IsSet, "Event handler was called unexpectedly.");
+					EventManager<EventManagerEventArgs>.RegisterEventHandler(this, EVENT_NAME, handler2, SynchronizationContext.Current, true, this, new EventManagerEventArgs("Test2"));
+					Assert.False(gotEventData1.IsSet, "Event handler was called immediately, should have been scheduled to be executed...");
+				});
 
 			// only handler2 should have been called after some time
 			Assert.False(gotEventData1.Wait(200), "The event was called unexpectedly.");
@@ -293,19 +314,21 @@ namespace GriffinPlus.Lib.Events
 		{
 			// the event handler
 			string eventData = null;
-			EventHandler<EventManagerEventArgs> handler = (sender, e) => { 
+			EventHandler<EventManagerEventArgs> handler = (sender, e) =>
+			{
 				eventData = e.MyString;
 			};
 
 			// register an event handler to a dummy event provider object
 			// (must not be done in the same method to allow the object to be collected in the next step)
-			WeakReference wrefProvider = new Func<WeakReference>(() =>
-			{
-				object provider = new object();
-				int regCount = EventManager<EventManagerEventArgs>.RegisterEventHandler(provider, EVENT_NAME, handler, null);
-				Assert.Equal(1, regCount);
-				return new WeakReference(provider);
-			}).Invoke();
+			var wrefProvider = new Func<WeakReference>(
+				() =>
+				{
+					var provider = new object();
+					int regCount = EventManager<EventManagerEventArgs>.RegisterEventHandler(provider, EVENT_NAME, handler, null);
+					Assert.Equal(1, regCount);
+					return new WeakReference(provider);
+				}).Invoke();
 
 			// kick object out of memory
 			GC.Collect();
@@ -313,6 +336,6 @@ namespace GriffinPlus.Lib.Events
 			// the event provider should now be collected
 			Assert.False(wrefProvider.IsAlive);
 		}
-
 	}
+
 }

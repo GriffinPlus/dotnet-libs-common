@@ -32,12 +32,13 @@ using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
-	/// A collection of cancelable <see cref="TaskCompletionSource{T}"/> instances.
+	/// A collection of cancelable <see cref="TaskCompletionSource{TResult}"/> instances.
 	/// Implementations must assume the caller is holding a lock.
 	/// </summary>
 	/// <typeparam name="T">The type of the results. If this isn't needed, use <see cref="System.Object"/>.</typeparam>
-	internal interface IAsyncWaitQueue<T>
+	interface IAsyncWaitQueue<T>
 	{
 		/// <summary>
 		/// Gets whether the queue is empty.
@@ -57,14 +58,14 @@ namespace GriffinPlus.Lib.Threading
 		/// The task continuations for the completed task must be executed asynchronously.
 		/// </summary>
 		/// <param name="result">The result used to complete the wait queue entry. If this isn't needed, use <c>default(T)</c>.</param>
-		void Dequeue(T result = default(T));
+		void Dequeue(T result = default);
 
 		/// <summary>
 		/// Removes all entries in the wait queue and completes them.
 		/// The task continuations for the completed tasks must be executed asynchronously.
 		/// </summary>
 		/// <param name="result">The result used to complete the wait queue entries. If this isn't needed, use <c>default(T)</c>.</param>
-		void DequeueAll(T result = default(T));
+		void DequeueAll(T result = default);
 
 		/// <summary>
 		/// Attempts to remove an entry from the wait queue and cancels it.
@@ -81,4 +82,5 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="cancellationToken">The cancellation token to use to cancel the tasks.</param>
 		void CancelAll(CancellationToken cancellationToken);
 	}
+
 }

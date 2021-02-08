@@ -33,6 +33,7 @@ using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// An async-compatible auto-reset event.
 	/// </summary>
@@ -92,7 +93,7 @@ namespace GriffinPlus.Lib.Threading
 		/// Creates an async-compatible auto-reset event that is initially unset.
 		/// </summary>
 		public AsyncAutoResetEvent()
-		  : this(false, null)
+			: this(false, null)
 		{
 		}
 
@@ -107,7 +108,10 @@ namespace GriffinPlus.Lib.Threading
 		/// </summary>
 		public bool IsSet
 		{
-			get { lock (mMutex) return mSet; }
+			get
+			{
+				lock (mMutex) return mSet;
+			}
 		}
 
 		/// <summary>
@@ -116,7 +120,7 @@ namespace GriffinPlus.Lib.Threading
 		/// If the wait is canceled, then it will not auto-reset this event.
 		/// </summary>
 		/// <param name="cancellationToken">The cancellation token used to cancel this wait.</param>
-		public Task WaitAsync(CancellationToken cancellationToken = default(CancellationToken))
+		public Task WaitAsync(CancellationToken cancellationToken = default)
 		{
 			Task task;
 			lock (mMutex)
@@ -142,7 +146,7 @@ namespace GriffinPlus.Lib.Threading
 		/// This method may block the calling thread.
 		/// </summary>
 		/// <param name="cancellationToken">The cancellation token used to cancel this wait.</param>
-		public void Wait(CancellationToken cancellationToken = default(CancellationToken))
+		public void Wait(CancellationToken cancellationToken = default)
 		{
 			WaitAsync(cancellationToken).WaitAndUnwrapException(cancellationToken);
 		}
@@ -156,7 +160,7 @@ namespace GriffinPlus.Lib.Threading
 			lock (mMutex)
 			{
 				if (mQueue.IsEmpty) mSet = true;
-				else                mQueue.Dequeue();
+				else mQueue.Dequeue();
 			}
 		}
 
@@ -171,11 +175,11 @@ namespace GriffinPlus.Lib.Threading
 				mAre = are;
 			}
 
-			public int Id => mAre.Id;
-			public bool IsSet => mAre.mSet;
+			public int                     Id        => mAre.Id;
+			public bool                    IsSet     => mAre.mSet;
 			public IAsyncWaitQueue<object> WaitQueue => mAre.mQueue;
 		}
 		// ReSharper restore UnusedMember.Local
-
 	}
+
 }

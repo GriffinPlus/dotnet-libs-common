@@ -30,10 +30,12 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Disposables
 {
+
 	public class SingleNonblockingDisposableUnitTests
 	{
 		[Fact]
@@ -49,7 +51,7 @@ namespace GriffinPlus.Lib.Disposables
 		[Fact]
 		public void DisposeOnlyCalledOnce()
 		{
-			var counter = 0;
+			int counter = 0;
 			var disposable = new DelegateSingleDisposable<object>(new object(), _ => { ++counter; });
 			disposable.Dispose();
 			disposable.Dispose();
@@ -61,11 +63,13 @@ namespace GriffinPlus.Lib.Disposables
 		{
 			var ready = new ManualResetEventSlim();
 			var signal = new ManualResetEventSlim();
-			var disposable = new DelegateSingleDisposable<object>(new object(), _ =>
-			{
-				ready.Set();
-				signal.Wait();
-			});
+			var disposable = new DelegateSingleDisposable<object>(
+				new object(),
+				_ =>
+				{
+					ready.Set();
+					signal.Wait();
+				});
 
 			var task1 = Task.Run(() => disposable.Dispose());
 			ready.Wait();
@@ -76,7 +80,7 @@ namespace GriffinPlus.Lib.Disposables
 			await task1;
 		}
 
-		private sealed class DelegateSingleDisposable<T> : SingleNonblockingDisposable<T>
+		private sealed class DelegateSingleDisposable<T> : SingleNonBlockingDisposable<T>
 			where T : class
 		{
 			private readonly Action<T> mCallback;
@@ -93,4 +97,5 @@ namespace GriffinPlus.Lib.Disposables
 			}
 		}
 	}
+
 }

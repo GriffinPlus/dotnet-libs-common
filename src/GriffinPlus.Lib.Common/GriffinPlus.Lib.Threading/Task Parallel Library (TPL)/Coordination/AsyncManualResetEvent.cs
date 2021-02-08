@@ -33,6 +33,7 @@ using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// An async-compatible manual-reset event.
 	/// </summary>
@@ -91,7 +92,10 @@ namespace GriffinPlus.Lib.Threading
 		/// </summary>
 		public bool IsSet
 		{
-			get { lock (mMutex) return mTcs.Task.IsCompleted; }
+			get
+			{
+				lock (mMutex) return mTcs.Task.IsCompleted;
+			}
 		}
 
 		/// <summary>
@@ -101,7 +105,7 @@ namespace GriffinPlus.Lib.Threading
 		/// The cancellation token used to cancel the wait.
 		/// If this token is already canceled, this method will first check whether the event is set.
 		/// </param>
-		public Task WaitAsync(CancellationToken cancellationToken = default(CancellationToken))
+		public Task WaitAsync(CancellationToken cancellationToken = default)
 		{
 			Task waitTask;
 			lock (mMutex) waitTask = mTcs.Task;
@@ -117,7 +121,7 @@ namespace GriffinPlus.Lib.Threading
 		/// The cancellation token used to cancel the wait.
 		/// If this token is already canceled, this method will first check whether the event is set.
 		/// </param>
-		public void Wait(CancellationToken cancellationToken = default(CancellationToken))
+		public void Wait(CancellationToken cancellationToken = default)
 		{
 			Task waitTask;
 			lock (mMutex) waitTask = mTcs.Task;
@@ -161,10 +165,11 @@ namespace GriffinPlus.Lib.Threading
 				mManualResetEvent = manualResetEvent;
 			}
 
-			public int Id => mManualResetEvent.Id;
-			public bool IsSet => mManualResetEvent.GetStateForDebugger;
+			public int  Id          => mManualResetEvent.Id;
+			public bool IsSet       => mManualResetEvent.GetStateForDebugger;
 			public Task CurrentTask => mManualResetEvent.mTcs.Task;
 		}
 		// ReSharper restore UnusedMember.Local
 	}
+
 }

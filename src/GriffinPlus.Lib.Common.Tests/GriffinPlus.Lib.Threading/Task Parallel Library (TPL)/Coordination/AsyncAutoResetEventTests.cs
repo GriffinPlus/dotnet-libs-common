@@ -27,14 +27,17 @@
 //     SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using GriffinPlus.Lib.Tests;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
+using GriffinPlus.Lib.Tests;
+
 using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class AsyncAutoResetEventTests
 	{
 		[Fact]
@@ -151,17 +154,18 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void WaitAsyncFromCustomSynchronizationContext_PreCancelled_Unset_SynchronouslyCancels()
 		{
-			AsyncContext.Run(() =>
-			{
-				var are = new AsyncAutoResetEvent(false);
-				var token = new CancellationToken(true);
+			AsyncContext.Run(
+				() =>
+				{
+					var are = new AsyncAutoResetEvent(false);
+					var token = new CancellationToken(true);
 
-				var task = are.WaitAsync(token);
+					var task = are.WaitAsync(token);
 
-				Assert.True(task.IsCompleted);
-				Assert.True(task.IsCanceled);
-				Assert.False(task.IsFaulted);
-			});
+					Assert.True(task.IsCompleted);
+					Assert.True(task.IsCanceled);
+					Assert.False(task.IsFaulted);
+				});
 		}
 
 		[Fact]
@@ -181,4 +185,5 @@ namespace GriffinPlus.Lib.Threading
 			Assert.NotEqual(0, are.Id);
 		}
 	}
+
 }

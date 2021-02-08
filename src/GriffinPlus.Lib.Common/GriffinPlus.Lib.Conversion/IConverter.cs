@@ -7,6 +7,7 @@ using System;
 
 namespace GriffinPlus.Lib.Conversion
 {
+
 	/// <summary>
 	/// Interface for classes implementing a converter that can convert values to strings and vice versa.
 	/// </summary>
@@ -15,9 +16,7 @@ namespace GriffinPlus.Lib.Conversion
 		/// <summary>
 		/// Gets the type of the value the current converter is working with.
 		/// </summary>
-		Type Type {
-			get;
-		}
+		Type Type { get; }
 
 		/// <summary>
 		/// Converts an object to its string representation.
@@ -27,7 +26,7 @@ namespace GriffinPlus.Lib.Conversion
 		/// A format provider that controls how the conversion is done
 		/// (null to use the current thread's culture to determine the format).
 		/// </param>
-		/// <returns>The string represention of the object.</returns>
+		/// <returns>The string representation of the object.</returns>
 		string ConvertObjectToString(object obj, IFormatProvider provider = null);
 
 		/// <summary>
@@ -41,4 +40,5 @@ namespace GriffinPlus.Lib.Conversion
 		/// <returns>The created object.</returns>
 		object ConvertStringToObject(string s, IFormatProvider provider = null);
 	}
+
 }

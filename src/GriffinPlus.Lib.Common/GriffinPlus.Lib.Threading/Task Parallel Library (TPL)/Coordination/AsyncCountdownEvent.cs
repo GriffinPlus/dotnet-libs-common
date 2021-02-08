@@ -33,6 +33,7 @@ using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// An async-compatible countdown event.
 	/// </summary>
@@ -84,7 +85,7 @@ namespace GriffinPlus.Lib.Threading
 		/// The cancellation token used to cancel the wait.
 		/// If this token is already canceled, this method will first check whether the event is set.
 		/// </param>
-		public Task WaitAsync(CancellationToken cancellationToken = default(CancellationToken))
+		public Task WaitAsync(CancellationToken cancellationToken = default)
 		{
 			return mManualResetEvent.WaitAsync(cancellationToken);
 		}
@@ -97,7 +98,7 @@ namespace GriffinPlus.Lib.Threading
 		/// The cancellation token used to cancel the wait.
 		/// If this token is already canceled, this method will first check whether the event is set.
 		/// </param>
-		public void Wait(CancellationToken cancellationToken = default(CancellationToken))
+		public void Wait(CancellationToken cancellationToken = default)
 		{
 			mManualResetEvent.Wait(cancellationToken);
 		}
@@ -117,12 +118,12 @@ namespace GriffinPlus.Lib.Threading
 
 			lock (mManualResetEvent)
 			{
-				var oldCount = mCount;
+				long oldCount = mCount;
 
 				checked
 				{
 					if (add) mCount += difference;
-					else     mCount -= difference;
+					else mCount -= difference;
 				}
 
 				if (oldCount == 0)
@@ -133,7 +134,7 @@ namespace GriffinPlus.Lib.Threading
 				{
 					mManualResetEvent.Set();
 				}
-				else if ((oldCount < 0 && mCount > 0) || (oldCount > 0 && mCount < 0))
+				else if (oldCount < 0 && mCount > 0 || oldCount > 0 && mCount < 0)
 				{
 					mManualResetEvent.Set();
 					mManualResetEvent.Reset();
@@ -186,10 +187,11 @@ namespace GriffinPlus.Lib.Threading
 				mCountdownEvent = countdownEvent;
 			}
 
-			public int Id => mCountdownEvent.Id;
-			public long CurrentCount => mCountdownEvent.CurrentCount;
+			public int                   Id                    => mCountdownEvent.Id;
+			public long                  CurrentCount          => mCountdownEvent.CurrentCount;
 			public AsyncManualResetEvent AsyncManualResetEvent => mCountdownEvent.mManualResetEvent;
 		}
 		// ReSharper restore UnusedMember.Local
 	}
+
 }

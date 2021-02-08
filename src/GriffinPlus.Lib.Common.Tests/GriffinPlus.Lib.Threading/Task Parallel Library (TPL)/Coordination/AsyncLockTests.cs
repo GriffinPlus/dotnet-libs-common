@@ -30,12 +30,14 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Xunit;
 
 // ReSharper disable UnusedVariable
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class AsyncLockTests
 	{
 		[Fact]
@@ -57,20 +59,22 @@ namespace GriffinPlus.Lib.Threading
 			var task1HasLock = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 			var task1Continue = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 
-			var task1 = Task.Run(async () =>
-			{
-				using (await mutex.LockAsync())
+			var task1 = Task.Run(
+				async () =>
 				{
-					task1HasLock.SetResult(null);
-					await task1Continue.Task;
-				}
-			});
+					using (await mutex.LockAsync())
+					{
+						task1HasLock.SetResult(null);
+						await task1Continue.Task;
+					}
+				});
 			await task1HasLock.Task;
 
-			var task2 = Task.Run(async () =>
-			{
-				await mutex.LockAsync();
-			});
+			var task2 = Task.Run(
+				async () =>
+				{
+					await mutex.LockAsync();
+				});
 
 			Assert.False(task2.IsCompleted);
 			task1Continue.SetResult(null);
@@ -84,27 +88,30 @@ namespace GriffinPlus.Lib.Threading
 			var task1HasLock = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 			var task1Continue = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 
-			await Task.Run(async () =>
-			{
-				var key = await mutex.LockAsync();
-				key.Dispose();
-				key.Dispose();
-			});
-
-			var task1 = Task.Run(async () =>
-			{
-				using (await mutex.LockAsync())
+			await Task.Run(
+				async () =>
 				{
-					task1HasLock.SetResult(null);
-					await task1Continue.Task;
-				}
-			});
+					var key = await mutex.LockAsync();
+					key.Dispose();
+					key.Dispose();
+				});
+
+			var task1 = Task.Run(
+				async () =>
+				{
+					using (await mutex.LockAsync())
+					{
+						task1HasLock.SetResult(null);
+						await task1Continue.Task;
+					}
+				});
 			await task1HasLock.Task;
 
-			var task2 = Task.Run(async () =>
-			{
-				await mutex.LockAsync();
-			});
+			var task2 = Task.Run(
+				async () =>
+				{
+					await mutex.LockAsync();
+				});
 
 			Assert.False(task2.IsCompleted);
 			task1Continue.SetResult(null);
@@ -121,32 +128,35 @@ namespace GriffinPlus.Lib.Threading
 			var task2HasLock = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 			var task2Continue = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 
-			var task1 = Task.Run(async () =>
-			{
-				using (await mutex.LockAsync())
+			var task1 = Task.Run(
+				async () =>
 				{
-					task1HasLock.SetResult(null);
-					await task1Continue.Task;
-				}
-			});
+					using (await mutex.LockAsync())
+					{
+						task1HasLock.SetResult(null);
+						await task1Continue.Task;
+					}
+				});
 			await task1HasLock.Task;
 
-			var task2 = Task.Run(async () =>
-			{
-				var key = mutex.LockAsync();
-				task2Ready.SetResult(null);
-				using (await key)
+			var task2 = Task.Run(
+				async () =>
 				{
-					task2HasLock.SetResult(null);
-					await task2Continue.Task;
-				}
-			});
+					var key = mutex.LockAsync();
+					task2Ready.SetResult(null);
+					using (await key)
+					{
+						task2HasLock.SetResult(null);
+						await task2Continue.Task;
+					}
+				});
 			await task2Ready.Task;
 
-			var task3 = Task.Run(async () =>
-			{
-				await mutex.LockAsync();
-			});
+			var task3 = Task.Run(
+				async () =>
+				{
+					await mutex.LockAsync();
+				});
 
 			task1Continue.SetResult(null);
 			await task2HasLock.Task;
@@ -192,12 +202,13 @@ namespace GriffinPlus.Lib.Threading
 			var taskReady = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 
 			var unlock = await mutex.LockAsync();
-			var task = Task.Run(async () =>
-			{
-				var lockTask = mutex.LockAsync(cts.Token);
-				taskReady.SetResult(null);
-				await lockTask;
-			});
+			var task = Task.Run(
+				async () =>
+				{
+					var lockTask = mutex.LockAsync(cts.Token);
+					taskReady.SetResult(null);
+					await lockTask;
+				});
 			await taskReady.Task;
 			cts.Cancel();
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
@@ -253,35 +264,39 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task AsyncLock_SupportsMultipleAsynchronousLocks()
 		{
-			await Task.Run(() =>
-			{
-				var asyncLock = new AsyncLock();
-				var cancellationTokenSource = new CancellationTokenSource();
-				var cancellationToken = cancellationTokenSource.Token;
-				var task1 = Task.Run(
-					async () =>
-					{
-						while (!cancellationToken.IsCancellationRequested)
+			await Task.Run(
+				() =>
+				{
+					var asyncLock = new AsyncLock();
+					var cancellationTokenSource = new CancellationTokenSource();
+					var cancellationToken = cancellationTokenSource.Token;
+					var task1 = Task.Run(
+						async () =>
 						{
-							using (await asyncLock.LockAsync())
+							while (!cancellationToken.IsCancellationRequested)
 							{
-								Thread.Sleep(10);
+								using (await asyncLock.LockAsync())
+								{
+									Thread.Sleep(10);
+								}
 							}
-						}
-					}, CancellationToken.None);
-				var task2 = Task.Run(
-					() =>
-					{
-						using (asyncLock.Lock())
+						},
+						CancellationToken.None);
+					var task2 = Task.Run(
+						() =>
 						{
-							Thread.Sleep(1000);
-						}
-					}, CancellationToken.None);
+							using (asyncLock.Lock())
+							{
+								Thread.Sleep(1000);
+							}
+						},
+						CancellationToken.None);
 
-				task2.Wait(CancellationToken.None);
-				cancellationTokenSource.Cancel();
-				task1.Wait(CancellationToken.None);
-			});
+					task2.Wait(CancellationToken.None);
+					cancellationTokenSource.Cancel();
+					task1.Wait(CancellationToken.None);
+				});
 		}
 	}
+
 }

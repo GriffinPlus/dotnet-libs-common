@@ -7,6 +7,7 @@ using System;
 
 namespace GriffinPlus.Lib
 {
+
 	/// <summary>
 	/// Extension methods for <see cref="System.String"/>.
 	/// </summary>
@@ -24,7 +25,8 @@ namespace GriffinPlus.Lib
 		/// <exception cref="FormatException">The string is not formatted hexadecimal.</exception>
 		public static byte[] HexToByteArray(this string hex, bool throwIfInvalid = true)
 		{
-			if (hex.Length % 2 == 1) {
+			if (hex.Length % 2 == 1)
+			{
 				if (throwIfInvalid) throw new FormatException("The string cannot have an odd number of digits.");
 				return null;
 			}
@@ -34,9 +36,10 @@ namespace GriffinPlus.Lib
 			int count = hex.Length >> 1;
 			for (int i = 0; i < count; ++i)
 			{
-				int high = GetHexVal(hex[i << 1]);
-				int low = GetHexVal(hex[(i << 1) + 1]);
-				if (high < 0 || low < 0) {
+				int high = GetHexValue(hex[i << 1]);
+				int low = GetHexValue(hex[(i << 1) + 1]);
+				if (high < 0 || low < 0)
+				{
 					if (throwIfInvalid) throw new FormatException("The specified string contains non-hexadecimal digits.");
 					return null;
 				}
@@ -55,14 +58,16 @@ namespace GriffinPlus.Lib
 		/// The integer representation of the specified hexadecimal character;
 		/// -1, if the character is not a valid hex character.
 		/// </returns>
-		private static int GetHexVal(char hex)
+		private static int GetHexValue(char hex)
 		{
-			int val = (int)hex;
-			if (hex >= '0' && hex <= '9' || hex >= 'a' && hex <= 'f' || hex >= 'A' && hex <= 'F') {
-				return val - (val < 58 ? 48 : (val < 97 ? 55 : 87));
-			} else {
-				return -1;
+			int val = hex;
+			if (hex >= '0' && hex <= '9' || hex >= 'a' && hex <= 'f' || hex >= 'A' && hex <= 'F')
+			{
+				return val - (val < 58 ? 48 : val < 97 ? 55 : 87);
 			}
+
+			return -1;
 		}
 	}
+
 }

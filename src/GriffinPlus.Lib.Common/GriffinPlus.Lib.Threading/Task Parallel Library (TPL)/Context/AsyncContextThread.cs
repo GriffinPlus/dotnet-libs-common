@@ -27,13 +27,15 @@
 //     SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using GriffinPlus.Lib.Disposables;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
+using GriffinPlus.Lib.Disposables;
+
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// A thread that executes actions within an <see cref="AsyncContext"/>.
 	/// </summary>
@@ -54,7 +56,13 @@ namespace GriffinPlus.Lib.Threading
 		{
 			Context = context;
 			mThread = Task.Factory.StartNew(
-				() => { using (Context) Context.Execute(); },
+				() =>
+				{
+					using (Context)
+					{
+						Context.Execute();
+					}
+				},
 				CancellationToken.None,
 				TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach,
 				TaskScheduler.Default);
@@ -138,4 +146,5 @@ namespace GriffinPlus.Lib.Threading
 			public object Thread => mThread.mThread;
 		}
 	}
+
 }

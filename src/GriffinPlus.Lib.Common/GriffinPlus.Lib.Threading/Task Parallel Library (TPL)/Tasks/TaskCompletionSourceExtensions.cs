@@ -32,6 +32,7 @@ using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Provides extension methods for <see cref="TaskCompletionSource{TResult}"/>.
 	/// </summary>
@@ -51,12 +52,13 @@ namespace GriffinPlus.Lib.Threading
 		/// </returns>
 		public static bool TryCompleteFromCompletedTask<TResult, TSourceResult>(
 			this TaskCompletionSource<TResult> @this,
-			Task<TSourceResult> task) where TSourceResult : TResult
+			Task<TSourceResult>                task) where TSourceResult : TResult
 		{
 			if (@this == null) throw new ArgumentNullException(nameof(@this));
 			if (task == null) throw new ArgumentNullException(nameof(task));
 
-			if (task.IsFaulted){
+			if (task.IsFaulted)
+			{
 				return @this.TrySetException(task.Exception.InnerExceptions);
 			}
 
@@ -93,14 +95,15 @@ namespace GriffinPlus.Lib.Threading
 		/// </returns>
 		public static bool TryCompleteFromCompletedTask<TResult>(
 			this TaskCompletionSource<TResult> @this,
-			Task task,
-			Func<TResult> resultFunc)
+			Task                               task,
+			Func<TResult>                      resultFunc)
 		{
 			if (@this == null) throw new ArgumentNullException(nameof(@this));
 			if (task == null) throw new ArgumentNullException(nameof(task));
 			if (resultFunc == null) throw new ArgumentNullException(nameof(resultFunc));
 
-			if (task.IsFaulted) {
+			if (task.IsFaulted)
+			{
 				return @this.TrySetException(task.Exception.InnerExceptions);
 			}
 
@@ -129,4 +132,5 @@ namespace GriffinPlus.Lib.Threading
 			return new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
 		}
 	}
+
 }

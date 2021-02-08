@@ -28,12 +28,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Provides a context for asynchronous operations (thread-safe).
 	/// </summary>
@@ -74,7 +76,7 @@ namespace GriffinPlus.Lib.Threading
 		/// Initializes a new instance of the <see cref="AsyncContext"/> class.
 		/// This is an advanced operation; most people should use one of the static <c>Run</c> methods instead.
 		/// </summary>
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public AsyncContext()
 		{
 			mQueue = new TaskQueue();
@@ -98,7 +100,7 @@ namespace GriffinPlus.Lib.Threading
 		/// </summary>
 		private void OperationStarted()
 		{
-			var newCount = Interlocked.Increment(ref mOutstandingOperations);
+			Interlocked.Increment(ref mOutstandingOperations);
 		}
 
 		/// <summary>
@@ -106,8 +108,9 @@ namespace GriffinPlus.Lib.Threading
 		/// </summary>
 		private void OperationCompleted()
 		{
-			var newCount = Interlocked.Decrement(ref mOutstandingOperations);
-			if (newCount == 0) {
+			int newCount = Interlocked.Decrement(ref mOutstandingOperations);
+			if (newCount == 0)
+			{
 				mQueue.CompleteAdding();
 			}
 		}
@@ -150,22 +153,25 @@ namespace GriffinPlus.Lib.Threading
 		/// This method returns when all tasks have been completed and the outstanding asynchronous operation count is zero.
 		/// This method will unwrap and propagate errors from tasks that are supposed to propagate errors.
 		/// </summary>
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void Execute()
 		{
-			SynchronizationContextSwitcher.ApplyContext(mSynchronizationContext, () =>
-			{
-				var tasks = mQueue.GetConsumingEnumerable();
-				foreach (var task in tasks)
+			SynchronizationContextSwitcher.ApplyContext(
+				mSynchronizationContext,
+				() =>
 				{
-					mTaskScheduler.DoTryExecuteTask(task.Item1);
+					var tasks = mQueue.GetConsumingEnumerable();
+					foreach (var task in tasks)
+					{
+						mTaskScheduler.DoTryExecuteTask(task.Item1);
 
-					// propagate exception if necessary
-					if (task.Item2) {
-						task.Item1.WaitAndUnwrapException();
+						// propagate exception if necessary
+						if (task.Item2)
+						{
+							task.Item1.WaitAndUnwrapException();
+						}
 					}
-				}
-			});
+				});
 		}
 
 		/// <summary>
@@ -218,11 +224,17 @@ namespace GriffinPlus.Lib.Threading
 			using (var context = new AsyncContext())
 			{
 				context.OperationStarted();
-				var task = context.mTaskFactory.Run(action).ContinueWith(t =>
-				{
-					context.OperationCompleted();
-					t.WaitAndUnwrapException();
-				}, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context.mTaskScheduler);
+				var task = context.mTaskFactory.Run(action)
+					.ContinueWith(
+						t =>
+						{
+							// ReSharper disable once AccessToDisposedClosure
+							context.OperationCompleted();
+							t.WaitAndUnwrapException();
+						},
+						CancellationToken.None,
+						TaskContinuationOptions.ExecuteSynchronously,
+						context.mTaskScheduler);
 				context.Execute();
 				task.WaitAndUnwrapException();
 			}
@@ -243,11 +255,17 @@ namespace GriffinPlus.Lib.Threading
 			using (var context = new AsyncContext())
 			{
 				context.OperationStarted();
-				var task = context.mTaskFactory.Run(action).ContinueWith(t =>
-				{
-					context.OperationCompleted();
-					return t.WaitAndUnwrapException();
-				}, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context.mTaskScheduler);
+				var task = context.mTaskFactory.Run(action)
+					.ContinueWith(
+						t =>
+						{
+							// ReSharper disable once AccessToDisposedClosure
+							context.OperationCompleted();
+							return t.WaitAndUnwrapException();
+						},
+						CancellationToken.None,
+						TaskContinuationOptions.ExecuteSynchronously,
+						context.mTaskScheduler);
 				context.Execute();
 				return task.WaitAndUnwrapException();
 			}
@@ -270,14 +288,14 @@ namespace GriffinPlus.Lib.Threading
 		/// Gets the <see cref="SynchronizationContext"/> for this <see cref="AsyncContext"/>.
 		/// From inside <see cref="Execute"/>, this value is always equal to <see cref="System.Threading.SynchronizationContext.Current"/>.
 		/// </summary>
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SynchronizationContext SynchronizationContext => mSynchronizationContext;
 
 		/// <summary>
 		/// Gets the <see cref="TaskScheduler"/> for this <see cref="AsyncContext"/>.
 		/// From inside <see cref="Execute"/>, this value is always equal to <see cref="TaskScheduler.Current"/>.
 		/// </summary>
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public TaskScheduler Scheduler => mTaskScheduler;
 
 		/// <summary>
@@ -287,7 +305,7 @@ namespace GriffinPlus.Lib.Threading
 		/// and <see cref="M:System.Threading.SynchronizationContext.OperationCompleted"/> to prevent early termination of
 		/// this <see cref="AsyncContext"/>.
 		/// </summary>
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public TaskFactory Factory => mTaskFactory;
 
 		[DebuggerNonUserCode]
@@ -303,4 +321,5 @@ namespace GriffinPlus.Lib.Threading
 			public TaskScheduler TaskScheduler => mContext.mTaskScheduler;
 		}
 	}
+
 }

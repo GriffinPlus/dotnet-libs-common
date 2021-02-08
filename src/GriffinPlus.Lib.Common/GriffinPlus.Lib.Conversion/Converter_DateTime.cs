@@ -7,6 +7,7 @@ using System;
 
 namespace GriffinPlus.Lib.Conversion
 {
+
 	/// <summary>
 	/// A converter that can translate a <see cref="System.DateTime"/> to a string and vice versa.
 	/// A datetime is encoded according to ISO 8601.
@@ -18,7 +19,6 @@ namespace GriffinPlus.Lib.Conversion
 		/// </summary>
 		public Converter_DateTime()
 		{
-
 		}
 
 		/// <summary>
@@ -29,12 +29,12 @@ namespace GriffinPlus.Lib.Conversion
 		/// A format provider that controls how the conversion is done
 		/// (null to use the current thread's culture to determine the format).
 		/// </param>
-		/// <returns>The string represention of the object.</returns>
+		/// <returns>The string representation of the object.</returns>
 		public override string ConvertObjectToString(object obj, IFormatProvider provider = null)
 		{
-			DateTime dt = (DateTime)obj;
+			var dt = (DateTime)obj;
 			if (provider != null) return dt.ToString("o", provider);
-			else                  return dt.ToString("o");
+			return dt.ToString("o");
 		}
 
 		/// <summary>
@@ -49,7 +49,8 @@ namespace GriffinPlus.Lib.Conversion
 		public override object ConvertStringToObject(string s, IFormatProvider provider = null)
 		{
 			if (provider != null) return DateTime.Parse(s, provider);
-			else                  return DateTime.Parse(s);
+			return DateTime.Parse(s);
 		}
 	}
+
 }

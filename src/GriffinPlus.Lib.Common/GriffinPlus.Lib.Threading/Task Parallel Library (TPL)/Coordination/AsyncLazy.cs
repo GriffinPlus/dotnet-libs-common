@@ -28,12 +28,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	/// <summary>
 	/// Flags controlling the behavior of <see cref="AsyncLazy{T}"/>.
 	/// </summary>
@@ -54,7 +56,7 @@ namespace GriffinPlus.Lib.Threading
 		/// <summary>
 		/// If the factory method fails, then re-run the factory method the next time instead of caching the failed task.
 		/// </summary>
-		RetryOnFailure = 0x2,
+		RetryOnFailure = 0x2
 	}
 
 	/// <summary>
@@ -132,7 +134,9 @@ namespace GriffinPlus.Lib.Threading
 			get
 			{
 				lock (mMutex)
+				{
 					return mInstance.IsValueCreated;
+				}
 			}
 		}
 
@@ -144,7 +148,9 @@ namespace GriffinPlus.Lib.Threading
 			get
 			{
 				lock (mMutex)
+				{
 					return mInstance.Value;
+				}
 			}
 		}
 
@@ -162,6 +168,7 @@ namespace GriffinPlus.Lib.Threading
 					{
 						mInstance = new Lazy<Task<T>>(mFactory);
 					}
+
 					throw;
 				}
 			};
@@ -176,7 +183,7 @@ namespace GriffinPlus.Lib.Threading
 		/// Asynchronous infrastructure support.
 		/// This method permits instances of <see cref="AsyncLazy{T}"/> to be awaited.
 		/// </summary>
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public TaskAwaiter<T> GetAwaiter()
 		{
 			return Task.GetAwaiter();
@@ -186,7 +193,7 @@ namespace GriffinPlus.Lib.Threading
 		/// Asynchronous infrastructure support.
 		/// This method permits instances of <see cref="AsyncLazy{T}"/> to be awaited.
 		/// </summary>
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public ConfiguredTaskAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
 		{
 			return Task.ConfigureAwait(continueOnCapturedContext);
@@ -242,4 +249,5 @@ namespace GriffinPlus.Lib.Threading
 			}
 		}
 	}
+
 }

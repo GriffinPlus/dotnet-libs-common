@@ -8,6 +8,7 @@ using System.Collections.Generic;
 
 namespace GriffinPlus.Lib.Conversion
 {
+
 	/// <summary>
 	/// A couple of converters the library provides.
 	/// </summary>
@@ -18,103 +19,103 @@ namespace GriffinPlus.Lib.Conversion
 		/// <summary>
 		/// Gets all converters that are provided by the <see cref="Converters"/> class out-of-the-box.
 		/// </summary>
-		public readonly static IConverter[] Predefined;
+		public static readonly IConverter[] Predefined;
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Boolean"/> to a string and vice versa.
 		/// </summary>
-		public readonly static Converter_Boolean Boolean;
+		public static readonly Converter_Boolean Boolean;
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.SByte"/> to a string and vice versa.
 		/// </summary>
-		public readonly static Converter_SByte SByte;
+		public static readonly Converter_SByte SByte;
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Byte"/> to a string and vice versa.
 		/// </summary>
-		public readonly static Converter_Byte Byte;
+		public static readonly Converter_Byte Byte;
 
 		/// <summary>
 		/// A converter for translating an array of <see cref="System.Byte"/> to a string and vice versa.
 		/// </summary>
-		public readonly static Converter_ByteArray ByteArray;
+		public static readonly Converter_ByteArray ByteArray;
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Int16"/> to a string and vice versa.
 		/// </summary>
-		public readonly static Converter_Int16 Int16;
+		public static readonly Converter_Int16 Int16;
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.UInt16"/> to a string and vice versa.
 		/// </summary>
-		public readonly static Converter_UInt16 UInt16;
+		public static readonly Converter_UInt16 UInt16;
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Int32"/> to a string and vice versa.
 		/// </summary>
-		public readonly static Converter_Int32 Int32;
+		public static readonly Converter_Int32 Int32;
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.UInt32"/> to a string and vice versa.
 		/// </summary>
-		public readonly static Converter_UInt32 UInt32;
+		public static readonly Converter_UInt32 UInt32;
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Int64"/> to a string and vice versa.
 		/// </summary>
-		public readonly static Converter_Int64 Int64;
+		public static readonly Converter_Int64 Int64;
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.UInt64"/> to a string and vice versa.
 		/// </summary>
-		public readonly static Converter_UInt64 UInt64;
+		public static readonly Converter_UInt64 UInt64;
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Decimal"/> to a string and vice versa.
 		/// </summary>
-		public readonly static Converter_Decimal Decimal;
+		public static readonly Converter_Decimal Decimal;
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Single"/> to a string and vice versa.
 		/// </summary>
-		public readonly static Converter_Single Single;
+		public static readonly Converter_Single Single;
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Double"/> to a string and vice versa.
 		/// </summary>
-		public readonly static Converter_Double Double;
+		public static readonly Converter_Double Double;
 
 		/// <summary>
 		/// The string identity conversion (the string remains the same).
 		/// </summary>
-		public readonly static Converter_String String;
+		public static readonly Converter_String String;
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Guid"/> to a string and vice versa.
 		/// </summary>
-		public readonly static Converter_Guid Guid;
+		public static readonly Converter_Guid Guid;
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.DateTime"/> to a string and vice versa.
 		/// </summary>
-		public readonly static Converter_DateTime DateTime;
+		public static readonly Converter_DateTime DateTime;
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.TimeSpan"/> to a string and vice versa.
 		/// </summary>
-		public readonly static Converter_TimeSpan TimeSpan;
+		public static readonly Converter_TimeSpan TimeSpan;
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Net.IPAddress"/> to a string and vice versa.
 		/// </summary>
-		public readonly static Converter_IPAddress IPAddress;
+		public static readonly Converter_IpAddress IpAddress;
 
 		#endregion
 
 		#region Class Variables
 
-		private static object sSync = new object();
+		private static readonly object                       sSync = new object();
 		private static volatile Dictionary<Type, IConverter> sConverters;
 
 		#endregion
@@ -128,29 +129,30 @@ namespace GriffinPlus.Lib.Conversion
 		{
 			Predefined = new IConverter[]
 			{
-				Boolean   = new Converter_Boolean(),
-				SByte     = new Converter_SByte(),
-				Byte      = new Converter_Byte(),
+				Boolean = new Converter_Boolean(),
+				SByte = new Converter_SByte(),
+				Byte = new Converter_Byte(),
 				ByteArray = new Converter_ByteArray(),
-				Int16     = new Converter_Int16(),
-				UInt16    = new Converter_UInt16(),
-				Int32     = new Converter_Int32(),
-				UInt32    = new Converter_UInt32(),
-				Int64     = new Converter_Int64(),
-				UInt64    = new Converter_UInt64(),
-				Decimal   = new Converter_Decimal(),
-				Single    = new Converter_Single(),
-				Double    = new Converter_Double(),
-				String    = new Converter_String(),
-				Guid      = new Converter_Guid(),
-				DateTime  = new Converter_DateTime(),
-				TimeSpan  = new Converter_TimeSpan(),
-				IPAddress = new Converter_IPAddress(),
+				Int16 = new Converter_Int16(),
+				UInt16 = new Converter_UInt16(),
+				Int32 = new Converter_Int32(),
+				UInt32 = new Converter_UInt32(),
+				Int64 = new Converter_Int64(),
+				UInt64 = new Converter_UInt64(),
+				Decimal = new Converter_Decimal(),
+				Single = new Converter_Single(),
+				Double = new Converter_Double(),
+				String = new Converter_String(),
+				Guid = new Converter_Guid(),
+				DateTime = new Converter_DateTime(),
+				TimeSpan = new Converter_TimeSpan(),
+				IpAddress = new Converter_IpAddress()
 			};
 
 			// add predefined converters to the list of global converters
-			sConverters = new Dictionary<Type,IConverter>();
-			foreach (IConverter converter in Predefined) {
+			sConverters = new Dictionary<Type, IConverter>();
+			foreach (var converter in Predefined)
+			{
 				sConverters.Add(converter.Type, converter);
 			}
 		}
@@ -160,7 +162,6 @@ namespace GriffinPlus.Lib.Conversion
 		/// </summary>
 		private Converters()
 		{
-
 		}
 
 		#endregion
@@ -176,8 +177,9 @@ namespace GriffinPlus.Lib.Conversion
 			lock (sSync)
 			{
 				// copy the current global converter dictionary
-				Dictionary<Type, IConverter> copy = new Dictionary<Type,IConverter>();
-				foreach (KeyValuePair<Type,IConverter> kvp in sConverters) {
+				var copy = new Dictionary<Type, IConverter>();
+				foreach (var kvp in sConverters)
+				{
 					copy.Add(kvp.Key, kvp.Value);
 				}
 
@@ -199,25 +201,17 @@ namespace GriffinPlus.Lib.Conversion
 		/// </returns>
 		public static IConverter GetGlobalConverter(Type type)
 		{
-			if (type.IsEnum) {
-				return new Converter_Enum(type);
-			}
-
-			IConverter converter = null;
-			sConverters.TryGetValue(type, out converter);
+			if (type.IsEnum) return new Converter_Enum(type);
+			sConverters.TryGetValue(type, out var converter);
 			return converter;
 		}
 
 		/// <summary>
 		/// Gets converters that are predefined or have been registered using the <see cref="RegisterGlobalConverter"/> method.
 		/// </summary>
-		public static IEnumerable<IConverter> GlobalConverters
-		{
-			get {
-				return sConverters.Values;
-			}
-		}
+		public static IEnumerable<IConverter> GlobalConverters => sConverters.Values;
 
 		#endregion
 	}
+
 }

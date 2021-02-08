@@ -27,12 +27,14 @@
 //     SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using GriffinPlus.Lib.Disposables.Internal;
 using System;
 using System.Threading;
 
+using GriffinPlus.Lib.Disposables.Internal;
+
 namespace GriffinPlus.Lib.Disposables
 {
+
 	/// <summary>
 	/// A base class for disposables that need exactly-once semantics in a thread-safe way.
 	/// All disposals of this instance block until the disposal is complete.
@@ -101,6 +103,7 @@ namespace GriffinPlus.Lib.Disposables
 				mDisposingEvent.Wait();
 				return;
 			}
+
 			try
 			{
 				context.Invoke();
@@ -117,8 +120,12 @@ namespace GriffinPlus.Lib.Disposables
 		/// </summary>
 		/// <param name="contextUpdater">
 		/// The function used to update an existing context.
-		/// This may be called more than once, if more than one thread attempts to simultanously update the context.
+		/// This may be called more than once, if more than one thread attempts to simultaneously update the context.
 		/// </param>
-		protected bool TryUpdateContext(Func<T, T> contextUpdater) => mContext.TryUpdateContext(contextUpdater);
+		protected bool TryUpdateContext(Func<T, T> contextUpdater)
+		{
+			return mContext.TryUpdateContext(contextUpdater);
+		}
 	}
+
 }

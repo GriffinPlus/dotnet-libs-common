@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 
 namespace GriffinPlus.Lib.Io
 {
+
 	/// <summary>
 	/// Stream whose backing store is a linked list of memory blocks.
 	/// </summary>
@@ -33,14 +34,14 @@ namespace GriffinPlus.Lib.Io
 		/// </summary>
 		private const int DefaultBlockSize = 64 * 1024;
 
-		private long mPosition;
-		private long mLength;
-		private long mCapacity;
-		private int mMinBlockSize;
-		private long mCurrentBlockStartIndex;
-		private ChainableMemoryBlock mFirstBlock;
-		private ChainableMemoryBlock mCurrentBlock;
-		private ChainableMemoryBlock mLastBlock;
+		private          long                 mPosition;
+		private          long                 mLength;
+		private          long                 mCapacity;
+		private readonly int                  mMinBlockSize;
+		private          long                 mCurrentBlockStartIndex;
+		private          ChainableMemoryBlock mFirstBlock;
+		private          ChainableMemoryBlock mCurrentBlock;
+		private          ChainableMemoryBlock mLastBlock;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class.
@@ -86,26 +87,17 @@ namespace GriffinPlus.Lib.Io
 		/// <summary>
 		/// Gets a value indicating whether the stream supports reading (always true).
 		/// </summary>
-		public override bool CanRead
-		{
-			get { return true; }
-		}
+		public override bool CanRead => true;
 
 		/// <summary>
 		/// Gets a value indicating whether the stream supports writing (always true).
 		/// </summary>
-		public override bool CanWrite
-		{
-			get { return true; }
-		}
+		public override bool CanWrite => true;
 
 		/// <summary>
 		/// Gets a value indicating whether the stream supports seeking (always true).
 		/// </summary>
-		public override bool CanSeek
-		{
-			get { return true; }
-		}
+		public override bool CanSeek => true;
 
 		#endregion
 
@@ -117,17 +109,14 @@ namespace GriffinPlus.Lib.Io
 		/// <exception cref="ArgumentException">The position is out of bounds when trying to set it.</exception>
 		public override long Position
 		{
-			get { return mPosition; }
-			set { Seek(value, SeekOrigin.Begin); }
+			get => mPosition;
+			set => Seek(value, SeekOrigin.Begin);
 		}
 
 		/// <summary>
 		/// Gets the length of the current stream.
 		/// </summary>
-		public override long Length
-		{
-			get { return mLength; }
-		}
+		public override long Length => mLength;
 
 		/// <summary>
 		/// Sets the length of the stream.
@@ -165,7 +154,7 @@ namespace GriffinPlus.Lib.Io
 					blockSize = Math.Max(blockSize, mMinBlockSize);
 					additionallyNeededSpace -= blockSize;
 
-					ChainableMemoryBlock newBlock = new ChainableMemoryBlock(blockSize);      // inits memory with zeros automatically
+					var newBlock = new ChainableMemoryBlock(blockSize); // initializes memory with zeros automatically
 					if (mCapacity == 0)
 					{
 						// no block in the chain, yet
@@ -179,7 +168,7 @@ namespace GriffinPlus.Lib.Io
 						// at least one block is in the chain
 						// => append new block
 						mLastBlock.Length = mLastBlock.Capacity;
-						mLastBlock.mNext = newBlock;
+						mLastBlock.InternalNext = newBlock;
 						mLastBlock = newBlock;
 					}
 
@@ -191,12 +180,12 @@ namespace GriffinPlus.Lib.Io
 
 					// adjust length of the last block, since another block is following
 					lengthOfLastBlock -= newBlock.Capacity;
-				};
+				}
 
 				// overwrite memory from the current position to the end of the memory block
-				// (other memory blocks are inited with zeros anyway...)
+				// (other memory blocks are initialized with zeros anyway...)
 				int bytesToClear = (int)(mCurrentBlock.Capacity - mPosition + mCurrentBlockStartIndex);
-				Array.Clear(mCurrentBlock.mBuffer, (int)(mPosition - mCurrentBlockStartIndex), bytesToClear);
+				Array.Clear(mCurrentBlock.InternalBuffer, (int)(mPosition - mCurrentBlockStartIndex), bytesToClear);
 
 				// adjust length (position is kept unchanged)
 				Debug.Assert(lengthOfLastBlock <= int.MaxValue);
@@ -225,24 +214,25 @@ namespace GriffinPlus.Lib.Io
 					long remaining = length;
 					long lastBlockStartIndex = 0;
 					mCapacity = 0;
-					ChainableMemoryBlock block = mFirstBlock;
+					var block = mFirstBlock;
 					while (true)
 					{
-						remaining -= Math.Min(remaining, block.mLength);
+						remaining -= Math.Min(remaining, block.InternalLength);
 						if (remaining == 0) break;
-						lastBlockStartIndex += block.mLength;
-						mCapacity += block.mLength;
-						block = block.mNext;
+						lastBlockStartIndex += block.InternalLength;
+						mCapacity += block.InternalLength;
+						block = block.InternalNext;
 					}
+
 					mCapacity += block.Capacity;
-					block.mNext = null;
+					block.InternalNext = null;
 					mLastBlock = block;
 					mLength = length;
 
 					// clear all bytes up to the end of the last block
 					int bytesToClear = (int)(mLastBlock.Capacity - length + lastBlockStartIndex);
-					Array.Clear(mLastBlock.mBuffer, (int)(length - lastBlockStartIndex), bytesToClear);
-					mLastBlock.mLength = (int)(length - lastBlockStartIndex);
+					Array.Clear(mLastBlock.InternalBuffer, (int)(length - lastBlockStartIndex), bytesToClear);
+					mLastBlock.InternalLength = (int)(length - lastBlockStartIndex);
 
 					// adjust stream position, if the position is out of bounds now
 					if (mPosition >= mLength)
@@ -286,10 +276,10 @@ namespace GriffinPlus.Lib.Io
 
 				while (true)
 				{
-					remaining -= Math.Min(remaining, mCurrentBlock.mLength);
+					remaining -= Math.Min(remaining, mCurrentBlock.InternalLength);
 					if (remaining == 0) break;
-					mCurrentBlockStartIndex += mCurrentBlock.mLength;
-					mCurrentBlock = mCurrentBlock.mNext;
+					mCurrentBlockStartIndex += mCurrentBlock.InternalLength;
+					mCurrentBlock = mCurrentBlock.InternalNext;
 				}
 			}
 			else if (origin == SeekOrigin.Current)
@@ -366,7 +356,7 @@ namespace GriffinPlus.Lib.Io
 					"Offset must be greater than or equal to 0.",
 					nameof(offset));
 			}
-			
+
 			if (count < 0)
 			{
 				throw new ArgumentException(
@@ -413,23 +403,23 @@ namespace GriffinPlus.Lib.Io
 				int index = (int)(mPosition - mCurrentBlockStartIndex);
 
 				// determine how many bytes can be read from the current memory block
-				int bytesToEnd = mCurrentBlock.mLength - index;
+				int bytesToEnd = mCurrentBlock.InternalLength - index;
 
 				if (bytesToEnd == 0)
 				{
 					// memory block is at its end
 					// => continue reading the next memory block
-					mCurrentBlock = mCurrentBlock.mNext;
+					mCurrentBlock = mCurrentBlock.InternalNext;
 					mCurrentBlockStartIndex = mPosition;
-					Debug.Assert((mCurrentBlock != null)); // the caller should have ensured that there is enough data to read!
+					Debug.Assert(mCurrentBlock != null); // the caller should have ensured that there is enough data to read!
 
 					// update index in the current memory block
 					index = (int)(mPosition - mCurrentBlockStartIndex);
 				}
 
 				// copy as many bytes as requested and possible
-				int bytesToCopy = Math.Min(mCurrentBlock.mLength - index, bytesToRead);
-				Array.Copy(mCurrentBlock.mBuffer, index, buffer, offset, bytesToCopy);
+				int bytesToCopy = Math.Min(mCurrentBlock.InternalLength - index, bytesToRead);
+				Array.Copy(mCurrentBlock.InternalBuffer, index, buffer, offset, bytesToCopy);
 				offset += bytesToCopy;
 				bytesToRead -= bytesToCopy;
 				mPosition += bytesToCopy;
@@ -453,8 +443,8 @@ namespace GriffinPlus.Lib.Io
 			if (pBuffer == IntPtr.Zero && count > 0)
 			{
 				throw new ArgumentNullException(
-					"The specified buffer must not be a null pointer, if 'count' is greater than 0.",
-					nameof(pBuffer));
+					nameof(pBuffer),
+					"The specified buffer must not be a null pointer, if 'count' is greater than 0.");
 			}
 
 			if (count < 0)
@@ -488,25 +478,25 @@ namespace GriffinPlus.Lib.Io
 				int index = (int)(mPosition - mCurrentBlockStartIndex);
 
 				// determine how many bytes can be read from the current memory block
-				int bytesToEnd = mCurrentBlock.mLength - index;
+				int bytesToEnd = mCurrentBlock.InternalLength - index;
 
 				if (bytesToEnd == 0)
 				{
 					// memory block is at its end
 					// => continue reading the next memory block
-					mCurrentBlock = mCurrentBlock.mNext;
+					mCurrentBlock = mCurrentBlock.InternalNext;
 					mCurrentBlockStartIndex = mPosition;
 
 					// the caller should have ensured that there is enough data to read!
-					Debug.Assert((mCurrentBlock != null)); 
+					Debug.Assert(mCurrentBlock != null);
 
 					// update index in the current memory block
 					index = (int)(mPosition - mCurrentBlockStartIndex);
 				}
 
 				// copy as many bytes as requested and possible
-				int bytesToCopy = Math.Min(mCurrentBlock.mLength - index, bytesToRead);
-				Marshal.Copy(mCurrentBlock.mBuffer, index, pBuffer, bytesToRead);
+				int bytesToCopy = Math.Min(mCurrentBlock.InternalLength - index, bytesToRead);
+				Marshal.Copy(mCurrentBlock.InternalBuffer, index, pBuffer, bytesToRead);
 				bytesToRead -= bytesToCopy;
 				mPosition += bytesToCopy;
 			}
@@ -522,7 +512,8 @@ namespace GriffinPlus.Lib.Io
 		/// </returns>
 		public override int ReadByte()
 		{
-			if (mPosition == mLength) {
+			if (mPosition == mLength)
+			{
 				return -1; // end of the stream
 			}
 
@@ -541,27 +532,27 @@ namespace GriffinPlus.Lib.Io
 				int index = (int)(mPosition - mCurrentBlockStartIndex);
 
 				// determine how many bytes can be read from the current memory block
-				int bytesToEnd = (int)(mCurrentBlock.mLength - index);
+				int bytesToEnd = mCurrentBlock.InternalLength - index;
 
 				if (bytesToEnd == 0)
 				{
 					// memory block is at its end
 					// => continue reading the next memory block
-					mCurrentBlock = mCurrentBlock.mNext;
+					mCurrentBlock = mCurrentBlock.InternalNext;
 					mCurrentBlockStartIndex = mPosition;
 
 					// the caller should have ensured that there is enough data to read!
-					Debug.Assert((mCurrentBlock != null));
+					Debug.Assert(mCurrentBlock != null);
 
 					// update index in the current memory block
 					index = (int)(mPosition - mCurrentBlockStartIndex);
 				}
 
 				// return byte and advance position of the stream
-				if (mCurrentBlock.mLength - index > 0)
+				if (mCurrentBlock.InternalLength - index > 0)
 				{
 					mPosition++;
-					return mCurrentBlock.mBuffer[index];
+					return mCurrentBlock.InternalBuffer[index];
 				}
 			}
 		}
@@ -582,7 +573,7 @@ namespace GriffinPlus.Lib.Io
 		{
 			if (count == 0) return;
 			if (buffer == null) throw new ArgumentNullException(nameof(buffer));
-			
+
 			if (offset < 0)
 			{
 				throw new ArgumentException(
@@ -634,23 +625,21 @@ namespace GriffinPlus.Lib.Io
 				int bytesToEnd = 0;
 				if (mCurrentBlock != null)
 				{
-					bytesToEnd = mCurrentBlock.mNext != null ?
-						mCurrentBlock.mLength - index :
-						mCurrentBlock.Capacity - index;
+					bytesToEnd = mCurrentBlock.InternalNext != null ? mCurrentBlock.InternalLength - index : mCurrentBlock.Capacity - index;
 				}
 
 				if (bytesToEnd == 0)
 				{
 					// memory block is at its end
 					// => continue writing the next memory block
-					if (mCurrentBlock?.mNext != null)
+					if (mCurrentBlock?.InternalNext != null)
 					{
-						mCurrentBlock = mCurrentBlock.mNext;
-						bytesToEnd = mCurrentBlock.mLength;
+						mCurrentBlock = mCurrentBlock.InternalNext;
+						bytesToEnd = mCurrentBlock.InternalLength;
 					}
 					else
 					{
-						if (!AppendNewBuffer(bytesRemaining)) mCurrentBlock = mCurrentBlock.mNext;
+						if (!AppendNewBuffer(bytesRemaining)) mCurrentBlock = mCurrentBlock.InternalNext;
 						bytesToEnd = mCurrentBlock.Capacity;
 					}
 
@@ -660,13 +649,13 @@ namespace GriffinPlus.Lib.Io
 
 				// copy as many bytes as requested and possible
 				int bytesToCopy = Math.Min(bytesToEnd, bytesRemaining);
-				Array.Copy(buffer, offset, mCurrentBlock.mBuffer, index, bytesToCopy);
+				Array.Copy(buffer, offset, mCurrentBlock.InternalBuffer, index, bytesToCopy);
 				offset += bytesToCopy;
 				bytesRemaining -= bytesToCopy;
 				mPosition += bytesToCopy;
 
 				// update length of the memory block
-				mCurrentBlock.mLength = Math.Max(mCurrentBlock.mLength, index + bytesToCopy);
+				mCurrentBlock.InternalLength = Math.Max(mCurrentBlock.InternalLength, index + bytesToCopy);
 			}
 
 			mLength = Math.Max(mLength, mPosition);
@@ -721,23 +710,21 @@ namespace GriffinPlus.Lib.Io
 				int bytesToEnd = 0;
 				if (mCurrentBlock != null)
 				{
-					bytesToEnd = mCurrentBlock.mNext != null ?
-						mCurrentBlock.mLength - index :
-						mCurrentBlock.Capacity - index;
+					bytesToEnd = mCurrentBlock.InternalNext != null ? mCurrentBlock.InternalLength - index : mCurrentBlock.Capacity - index;
 				}
 
 				if (bytesToEnd == 0)
 				{
 					// memory block is at its end
 					// => continue writing the next memory block
-					if (mCurrentBlock?.mNext != null)
+					if (mCurrentBlock?.InternalNext != null)
 					{
-						mCurrentBlock = mCurrentBlock.mNext;
-						bytesToEnd = mCurrentBlock.mLength;
+						mCurrentBlock = mCurrentBlock.InternalNext;
+						bytesToEnd = mCurrentBlock.InternalLength;
 					}
 					else
 					{
-						if (!AppendNewBuffer(bytesRemaining)) mCurrentBlock = mCurrentBlock.mNext;
+						if (!AppendNewBuffer(bytesRemaining)) mCurrentBlock = mCurrentBlock.InternalNext;
 						bytesToEnd = mCurrentBlock.Capacity;
 					}
 
@@ -747,13 +734,13 @@ namespace GriffinPlus.Lib.Io
 
 				// copy as many bytes as requested and possible
 				int bytesToCopy = Math.Min(bytesToEnd, bytesRemaining);
-				Marshal.Copy(pBuffer, mCurrentBlock.mBuffer, index, bytesToCopy);
+				Marshal.Copy(pBuffer, mCurrentBlock.InternalBuffer, index, bytesToCopy);
 				pBuffer += bytesToCopy;
 				bytesRemaining -= bytesToCopy;
 				mPosition += bytesToCopy;
 
 				// update length of the memory block
-				mCurrentBlock.mLength = Math.Max(mCurrentBlock.mLength, index + bytesToCopy);
+				mCurrentBlock.InternalLength = Math.Max(mCurrentBlock.InternalLength, index + bytesToCopy);
 			}
 
 			mLength = Math.Max(mLength, mPosition);
@@ -774,23 +761,21 @@ namespace GriffinPlus.Lib.Io
 				int bytesToEnd = 0;
 				if (mCurrentBlock != null)
 				{
-					bytesToEnd = mCurrentBlock.mNext != null ?
-						mCurrentBlock.mLength - index :
-						mCurrentBlock.Capacity - index;
+					bytesToEnd = mCurrentBlock.InternalNext != null ? mCurrentBlock.InternalLength - index : mCurrentBlock.Capacity - index;
 				}
 
 				if (bytesToEnd == 0)
 				{
 					// memory block is at its end
 					// => continue writing the next memory block
-					if (mCurrentBlock?.mNext != null)
+					if (mCurrentBlock?.InternalNext != null)
 					{
-						mCurrentBlock = mCurrentBlock.mNext;
-						bytesToEnd = mCurrentBlock.mLength;
+						mCurrentBlock = mCurrentBlock.InternalNext;
+						bytesToEnd = mCurrentBlock.InternalLength;
 					}
 					else
 					{
-						if (!AppendNewBuffer(1)) mCurrentBlock = mCurrentBlock.mNext;
+						if (!AppendNewBuffer(1)) mCurrentBlock = mCurrentBlock.InternalNext;
 						bytesToEnd = mCurrentBlock.Capacity;
 					}
 
@@ -801,8 +786,8 @@ namespace GriffinPlus.Lib.Io
 				// copy as many bytes as requested and possible
 				if (bytesToEnd > 0)
 				{
-					mCurrentBlock.mBuffer[index] = value;
-					mCurrentBlock.mLength = Math.Max(mCurrentBlock.mLength, index + 1);
+					mCurrentBlock.InternalBuffer[index] = value;
+					mCurrentBlock.InternalLength = Math.Max(mCurrentBlock.InternalLength, index + 1);
 					mPosition++;
 					mLength = Math.Max(mLength, mPosition);
 					return;
@@ -838,23 +823,21 @@ namespace GriffinPlus.Lib.Io
 				int bytesToEnd = 0;
 				if (mCurrentBlock != null)
 				{
-					bytesToEnd = mCurrentBlock.mNext != null ?
-						mCurrentBlock.mLength - index :
-						mCurrentBlock.Capacity - index;
+					bytesToEnd = mCurrentBlock.InternalNext != null ? mCurrentBlock.InternalLength - index : mCurrentBlock.Capacity - index;
 				}
 
 				if (bytesToEnd == 0)
 				{
 					// memory block is at its end
 					// => continue writing the next memory block
-					if (mCurrentBlock?.mNext != null)
+					if (mCurrentBlock?.InternalNext != null)
 					{
-						mCurrentBlock = mCurrentBlock.mNext;
-						bytesToEnd = mCurrentBlock.mLength;
+						mCurrentBlock = mCurrentBlock.InternalNext;
+						bytesToEnd = mCurrentBlock.InternalLength;
 					}
 					else
 					{
-						if (!AppendNewBuffer(bytesInSourceStream - count)) mCurrentBlock = mCurrentBlock.mNext;
+						if (!AppendNewBuffer(bytesInSourceStream - count)) mCurrentBlock = mCurrentBlock.InternalNext;
 						bytesToEnd = mCurrentBlock.Capacity;
 					}
 
@@ -863,12 +846,12 @@ namespace GriffinPlus.Lib.Io
 				}
 
 				// copy as many bytes as requested and possible
-				int bytesRead = stream.Read(mCurrentBlock.mBuffer, index, bytesToEnd);
+				int bytesRead = stream.Read(mCurrentBlock.InternalBuffer, index, bytesToEnd);
 				mPosition += bytesRead;
 				count += bytesRead;
 
 				// update length of the memory block
-				mCurrentBlock.mLength = Math.Max(mCurrentBlock.mLength, index + bytesRead);
+				mCurrentBlock.InternalLength = Math.Max(mCurrentBlock.InternalLength, index + bytesRead);
 				mLength = Math.Max(mLength, mPosition);
 
 				// abort, if stream is at its end
@@ -883,7 +866,6 @@ namespace GriffinPlus.Lib.Io
 		/// </summary>
 		public override void Flush()
 		{
-
 		}
 
 		/// <summary>
@@ -914,8 +896,8 @@ namespace GriffinPlus.Lib.Io
 				}
 				else
 				{
-					ChainableMemoryBlock block = new ChainableMemoryBlock(blockSize);
-					mLastBlock.mNext = block;
+					var block = new ChainableMemoryBlock(blockSize);
+					mLastBlock.InternalNext = block;
 					mLastBlock = block;
 					mCapacity += block.Capacity;
 				}
@@ -945,19 +927,20 @@ namespace GriffinPlus.Lib.Io
 			// determine capacity and length of the buffer
 			mCapacity = 0;
 			mLength = 0;
-			ChainableMemoryBlock block = mFirstBlock;
+			var block = mFirstBlock;
 			while (block != null)
 			{
-				mCapacity += block.mLength;
-				mLength += block.mLength;
+				mCapacity += block.InternalLength;
+				mLength += block.InternalLength;
 				mLastBlock = block;
-				block = block.mNext;
+				block = block.InternalNext;
 			}
 
 			// adjust the capacity, since only the last block must be extended up to its capacity
 			// (the blocks in between must not be changed in length, since this would insert/remove data in the middle of the stream!)
-			if (mLastBlock != null) {
-				mCapacity = mCapacity - mLastBlock.mLength + mLastBlock.Capacity;
+			if (mLastBlock != null)
+			{
+				mCapacity = mCapacity - mLastBlock.InternalLength + mLastBlock.Capacity;
 			}
 		}
 
@@ -971,7 +954,7 @@ namespace GriffinPlus.Lib.Io
 		/// </remarks>
 		public ChainableMemoryBlock DetachBuffer()
 		{
-			ChainableMemoryBlock buffer = mFirstBlock;
+			var buffer = mFirstBlock;
 			mFirstBlock = null;
 			mCurrentBlock = null;
 			mLastBlock = null;
@@ -984,4 +967,5 @@ namespace GriffinPlus.Lib.Io
 
 		#endregion
 	}
+
 }

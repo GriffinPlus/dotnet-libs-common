@@ -4,19 +4,20 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Threading;
-using System.Runtime.CompilerServices;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace GriffinPlus.Lib.Events
 {
+
 	/// <summary>
 	/// Event manager that administrates weak event handlers in a central place.
 	/// Objects firing events do not need to implement own event add/remove logic, especially when it comes to firing events
 	/// in the context of the thread that registered an event handler.
 	/// </summary>
 	/// <typeparam name="T">Type of the event arguments of the event.</typeparam>
-	public static class WeakEventManager<T> where T: EventArgs
+	public static class WeakEventManager<T> where T : EventArgs
 	{
 		#region Internal Data Types
 
@@ -28,15 +29,15 @@ namespace GriffinPlus.Lib.Events
 			Match,
 			NoMatch,
 			Collected
-		};
+		}
 
 		/// <summary>
 		/// A weak event handler item in the event manager.
 		/// </summary>
 		private struct Item
 		{
-			public SynchronizationContext SynchronizationContext;
-			public WeakEventHandler<T> Handler;
+			public readonly SynchronizationContext SynchronizationContext;
+			public readonly WeakEventHandler<T>    Handler;
 
 			public Item(SynchronizationContext context, EventHandler<T> handler)
 			{
@@ -46,23 +47,22 @@ namespace GriffinPlus.Lib.Events
 
 			public ItemMatchResult IsHandler(EventHandler<T> handler)
 			{
-				if (Handler.mMethod != handler.Method) {
+				if (Handler.mMethod != handler.Method)
+				{
 					return ItemMatchResult.NoMatch;
 				}
 
-				if (Handler.mTarget != null) {
-					object target = Handler.mTarget.Target;
+				if (Handler.mTarget != null)
+				{
+					var target = Handler.mTarget.Target;
 					if (target == null) return ItemMatchResult.Collected;
-					if (!object.ReferenceEquals(target, handler.Target)) return ItemMatchResult.NoMatch;
+					if (!ReferenceEquals(target, handler.Target)) return ItemMatchResult.NoMatch;
 				}
 
 				return ItemMatchResult.Match;
 			}
 
-			public bool IsValid
-			{
-				get { return Handler.IsValid; }
-			}
+			public bool IsValid => Handler.IsValid;
 
 			public bool Fire(object sender, T e)
 			{
@@ -74,8 +74,8 @@ namespace GriffinPlus.Lib.Events
 
 		#region Class Variables
 
-		private static ConditionalWeakTable<object,Dictionary<string,Item[]>> mItemsByObject = new ConditionalWeakTable<object,Dictionary<string,Item[]>>();
-		private static object sSync = new object();
+		private static readonly ConditionalWeakTable<object, Dictionary<string, Item[]>> mItemsByObject = new ConditionalWeakTable<object, Dictionary<string, Item[]>>();
+		private static readonly object                                                   sSync          = new object();
 
 		#endregion
 
@@ -91,9 +91,9 @@ namespace GriffinPlus.Lib.Events
 		/// </param>
 		/// <returns>Total number of registered event handlers (including the specified event handler).</returns>
 		public static int RegisterEventHandler(
-			object obj,
-			string eventName,
-			EventHandler<T> handler,
+			object                 obj,
+			string                 eventName,
+			EventHandler<T>        handler,
 			SynchronizationContext context)
 		{
 			return RegisterEventHandler(obj, eventName, handler, context, false, null, null);
@@ -117,13 +117,13 @@ namespace GriffinPlus.Lib.Events
 		/// <param name="e">Event arguments to pass to the event handler that is fired immediately.</param>
 		/// <returns>Total number of registered event handlers (including the specified event handler).</returns>
 		public static int RegisterEventHandler(
-			object obj,
-			string eventName,
-			EventHandler<T> handler,
+			object                 obj,
+			string                 eventName,
+			EventHandler<T>        handler,
 			SynchronizationContext context,
-			bool fireImmediately,
-			object sender,
-			T e)
+			bool                   fireImmediately,
+			object                 sender,
+			T                      e)
 		{
 			if (handler == null) throw new ArgumentNullException(nameof(handler));
 
@@ -131,16 +131,17 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				Dictionary<string,Item[]> itemsByName;
-				if (!mItemsByObject.TryGetValue(obj, out itemsByName)) {
-					itemsByName = new Dictionary<string,Item[]>(1);
+				Dictionary<string, Item[]> itemsByName;
+				if (!mItemsByObject.TryGetValue(obj, out itemsByName))
+				{
+					itemsByName = new Dictionary<string, Item[]>(1);
 					mItemsByObject.Add(obj, itemsByName);
 				}
 
 				Item[] items;
 				if (itemsByName.TryGetValue(eventName, out items))
 				{
-					newItems = new Item[items.Length+1];
+					newItems = new Item[items.Length + 1];
 					Array.Copy(items, newItems, items.Length);
 					newItems[items.Length] = new Item(context, handler);
 					itemsByName[eventName] = newItems;
@@ -153,10 +154,14 @@ namespace GriffinPlus.Lib.Events
 				}
 			}
 
-			if (fireImmediately) {
-				if (context != null) {
-					context.Post((x) => { handler(sender, e); }, null);
-				} else {
+			if (fireImmediately)
+			{
+				if (context != null)
+				{
+					context.Post(x => { handler(sender, e); }, null);
+				}
+				else
+				{
 					handler(sender, e);
 				}
 			}
@@ -181,30 +186,38 @@ namespace GriffinPlus.Lib.Events
 			lock (sSync)
 			{
 				Item[] items;
-				Dictionary<string,Item[]> itemsByName;
-				if (!mItemsByObject.TryGetValue(obj, out itemsByName) || !itemsByName.TryGetValue(eventName, out items)) {
+				Dictionary<string, Item[]> itemsByName;
+				if (!mItemsByObject.TryGetValue(obj, out itemsByName) || !itemsByName.TryGetValue(eventName, out items))
+				{
 					// specified event handler was not registered
 					return -1;
 				}
 
 				// remove specified handler from the handler list and tidy up handlers of collected objects as well
-				List<Item> newItems = new List<Item>();
+				var newItems = new List<Item>();
 				bool removed = false;
-				for (int i = 0; i < items.Length; i++) {
-					Item item = items[i];
-					ItemMatchResult matchResult = item.IsHandler(handler);
-					if (matchResult == ItemMatchResult.Match) {
+				for (int i = 0; i < items.Length; i++)
+				{
+					var item = items[i];
+					var matchResult = item.IsHandler(handler);
+					if (matchResult == ItemMatchResult.Match)
+					{
 						removed = true;
-					} else if (matchResult == ItemMatchResult.NoMatch) {
+					}
+					else if (matchResult == ItemMatchResult.NoMatch)
+					{
 						newItems.Add(item);
 					}
 				}
 
 				// exchange handler list
-				if (newItems.Count == 0) {
+				if (newItems.Count == 0)
+				{
 					itemsByName.Remove(eventName);
 					if (removed) return 0;
-				} else if (newItems.Count != items.Length) {
+				}
+				else if (newItems.Count != items.Length)
+				{
 					itemsByName[eventName] = newItems.ToArray();
 					if (removed) return newItems.Count;
 				}
@@ -225,14 +238,17 @@ namespace GriffinPlus.Lib.Events
 			lock (sSync)
 			{
 				Item[] items;
-				Dictionary<string,Item[]> itemsByName;
-				if (!mItemsByObject.TryGetValue(obj, out itemsByName) || !itemsByName.TryGetValue(eventName, out items)) {
+				Dictionary<string, Item[]> itemsByName;
+				if (!mItemsByObject.TryGetValue(obj, out itemsByName) || !itemsByName.TryGetValue(eventName, out items))
+				{
 					return false;
 				}
 
 				bool valid = true;
-				for (int i = 0; i < items.Length; i++) {
-					if (!items[i].IsValid) {
+				for (int i = 0; i < items.Length; i++)
+				{
+					if (!items[i].IsValid)
+					{
 						valid = false;
 						break;
 					}
@@ -241,18 +257,20 @@ namespace GriffinPlus.Lib.Events
 				if (!valid)
 				{
 					// get handlers of vivid objects
-					List<Item> newItems = new List<Item>();
-					for (int i = 0; i < items.Length; i++) {
+					var newItems = new List<Item>();
+					for (int i = 0; i < items.Length; i++)
+					{
 						if (items[i].IsValid) newItems.Add(items[i]);
 					}
 
 					// exchange handler list
-					if (newItems.Count == 0) {
+					if (newItems.Count == 0)
+					{
 						itemsByName.Remove(eventName);
 						return false;
-					} else {
-						itemsByName[eventName] = newItems.ToArray();
 					}
+
+					itemsByName[eventName] = newItems.ToArray();
 				}
 
 				return true;
@@ -273,14 +291,16 @@ namespace GriffinPlus.Lib.Events
 			lock (sSync)
 			{
 				Item[] items;
-				Dictionary<string,Item[]> itemsByName;
-				if (!mItemsByObject.TryGetValue(obj, out itemsByName) || !itemsByName.TryGetValue(eventName, out items)) {
+				Dictionary<string, Item[]> itemsByName;
+				if (!mItemsByObject.TryGetValue(obj, out itemsByName) || !itemsByName.TryGetValue(eventName, out items))
+				{
 					return false;
 				}
 
 				bool valid = true;
-				for (int i = 0; i < items.Length; i++) {
-					ItemMatchResult match = items[i].IsHandler(handler);
+				for (int i = 0; i < items.Length; i++)
+				{
+					var match = items[i].IsHandler(handler);
 					if (match == ItemMatchResult.Match) registered = true;
 					if (match == ItemMatchResult.Collected) valid = false;
 				}
@@ -288,18 +308,20 @@ namespace GriffinPlus.Lib.Events
 				if (!valid)
 				{
 					// get handlers of vivid objects
-					List<Item> newItems = new List<Item>();
-					for (int i = 0; i < items.Length; i++) {
+					var newItems = new List<Item>();
+					for (int i = 0; i < items.Length; i++)
+					{
 						if (items[i].IsValid) newItems.Add(items[i]);
 					}
 
 					// exchange handler list
-					if (newItems.Count == 0) {
+					if (newItems.Count == 0)
+					{
 						itemsByName.Remove(eventName);
 						return false;
-					} else {
-						itemsByName[eventName] = newItems.ToArray();
 					}
+
+					itemsByName[eventName] = newItems.ToArray();
 				}
 			}
 
@@ -314,7 +336,11 @@ namespace GriffinPlus.Lib.Events
 		/// <param name="eventName">Name of the event.</param>
 		/// <param name="sender">Sender object to pass to invoked event handlers.</param>
 		/// <param name="e">Event arguments to pass to invoked event handlers.</param>
-		public static void FireEvent(object obj, string eventName, object sender, T e)
+		public static void FireEvent(
+			object obj,
+			string eventName,
+			object sender,
+			T      e)
 		{
 			Item[] items;
 
@@ -327,10 +353,14 @@ namespace GriffinPlus.Lib.Events
 			}
 
 			// fire event
-			foreach (Item item in items) {
-				if (item.SynchronizationContext != null) {
-					item.SynchronizationContext.Post((x) => { ((Item)x).Fire(sender, e); }, item);
-				} else {
+			foreach (var item in items)
+			{
+				if (item.SynchronizationContext != null)
+				{
+					item.SynchronizationContext.Post(x => { ((Item)x).Fire(sender, e); }, item);
+				}
+				else
+				{
 					item.Fire(sender, e);
 				}
 			}
@@ -350,7 +380,7 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				Dictionary<string,Item[]> itemsByName;
+				Dictionary<string, Item[]> itemsByName;
 				if (!mItemsByObject.TryGetValue(obj, out itemsByName)) return null;
 				if (!itemsByName.TryGetValue(eventName, out items)) return null;
 				items = RemoveInvalidHandlers(eventName, items, itemsByName);
@@ -358,18 +388,20 @@ namespace GriffinPlus.Lib.Events
 
 			EventHandler<T> handlers = null;
 
-			foreach (Item item in items)
+			foreach (var item in items)
 			{
 				if (item.SynchronizationContext != null)
 				{
-					handlers += (sender, e) => {
-						item.SynchronizationContext.Post((x) => { ((Item)x).Fire(sender, e); }, item);
+					handlers += (sender, e) =>
+					{
+						item.SynchronizationContext.Post(x => { ((Item)x).Fire(sender, e); }, item);
 					};
 				}
 				else
 				{
-					Item itemCopy = item;
-					handlers += (sender, e) => {
+					var itemCopy = item;
+					handlers += (sender, e) =>
+					{
 						itemCopy.Fire(sender, e);
 					};
 				}
@@ -391,7 +423,7 @@ namespace GriffinPlus.Lib.Events
 			List<int> itemsToRemove = null;
 			for (int i = 0; i < items.Length; i++)
 			{
-				Item item = items[i];
+				var item = items[i];
 				if (!item.IsValid)
 				{
 					if (itemsToRemove == null) itemsToRemove = new List<int>();
@@ -410,8 +442,9 @@ namespace GriffinPlus.Lib.Events
 				else
 				{
 					// some handlers have to be removed
-					List<Item> newItems = new List<Item>(items);
-					for (int i = itemsToRemove.Count - 1; i >= 0; i--) {
+					var newItems = new List<Item>(items);
+					for (int i = itemsToRemove.Count - 1; i >= 0; i--)
+					{
 						newItems.RemoveAt(itemsToRemove[i]);
 					}
 

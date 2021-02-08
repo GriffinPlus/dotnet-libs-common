@@ -7,17 +7,17 @@ using System;
 
 namespace GriffinPlus.Lib.Conversion
 {
+
 	/// <summary>
 	/// A converter that returns a <see cref="System.String"/> as it is.
 	/// </summary>
-	public class Converter_String : Converter_Base<String>
+	public class Converter_String : Converter_Base<string>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Converter_String"/> class.
 		/// </summary>
 		public Converter_String()
 		{
-
 		}
 
 		/// <summary>
@@ -28,7 +28,7 @@ namespace GriffinPlus.Lib.Conversion
 		/// A format provider that controls how the conversion is done
 		/// (null to use the current thread's culture to determine the format).
 		/// </param>
-		/// <returns>The string represention of the object.</returns>
+		/// <returns>The string representation of the object.</returns>
 		public override string ConvertObjectToString(object obj, IFormatProvider provider = null)
 		{
 			return (string)obj;
@@ -48,4 +48,5 @@ namespace GriffinPlus.Lib.Conversion
 			return s;
 		}
 	}
+
 }

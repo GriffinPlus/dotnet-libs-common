@@ -7,6 +7,7 @@ using System;
 
 namespace GriffinPlus.Lib
 {
+
 	/// <summary>
 	/// Extension methods for <see cref="System.DateTime"/>.
 	/// </summary>
@@ -29,4 +30,5 @@ namespace GriffinPlus.Lib
 			return dateTime.AddTicks(-(dateTime.Ticks % precision.Ticks));
 		}
 	}
+
 }

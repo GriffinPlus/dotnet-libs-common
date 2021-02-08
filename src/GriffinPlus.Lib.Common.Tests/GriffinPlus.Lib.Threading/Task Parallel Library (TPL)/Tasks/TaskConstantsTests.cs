@@ -31,6 +31,7 @@ using Xunit;
 
 namespace GriffinPlus.Lib.Threading
 {
+
 	public class TaskConstantsTests
 	{
 		[Fact]
@@ -166,4 +167,5 @@ namespace GriffinPlus.Lib.Threading
 			Assert.Same(task1, task2);
 		}
 	}
+
 }

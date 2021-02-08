@@ -7,6 +7,7 @@ using Xunit;
 
 namespace GriffinPlus.Lib
 {
+
 	/// <summary>
 	/// Unit tests targetting the <see cref="BitMask"/> class.
 	/// </summary>
@@ -15,7 +16,7 @@ namespace GriffinPlus.Lib
 		[Fact]
 		public void CheckZeros()
 		{
-			BitMask mask = BitMask.Zeros;
+			var mask = BitMask.Zeros;
 			Assert.Equal(0, mask.Size);
 			Assert.False(mask.PaddingValue);
 			Assert.Empty(mask.AsArray());
@@ -24,7 +25,7 @@ namespace GriffinPlus.Lib
 		[Fact]
 		public void CheckOnes()
 		{
-			BitMask mask = BitMask.Ones;
+			var mask = BitMask.Ones;
 			Assert.Equal(0, mask.Size);
 			Assert.True(mask.PaddingValue);
 			Assert.Empty(mask.AsArray());
@@ -34,13 +35,13 @@ namespace GriffinPlus.Lib
 		// zero-length bitmask (bit value is only defined by padding value)
 		[InlineData(0, false, false)]
 		[InlineData(0, false, true)]
-		[InlineData(0, true,  false)]
-		[InlineData(0, true,  true)]
+		[InlineData(0, true, false)]
+		[InlineData(0, true, true)]
 		// small bit mask spanning a single uint32 value only, rounded up to 32 bit
 		[InlineData(1, false, false)]
 		[InlineData(1, false, true)]
-		[InlineData(1, true,  false)]
-		[InlineData(1, true,  true)]
+		[InlineData(1, true, false)]
+		[InlineData(1, true, true)]
 		// small bit mask spanning a single uint32 value only, rounded up to 32 bit
 		[InlineData(31, false, false)]
 		[InlineData(31, false, true)]
@@ -68,10 +69,10 @@ namespace GriffinPlus.Lib
 		[InlineData(128, true, true)]
 		public void Create(int size, bool initialBitValue, bool paddingValue)
 		{
-			BitMask mask = new BitMask(size, initialBitValue, paddingValue);
+			var mask = new BitMask(size, initialBitValue, paddingValue);
 
 			// check the actual size of the mask in bits
-			int effectiveSize = ((size + 31) / 32) * 32;
+			int effectiveSize = (size + 31) / 32 * 32;
 			Assert.Equal(effectiveSize, mask.Size);
 
 			// check padding value
@@ -80,9 +81,11 @@ namespace GriffinPlus.Lib
 			// check underlying buffer
 			uint[] maskArray = mask.AsArray();
 			uint[] expectedMaskArray = new uint[effectiveSize / 32];
-			for (int i = 0; i < expectedMaskArray.Length; i++) {
+			for (int i = 0; i < expectedMaskArray.Length; i++)
+			{
 				expectedMaskArray[i] = initialBitValue ? ~0u : 0u;
 			}
+
 			Assert.Equal(expectedMaskArray, maskArray);
 		}
 
@@ -97,10 +100,10 @@ namespace GriffinPlus.Lib
 		[InlineData(128, 31)]
 		public void SetBit(int size, int bit)
 		{
-			BitMask mask = new BitMask(size, false, false);
+			var mask = new BitMask(size, false, false);
 
 			// check the actual size of the mask in bits
-			int effectiveSize = ((size + 31) / 32) * 32;
+			int effectiveSize = (size + 31) / 32 * 32;
 			Assert.Equal(effectiveSize, mask.Size);
 
 			// clear bit
@@ -111,13 +114,18 @@ namespace GriffinPlus.Lib
 			int setBitArrayIndex = bit / 32;
 			int setBitIndex = bit % 32;
 			uint[] expectedMaskArray = new uint[effectiveSize / 32];
-			for (int i = 0; i < expectedMaskArray.Length; i++) {
-				if (i == setBitArrayIndex) {
+			for (int i = 0; i < expectedMaskArray.Length; i++)
+			{
+				if (i == setBitArrayIndex)
+				{
 					expectedMaskArray[i] = 0u | (1u << setBitIndex);
-				} else {
+				}
+				else
+				{
 					expectedMaskArray[i] = 0u;
 				}
 			}
+
 			Assert.Equal(expectedMaskArray, maskArray);
 		}
 
@@ -132,10 +140,10 @@ namespace GriffinPlus.Lib
 		[InlineData(128, 31)]
 		public void ClearBit(int size, int bit)
 		{
-			BitMask mask = new BitMask(size, true, false);
+			var mask = new BitMask(size, true, false);
 
 			// check the actual size of the mask in bits
-			int effectiveSize = ((size + 31) / 32) * 32;
+			int effectiveSize = (size + 31) / 32 * 32;
 			Assert.Equal(effectiveSize, mask.Size);
 
 			// clear bit
@@ -157,40 +165,45 @@ namespace GriffinPlus.Lib
 					expectedMaskArray[i] = ~0u;
 				}
 			}
+
 			Assert.Equal(expectedMaskArray, maskArray);
 		}
 
 		[Theory]
 		// small bit mask
-		[InlineData(32,    0,   0, new uint[] { 0x00000000u })]
-		[InlineData(32,    0,   1, new uint[] { 0x00000001u })]
-		[InlineData(32,    0,   2, new uint[] { 0x00000003u })]
-		[InlineData(32,   30,   0, new uint[] { 0x00000000u })]
-		[InlineData(32,   30,   1, new uint[] { 0x40000000u })]
-		[InlineData(32,   30,   2, new uint[] { 0xC0000000u })]
-		[InlineData(32,    1,  30, new uint[] { 0x7FFFFFFEu })] // all bits except the first and the last one
+		[InlineData(32, 0, 0, new[] { 0x00000000u })]
+		[InlineData(32, 0, 1, new[] { 0x00000001u })]
+		[InlineData(32, 0, 2, new[] { 0x00000003u })]
+		[InlineData(32, 30, 0, new[] { 0x00000000u })]
+		[InlineData(32, 30, 1, new[] { 0x40000000u })]
+		[InlineData(32, 30, 2, new[] { 0xC0000000u })]
+		[InlineData(32, 1, 30, new[] { 0x7FFFFFFEu })] // all bits except the first and the last one
 		// large bit mask
-		[InlineData(128,   0,   0, new uint[] { 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u })]
-		[InlineData(128,   0,   1, new uint[] { 0x00000001u, 0x00000000u, 0x00000000u, 0x00000000u })]
-		[InlineData(128,   0,   2, new uint[] { 0x00000003u, 0x00000000u, 0x00000000u, 0x00000000u })]
-		[InlineData(128,  30,   0, new uint[] { 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u })]
-		[InlineData(128,  30,   1, new uint[] { 0x40000000u, 0x00000000u, 0x00000000u, 0x00000000u })]
-		[InlineData(128,  30,   2, new uint[] { 0xC0000000u, 0x00000000u, 0x00000000u, 0x00000000u })]
-		[InlineData(128,  30,   3, new uint[] { 0xC0000000u, 0x00000001u, 0x00000000u, 0x00000000u })] // spans sections
-		[InlineData(128,  30,   4, new uint[] { 0xC0000000u, 0x00000003u, 0x00000000u, 0x00000000u })] // spans sections
-		[InlineData(128,  95,   0, new uint[] { 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u })] 
-		[InlineData(128,  95,   1, new uint[] { 0x00000000u, 0x00000000u, 0x80000000u, 0x00000000u })]
-		[InlineData(128,  95,   2, new uint[] { 0x00000000u, 0x00000000u, 0x80000000u, 0x00000001u })] // spans sections
-		[InlineData(128, 126,   0, new uint[] { 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u })]
-		[InlineData(128, 126,   1, new uint[] { 0x00000000u, 0x00000000u, 0x00000000u, 0x40000000u })]
-		[InlineData(128, 126,   2, new uint[] { 0x00000000u, 0x00000000u, 0x00000000u, 0xC0000000u })]
-		[InlineData(128,   1, 126, new uint[] { 0xFFFFFFFEu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0x7FFFFFFFu })] // all bits except the first and the last one
-		public void SetBits(int size, int fromBit, int count, uint[] expectedMaskArray)
+		[InlineData(128, 0, 0, new[] { 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u })]
+		[InlineData(128, 0, 1, new[] { 0x00000001u, 0x00000000u, 0x00000000u, 0x00000000u })]
+		[InlineData(128, 0, 2, new[] { 0x00000003u, 0x00000000u, 0x00000000u, 0x00000000u })]
+		[InlineData(128, 30, 0, new[] { 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u })]
+		[InlineData(128, 30, 1, new[] { 0x40000000u, 0x00000000u, 0x00000000u, 0x00000000u })]
+		[InlineData(128, 30, 2, new[] { 0xC0000000u, 0x00000000u, 0x00000000u, 0x00000000u })]
+		[InlineData(128, 30, 3, new[] { 0xC0000000u, 0x00000001u, 0x00000000u, 0x00000000u })] // spans sections
+		[InlineData(128, 30, 4, new[] { 0xC0000000u, 0x00000003u, 0x00000000u, 0x00000000u })] // spans sections
+		[InlineData(128, 95, 0, new[] { 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u })]
+		[InlineData(128, 95, 1, new[] { 0x00000000u, 0x00000000u, 0x80000000u, 0x00000000u })]
+		[InlineData(128, 95, 2, new[] { 0x00000000u, 0x00000000u, 0x80000000u, 0x00000001u })] // spans sections
+		[InlineData(128, 126, 0, new[] { 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u })]
+		[InlineData(128, 126, 1, new[] { 0x00000000u, 0x00000000u, 0x00000000u, 0x40000000u })]
+		[InlineData(128, 126, 2, new[] { 0x00000000u, 0x00000000u, 0x00000000u, 0xC0000000u })]
+		[InlineData(128, 1, 126, new[] { 0xFFFFFFFEu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0x7FFFFFFFu })] // all bits except the first and the last one
+		public void SetBits(
+			int    size,
+			int    fromBit,
+			int    count,
+			uint[] expectedMaskArray)
 		{
-			BitMask mask = new BitMask(size, false, false);
+			var mask = new BitMask(size, false, false);
 
 			// check the actual size of the mask in bits
-			int effectiveSize = ((size + 31) / 32) * 32;
+			int effectiveSize = (size + 31) / 32 * 32;
 			Assert.Equal(effectiveSize, mask.Size);
 
 			// clear bit
@@ -203,35 +216,39 @@ namespace GriffinPlus.Lib
 
 		[Theory]
 		// small bit mask
-		[InlineData(32,    0,   0, new uint[] { 0xFFFFFFFFu })]
-		[InlineData(32,    0,   1, new uint[] { 0xFFFFFFFEu })]
-		[InlineData(32,    0,   2, new uint[] { 0xFFFFFFFCu })]
-		[InlineData(32,   30,   0, new uint[] { 0xFFFFFFFFu })]
-		[InlineData(32,   30,   1, new uint[] { 0xBFFFFFFFu })]
-		[InlineData(32,   30,   2, new uint[] { 0x3FFFFFFFu })]
-		[InlineData(32,    1,  30, new uint[] { 0x80000001u })] // all bits except the first and the last one
+		[InlineData(32, 0, 0, new[] { 0xFFFFFFFFu })]
+		[InlineData(32, 0, 1, new[] { 0xFFFFFFFEu })]
+		[InlineData(32, 0, 2, new[] { 0xFFFFFFFCu })]
+		[InlineData(32, 30, 0, new[] { 0xFFFFFFFFu })]
+		[InlineData(32, 30, 1, new[] { 0xBFFFFFFFu })]
+		[InlineData(32, 30, 2, new[] { 0x3FFFFFFFu })]
+		[InlineData(32, 1, 30, new[] { 0x80000001u })] // all bits except the first and the last one
 		// large bit mask
-		[InlineData(128,   0,   0, new uint[] { 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu })]
-		[InlineData(128,   0,   1, new uint[] { 0xFFFFFFFEu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu })]
-		[InlineData(128,   0,   2, new uint[] { 0xFFFFFFFCu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu })]
-		[InlineData(128,  30,   0, new uint[] { 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu })]
-		[InlineData(128,  30,   1, new uint[] { 0xBFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu })]
-		[InlineData(128,  30,   2, new uint[] { 0x3FFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu })]
-		[InlineData(128,  30,   3, new uint[] { 0x3FFFFFFFu, 0xFFFFFFFEu, 0xFFFFFFFFu, 0xFFFFFFFFu })] // spans sections
-		[InlineData(128,  30,   4, new uint[] { 0x3FFFFFFFu, 0xFFFFFFFCu, 0xFFFFFFFFu, 0xFFFFFFFFu })] // spans sections
-		[InlineData(128,  95,   0, new uint[] { 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu })] 
-		[InlineData(128,  95,   1, new uint[] { 0xFFFFFFFFu, 0xFFFFFFFFu, 0x7FFFFFFFu, 0xFFFFFFFFu })]
-		[InlineData(128,  95,   2, new uint[] { 0xFFFFFFFFu, 0xFFFFFFFFu, 0x7FFFFFFFu, 0xFFFFFFFEu })] // spans sections
-		[InlineData(128, 126,   0, new uint[] { 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu })]
-		[InlineData(128, 126,   1, new uint[] { 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xBFFFFFFFu })]
-		[InlineData(128, 126,   2, new uint[] { 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0x3FFFFFFFu })]
-		[InlineData(128,   1, 126, new uint[] { 0x00000001u, 0x00000000u, 0x00000000u, 0x80000000u })] // all bits except the first and the last one
-		public void ClearBits(int size, int fromBit, int count, uint[] expectedMaskArray)
+		[InlineData(128, 0, 0, new[] { 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu })]
+		[InlineData(128, 0, 1, new[] { 0xFFFFFFFEu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu })]
+		[InlineData(128, 0, 2, new[] { 0xFFFFFFFCu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu })]
+		[InlineData(128, 30, 0, new[] { 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu })]
+		[InlineData(128, 30, 1, new[] { 0xBFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu })]
+		[InlineData(128, 30, 2, new[] { 0x3FFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu })]
+		[InlineData(128, 30, 3, new[] { 0x3FFFFFFFu, 0xFFFFFFFEu, 0xFFFFFFFFu, 0xFFFFFFFFu })] // spans sections
+		[InlineData(128, 30, 4, new[] { 0x3FFFFFFFu, 0xFFFFFFFCu, 0xFFFFFFFFu, 0xFFFFFFFFu })] // spans sections
+		[InlineData(128, 95, 0, new[] { 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu })]
+		[InlineData(128, 95, 1, new[] { 0xFFFFFFFFu, 0xFFFFFFFFu, 0x7FFFFFFFu, 0xFFFFFFFFu })]
+		[InlineData(128, 95, 2, new[] { 0xFFFFFFFFu, 0xFFFFFFFFu, 0x7FFFFFFFu, 0xFFFFFFFEu })] // spans sections
+		[InlineData(128, 126, 0, new[] { 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu })]
+		[InlineData(128, 126, 1, new[] { 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xBFFFFFFFu })]
+		[InlineData(128, 126, 2, new[] { 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0x3FFFFFFFu })]
+		[InlineData(128, 1, 126, new[] { 0x00000001u, 0x00000000u, 0x00000000u, 0x80000000u })] // all bits except the first and the last one
+		public void ClearBits(
+			int    size,
+			int    fromBit,
+			int    count,
+			uint[] expectedMaskArray)
 		{
-			BitMask mask = new BitMask(size, true, false);
+			var mask = new BitMask(size, true, false);
 
 			// check the actual size of the mask in bits
-			int effectiveSize = ((size + 31) / 32) * 32;
+			int effectiveSize = (size + 31) / 32 * 32;
 			Assert.Equal(effectiveSize, mask.Size);
 
 			// clear bit
@@ -244,18 +261,18 @@ namespace GriffinPlus.Lib
 
 		[Theory]
 		// small bit mask
-		[InlineData(32,  0)]
-		[InlineData(32,  1)]
+		[InlineData(32, 0)]
+		[InlineData(32, 1)]
 		[InlineData(32, 30)]
 		[InlineData(32, 31)]
 		// large bit mask
-		[InlineData(128,   0)]
-		[InlineData(128,   1)]
+		[InlineData(128, 0)]
+		[InlineData(128, 1)]
 		[InlineData(128, 126)]
 		[InlineData(128, 127)]
 		public void IsBitSet(int size, int bit)
 		{
-			BitMask mask = new BitMask(size, false, true);
+			var mask = new BitMask(size, false, true);
 			Assert.False(mask.IsBitSet(bit));
 			mask.SetBit(bit);
 			Assert.True(mask.IsBitSet(bit));
@@ -274,11 +291,11 @@ namespace GriffinPlus.Lib
 		[InlineData(128, 127)]
 		public void IsBitCleared(int size, int bit)
 		{
-			BitMask mask = new BitMask(size, true, false);
+			var mask = new BitMask(size, true, false);
 			Assert.False(mask.IsBitCleared(bit));
 			mask.ClearBit(bit);
 			Assert.True(mask.IsBitCleared(bit));
 		}
-
 	}
+
 }
