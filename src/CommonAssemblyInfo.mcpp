@@ -1,0 +1,5 @@
+﻿using namespace System::Reflection;
+
+[assembly: AssemblyCompany("Griffin+")];
+[assembly: AssemblyProduct("Griffin+ Common Libraries")];
+[assembly: AssemblyCopyright("Copyright (c) 2021 Sascha Falk and Contributors")];

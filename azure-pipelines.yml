@@ -1,3 +1,23 @@
+#######################################################################################################################
+# build.vs: ci-csharp-netstandard20-with-deployment-on-tag.yml
+#######################################################################################################################
+#
+# Standard pipeline for building and testing C# projects with target .NET Standard 2.0.
+# The pipeline runs unit tests on the following target frameworks and platforms:
+#
+# - Windows Server 2019, .NET 4.6.1      (net461)
+# - Windows Server 2019, .NET Core 2.1   (netcoreapp2.1)
+# - Windows Server 2019, .NET Core 3.1   (netcoreapp3.1)
+# - Windows Server 2019, .NET 5.0        (net5.0, no platform specific TPMs)
+# - Ubuntu 20.04,        .NET Core 2.1   (netcoreapp2.1)
+# - Ubuntu 20.04,        .NET Core 3.1   (netcoreapp3.1)
+# - Ubuntu 20.04,        .NET 5.0        (net5.0, no platform specific TPMs)
+#
+# After tests have completed successfully nuget packages are created according to their specification (*.nuspec).
+# If the build was tagged with a tag starting with 'v' the nuget packages are pushed to nuget.org.
+#
+#######################################################################################################################
+
 trigger:
   tags:
     include:
@@ -5,9 +25,6 @@ trigger:
   branches:
     include:
     - master
-
-variables:
-  BuildConfiguration: 'Release'
 
 pool:
   vmImage: 'windows-2019'
@@ -29,14 +46,18 @@ stages:
       inputs:
         packageType: 'sdk'
         version: '2.1.x'
-        performMultiLevelLookup: true
         installationPath: '$(Agent.ToolsDirectory)/dotnet'
     - task: UseDotNet@2
       displayName: 'Use .NET Core 3.1 SDK'
       inputs:
         packageType: 'sdk'
         version: '3.1.x'
-        performMultiLevelLookup: true
+        installationPath: '$(Agent.ToolsDirectory)/dotnet'
+    - task: UseDotNet@2
+      displayName: 'Use .NET 5.0 SDK'
+      inputs:
+        packageType: 'sdk'
+        version: '5.0.x'
         installationPath: '$(Agent.ToolsDirectory)/dotnet'
     - task: DotNetCoreCLI@2
       displayName: 'Install GitVersion'
@@ -56,7 +77,7 @@ stages:
       inputs:
         command: 'custom'
         custom: 'gitversion'
-        arguments: '/output buildserver /updateassemblyinfo src/CommonAssemblyInfo.cs'
+        arguments: '/output buildserver /updateassemblyinfo build.vs/AssemblyInfoVersion.cs'
     - task: DotNetCoreCLI@2
       displayName: 'Restore'
       inputs:
@@ -67,11 +88,11 @@ stages:
       inputs:
         command: 'build'
         projects: '**/*.csproj'
-        arguments: '--configuration $(BuildConfiguration) /p:InformationalVersion=$(GitVersion.InformationalVersion)'
+        arguments: '/p:InformationalVersion=$(GitVersion.InformationalVersion)'
         versioningScheme: 'byEnvVar'
         versionEnvVar: 'GitVersion.SemVer'
     - task: PowerShell@2
-      displayName: Export Shared Variables
+      displayName: 'Export Shared Variables'
       inputs:
         targetType: 'inline'
         pwsh: true
@@ -96,71 +117,78 @@ stages:
 - stage: 'Tests'
   jobs:
   ######################################################################################################################
-  # Job: Tests for .NET 4.6.1 on Windows
+  # Job:
+  # Tests for .NET 4.6.1 on Windows
+  # Tests for .NET Core 2.1/3.1 and .NET 5.0 on Windows and Linux
   ######################################################################################################################
   - job:
-    displayName: 'Test (Windows, .NET 4.6.1)'
-    steps:
-    - task: DownloadPipelineArtifact@2
-      displayName: 'Download Pipeline Artifacts'
-      inputs:
-        artifact: 'Binaries'
-        targetPath: '$(Build.SourcesDirectory)/_build'
-        itemPattern: |
-          **/net461/*.*
-    - task: VSTest@2
-      displayName: 'Test'
-      inputs:
-        configuration: '$(buildConfiguration)'
-        testSelector: 'testAssemblies'
-        codeCoverageEnabled: true
-        testAssemblyVer2: |
-          **\*.Tests.dll
-          !**\obj\**
-        searchFolder: '$(Build.SourcesDirectory)'
-        otherConsoleOptions: '/Framework:.NETFramework,Version=v4.6.1'
-
-  ######################################################################################################################
-  # Job: Tests for .NET Core 2.1/3.1 on Windows and Linux
-  ######################################################################################################################
-  - job:
-    displayName: Test
+    displayName: ''
+    timeoutInMinutes: 120
     strategy:
       matrix:
-        (Windows, .NET Core 2.1):
-          VmImage: windows-2019
-          DotNetCoreVersion: '2.1'
-        (Windows, .NET Core 3.1):
-          VmImage: windows-2019
-          DotNetCoreVersion: '3.1'
-        # (Ubuntu, .NET Core 2.1):
-        #   VmImage: ubuntu-20.04
-        #   DotNetCoreVersion: '2.1'
-        (Ubuntu, .NET Core 3.1):
-          VmImage: ubuntu-20.04
-          DotNetCoreVersion: '3.1'
+        'Windows Server 2019':
+          VmImage: 'windows-2019'
+        'Ubuntu 20.04':
+          VmImage: 'ubuntu-20.04'
     pool:
       vmImage: '$(VmImage)'
     steps:
     - task: UseDotNet@2
-      displayName: 'Use .NET Core $(DotNetCoreVersion) SDK'
+      displayName: 'Use .NET Core 2.1 SDK'
       inputs:
         packageType: 'sdk'
-        version: '$(DotNetCoreVersion).x'
-        performMultiLevelLookup: true
+        version: '2.1.x'
+        installationPath: '$(Agent.ToolsDirectory)/dotnet'
+    - task: UseDotNet@2
+      displayName: 'Use .NET Core 3.1 SDK'
+      inputs:
+        packageType: 'sdk'
+        version: '3.1.x'
+        installationPath: '$(Agent.ToolsDirectory)/dotnet'
+    - task: UseDotNet@2
+      displayName: 'Use .NET 5.0 SDK'
+      inputs:
+        packageType: 'sdk'
+        version: '5.0.x'
         installationPath: '$(Agent.ToolsDirectory)/dotnet'
     - task: DownloadPipelineArtifact@2
       displayName: 'Download Pipeline Artifacts'
       inputs:
         artifact: 'Binaries'
         targetPath: '$(Build.SourcesDirectory)/_build'
+    - task: VSTest@2
+      displayName: 'Test .NET Framework 4.6.1'
+      condition: eq(variables['agent.os'], 'Windows_NT')
+      inputs:
+        configuration: '$(BuildConfiguration)'
+        testSelector: 'testAssemblies'
+        testAssemblyVer2: |
+          **\*Tests.dll
+          !**\.obj\**
+        searchFolder: '$(Build.SourcesDirectory)/_build'
+        runSettingsFile: '$(Build.SourcesDirectory)/src/tests.runsettings'
+        otherConsoleOptions: '/Framework:.NETFramework,Version=v4.6.1'
     - task: DotNetCoreCLI@2
-      displayName: 'Test'
+      displayName: 'Test .NET Core 2.1'
       inputs:
         command: 'test'
         projects: '**/*Tests/*.csproj'
         nobuild: true
-        arguments: '--configuration $(buildConfiguration) --framework netcoreapp$(DotNetCoreVersion)'
+        arguments: '--framework netcoreapp2.1'
+    - task: DotNetCoreCLI@2
+      displayName: 'Test .NET Core 3.1'
+      inputs:
+        command: 'test'
+        projects: '**/*Tests/*.csproj'
+        nobuild: true
+        arguments: '--framework netcoreapp3.1'
+    - task: DotNetCoreCLI@2
+      displayName: 'Test .NET 5.0'
+      inputs:
+        command: 'test'
+        projects: '**/*Tests/*.csproj'
+        nobuild: true
+        arguments: '--framework net5.0'
 
 ########################################################################################################################
 # Stage: Deployment
@@ -183,7 +211,7 @@ stages:
         artifact: 'Variables'
         targetPath: '$(Pipeline.Workspace)/variables'
     - task: PowerShell@2
-      displayName: Import Shared Variables
+      displayName: 'Import Shared Variables'
       inputs:
         targetType: 'inline'
         pwsh: true

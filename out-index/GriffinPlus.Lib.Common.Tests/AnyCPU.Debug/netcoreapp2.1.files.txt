@@ -1,0 +1,12 @@
+﻿.\GriffinPlus.Lib.Common.dll
+.\GriffinPlus.Lib.Common.pdb
+.\GriffinPlus.Lib.Common.Tests.deps.json
+.\GriffinPlus.Lib.Common.Tests.dll
+.\GriffinPlus.Lib.Common.Tests.pdb
+.\GriffinPlus.Lib.Common.Tests.runtimeconfig.dev.json
+.\GriffinPlus.Lib.Common.Tests.runtimeconfig.json
+.\GriffinPlus.Lib.Common.Tests.xml
+.\GriffinPlus.Lib.Common.xml
+.\xunit.runner.reporters.netcoreapp10.dll
+.\xunit.runner.utility.netcoreapp10.dll
+.\xunit.runner.visualstudio.dotnetcore.testadapter.dll

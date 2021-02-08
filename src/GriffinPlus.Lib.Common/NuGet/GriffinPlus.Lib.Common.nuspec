@@ -4,7 +4,7 @@
 		<id>GriffinPlus.Lib.Common</id>
 		<version>$version$</version>
 		<authors>Sascha Falk</authors>
-		<copyright>Copyright (c) 2020 Sascha Falk and Contributors</copyright>
+		<copyright>Copyright (c) 2021 Sascha Falk and Contributors</copyright>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>Very basic functionality that is frequently used in Griffin+ .NET projects.</description>
 		<license type="expression">MIT</license>
@@ -22,11 +22,11 @@
 	</metadata>
 	<files>
 		<file src="..\..\..\res\nuget-icon.png" target="images\" />
-		<file src="..\..\..\_build\GriffinPlus.Lib.Common\Release\net461\GriffinPlus.Lib.Common.dll" target="lib\net461"/>
-		<file src="..\..\..\_build\GriffinPlus.Lib.Common\Release\net461\GriffinPlus.Lib.Common.pdb" target="lib\net461"/>
-		<file src="..\..\..\_build\GriffinPlus.Lib.Common\Release\net461\GriffinPlus.Lib.Common.xml" target="lib\net461"/>
-		<file src="..\..\..\_build\GriffinPlus.Lib.Common\Release\netstandard2.0\GriffinPlus.Lib.Common.dll" target="lib\netstandard2.0"/>
-		<file src="..\..\..\_build\GriffinPlus.Lib.Common\Release\netstandard2.0\GriffinPlus.Lib.Common.pdb" target="lib\netstandard2.0"/>
-		<file src="..\..\..\_build\GriffinPlus.Lib.Common\Release\netstandard2.0\GriffinPlus.Lib.Common.xml" target="lib\netstandard2.0"/>
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.dll" target="lib\net461"/>
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.pdb" target="lib\net461"/>
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.xml" target="lib\net461"/>
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netstandard2.0\GriffinPlus.Lib.Common.dll" target="lib\netstandard2.0"/>
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netstandard2.0\GriffinPlus.Lib.Common.pdb" target="lib\netstandard2.0"/>
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netstandard2.0\GriffinPlus.Lib.Common.xml" target="lib\netstandard2.0"/>
 	</files>
 </package>
