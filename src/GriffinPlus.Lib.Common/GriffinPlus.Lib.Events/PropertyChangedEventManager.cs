@@ -18,7 +18,7 @@ namespace GriffinPlus.Lib.Events
 	/// Objects firing events do not need to implement own event add/remove logic, especially when it comes to firing
 	/// events asynchronously.
 	/// </summary>
-	static class PropertyChangedEventManager
+	public static class PropertyChangedEventManager
 	{
 		#region Internal Data Types
 

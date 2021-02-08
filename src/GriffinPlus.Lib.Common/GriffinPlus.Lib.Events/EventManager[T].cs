@@ -19,7 +19,7 @@ namespace GriffinPlus.Lib.Events
 	/// events asynchronously.
 	/// </summary>
 	/// <typeparam name="T">Type of the event arguments of the event.</typeparam>
-	static class EventManager<T> where T : EventArgs
+	public static class EventManager<T> where T : EventArgs
 	{
 		/// <summary>
 		/// An event handler item in the event manager.
