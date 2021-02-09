@@ -17,8 +17,8 @@ namespace GriffinPlus.Lib.Events
 	/// Objects firing events do not need to implement own event add/remove logic, especially when it comes to firing events
 	/// in the context of the thread that registered an event handler.
 	/// </summary>
-	/// <typeparam name="T">Type of the event arguments of the event.</typeparam>
-	public static class WeakEventManager<T> where T : EventArgs
+	/// <typeparam name="TEventArgs">Type of the event arguments of the event.</typeparam>
+	public static class WeakEventManager<TEventArgs> where TEventArgs : EventArgs
 	{
 		#region Internal Data Types
 
@@ -37,18 +37,18 @@ namespace GriffinPlus.Lib.Events
 		/// </summary>
 		private readonly struct Item
 		{
-			public readonly SynchronizationContext SynchronizationContext;
-			public readonly WeakEventHandler<T>    Handler;
-			public readonly bool                   ScheduleAlways;
+			public readonly SynchronizationContext       SynchronizationContext;
+			public readonly WeakEventHandler<TEventArgs> Handler;
+			public readonly bool                         ScheduleAlways;
 
-			public Item(SynchronizationContext context, EventHandler<T> handler, bool scheduleAlways)
+			public Item(SynchronizationContext context, EventHandler<TEventArgs> handler, bool scheduleAlways)
 			{
 				SynchronizationContext = context;
-				Handler = new WeakEventHandler<T>(handler);
+				Handler = new WeakEventHandler<TEventArgs>(handler);
 				ScheduleAlways = scheduleAlways;
 			}
 
-			public ItemMatchResult IsHandler(EventHandler<T> handler)
+			public ItemMatchResult IsHandler(EventHandler<TEventArgs> handler)
 			{
 				if (Handler.Method != handler.Method)
 				{
@@ -67,7 +67,7 @@ namespace GriffinPlus.Lib.Events
 
 			public bool IsValid => Handler.IsValid;
 
-			public bool Fire(object sender, T e)
+			public bool Fire(object sender, TEventArgs e)
 			{
 				return Handler.Invoke(sender, e);
 			}
@@ -101,11 +101,11 @@ namespace GriffinPlus.Lib.Events
 		/// </param>
 		/// <returns>Total number of registered event handlers (including the specified event handler).</returns>
 		public static int RegisterEventHandler(
-			object                 obj,
-			string                 eventName,
-			EventHandler<T>        handler,
-			SynchronizationContext context,
-			bool                   scheduleAlways)
+			object                   obj,
+			string                   eventName,
+			EventHandler<TEventArgs> handler,
+			SynchronizationContext   context,
+			bool                     scheduleAlways)
 		{
 			return RegisterEventHandler(obj, eventName, handler, context, scheduleAlways, false, null, null);
 		}
@@ -136,14 +136,14 @@ namespace GriffinPlus.Lib.Events
 		/// <param name="e">Event arguments to pass to the event handler that is fired immediately.</param>
 		/// <returns>Total number of registered event handlers (including the specified event handler).</returns>
 		public static int RegisterEventHandler(
-			object                 obj,
-			string                 eventName,
-			EventHandler<T>        handler,
-			SynchronizationContext context,
-			bool                   scheduleAlways,
-			bool                   fireImmediately,
-			object                 sender,
-			T                      e)
+			object                   obj,
+			string                   eventName,
+			EventHandler<TEventArgs> handler,
+			SynchronizationContext   context,
+			bool                     scheduleAlways,
+			bool                     fireImmediately,
+			object                   sender,
+			TEventArgs               e)
 		{
 			if (handler == null) throw new ArgumentNullException(nameof(handler));
 
@@ -199,7 +199,7 @@ namespace GriffinPlus.Lib.Events
 		/// Total number of registered event handlers after the specified handler has been removed;
 		/// -1, if the specified event handler is not registered.
 		/// </returns>
-		public static int UnregisterEventHandler(object obj, string eventName, EventHandler<T> handler)
+		public static int UnregisterEventHandler(object obj, string eventName, EventHandler<TEventArgs> handler)
 		{
 			if (handler == null) throw new ArgumentNullException(nameof(handler));
 
@@ -327,7 +327,7 @@ namespace GriffinPlus.Lib.Events
 		/// <param name="eventName">Name of the event.</param>
 		/// <param name="handler">Event handler to check for.</param>
 		/// <returns>true, if the specified event handler is attached to the event; otherwise false.</returns>
-		public static bool IsHandlerRegistered(object obj, string eventName, EventHandler<T> handler)
+		public static bool IsHandlerRegistered(object obj, string eventName, EventHandler<TEventArgs> handler)
 		{
 			bool registered = false;
 
@@ -378,10 +378,10 @@ namespace GriffinPlus.Lib.Events
 		/// <param name="sender">Sender object to pass to invoked event handlers.</param>
 		/// <param name="e">Event arguments to pass to invoked event handlers.</param>
 		public static void FireEvent(
-			object obj,
-			string eventName,
-			object sender,
-			T      e)
+			object     obj,
+			string     eventName,
+			object     sender,
+			TEventArgs e)
 		{
 			Item[] items;
 
@@ -425,7 +425,7 @@ namespace GriffinPlus.Lib.Events
 		/// <param name="obj">Object providing the event.</param>
 		/// <param name="eventName">Name of the event.</param>
 		/// <returns>Event callers.</returns>
-		public static EventHandler<T> GetEventCallers(object obj, string eventName)
+		public static EventHandler<TEventArgs> GetEventCallers(object obj, string eventName)
 		{
 			Item[] items;
 
@@ -434,7 +434,7 @@ namespace GriffinPlus.Lib.Events
 				items = CleanupAndGetHandlers(obj, eventName);
 			}
 
-			EventHandler<T> handlers = null;
+			EventHandler<TEventArgs> handlers = null;
 
 			foreach (var item in items)
 			{
