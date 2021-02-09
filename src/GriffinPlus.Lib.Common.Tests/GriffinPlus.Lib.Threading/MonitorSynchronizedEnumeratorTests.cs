@@ -7,7 +7,7 @@ namespace GriffinPlus.Lib.Threading
 {
 
 	/// <summary>
-	/// Unit tests targetting the <see cref="MonitorSynchronizedEnumerator{T}"/> class.
+	/// Unit tests targeting the <see cref="MonitorSynchronizedEnumerator{T}"/> class.
 	/// </summary>
 	public class MonitorSynchronizedEnumeratorTests
 	{

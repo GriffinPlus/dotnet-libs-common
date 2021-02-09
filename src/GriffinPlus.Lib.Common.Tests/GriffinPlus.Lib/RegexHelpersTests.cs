@@ -9,7 +9,7 @@ namespace GriffinPlus.Lib
 {
 
 	/// <summary>
-	/// Unit tests targetting the <see cref="RegexHelpers"/> class.
+	/// Unit tests targeting the <see cref="RegexHelpers"/> class.
 	/// </summary>
 	public class RegexHelpersTests
 	{

@@ -9,7 +9,7 @@ namespace GriffinPlus.Lib
 {
 
 	/// <summary>
-	/// Unit tests targetting the <see cref="BitMask"/> class.
+	/// Unit tests targeting the <see cref="BitMask"/> class.
 	/// </summary>
 	public class BitMaskTests
 	{

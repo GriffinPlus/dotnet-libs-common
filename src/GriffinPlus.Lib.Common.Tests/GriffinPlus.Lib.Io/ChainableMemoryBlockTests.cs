@@ -11,7 +11,7 @@ namespace GriffinPlus.Lib.Io
 {
 
 	/// <summary>
-	/// Unit tests targetting the <see cref="ChainableMemoryBlock"/> class.
+	/// Unit tests targeting the <see cref="ChainableMemoryBlock"/> class.
 	/// </summary>
 	public class ChainableMemoryBlockTests
 	{

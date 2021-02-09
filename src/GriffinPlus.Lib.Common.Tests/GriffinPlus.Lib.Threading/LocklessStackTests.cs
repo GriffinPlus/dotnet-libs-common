@@ -12,7 +12,7 @@ namespace GriffinPlus.Lib.Threading
 {
 
 	/// <summary>
-	/// Unit tests targetting the <see cref="LocklessStack{T}"/> class.
+	/// Unit tests targeting the <see cref="LocklessStack{T}"/> class.
 	/// </summary>
 	public class LocklessStackTests
 	{
