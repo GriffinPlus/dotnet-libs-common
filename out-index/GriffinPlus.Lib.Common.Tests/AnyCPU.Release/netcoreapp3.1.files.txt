@@ -5,7 +5,6 @@
 .\GriffinPlus.Lib.Common.Tests.pdb
 .\GriffinPlus.Lib.Common.Tests.runtimeconfig.dev.json
 .\GriffinPlus.Lib.Common.Tests.runtimeconfig.json
-.\GriffinPlus.Lib.Common.Tests.xml
 .\GriffinPlus.Lib.Common.xml
 .\GriffinPlus.Lib.XUnitHelpers.dll
 .\Microsoft.TestPlatform.CommunicationUtilities.dll
@@ -20,6 +19,7 @@
 .\NuGet.Frameworks.dll
 .\System.Collections.Immutable.dll
 .\testhost.dll
+.\testhost.exe
 .\xunit.abstractions.dll
 .\xunit.assert.dll
 .\xunit.core.dll

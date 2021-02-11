@@ -3,7 +3,6 @@
 .\GriffinPlus.Lib.Common.Tests.dll
 .\GriffinPlus.Lib.Common.Tests.dll.config
 .\GriffinPlus.Lib.Common.Tests.pdb
-.\GriffinPlus.Lib.Common.Tests.xml
 .\GriffinPlus.Lib.Common.xml
 .\GriffinPlus.Lib.XUnitHelpers.dll
 .\Microsoft.VisualStudio.CodeCoverage.Shim.dll
