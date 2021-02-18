@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net461; netstandard2.0</TargetFrameworks>
+		<TargetFrameworks>net461; netstandard2.0; net5.0</TargetFrameworks>
 		<AssemblyName>GriffinPlus.Lib.Common</AssemblyName>
 		<RootNamespace>GriffinPlus.Lib</RootNamespace>
 	</PropertyGroup>
@@ -11,7 +11,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+		<PackageReference
+			Condition="'$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'net461'"
+			Include="System.Collections.Immutable"
+			Version="5.0.0" />
 	</ItemGroup>
 
 </Project>

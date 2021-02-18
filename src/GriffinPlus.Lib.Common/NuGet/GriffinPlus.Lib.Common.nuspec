@@ -13,21 +13,26 @@
 		<icon>images/nuget-icon.png</icon>
 		<tags></tags>
 		<dependencies>
+			<group targetFramework="netstandard2.0">
+				<dependency id="System.Collections.Immutable" version="5.0.0" />
+			</group>
 			<group targetFramework="net461">
 				<dependency id="System.Collections.Immutable" version="5.0.0" />
 			</group>
-			<group targetFramework="netstandard2.0">
-				<dependency id="System.Collections.Immutable" version="5.0.0" />
+			<group targetFramework="net5.0">
 			</group>
 		</dependencies>
 	</metadata>
 	<files>
 		<file src="..\..\..\res\nuget-icon.png" target="images\" />
-		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.dll" target="lib\net461" />
-		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.pdb" target="lib\net461" />
-		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.xml" target="lib\net461" />
 		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netstandard2.0\GriffinPlus.Lib.Common.dll" target="lib\netstandard2.0" />
 		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netstandard2.0\GriffinPlus.Lib.Common.pdb" target="lib\netstandard2.0" />
 		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netstandard2.0\GriffinPlus.Lib.Common.xml" target="lib\netstandard2.0" />
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.dll" target="lib\net461" />
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.pdb" target="lib\net461" />
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.xml" target="lib\net461" />
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net5.0\GriffinPlus.Lib.Common.dll" target="lib\net5.0" />
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net5.0\GriffinPlus.Lib.Common.pdb" target="lib\net5.0" />
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net5.0\GriffinPlus.Lib.Common.xml" target="lib\net5.0" />
 	</files>
 </package>
