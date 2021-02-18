@@ -116,7 +116,7 @@ This namespace provides threading specific functionality and contains the follow
 ## Supported Platforms
 
 The library is entirely written in C# using .NET Standard 2.0.
-A more specific build for .NET Framework 4.6.1 and .NET 5.0 minimizes dependencies to framework components.
+A more specific build for .NET Framework 4.6.1, .NET Core 2.1/3.1 and .NET 5.0 minimizes dependencies to framework components.
 
 Therefore it should work on the following platforms (or higher):
 - .NET Framework 4.6.1
