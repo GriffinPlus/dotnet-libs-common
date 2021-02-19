@@ -12,7 +12,7 @@ namespace GriffinPlus.Lib.Io
 	/// <summary>
 	/// A block of memory that can be chained with others.
 	/// </summary>
-	public class ChainableMemoryBlock
+	public sealed class ChainableMemoryBlock : IDisposable
 	{
 		internal readonly ArrayPool<byte>      InternalPool;
 		internal readonly byte[]               InternalBuffer;
@@ -47,6 +47,12 @@ namespace GriffinPlus.Lib.Io
 			if (InternalPool != null && clear)
 				Array.Clear(InternalBuffer, 0, InternalBuffer.Length);
 		}
+
+		/// <summary>
+		/// Releases the current block and all chained blocks returning rented buffers to the appropriate array pools, if necessary
+		/// (same as <see cref="ReleaseChain"/>).
+		/// </summary>
+		public void Dispose() => ReleaseChain();
 
 		/// <summary>
 		/// Releases the current block returning the rented buffer to the appropriate array pool, if necessary.
