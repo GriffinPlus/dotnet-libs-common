@@ -130,6 +130,29 @@ namespace GriffinPlus.Lib.Io
 			get => InternalNext;
 			set => InternalNext = value;
 		}
+
+		/// <summary>
+		/// Gets all data stored in the current memory block and all linked memory blocks
+		/// (limited to memory block chains with a maximum total length of <see cref="int.MaxValue"/>).
+		/// </summary>
+		/// <returns>Data stored in the chain of memory blocks.</returns>
+		public byte[] GetChainData()
+		{
+			byte[] buffer = new byte[ChainLength];
+			GetChainData(buffer, 0);
+			return buffer;
+		}
+
+		/// <summary>
+		/// Copies all data stored in the current memory block and all linked memory blocks into the specified buffer.
+		/// </summary>
+		/// <param name="buffer">Buffer to copy data into.</param>
+		/// <param name="offset">Offset in the array to copy the data to.</param>
+		private void GetChainData(byte[] buffer, int offset)
+		{
+			Array.Copy(InternalBuffer, 0, buffer, offset, InternalLength);
+			InternalNext?.GetChainData(buffer, offset + InternalLength);
+		}
 	}
 
 }
