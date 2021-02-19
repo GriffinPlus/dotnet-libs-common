@@ -86,8 +86,8 @@ This namespace contains classes concerning event handling. The event manager cla
 
 This namespace provides everything concerning generic i/o operations and contains the following classes:
 
-- `ChainableMemoryBlock`: A buffer that can be linked with other buffers (building block of the `MemoryBlockStream` class).
-- `MemoryBlockStream`: A stream that grows on demand by maintaining a linked list of buffers.
+- `ChainableMemoryBlock`: A buffer that can be linked with other buffers (can be allocated on the heap or rented from an `ArrayPool<byte>`).
+- `MemoryBlockStream`: A stream that grows on demand by maintaining a linked list of `ChainableMemoryBlock` buffers.
 
 #### Namespace: GriffinPlus.Lib.Threading
 
@@ -116,6 +116,7 @@ This namespace provides threading specific functionality and contains the follow
 ## Supported Platforms
 
 The library is entirely written in C# using .NET Standard 2.0.
+
 A more specific build for .NET Framework 4.6.1, .NET Core 2.1/3.1 and .NET 5.0 minimizes dependencies to framework components.
 
 Therefore it should work on the following platforms (or higher):

@@ -4,6 +4,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -12,7 +13,7 @@ namespace GriffinPlus.Lib.Io
 {
 
 	/// <summary>
-	/// Stream whose backing store is a linked list of memory blocks.
+	/// A stream with a linked list of memory blocks as backing store.
 	/// </summary>
 	/// <remarks>
 	/// The <see cref="MemoryBlockStream"/> class creates streams that have memory as backing store instead of a
@@ -25,33 +26,91 @@ namespace GriffinPlus.Lib.Io
 	/// allocate the memory block in a single operation and work on it efficiently without walking a linked list. But
 	/// if the amount of needed memory is not known the <see cref="MemoryBlockStream"/> class is a better choice since
 	/// it can grow without copying any data while resizing.
+	///
+	/// Buffers can be allocated on demand on the heap or rented from an array pool to optimize allocation speed and
+	/// reduce garbage collection pressure.
 	/// </remarks>
 	public class MemoryBlockStream : Stream
 	{
 		/// <summary>
 		/// Default size of block in the stream.
-		/// 64kByte is small enough for the regular heap and avoids allocation from the large object heap.
+		/// 64 kByte is small enough for the regular heap and avoids allocation from the large object heap.
 		/// </summary>
 		private const int DefaultBlockSize = 64 * 1024;
 
 		private          long                 mPosition;
 		private          long                 mLength;
 		private          long                 mCapacity;
-		private readonly int                  mMinBlockSize;
+		private readonly int                  mBlockSize;
 		private          long                 mCurrentBlockStartIndex;
+		private readonly bool                 mReleaseReadBlocks;
+		private readonly bool                 mCanSeek;
+		private readonly ArrayPool<byte>      mArrayPool;
 		private          ChainableMemoryBlock mFirstBlock;
 		private          ChainableMemoryBlock mCurrentBlock;
 		private          ChainableMemoryBlock mLastBlock;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class.
+		/// Buffers are allocated on the heap.
+		/// The block size defaults to 64 kByte.
+		/// The stream is seekable and grows as data is written.
 		/// </summary>
-		/// <remarks>
-		/// The minimum memory block size defaults to 64 kByte.
-		/// </remarks>
-		public MemoryBlockStream()
+		public MemoryBlockStream() : this(DefaultBlockSize, null, false)
 		{
-			mMinBlockSize = DefaultBlockSize;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class.
+		/// Buffers are rented from the specified array pool.
+		/// The block size defaults to 64 kByte.
+		/// The stream is seekable and grows as data is written.
+		/// </summary>
+		/// <param name="pool">Array pool to use for allocating buffers.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="pool"/> is <c>null</c>.</exception>
+		public MemoryBlockStream(ArrayPool<byte> pool) : this(DefaultBlockSize, pool, false)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class with a specific block size.
+		/// Buffers are allocated on the heap.
+		/// The stream is seekable and grows as data is written.
+		/// </summary>
+		/// <param name="blockSize">Size of a block in the stream.</param>
+		/// <exception cref="ArgumentException">The specified block size is less than or equal to 0.</exception>
+		public MemoryBlockStream(int blockSize) : this(blockSize, null, false)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class with a specific block size.
+		/// Buffers are rented from the specified array pool.
+		/// The stream can configured to be seekable or release buffers as data is read.
+		/// </summary>
+		/// <param name="blockSize">
+		/// Size of a block in the stream.
+		/// The actual block size may be greater than the specified size, if the buffer is rented from an array pool.
+		/// </param>
+		/// <param name="pool">Array pool to rent buffers from (<c>null</c> to allocate buffers on the heap).</param>
+		/// <param name="releaseReadBlocks">
+		/// <c>true</c> to release memory blocks that have been read (makes the stream unseekable);
+		/// <c>false</c> to keep written memory blocks enabling seeking and changing the length of the stream.
+		/// </param>
+		/// <exception cref="ArgumentException">The specified block size is less than or equal to 0.</exception>
+		public MemoryBlockStream(int blockSize, ArrayPool<byte> pool, bool releaseReadBlocks)
+		{
+			if (blockSize <= 0)
+			{
+				throw new ArgumentException(
+					"The block size must be greater than 0.",
+					nameof(blockSize));
+			}
+
+			mArrayPool = pool;
+			mBlockSize = blockSize;
+			mReleaseReadBlocks = releaseReadBlocks;
+			mCanSeek = !releaseReadBlocks;
 			mCurrentBlockStartIndex = 0;
 			mCapacity = 0;
 			mLength = 0;
@@ -59,27 +118,29 @@ namespace GriffinPlus.Lib.Io
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class setting the minimum size of blocks to use.
+		/// Disposes the stream releasing the underlying memory block chain
+		/// (returns rented buffers to their array pool, if necessary).
 		/// </summary>
-		/// <param name="minBlockSize">
-		/// Minimum size of a memory block
-		/// (can be greater if a block of data larger than the minimum size is written at once).
+		/// <param name="disposing">
+		/// <c>true</c> if the stream is being disposed;
+		/// <c>false</c> if the stream is being finalized.
 		/// </param>
-		/// <exception cref="ArgumentException">The specified minimum memory block size is less than or equal to 0.</exception>
-		public MemoryBlockStream(int minBlockSize)
+		protected override void Dispose(bool disposing)
 		{
-			if (minBlockSize <= 0)
+			if (disposing)
 			{
-				throw new ArgumentException(
-					"The minimum block length must be greater than 0.",
-					nameof(minBlockSize));
+				if (mFirstBlock != null)
+				{
+					mFirstBlock?.ReleaseChain();
+					mFirstBlock = null;
+					mCurrentBlock = null;
+					mLastBlock = null;
+					mCurrentBlockStartIndex = 0;
+					mCapacity = 0;
+					mLength = 0;
+					mPosition = 0;
+				}
 			}
-
-			mMinBlockSize = minBlockSize;
-			mCurrentBlockStartIndex = 0;
-			mCapacity = 0;
-			mLength = 0;
-			mPosition = 0;
 		}
 
 		#region Stream Capabilities
@@ -95,9 +156,9 @@ namespace GriffinPlus.Lib.Io
 		public override bool CanWrite => true;
 
 		/// <summary>
-		/// Gets a value indicating whether the stream supports seeking (always true).
+		/// Gets a value indicating whether the stream supports seeking.
 		/// </summary>
-		public override bool CanSeek => true;
+		public override bool CanSeek => mCanSeek;
 
 		#endregion
 
@@ -107,6 +168,7 @@ namespace GriffinPlus.Lib.Io
 		/// Gets or sets the current position within the stream.
 		/// </summary>
 		/// <exception cref="ArgumentException">The position is out of bounds when trying to set it.</exception>
+		/// <exception cref="NotSupportedException">Setting the position is not supported as the stream does not support seeking.</exception>
 		public override long Position
 		{
 			get => mPosition;
@@ -123,6 +185,7 @@ namespace GriffinPlus.Lib.Io
 		/// </summary>
 		/// <param name="length">The desired length of the current stream in bytes.</param>
 		/// <exception cref="ArgumentException">The specified length is negative.</exception>
+		/// <exception cref="NotSupportedException">The stream does not support seeking.</exception>
 		/// <remarks>
 		/// If the specified length is less than the current length of the stream, the stream is truncated. If the current position
 		/// within the stream is past the end of the stream after the truncation, the <see cref="ReadByte"/> method returns -1, the
@@ -133,6 +196,11 @@ namespace GriffinPlus.Lib.Io
 		/// </remarks>
 		public override void SetLength(long length)
 		{
+			if (!mCanSeek)
+			{
+				throw new NotSupportedException("The stream does not support seeking.");
+			}
+
 			if (length < 0)
 			{
 				throw new ArgumentException(
@@ -150,11 +218,7 @@ namespace GriffinPlus.Lib.Io
 				long lengthOfLastBlock = length - mCapacity;
 				while (true)
 				{
-					int blockSize = (int)Math.Min(additionallyNeededSpace, int.MaxValue);
-					blockSize = Math.Max(blockSize, mMinBlockSize);
-					additionallyNeededSpace -= blockSize;
-
-					var newBlock = new ChainableMemoryBlock(blockSize); // initializes memory with zeros automatically
+					var newBlock = new ChainableMemoryBlock(mBlockSize, mArrayPool, true); // initializes the buffer with zeros
 					if (mCapacity == 0)
 					{
 						// no block in the chain, yet
@@ -176,16 +240,12 @@ namespace GriffinPlus.Lib.Io
 					mCapacity += newBlock.Capacity;
 
 					// abort, if needed space has been allocated
-					if (additionallyNeededSpace == 0) break;
+					additionallyNeededSpace -= mBlockSize;
+					if (additionallyNeededSpace <= 0) break;
 
 					// adjust length of the last block, since another block is following
 					lengthOfLastBlock -= newBlock.Capacity;
 				}
-
-				// overwrite memory from the current position to the end of the memory block
-				// (other memory blocks are initialized with zeros anyway...)
-				int bytesToClear = (int)(mCurrentBlock.Capacity - mPosition + mCurrentBlockStartIndex);
-				Array.Clear(mCurrentBlock.InternalBuffer, (int)(mPosition - mCurrentBlockStartIndex), bytesToClear);
 
 				// adjust length (position is kept unchanged)
 				Debug.Assert(lengthOfLastBlock <= int.MaxValue);
@@ -198,7 +258,8 @@ namespace GriffinPlus.Lib.Io
 				if (length == 0)
 				{
 					// the stream will not contain any data after setting the length
-					// => release all memory blocks
+					// => release all blocks and reset the stream
+					mFirstBlock?.ReleaseChain();
 					mFirstBlock = null;
 					mCurrentBlock = null;
 					mLastBlock = null;
@@ -224,6 +285,7 @@ namespace GriffinPlus.Lib.Io
 						block = block.InternalNext;
 					}
 
+					block.InternalNext?.ReleaseChain();
 					mCapacity += block.Capacity;
 					block.InternalNext = null;
 					mLastBlock = block;
@@ -251,8 +313,14 @@ namespace GriffinPlus.Lib.Io
 		/// <param name="offset">A byte offset relative to the origin parameter.</param>
 		/// <param name="origin">Indicates the reference point used to obtain the new position.</param>
 		/// <returns>The new position within the stream.</returns>
+		/// <exception cref="NotSupportedException">The stream does not support seeking.</exception>
 		public override long Seek(long offset, SeekOrigin origin)
 		{
+			if (!mCanSeek)
+			{
+				throw new NotSupportedException("The stream does not support seeking.");
+			}
+
 			if (origin == SeekOrigin.Begin)
 			{
 				if (offset < 0)
@@ -274,7 +342,7 @@ namespace GriffinPlus.Lib.Io
 				long remaining = mPosition;
 				mCurrentBlock = mFirstBlock;
 
-				while (true)
+				while (mCurrentBlock != null)
 				{
 					remaining -= Math.Min(remaining, mCurrentBlock.InternalLength);
 					if (remaining == 0) break;
@@ -310,7 +378,7 @@ namespace GriffinPlus.Lib.Io
 						nameof(offset));
 				}
 
-				if (offset < mLength)
+				if (-offset > mLength)
 				{
 					throw new ArgumentException(
 						"Position exceeds the start of the stream.",
@@ -409,9 +477,28 @@ namespace GriffinPlus.Lib.Io
 				{
 					// memory block is at its end
 					// => continue reading the next memory block
-					mCurrentBlock = mCurrentBlock.InternalNext;
-					mCurrentBlockStartIndex = mPosition;
-					Debug.Assert(mCurrentBlock != null); // the caller should have ensured that there is enough data to read!
+					if (mReleaseReadBlocks)
+					{
+						// if releasing read blocks is enabled, seeking is not supported
+						// => we've read the first block in the chain
+						Debug.Assert(mFirstBlock == mCurrentBlock);
+						var nextBlock = mCurrentBlock.InternalNext;
+						mCurrentBlock.Release();
+						mCurrentBlock = nextBlock;
+						mCurrentBlockStartIndex = mPosition;
+
+						// as the first block in the chain has been released, the current one becomes the first one
+						// (for consistency the stream length and position remain the same)
+						mFirstBlock = mCurrentBlock;
+					}
+					else
+					{
+						mCurrentBlock = mCurrentBlock.InternalNext;
+						mCurrentBlockStartIndex = mPosition;
+					}
+
+					// the caller should have ensured that there is enough data to read!
+					Debug.Assert(mCurrentBlock != null);
 
 					// update index in the current memory block
 					index = (int)(mPosition - mCurrentBlockStartIndex);
@@ -472,6 +559,7 @@ namespace GriffinPlus.Lib.Io
 			// abort if there is nothing to do...
 			if (bytesToRead == 0) return;
 
+			int offset = 0;
 			while (bytesToRead > 0)
 			{
 				// get index in the current memory block
@@ -484,8 +572,25 @@ namespace GriffinPlus.Lib.Io
 				{
 					// memory block is at its end
 					// => continue reading the next memory block
-					mCurrentBlock = mCurrentBlock.InternalNext;
-					mCurrentBlockStartIndex = mPosition;
+					if (mReleaseReadBlocks)
+					{
+						// if releasing read blocks is enabled, seeking is not supported
+						// => we've read the first block in the chain
+						Debug.Assert(mFirstBlock == mCurrentBlock);
+						var nextBlock = mCurrentBlock.InternalNext;
+						mCurrentBlock.Release();
+						mCurrentBlock = nextBlock;
+						mCurrentBlockStartIndex = mPosition;
+
+						// as the first block in the chain has been released, the current one becomes the first one
+						// (for consistency the stream length and position remain the same)
+						mFirstBlock = mCurrentBlock;
+					}
+					else
+					{
+						mCurrentBlock = mCurrentBlock.InternalNext;
+						mCurrentBlockStartIndex = mPosition;
+					}
 
 					// the caller should have ensured that there is enough data to read!
 					Debug.Assert(mCurrentBlock != null);
@@ -496,7 +601,8 @@ namespace GriffinPlus.Lib.Io
 
 				// copy as many bytes as requested and possible
 				int bytesToCopy = Math.Min(mCurrentBlock.InternalLength - index, bytesToRead);
-				Marshal.Copy(mCurrentBlock.InternalBuffer, index, pBuffer, bytesToRead);
+				Marshal.Copy(mCurrentBlock.InternalBuffer, index, pBuffer + offset, bytesToCopy);
+				offset += bytesToCopy;
 				bytesToRead -= bytesToCopy;
 				mPosition += bytesToCopy;
 			}
@@ -538,8 +644,25 @@ namespace GriffinPlus.Lib.Io
 				{
 					// memory block is at its end
 					// => continue reading the next memory block
-					mCurrentBlock = mCurrentBlock.InternalNext;
-					mCurrentBlockStartIndex = mPosition;
+					if (mReleaseReadBlocks)
+					{
+						// if releasing read blocks is enabled, seeking is not supported
+						// => we've read the first block in the chain
+						Debug.Assert(mFirstBlock == mCurrentBlock);
+						var nextBlock = mCurrentBlock.InternalNext;
+						mCurrentBlock.Release();
+						mCurrentBlock = nextBlock;
+						mCurrentBlockStartIndex = mPosition;
+
+						// as the first block in the chain has been released, the current one becomes the first one
+						// (for consistency the stream length and position remain the same)
+						mFirstBlock = mCurrentBlock;
+					}
+					else
+					{
+						mCurrentBlock = mCurrentBlock.InternalNext;
+						mCurrentBlockStartIndex = mPosition;
+					}
 
 					// the caller should have ensured that there is enough data to read!
 					Debug.Assert(mCurrentBlock != null);
@@ -607,8 +730,7 @@ namespace GriffinPlus.Lib.Io
 		}
 
 		/// <summary>
-		/// Writes a sequence of bytes to the stream and advances the position within this stream by the
-		/// number of bytes written.
+		/// Writes a sequence of bytes to the stream and advances the position within this stream by the number of bytes written.
 		/// </summary>
 		/// <param name="buffer">Buffer containing data to write to the stream.</param>
 		/// <param name="offset">Offset in the buffer to start writing data from.</param>
@@ -639,7 +761,7 @@ namespace GriffinPlus.Lib.Io
 					}
 					else
 					{
-						if (!AppendNewBuffer(bytesRemaining)) mCurrentBlock = mCurrentBlock.InternalNext;
+						if (!AppendNewBuffer()) mCurrentBlock = mCurrentBlock.InternalNext;
 						bytesToEnd = mCurrentBlock.Capacity;
 					}
 
@@ -724,7 +846,7 @@ namespace GriffinPlus.Lib.Io
 					}
 					else
 					{
-						if (!AppendNewBuffer(bytesRemaining)) mCurrentBlock = mCurrentBlock.InternalNext;
+						if (!AppendNewBuffer()) mCurrentBlock = mCurrentBlock.InternalNext;
 						bytesToEnd = mCurrentBlock.Capacity;
 					}
 
@@ -775,7 +897,7 @@ namespace GriffinPlus.Lib.Io
 					}
 					else
 					{
-						if (!AppendNewBuffer(1)) mCurrentBlock = mCurrentBlock.InternalNext;
+						if (!AppendNewBuffer()) mCurrentBlock = mCurrentBlock.InternalNext;
 						bytesToEnd = mCurrentBlock.Capacity;
 					}
 
@@ -813,6 +935,10 @@ namespace GriffinPlus.Lib.Io
 				bytesInSourceStream = stream.Length - stream.Position;
 			}
 
+			// abort, if the source stream is empty
+			if (bytesInSourceStream == 0)
+				return 0;
+
 			long count = 0;
 			while (true)
 			{
@@ -837,7 +963,7 @@ namespace GriffinPlus.Lib.Io
 					}
 					else
 					{
-						if (!AppendNewBuffer(bytesInSourceStream - count)) mCurrentBlock = mCurrentBlock.InternalNext;
+						if (!AppendNewBuffer()) mCurrentBlock = mCurrentBlock.InternalNext;
 						bytesToEnd = mCurrentBlock.Capacity;
 					}
 
@@ -871,56 +997,133 @@ namespace GriffinPlus.Lib.Io
 		/// <summary>
 		/// Appends a new buffer to the end of the chain.
 		/// </summary>
-		/// <param name="requestedSize">Number of bytes the buffer should contain at least.</param>
 		/// <returns>
-		/// true, if the new buffer is the first buffer;
-		/// false, if the buffer is not the first buffer.
+		/// true, if the first created new buffer is the first buffer;
+		/// false, if the first created new buffer is not the first buffer.
 		/// </returns>
-		private bool AppendNewBuffer(long requestedSize)
+		private bool AppendNewBuffer()
 		{
 			bool isFirstBuffer = mCapacity == 0;
 
-			while (requestedSize > 0)
+			if (mCapacity == 0)
 			{
-				int blockSize = (int)Math.Min(requestedSize, int.MaxValue);
-				blockSize = Math.Max(blockSize, mMinBlockSize);
-				requestedSize -= blockSize;
-
-				if (mCapacity == 0)
-				{
-					Debug.Assert(mCurrentBlock == null);
-					mCurrentBlock = new ChainableMemoryBlock(blockSize);
-					mFirstBlock = mCurrentBlock;
-					mLastBlock = mCurrentBlock;
-					mCapacity = mCurrentBlock.Capacity;
-				}
-				else
-				{
-					var block = new ChainableMemoryBlock(blockSize);
-					mLastBlock.InternalNext = block;
-					mLastBlock = block;
-					mCapacity += block.Capacity;
-				}
+				Debug.Assert(mCurrentBlock == null);
+				mCurrentBlock = new ChainableMemoryBlock(mBlockSize, mArrayPool, false);
+				mFirstBlock = mCurrentBlock;
+				mLastBlock = mCurrentBlock;
+				mCapacity = mCurrentBlock.Capacity;
+			}
+			else
+			{
+				var block = new ChainableMemoryBlock(mBlockSize, mArrayPool, false);
+				mLastBlock.InternalNext = block;
+				mLastBlock = block;
+				mCapacity += block.Capacity;
 			}
 
 			return isFirstBuffer;
 		}
 
+		#endregion
+
+		#region Attaching / Detaching Buffers
+
+		/// <summary>
+		/// Appends a memory block or chain of memory blocks to the stream.
+		/// </summary>
+		/// <param name="buffer">Memory block to append to the stream.</param>
+		/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <c>null</c>.</exception>
+		/// <remarks>
+		/// The specified buffer must not be accessed directly after this operation.
+		/// The stream takes care of returning buffers to their array pool, if necessary.
+		/// </remarks>
+		public void AppendBuffer(ChainableMemoryBlock buffer)
+		{
+			if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+
+			if (mLastBlock != null)
+			{
+				// adjust capacity to exclude the remaining space of the last block, if the new blocks contain data
+				// (in this case the free space in the last block cannot be used as more data is already following in the new blocks)
+				if (buffer.Length > 0 || buffer.ChainLength > 0) // in most cases checking the first buffer should suffice and avoid walking the entire chain
+				{
+					mCapacity -= mLastBlock.Capacity - mLastBlock.InternalLength;
+				}
+
+				// the stream already contains data
+				// => append blocks at the end
+				mLastBlock.InternalNext = buffer;
+
+				// adjust length and capacity
+				var block = buffer;
+				while (block != null)
+				{
+					mLength += block.InternalLength;
+					mCapacity += block.InternalLength;
+					mLastBlock = block;
+					block = block.InternalNext;
+				}
+
+				// adjust the capacity of the now last block, since only the last block can be extended up to its capacity
+				// (the blocks in between must not be changed in length, since this would insert/remove data in the middle of the stream!)
+				if (mLastBlock != null)
+				{
+					mCapacity = mCapacity - mLastBlock.InternalLength + mLastBlock.Capacity;
+				}
+			}
+			else
+			{
+				// stream is empty
+				// => the buffer becomes the only buffer backing the stream
+
+				// exchange buffer
+				mCurrentBlock = buffer;
+				mFirstBlock = buffer;
+
+				// update administrative variables appropriately
+				mCurrentBlockStartIndex = 0;
+				mPosition = 0;
+
+				// determine capacity and length of the buffer
+				mFirstBlock = buffer;
+				mCapacity = 0;
+				mLength = 0;
+				var block = mFirstBlock;
+				while (block != null)
+				{
+					mLength += block.InternalLength;
+					mCapacity += block.InternalLength;
+					mLastBlock = block;
+					block = block.InternalNext;
+				}
+
+				// adjust the capacity, since only the last block must be extended up to its capacity
+				// (the blocks in between must not be changed in length, since this would insert/remove data in the middle of the stream!)
+				if (mLastBlock != null)
+				{
+					mCapacity = mCapacity - mLastBlock.InternalLength + mLastBlock.Capacity;
+				}
+			}
+		}
+
 		/// <summary>
 		/// Attaches a memory block or chain of memory blocks to the stream.
 		/// </summary>
-		/// <param name="buffer">Memory block to attach to the stream.</param>
+		/// <param name="buffer">Memory block to attach to the stream (null to clear the stream).</param>
+		/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <c>null</c>.</exception>
 		/// <remarks>
 		/// This method allows you to exchange the underlying memory block buffer.
 		/// The stream is reset, so the position is 0 after attaching the new buffer.
+		/// The specified buffer must not be accessed directly after this operation.
+		/// The stream takes care of returning buffers to their array pool, if necessary.
 		/// </remarks>
 		public void AttachBuffer(ChainableMemoryBlock buffer)
 		{
 			// exchange buffer
-			mCurrentBlock = buffer;
 			mFirstBlock = buffer;
 
 			// update administrative variables appropriately
+			mCurrentBlock = mFirstBlock;
 			mCurrentBlockStartIndex = 0;
 			mPosition = 0;
 
@@ -950,7 +1153,8 @@ namespace GriffinPlus.Lib.Io
 		/// <returns>Underlying memory block buffer (can be a chained with other memory blocks).</returns>
 		/// <remarks>
 		/// This method allows you to detach the underlying buffer from the stream and use it in another place.
-		/// The stream is empty afterwards.
+		/// If blocks contain buffers that have been rented from an array pool, the returned block chain must
+		/// be disposed to return buffers to the pool. The stream is empty afterwards.
 		/// </remarks>
 		public ChainableMemoryBlock DetachBuffer()
 		{
