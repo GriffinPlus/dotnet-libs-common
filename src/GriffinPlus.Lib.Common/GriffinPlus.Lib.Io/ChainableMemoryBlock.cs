@@ -4,6 +4,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Buffers;
 
 namespace GriffinPlus.Lib.Io
 {
@@ -13,19 +14,66 @@ namespace GriffinPlus.Lib.Io
 	/// </summary>
 	public class ChainableMemoryBlock
 	{
+		internal readonly ArrayPool<byte>      InternalPool;
 		internal readonly byte[]               InternalBuffer;
 		internal          int                  InternalLength;
 		internal          ChainableMemoryBlock InternalNext;
+		internal          bool                 ReleasedInternal;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="ChainableMemoryBlock"/> class.
+		/// Initializes a new instance of the <see cref="ChainableMemoryBlock"/> class with the specified capacity.
+		/// The buffer is allocated on the heap.
 		/// </summary>
 		/// <param name="capacity">Capacity of the memory block to create.</param>
-		public ChainableMemoryBlock(int capacity)
+		public ChainableMemoryBlock(int capacity) : this(capacity, null, false)
 		{
-			InternalBuffer = new byte[capacity];
-			InternalLength = 0;
 		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ChainableMemoryBlock"/> class with the specified capacity.
+		/// The buffer is rented from the specified array pool.
+		/// </summary>
+		/// <param name="capacity">Capacity of the memory block to create.</param>
+		/// <param name="pool">Array pool to rent the buffer from (<c>null</c> to use the regular heap).</param>
+		/// <param name="clear"><c>true</c> to initialize the buffer with zeros; otherwise <c>false</c>.</param>
+		public ChainableMemoryBlock(int capacity, ArrayPool<byte> pool, bool clear = false)
+		{
+			InternalPool = pool;
+			InternalBuffer = InternalPool != null ? InternalPool.Rent(capacity) : new byte[capacity];
+			InternalLength = 0;
+
+			// clear the buffer, if it was retrieved from the pool
+			// (not necessary for buffers allocated on the heap)
+			if (InternalPool != null && clear)
+				Array.Clear(InternalBuffer, 0, InternalBuffer.Length);
+		}
+
+		/// <summary>
+		/// Releases the current block returning the rented buffer to the appropriate array pool, if necessary.
+		/// </summary>
+		public void Release()
+		{
+			if (!ReleasedInternal)
+			{
+				InternalPool?.Return(InternalBuffer);
+				ReleasedInternal = true;
+			}
+		}
+
+		/// <summary>
+		/// Releases the current block and all chained blocks returning rented buffers to the appropriate array pools, if necessary.
+		/// </summary>
+		public void ReleaseChain()
+		{
+			InternalNext?.ReleaseChain();
+			Release();
+		}
+
+		/// <summary>
+		/// Get the array pool the buffer was rented from
+		/// (<c>null</c>, if the the buffer was allocated on the heap).
+		/// </summary>
+		public ArrayPool<byte> Pool => InternalPool;
 
 		/// <summary>
 		/// Gets the underlying buffer.
