@@ -6,6 +6,7 @@
 		<IsTestProject>true</IsTestProject>
 		<RootNamespace>GriffinPlus.Lib</RootNamespace>
 		<OmitDocumentationFile>true</OmitDocumentationFile>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<ItemGroup>
