@@ -16,10 +16,17 @@
 			<group targetFramework="netstandard2.0">
 				<dependency id="System.Collections.Immutable" version="5.0.0" />
 			</group>
-			<group targetFramework="net461">
+			<group targetFramework="netstandard2.1">
 				<dependency id="System.Collections.Immutable" version="5.0.0" />
 			</group>
+			<group targetFramework="netcoreapp2.1">
+			</group>
+			<group targetFramework="netcoreapp3.1">
+			</group>
 			<group targetFramework="net5.0">
+			</group>
+			<group targetFramework="net461">
+				<dependency id="System.Collections.Immutable" version="5.0.0" />
 			</group>
 		</dependencies>
 	</metadata>
@@ -28,17 +35,20 @@
 		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netstandard2.0\GriffinPlus.Lib.Common.dll" target="lib\netstandard2.0" />
 		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netstandard2.0\GriffinPlus.Lib.Common.pdb" target="lib\netstandard2.0" />
 		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netstandard2.0\GriffinPlus.Lib.Common.xml" target="lib\netstandard2.0" />
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netstandard2.1\GriffinPlus.Lib.Common.dll" target="lib\netstandard2.1" />
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netstandard2.1\GriffinPlus.Lib.Common.pdb" target="lib\netstandard2.1" />
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netstandard2.1\GriffinPlus.Lib.Common.xml" target="lib\netstandard2.1" />
 		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netcoreapp2.1\GriffinPlus.Lib.Common.dll" target="lib\netcoreapp2.1" />
 		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netcoreapp2.1\GriffinPlus.Lib.Common.pdb" target="lib\netcoreapp2.1" />
 		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netcoreapp2.1\GriffinPlus.Lib.Common.xml" target="lib\netcoreapp2.1" />
 		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netcoreapp3.1\GriffinPlus.Lib.Common.dll" target="lib\netcoreapp3.1" />
 		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netcoreapp3.1\GriffinPlus.Lib.Common.pdb" target="lib\netcoreapp3.1" />
 		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\netcoreapp3.1\GriffinPlus.Lib.Common.xml" target="lib\netcoreapp3.1" />
-		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.dll" target="lib\net461" />
-		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.pdb" target="lib\net461" />
-		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.xml" target="lib\net461" />
 		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net5.0\GriffinPlus.Lib.Common.dll" target="lib\net5.0" />
 		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net5.0\GriffinPlus.Lib.Common.pdb" target="lib\net5.0" />
 		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net5.0\GriffinPlus.Lib.Common.xml" target="lib\net5.0" />
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.dll" target="lib\net461" />
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.pdb" target="lib\net461" />
+		<file src="..\..\..\_build\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.xml" target="lib\net461" />
 	</files>
 </package>
