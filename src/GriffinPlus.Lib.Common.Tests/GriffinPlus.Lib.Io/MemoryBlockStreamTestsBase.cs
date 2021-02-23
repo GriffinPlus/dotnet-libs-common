@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 using Xunit;
 
@@ -25,6 +26,10 @@ namespace GriffinPlus.Lib.Io
 		/// </summary>
 		protected const int TestDataSize = 1 * 1024 * 1024;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MemoryBlockStreamTestsBase"/> class.
+		/// </summary>
+		/// <param name="usePool"></param>
 		protected MemoryBlockStreamTestsBase(bool usePool)
 		{
 			if (usePool) BufferPool = new ArrayPoolMock();
@@ -110,6 +115,21 @@ namespace GriffinPlus.Lib.Io
 
 		#endregion
 
+		#region FlushAsync()
+
+		/// <summary>
+		/// Tests flushing the stream using <see cref="MemoryBlockStream.FlushAsync(CancellationToken)"/>
+		/// (should not do anything with the stream as it's purely backed by memory).
+		/// </summary>
+		[Fact]
+		public async Task FlushAsync()
+		{
+			var stream = CreateStreamToTest();
+			await stream.FlushAsync(CancellationToken.None).ConfigureAwait(false);
+		}
+
+		#endregion
+
 		#region Read()
 
 		/// <summary>
@@ -121,6 +141,133 @@ namespace GriffinPlus.Lib.Io
 		[InlineData(1)]            // stream with 1 byte in a single block
 		[InlineData(TestDataSize)] // huge stream with multiple blocks
 		public void Read_Buffer(int initialLength)
+		{
+			int Operation(MemoryBlockStream stream, byte[] readBuffer, ref int bytesToRead)
+			{
+				return stream.Read(readBuffer, 0, bytesToRead);
+			}
+
+			Read_Common(initialLength, Operation);
+		}
+
+		/// <summary>
+		/// Prepares a chain of memory blocks, attaches it to the stream and reads the stream
+		/// using <see cref="MemoryBlockStream.Read(Span{byte})"/>.
+		/// </summary>
+		[Theory]
+		[InlineData(0)]            // empty stream
+		[InlineData(1)]            // stream with 1 byte in a single block
+		[InlineData(TestDataSize)] // huge stream with multiple blocks
+		public void Read_Span(int initialLength)
+		{
+			int Operation(MemoryBlockStream stream, byte[] readBuffer, ref int bytesToRead)
+			{
+				return stream.Read(readBuffer.AsSpan(0, bytesToRead));
+			}
+
+			Read_Common(initialLength, Operation);
+		}
+
+		private delegate int ReadOperation(MemoryBlockStream Stream, byte[] readBuffer, ref int bytesToRead);
+
+		/// <summary>
+		/// Common test frame for synchronous read operations.
+		/// </summary>
+		/// <param name="initialLength">Initial length of the stream.</param>
+		/// <param name="operation">Operation that performs the read operation.</param>
+		private void Read_Common(int initialLength, ReadOperation operation)
+		{
+			// create a new stream
+			using (var stream = CreateStreamToTest())
+			{
+				// generate some test data and attach it to the stream
+				var chain = GetRandomTestDataChain(initialLength, StreamMemoryBlockSize, out var expectedData);
+				stream.AttachBuffer(chain);
+
+				// read data in chunks of random size
+				var random = new Random(0);
+				byte[] readBuffer = new byte[8 * 1024];
+				var readData = new List<byte>(expectedData.Count);
+				int remaining = expectedData.Count;
+				while (true)
+				{
+					int bytesToRead = random.Next(1, readBuffer.Length);
+					int bytesRead = operation(stream, readBuffer, ref bytesToRead);
+					int expectedByteRead = Math.Min(bytesToRead, remaining);
+					Assert.Equal(expectedByteRead, bytesRead);
+					if (bytesRead == 0) break;
+					readData.AddRange(readBuffer.Take(bytesRead));
+					remaining -= bytesRead;
+				}
+
+				// the stream has been read to the end
+				// it should be empty now and read data should equal the expected test data
+				Assert.Equal(expectedData.Count, stream.Position);
+				Assert.Equal(expectedData.Count, stream.Length);
+				Assert.Equal(expectedData, readData);
+
+				// the stream should have returned its buffers to the pool, if release-after-read is enabled
+				if (stream.ReleaseReadBlocks) EnsureBuffersHaveBeenReturned();
+				else if (initialLength > 0) EnsureBuffersHaveNotBeenReturned();
+			}
+		}
+
+		#endregion
+
+		#region ReadAsync()
+
+		/// <summary>
+		/// Prepares a chain of memory blocks, attaches it to the stream and reads the stream
+		/// using <see cref="MemoryBlockStream.ReadAsync(byte[],int,int,CancellationToken)"/>.
+		/// </summary>
+		[Theory]
+		[InlineData(0)]            // empty stream
+		[InlineData(1)]            // stream with 1 byte in a single block
+		[InlineData(TestDataSize)] // huge stream with multiple blocks
+		public async Task ReadAsync_Buffer(int initialLength)
+		{
+			async Task<int> Operation(MemoryBlockStream stream, byte[] readBuffer, int bytesToRead)
+			{
+				int readByteCount = await stream.ReadAsync(
+						                    readBuffer,
+						                    0,
+						                    bytesToRead,
+						                    CancellationToken.None)
+					                    .ConfigureAwait(false);
+				return readByteCount;
+			}
+
+			await ReadAsync_Common(initialLength, Operation).ConfigureAwait(false);
+		}
+
+		/// <summary>
+		/// Prepares a chain of memory blocks, attaches it to the stream and reads the stream
+		/// using <see cref="MemoryBlockStream.ReadAsync(Memory{byte},CancellationToken)"/>.
+		/// </summary>
+		[Theory]
+		[InlineData(0)]            // empty stream
+		[InlineData(1)]            // stream with 1 byte in a single block
+		[InlineData(TestDataSize)] // huge stream with multiple blocks
+		public async Task ReadAsync_Memory(int initialLength)
+		{
+			async Task<int> Operation(MemoryBlockStream stream, byte[] readBuffer, int bytesToRead)
+			{
+				int readByteCount = await stream.ReadAsync(
+						                    readBuffer.AsMemory(0, bytesToRead),
+						                    CancellationToken.None)
+					                    .ConfigureAwait(false);
+				return readByteCount;
+			}
+
+			await ReadAsync_Common(initialLength, Operation).ConfigureAwait(false);
+		}
+
+		/// <summary>
+		/// Common test frame for asynchronous read operations.
+		/// </summary>
+		/// <param name="initialLength">Initial length of the stream.</param>
+		/// <param name="operation">Operation that performs the read operation.</param>
+		private async Task ReadAsync_Common(int initialLength, Func<MemoryBlockStream, byte[], int, Task<int>> operation)
 		{
 			// create a new stream
 			using (var stream = CreateStreamToTest())
@@ -136,7 +283,7 @@ namespace GriffinPlus.Lib.Io
 				while (true)
 				{
 					int bytesToRead = random.Next(1, readBuffer.Length);
-					int bytesRead = stream.Read(readBuffer, 0, bytesToRead);
+					int bytesRead = await operation(stream, readBuffer, bytesToRead).ConfigureAwait(false);
 					if (bytesRead == 0) break;
 					readData.AddRange(readBuffer.Take(bytesRead));
 				}
@@ -146,46 +293,10 @@ namespace GriffinPlus.Lib.Io
 				Assert.Equal(expectedData.Count, stream.Position);
 				Assert.Equal(expectedData.Count, stream.Length);
 				Assert.Equal(expectedData, readData);
-			}
-		}
 
-		/// <summary>
-		/// Prepares a chain of blocks, attaches it to the stream and reads the stream
-		/// using <see cref="MemoryBlockStream.Read(IntPtr,int)"/>.
-		/// </summary>
-		[Theory]
-		[InlineData(0)]            // empty stream
-		[InlineData(1)]            // stream with 1 byte in a single block
-		[InlineData(TestDataSize)] // huge stream with multiple blocks
-		public unsafe void Read_Pointer(int initialLength)
-		{
-			// create a new stream
-			using (var stream = CreateStreamToTest())
-			{
-				// generate some test data and attach it to the stream
-				var chain = GetRandomTestDataChain(initialLength, StreamMemoryBlockSize, out var expectedData);
-				stream.AttachBuffer(chain);
-
-				// read data in chunks of random size
-				var random = new Random(0);
-				byte[] readBuffer = new byte[8 * 1024];
-				var readData = new List<byte>(expectedData.Count);
-				while (true)
-				{
-					fixed (byte* pBuffer = readBuffer)
-					{
-						int bytesToRead = random.Next(1, readBuffer.Length);
-						int bytesRead = stream.Read(new IntPtr(pBuffer), bytesToRead);
-						if (bytesRead == 0) break;
-						readData.AddRange(readBuffer.Take(bytesRead));
-					}
-				}
-
-				// the stream has been read to the end
-				// it should be empty now and read data should equal the expected test data
-				Assert.Equal(expectedData.Count, stream.Position);
-				Assert.Equal(expectedData.Count, stream.Length);
-				Assert.Equal(expectedData, readData.ToArray());
+				// the stream should have returned its buffers to the pool, if release-after-read is enabled
+				if (stream.ReleaseReadBlocks) EnsureBuffersHaveBeenReturned();
+				else if (initialLength > 0) EnsureBuffersHaveNotBeenReturned();
 			}
 		}
 
@@ -203,29 +314,16 @@ namespace GriffinPlus.Lib.Io
 		[InlineData(TestDataSize)] // huge stream with multiple blocks
 		public void ReadByte(int initialLength)
 		{
-			// create a new stream
-			using (var stream = CreateStreamToTest())
+			int Operation(MemoryBlockStream stream, byte[] readBuffer, ref int bytesToRead)
 			{
-				// generate some test data and attach it to the stream
-				var chain = GetRandomTestDataChain(initialLength, StreamMemoryBlockSize, out var expectedData);
-				stream.AttachBuffer(chain);
-
-				// read data byte-wise
-				var random = new Random(0);
-				var readData = new List<byte>(expectedData.Count);
-				while (true)
-				{
-					int readByte = stream.ReadByte();
-					if (readByte < 0) break;
-					readData.Add((byte)readByte);
-				}
-
-				// the stream has been read to the end
-				// it should be empty now and read data should equal the expected test data
-				Assert.Equal(expectedData.Count, stream.Position);
-				Assert.Equal(expectedData.Count, stream.Length);
-				Assert.Equal(expectedData, readData);
+				bytesToRead = 1; // overrides the number of bytes to read, so the test does not fail...
+				int readByte = stream.ReadByte();
+				if (readByte < 0) return 0;
+				readBuffer[0] = (byte)readByte;
+				return 1;
 			}
+
+			Read_Common(initialLength, Operation);
 		}
 
 		#endregion
@@ -242,27 +340,12 @@ namespace GriffinPlus.Lib.Io
 		[InlineData(TestDataSize)] // write huge buffer that results in multiple blocks in the stream
 		public void Write_Buffer_SingleOperation(int count)
 		{
-			// create a new stream
-			using (var stream = CreateStreamToTest())
+			void Operation(MemoryBlockStream stream, byte[] data)
 			{
-				// generate some test data
-				using (GetRandomTestDataChain(count, StreamMemoryBlockSize, out var list))
-				{
-					byte[] data = list.ToArray();
-
-					// write the buffer
-					stream.Write(data, 0, data.Length);
-
-					// the stream should contain the written data now
-					Assert.Equal(data.Length, stream.Position);
-					Assert.Equal(data.Length, stream.Length);
-					using (var detachedBuffer = stream.DetachBuffer())
-					{
-						if (count > 0) Assert.Equal(data, detachedBuffer.GetChainData());
-						else Assert.Null(detachedBuffer);
-					}
-				}
+				stream.Write(data, 0, data.Length);
 			}
+
+			Write_Common(count, Operation);
 		}
 
 		/// <summary>
@@ -274,110 +357,60 @@ namespace GriffinPlus.Lib.Io
 		[InlineData(TestDataSize, 999)]      // chunk size is odd => write spans blocks
 		public void Write_Buffer_MultipleOperations(int count, int chunkSize)
 		{
-			// create a new stream
-			using (var stream = CreateStreamToTest())
+			void Operation(MemoryBlockStream stream, byte[] data)
 			{
-				// generate some test data
-				using (GetRandomTestDataChain(count, StreamMemoryBlockSize, out var list))
+				int offset = 0;
+				do
 				{
-					byte[] data = list.ToArray();
-
-					// write the buffer in chunks
-					int offset = 0;
-					do
-					{
-						int bytesToWrite = Math.Min(data.Length - offset, chunkSize);
-						stream.Write(data, offset, bytesToWrite);
-						offset += bytesToWrite;
-					} while (offset < data.Length);
-
-					// the stream should contain the written data now
-					Assert.Equal(data.Length, stream.Position);
-					Assert.Equal(data.Length, stream.Length);
-					using (var detachedBuffer = stream.DetachBuffer())
-					{
-						if (count > 0) Assert.Equal(data, detachedBuffer.GetChainData());
-						else Assert.Null(detachedBuffer);
-					}
-				}
+					int bytesToWrite = Math.Min(data.Length - offset, chunkSize);
+					stream.Write(data, offset, bytesToWrite);
+					offset += bytesToWrite;
+				} while (offset < data.Length);
 			}
+
+			Write_Common(count, Operation);
 		}
 
 		/// <summary>
-		/// Writes a random set of bytes into the stream using <see cref="MemoryBlockStream.Write(IntPtr,int)"/>.
+		/// Writes a random set of bytes into the stream using <see cref="MemoryBlockStream.Write(ReadOnlySpan{byte})"/>.
 		/// The write is one in a single operation.
 		/// </summary>
 		[Theory]
 		[InlineData(0)]            // write empty buffer
 		[InlineData(1)]            // write buffer with 1 byte
 		[InlineData(TestDataSize)] // write huge buffer that results in multiple blocks in the stream
-		public unsafe void Write_Pointer_SingleOperation(int count)
+		public void Write_ReadOnlySpan_SingleOperation(int count)
 		{
-			// create a new stream
-			using (var stream = CreateStreamToTest())
+			void Operation(MemoryBlockStream stream, byte[] data)
 			{
-				// generate some test data
-				using (GetRandomTestDataChain(count, StreamMemoryBlockSize, out var list))
-				{
-					byte[] data = list.ToArray();
-
-					// write the buffer
-					fixed (byte* pBuffer = data)
-					{
-						stream.Write(new IntPtr(pBuffer), data.Length);
-					}
-
-					// the stream should contain the written data now
-					Assert.Equal(data.Length, stream.Position);
-					Assert.Equal(data.Length, stream.Length);
-					using (var detachedBuffer = stream.DetachBuffer())
-					{
-						if (count > 0) Assert.Equal(data, detachedBuffer.GetChainData());
-						else Assert.Null(detachedBuffer);
-					}
-				}
+				stream.Write(data.AsSpan(0, data.Length));
 			}
+
+			Write_Common(count, Operation);
 		}
 
 		/// <summary>
-		/// Writes a random set of bytes into the stream using <see cref="MemoryBlockStream.Write(IntPtr,int)"/>.
+		/// Writes a random set of bytes into the stream using <see cref="MemoryBlockStream.Write(ReadOnlySpan{byte})"/>.
 		/// The write is done with multiple smaller write operations.
 		/// </summary>
 		[Theory]
 		[InlineData(TestDataSize, 8 * 1024)] // chunk size is power of 2 => fills up full blocks
 		[InlineData(TestDataSize, 999)]      // chunk size is odd => write spans blocks
-		public unsafe void Write_Pointer_MultipleOperations(int count, int chunkSize)
+		public void Write_ReadOnlySpan_MultipleOperations(int count, int chunkSize)
 		{
-			// create a new stream
-			using (var stream = CreateStreamToTest())
+			void Operation(MemoryBlockStream stream, byte[] data)
 			{
-				// generate some test data
-				using (GetRandomTestDataChain(count, StreamMemoryBlockSize, out var list))
+				// write the buffer in chunks
+				int offset = 0;
+				do
 				{
-					byte[] data = list.ToArray();
-
-					// write the buffer in chunks
-					fixed (byte* pBuffer = data)
-					{
-						int offset = 0;
-						do
-						{
-							int bytesToWrite = Math.Min(data.Length - offset, chunkSize);
-							stream.Write(new IntPtr(pBuffer) + offset, bytesToWrite);
-							offset += bytesToWrite;
-						} while (offset < data.Length);
-					}
-
-					// the stream should contain the written data now
-					Assert.Equal(data.Length, stream.Position);
-					Assert.Equal(data.Length, stream.Length);
-					using (var detachedBuffer = stream.DetachBuffer())
-					{
-						if (count > 0) Assert.Equal(data, detachedBuffer.GetChainData());
-						else Assert.Null(detachedBuffer);
-					}
-				}
+					int bytesToWrite = Math.Min(data.Length - offset, chunkSize);
+					stream.Write(data.AsSpan(offset, bytesToWrite));
+					offset += bytesToWrite;
+				} while (offset < data.Length);
 			}
+
+			Write_Common(count, Operation);
 		}
 
 		/// <summary>
@@ -389,6 +422,173 @@ namespace GriffinPlus.Lib.Io
 		[InlineData(TestDataSize)] // write huge buffer that results in multiple blocks in the stream
 		public void Write_Stream(int count)
 		{
+			void Operation(MemoryBlockStream stream, byte[] data)
+			{
+				stream.Write(new MemoryStream(data));
+			}
+
+			Write_Common(count, Operation);
+		}
+
+		/// <summary>
+		/// Common test frame for synchronous write operations.
+		/// </summary>
+		/// <param name="count">Number of bytes to write to the stream.</param>
+		/// <param name="operation">Operation that performs the write operation.</param>
+		private void Write_Common(int count, Action<MemoryBlockStream, byte[]> operation)
+		{
+			// create a new stream
+			using (var stream = CreateStreamToTest())
+			{
+				// generate some test data
+				using (GetRandomTestDataChain(count, StreamMemoryBlockSize, out var list))
+				{
+					byte[] data = list.ToArray();
+
+					// write data to the stream
+					operation(stream, data);
+
+					// the stream should contain the written data now
+					Assert.Equal(data.Length, stream.Position);
+					Assert.Equal(data.Length, stream.Length);
+					using (var detachedBuffer = stream.DetachBuffer())
+					{
+						if (count > 0) Assert.Equal(data, detachedBuffer.GetChainData());
+						else Assert.Null(detachedBuffer);
+					}
+				}
+			}
+		}
+
+		#endregion
+
+		#region WriteAsync()
+
+		/// <summary>
+		/// Writes a random set of bytes into the stream using <see cref="MemoryBlockStream.WriteAsync(byte[],int,int,CancellationToken)"/>.
+		/// The write is one in a single operation.
+		/// </summary>
+		[Theory]
+		[InlineData(0)]            // write empty buffer
+		[InlineData(1)]            // write buffer with 1 byte
+		[InlineData(TestDataSize)] // write huge buffer that results in multiple blocks in the stream
+		public async Task WriteAsync_Buffer_SingleOperation(int count)
+		{
+			async Task Operation(MemoryBlockStream stream, byte[] data)
+			{
+				await stream.WriteAsync(data, 0, data.Length, CancellationToken.None).ConfigureAwait(false);
+			}
+
+			await WriteAsync_Common(count, Operation).ConfigureAwait(false);
+		}
+
+		/// <summary>
+		/// Writes a random set of bytes into the stream using <see cref="MemoryBlockStream.WriteAsync(byte[],int,int,CancellationToken)"/>.
+		/// The write is done with multiple smaller write operations.
+		/// </summary>
+		[Theory]
+		[InlineData(TestDataSize, 8 * 1024)] // chunk size is power of 2 => fills up full blocks
+		[InlineData(TestDataSize, 999)]      // chunk size is odd => write spans blocks
+		public async Task WriteAsync_Buffer_MultipleOperations(int count, int chunkSize)
+		{
+			async Task Operation(MemoryBlockStream stream, byte[] data)
+			{
+				int offset = 0;
+				do
+				{
+					int bytesToWrite = Math.Min(data.Length - offset, chunkSize);
+
+					await stream.WriteAsync(
+							data,
+							offset,
+							bytesToWrite,
+							CancellationToken.None)
+						.ConfigureAwait(false);
+
+					offset += bytesToWrite;
+				} while (offset < data.Length);
+			}
+
+			await WriteAsync_Common(count, Operation).ConfigureAwait(false);
+		}
+
+		/// <summary>
+		/// Writes a random set of bytes into the stream using <see cref="MemoryBlockStream.WriteAsync(ReadOnlyMemory{byte},CancellationToken)"/>.
+		/// The write is one in a single operation.
+		/// </summary>
+		[Theory]
+		[InlineData(0)]            // write empty buffer
+		[InlineData(1)]            // write buffer with 1 byte
+		[InlineData(TestDataSize)] // write huge buffer that results in multiple blocks in the stream
+		public async Task WriteAsync_ReadOnlyMemory_SingleOperation(int count)
+		{
+			async Task Operation(MemoryBlockStream stream, byte[] data)
+			{
+				await stream.WriteAsync(
+						data.AsMemory(0, data.Length),
+						CancellationToken.None)
+					.ConfigureAwait(false);
+			}
+
+			await WriteAsync_Common(count, Operation).ConfigureAwait(false);
+		}
+
+		/// <summary>
+		/// Writes a random set of bytes into the stream using <see cref="MemoryBlockStream.WriteAsync(ReadOnlyMemory{byte},CancellationToken)"/>.
+		/// The write is done with multiple smaller write operations.
+		/// </summary>
+		[Theory]
+		[InlineData(TestDataSize, 8 * 1024)] // chunk size is power of 2 => fills up full blocks
+		[InlineData(TestDataSize, 999)]      // chunk size is odd => write spans blocks
+		public async Task WriteAsync_ReadOnlyMemory_MultipleOperations(int count, int chunkSize)
+		{
+			async Task Operation(MemoryBlockStream stream, byte[] data)
+			{
+				int offset = 0;
+				do
+				{
+					int bytesToWrite = Math.Min(data.Length - offset, chunkSize);
+
+					// write the buffer
+					await stream.WriteAsync(
+							data.AsMemory(offset, bytesToWrite),
+							CancellationToken.None)
+						.ConfigureAwait(false);
+
+					offset += bytesToWrite;
+				} while (offset < data.Length);
+			}
+
+			await WriteAsync_Common(count, Operation).ConfigureAwait(false);
+		}
+
+		/// <summary>
+		/// Writes a random set of bytes into the stream using <see cref="MemoryBlockStream.WriteAsync(Stream,CancellationToken)"/>.
+		/// </summary>
+		[Theory]
+		[InlineData(0)]            // write empty buffer
+		[InlineData(1)]            // write buffer with 1 byte
+		[InlineData(TestDataSize)] // write huge buffer that results in multiple blocks in the stream
+		public async Task WriteAsync_Stream(int count)
+		{
+			async Task Operation(MemoryBlockStream stream, byte[] data)
+			{
+				await stream.WriteAsync(
+						new MemoryStream(data),
+						CancellationToken.None)
+					.ConfigureAwait(false);
+			}
+
+			await WriteAsync_Common(count, Operation).ConfigureAwait(false);
+		}
+
+		/// <summary>
+		/// Common test frame for asynchronous write operations.
+		/// </summary>
+		/// <param name="count">Number of bytes to write to the stream.</param>
+		/// <param name="operation">Operation that performs the write operation.</param>
+		private async Task WriteAsync_Common(int count, Func<MemoryBlockStream, byte[], Task> operation)
+		{
 			// create a new stream
 			using (var stream = CreateStreamToTest())
 			{
@@ -398,8 +598,7 @@ namespace GriffinPlus.Lib.Io
 					byte[] data = list.ToArray();
 
 					// write the buffer
-					var otherStream = new MemoryStream(data);
-					stream.Write(otherStream);
+					await operation(stream, data).ConfigureAwait(false);
 
 					// the stream should contain the written data now
 					Assert.Equal(data.Length, stream.Position);
@@ -426,25 +625,98 @@ namespace GriffinPlus.Lib.Io
 		[InlineData(TestDataSize)] // write huge buffer that results in multiple blocks in the stream
 		public void WriteByte(int count)
 		{
+			void Operation(MemoryBlockStream stream, byte[] data)
+			{
+				foreach (byte x in data) stream.WriteByte(x);
+			}
+
+			Write_Common(count, Operation);
+		}
+
+		#endregion
+
+		#region CopyTo()
+
+		/// <summary>
+		/// Copies a random set of bytes into the stream and copies the stream to another stream
+		/// using <see cref="MemoryBlockStream.CopyTo(Stream)"/>.
+		/// </summary>
+		[Theory]
+		[InlineData(0)]            // write empty buffer
+		[InlineData(1)]            // write buffer with 1 byte
+		[InlineData(TestDataSize)] // write huge buffer that results in multiple blocks in the stream
+		public void CopyTo(int count)
+		{
 			// create a new stream
 			using (var stream = CreateStreamToTest())
 			{
 				// generate some test data
-				using (GetRandomTestDataChain(count, StreamMemoryBlockSize, out var list))
+				using (var chain = GetRandomTestDataChain(count, StreamMemoryBlockSize, out var list))
 				{
 					byte[] data = list.ToArray();
 
-					// write the buffer
-					foreach (byte x in data) stream.WriteByte(x);
+					// attach chain of blocks to the stream
+					stream.AttachBuffer(chain);
 
-					// the stream should contain the written data now
+					// copy the stream to another stream
+					var otherStream = new MemoryStream();
+					stream.CopyTo(otherStream, 8 * 1024);
+
+					// the read stream should be at its end now
 					Assert.Equal(data.Length, stream.Position);
 					Assert.Equal(data.Length, stream.Length);
-					using (var detachedBuffer = stream.DetachBuffer())
-					{
-						if (count > 0) Assert.Equal(data, detachedBuffer.GetChainData());
-						else Assert.Null(detachedBuffer);
-					}
+
+					// the other stream should contain the written data now
+					Assert.Equal(data.Length, otherStream.Position);
+					Assert.Equal(data.Length, otherStream.Length);
+					otherStream.Position = 0;
+					Assert.Equal(data, otherStream.ToArray());
+				}
+			}
+		}
+
+		#endregion
+
+		#region CopyToAsync()
+
+		/// <summary>
+		/// Copies a random set of bytes into the stream and copies the stream to another stream
+		/// using <see cref="MemoryBlockStream.CopyToAsync(Stream,int,CancellationToken)"/>.
+		/// </summary>
+		[Theory]
+		[InlineData(0)]            // write empty buffer
+		[InlineData(1)]            // write buffer with 1 byte
+		[InlineData(TestDataSize)] // write huge buffer that results in multiple blocks in the stream
+		public async Task CopyToAsync(int count)
+		{
+			// create a new stream
+			using (var stream = CreateStreamToTest())
+			{
+				// generate some test data
+				using (var chain = GetRandomTestDataChain(count, StreamMemoryBlockSize, out var list))
+				{
+					byte[] data = list.ToArray();
+
+					// attach chain of blocks to the stream
+					stream.AttachBuffer(chain);
+
+					// copy the stream to another stream
+					var otherStream = new MemoryStream();
+					await stream.CopyToAsync(
+							otherStream,
+							8 * 1024,
+							CancellationToken.None)
+						.ConfigureAwait(false);
+
+					// the read stream should be at its end now
+					Assert.Equal(data.Length, stream.Position);
+					Assert.Equal(data.Length, stream.Length);
+
+					// the other stream should contain the written data now
+					Assert.Equal(data.Length, otherStream.Position);
+					Assert.Equal(data.Length, otherStream.Length);
+					otherStream.Position = 0;
+					Assert.Equal(data, otherStream.ToArray());
 				}
 			}
 		}
@@ -622,6 +894,17 @@ namespace GriffinPlus.Lib.Io
 			if (BufferPool != null)
 			{
 				Assert.Equal(0, BufferPool.RentedBufferCount);
+			}
+		}
+
+		/// <summary>
+		/// Checks whether not all buffers have been returned to the array pool, if applicable.
+		/// </summary>
+		protected void EnsureBuffersHaveNotBeenReturned()
+		{
+			if (BufferPool != null)
+			{
+				Assert.True(BufferPool.RentedBufferCount > 0);
 			}
 		}
 

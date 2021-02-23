@@ -7,7 +7,8 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Io
 {
@@ -43,12 +44,15 @@ namespace GriffinPlus.Lib.Io
 		private          long                 mCapacity;
 		private readonly int                  mBlockSize;
 		private          long                 mCurrentBlockStartIndex;
-		private readonly bool                 mReleaseReadBlocks;
 		private readonly bool                 mCanSeek;
 		private readonly ArrayPool<byte>      mArrayPool;
+		private readonly bool                 mReleaseReadBlocks;
 		private          ChainableMemoryBlock mFirstBlock;
 		private          ChainableMemoryBlock mCurrentBlock;
 		private          ChainableMemoryBlock mLastBlock;
+		private          bool                 mDisposed;
+
+		#region Construction
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class.
@@ -140,8 +144,29 @@ namespace GriffinPlus.Lib.Io
 					mLength = 0;
 					mPosition = 0;
 				}
+
+				mDisposed = true;
 			}
 		}
+
+#if NETSTANDARD2_1 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0
+		/// <summary>
+		/// Asynchronously disposes the stream releasing the underlying memory block chain
+		/// (returns rented buffers to their array pool, if necessary).
+		/// </summary>
+		public override ValueTask DisposeAsync()
+		{
+			base.DisposeAsync();
+			Dispose(true);
+			return new ValueTask();
+		}
+#elif NETSTANDARD2_0 || NETCOREAPP2_1 || NET461
+		// This method is not supported by the Stream class.
+#else
+#error Unhandled target framework.
+#endif
+
+		#endregion
 
 		#region Stream Capabilities
 
@@ -162,23 +187,32 @@ namespace GriffinPlus.Lib.Io
 
 		#endregion
 
-		#region Position/Length
+		#region Position
 
 		/// <summary>
 		/// Gets or sets the current position within the stream.
 		/// </summary>
 		/// <exception cref="ArgumentException">The position is out of bounds when trying to set it.</exception>
 		/// <exception cref="NotSupportedException">Setting the position is not supported as the stream does not support seeking.</exception>
+		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		public override long Position
 		{
 			get => mPosition;
 			set => Seek(value, SeekOrigin.Begin);
 		}
 
+		#endregion
+
+		#region Length
+
 		/// <summary>
 		/// Gets the length of the current stream.
 		/// </summary>
 		public override long Length => mLength;
+
+		#endregion
+
+		#region SetLength(long length)
 
 		/// <summary>
 		/// Sets the length of the stream.
@@ -186,6 +220,7 @@ namespace GriffinPlus.Lib.Io
 		/// <param name="length">The desired length of the current stream in bytes.</param>
 		/// <exception cref="ArgumentException">The specified length is negative.</exception>
 		/// <exception cref="NotSupportedException">The stream does not support seeking.</exception>
+		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		/// <remarks>
 		/// If the specified length is less than the current length of the stream, the stream is truncated. If the current position
 		/// within the stream is past the end of the stream after the truncation, the <see cref="ReadByte"/> method returns -1, the
@@ -196,17 +231,14 @@ namespace GriffinPlus.Lib.Io
 		/// </remarks>
 		public override void SetLength(long length)
 		{
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
+
 			if (!mCanSeek)
-			{
 				throw new NotSupportedException("The stream does not support seeking.");
-			}
 
 			if (length < 0)
-			{
-				throw new ArgumentException(
-					"The length must not be negative.",
-					nameof(length));
-			}
+				throw new ArgumentException("The length must not be negative.", nameof(length));
 
 			if (length > mCapacity)
 			{
@@ -307,6 +339,10 @@ namespace GriffinPlus.Lib.Io
 			}
 		}
 
+		#endregion
+
+		#region long Seek(long offset, SeekOrigin origin)
+
 		/// <summary>
 		/// Sets the current position within the stream.
 		/// </summary>
@@ -314,12 +350,14 @@ namespace GriffinPlus.Lib.Io
 		/// <param name="origin">Indicates the reference point used to obtain the new position.</param>
 		/// <returns>The new position within the stream.</returns>
 		/// <exception cref="NotSupportedException">The stream does not support seeking.</exception>
+		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		public override long Seek(long offset, SeekOrigin origin)
 		{
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
+
 			if (!mCanSeek)
-			{
 				throw new NotSupportedException("The stream does not support seeking.");
-			}
 
 			if (origin == SeekOrigin.Begin)
 			{
@@ -400,7 +438,7 @@ namespace GriffinPlus.Lib.Io
 
 		#endregion
 
-		#region Reading
+		#region int Read(byte[] buffer, int offset, int count)
 
 		/// <summary>
 		/// Reads a sequence of bytes from the stream and advances the position within the stream by the number of bytes read.
@@ -412,201 +450,224 @@ namespace GriffinPlus.Lib.Io
 		/// The total number of bytes read into the buffer. This can be less than the number of requested bytes,
 		/// if that many bytes are not currently available, or zero (0) if the end of the stream has been reached.
 		/// </returns>
-		/// <exception cref="ArgumentException">The specified range is out of bounds.</exception>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="buffer"/> is <see langword="null"/>.
+		/// </exception>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// <paramref name="offset"/> or <paramref name="count"/> is negative.
+		/// </exception>
+		/// <exception cref="ArgumentException">
+		/// The sum of <paramref name="offset"/> and <paramref name="count"/> is larger than the buffer length.
+		/// </exception>
+		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		public override int Read(byte[] buffer, int offset, int count)
 		{
-			if (count == 0) return 0;
-			if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
+
+			if (count == 0)
+				return 0;
+
+			if (buffer == null)
+				throw new ArgumentNullException(nameof(buffer));
 
 			if (offset < 0)
-			{
-				throw new ArgumentException(
-					"Offset must be greater than or equal to 0.",
-					nameof(offset));
-			}
+				throw new ArgumentOutOfRangeException(nameof(offset), "Offset must be greater than or equal to 0.");
 
 			if (count < 0)
-			{
-				throw new ArgumentException(
-					"Count must be greater than or equal to 0.",
-					nameof(count));
-			}
+				throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than or equal to 0.");
 
 			if (offset >= buffer.Length)
-			{
-				throw new ArgumentException(
-					"Offset exceeds the end of the buffer.",
-					nameof(offset));
-			}
+				throw new ArgumentException("Offset exceeds the end of the buffer.", nameof(offset));
 
 			if (offset + count > buffer.Length)
-			{
-				throw new ArgumentException(
-					"The buffer's length is less than offset + count.",
-					nameof(count));
-			}
+				throw new ArgumentException("The buffer's length is less than offset + count.", nameof(count));
 
 			int bytesToRead = (int)Math.Min(mLength - mPosition, count);
 			Debug.Assert(bytesToRead >= 0);
-			ReadInternal(buffer, offset, bytesToRead);
 
-			return bytesToRead;
-		}
-
-		/// <summary>
-		/// Copies a sequence of bytes from the memory block chain to the provided buffer and advances the
-		/// position appropriately.
-		/// </summary>
-		/// <param name="buffer">Buffer to copy read data to.</param>
-		/// <param name="offset">Offset in the buffer to start at.</param>
-		/// <param name="bytesToRead">Number of bytes to copy.</param>
-		private void ReadInternal(byte[] buffer, int offset, int bytesToRead)
-		{
-			// abort if there is nothing to do...
-			if (bytesToRead == 0) return;
-
-			while (bytesToRead > 0)
+			int remaining = bytesToRead;
+			while (remaining > 0)
 			{
-				// get index in the current memory block
-				int index = (int)(mPosition - mCurrentBlockStartIndex);
-
-				// determine how many bytes can be read from the current memory block
-				int bytesToEnd = mCurrentBlock.InternalLength - index;
-
-				if (bytesToEnd == 0)
-				{
-					// memory block is at its end
-					// => continue reading the next memory block
-					if (mReleaseReadBlocks)
-					{
-						// if releasing read blocks is enabled, seeking is not supported
-						// => we've read the first block in the chain
-						Debug.Assert(mFirstBlock == mCurrentBlock);
-						var nextBlock = mCurrentBlock.InternalNext;
-						mCurrentBlock.Release();
-						mCurrentBlock = nextBlock;
-						mCurrentBlockStartIndex = mPosition;
-
-						// as the first block in the chain has been released, the current one becomes the first one
-						// (for consistency the stream length and position remain the same)
-						mFirstBlock = mCurrentBlock;
-					}
-					else
-					{
-						mCurrentBlock = mCurrentBlock.InternalNext;
-						mCurrentBlockStartIndex = mPosition;
-					}
-
-					// the caller should have ensured that there is enough data to read!
-					Debug.Assert(mCurrentBlock != null);
-
-					// update index in the current memory block
-					index = (int)(mPosition - mCurrentBlockStartIndex);
-				}
-
 				// copy as many bytes as requested and possible
-				int bytesToCopy = Math.Min(mCurrentBlock.InternalLength - index, bytesToRead);
+				int index = PrepareReadingBlock(remaining, out int bytesToCopy);
 				Array.Copy(mCurrentBlock.InternalBuffer, index, buffer, offset, bytesToCopy);
 				offset += bytesToCopy;
-				bytesToRead -= bytesToCopy;
+				remaining -= bytesToCopy;
 				mPosition += bytesToCopy;
 			}
-		}
 
-		/// <summary>
-		/// Reads a sequence of bytes from the stream and advances the position within the stream by the number
-		/// of bytes read.
-		/// </summary>
-		/// <param name="pBuffer">Buffer receiving data from the stream.</param>
-		/// <param name="count">Number of bytes to read.</param>
-		/// <returns>
-		/// The total number of bytes read into the buffer. This can be less than the number of requested bytes,
-		/// if that many bytes are not currently available, or zero (0) if the end of the stream has been reached.
-		/// </returns>
-		public int Read(IntPtr pBuffer, int count)
-		{
-			if (count == 0) return 0;
-
-			if (pBuffer == IntPtr.Zero && count > 0)
-			{
-				throw new ArgumentNullException(
-					nameof(pBuffer),
-					"The specified buffer must not be a null pointer, if 'count' is greater than 0.");
-			}
-
-			if (count < 0)
-			{
-				throw new ArgumentException(
-					"Count must be greater than or equal to 0.",
-					nameof(count));
-			}
-
-			int bytesToRead = (int)Math.Min(mLength - mPosition, count);
-			Debug.Assert(bytesToRead >= 0);
-			ReadInternal(pBuffer, bytesToRead);
-
+			CompleteReadingBlock();
 			return bytesToRead;
 		}
 
+		#endregion
+
+		#region Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+
 		/// <summary>
-		/// Copies a sequence of bytes from the memory block chain to the provided buffer and advances the
-		/// position appropriately.
+		/// Asynchronously reads a sequence of bytes from the current stream, advances the position within the stream by the
+		/// number of bytes read, and monitors cancellation requests.
 		/// </summary>
-		/// <param name="pBuffer">Buffer to copy read data to.</param>
-		/// <param name="bytesToRead">Number of bytes to copy.</param>
-		private void ReadInternal(IntPtr pBuffer, int bytesToRead)
+		/// <param name="buffer">
+		/// The buffer to write the data into.
+		/// </param>
+		/// <param name="offset">
+		/// The byte offset in <paramref name="buffer"/> at which to begin writing data from the stream.
+		/// </param>
+		/// <param name="count">
+		/// The maximum number of bytes to read.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// The token to monitor for cancellation requests. The default value is <see cref="P:System.Threading.CancellationToken.None"/>.
+		/// </param>
+		/// <returns>
+		/// A task that represents the asynchronous read operation.
+		/// The value contains the total number of bytes read into the buffer.
+		/// The result value can be less than the number of bytes requested if the number of bytes currently available
+		/// is less than the requested number, or it can be 0 (zero) if the end of the stream has been reached.
+		/// </returns>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="buffer"/> is <see langword="null"/>.
+		/// </exception>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// <paramref name="offset"/> or <paramref name="count"/> is negative.
+		/// </exception>
+		/// <exception cref="ArgumentException">
+		/// The sum of <paramref name="offset"/> and <paramref name="count"/> is larger than the buffer length.
+		/// </exception>
+		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
+		/// <exception cref="InvalidOperationException">The stream is currently in use by a previous read operation.</exception>
+		public override Task<int> ReadAsync(
+			byte[]            buffer,
+			int               offset,
+			int               count,
+			CancellationToken cancellationToken)
 		{
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
+
+			// abort, if cancellation is pending
+			if (cancellationToken.IsCancellationRequested)
+				return Task.FromCanceled<int>(cancellationToken);
+
+			// The stream is purely in memory, so offloading to another thread doesn't make sense
+			// => complete synchronously
+			return Task.FromResult(Read(buffer, offset, count));
+		}
+
+		#endregion
+
+		#region int Read(Span<byte> buffer)
+
+		/// <summary>
+		/// Reads a sequence of bytes from the current stream and advances the position within the stream by the number of bytes read.
+		/// </summary>
+		/// <param name="buffer">
+		/// A region of memory.
+		/// When this method returns, the contents of this region are replaced by the bytes read from the current source.
+		/// </param>
+		/// <returns>
+		/// The total number of bytes read into the buffer.
+		/// This can be less than the number of bytes allocated in the buffer if that many bytes are not currently available,
+		/// or zero (0) if the end of the stream has been reached.
+		/// </returns>
+		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
+		public
+#if NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0
+			override
+#elif !NETSTANDARD2_0 && !NET461
+#error Unhandled target framework.
+#endif
+			int Read(Span<byte> buffer)
+		{
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
+
+			int bytesToRead = (int)Math.Min(mLength - mPosition, buffer.Length);
+			Debug.Assert(bytesToRead >= 0);
+
 			// abort if there is nothing to do...
-			if (bytesToRead == 0) return;
+			if (bytesToRead == 0)
+				return 0;
 
 			int offset = 0;
-			while (bytesToRead > 0)
+			int remaining = bytesToRead;
+			while (remaining > 0)
 			{
-				// get index in the current memory block
-				int index = (int)(mPosition - mCurrentBlockStartIndex);
-
-				// determine how many bytes can be read from the current memory block
-				int bytesToEnd = mCurrentBlock.InternalLength - index;
-
-				if (bytesToEnd == 0)
-				{
-					// memory block is at its end
-					// => continue reading the next memory block
-					if (mReleaseReadBlocks)
-					{
-						// if releasing read blocks is enabled, seeking is not supported
-						// => we've read the first block in the chain
-						Debug.Assert(mFirstBlock == mCurrentBlock);
-						var nextBlock = mCurrentBlock.InternalNext;
-						mCurrentBlock.Release();
-						mCurrentBlock = nextBlock;
-						mCurrentBlockStartIndex = mPosition;
-
-						// as the first block in the chain has been released, the current one becomes the first one
-						// (for consistency the stream length and position remain the same)
-						mFirstBlock = mCurrentBlock;
-					}
-					else
-					{
-						mCurrentBlock = mCurrentBlock.InternalNext;
-						mCurrentBlockStartIndex = mPosition;
-					}
-
-					// the caller should have ensured that there is enough data to read!
-					Debug.Assert(mCurrentBlock != null);
-
-					// update index in the current memory block
-					index = (int)(mPosition - mCurrentBlockStartIndex);
-				}
-
-				// copy as many bytes as requested and possible
-				int bytesToCopy = Math.Min(mCurrentBlock.InternalLength - index, bytesToRead);
-				Marshal.Copy(mCurrentBlock.InternalBuffer, index, pBuffer + offset, bytesToCopy);
+				int index = PrepareReadingBlock(remaining, out int bytesToCopy);
+				var source = new Span<byte>(mCurrentBlock.InternalBuffer, index, bytesToCopy);
+				var destination = buffer.Slice(offset, buffer.Length - offset);
+				source.CopyTo(destination);
 				offset += bytesToCopy;
-				bytesToRead -= bytesToCopy;
+				remaining -= bytesToCopy;
 				mPosition += bytesToCopy;
 			}
+
+			CompleteReadingBlock();
+			return bytesToRead;
 		}
+
+		#endregion
+
+		#region ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+
+		/// <summary>
+		/// Asynchronously reads a sequence of bytes from the current stream, advances the position within the stream by the
+		/// number of bytes read, and monitors cancellation requests.
+		/// </summary>
+		/// <param name="buffer">The region of memory to write the data into.</param>
+		/// <param name="cancellationToken">
+		/// The token to monitor for cancellation requests.
+		/// The default value is <see cref="CancellationToken.None"/>.
+		/// </param>
+		/// <returns>
+		/// A task that represents the asynchronous read operation.
+		/// The value of its <see cref="ValueTask{T}.Result"/> property contains the total number
+		/// of bytes read into the buffer. The result value can be less than the number of bytes allocated in the buffer
+		/// if that many bytes are not currently available, or it can be 0 (zero) if the end of the stream has been reached.
+		/// </returns>
+		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
+#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET461
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+		public
+#if NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1
+			override
+#endif
+			async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+		{
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
+
+			// abort, if cancellation is pending
+			cancellationToken.ThrowIfCancellationRequested();
+
+			// The stream is purely in memory, so offloading to another thread doesn't make sense
+			// => complete synchronously
+			return Read(buffer.Span);
+		}
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+#elif NET5_0
+		public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+		{
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
+
+			// abort, if cancellation is pending
+			if (cancellationToken.IsCancellationRequested)
+				return ValueTask.FromCanceled<int>(cancellationToken);
+
+			// The stream is purely in memory, so offloading to another thread doesn't make sense
+			// => complete synchronously
+			return ValueTask.FromResult(Read(buffer.Span));
+		}
+#else
+#error Unhandled target framework.
+#endif
+
+		#endregion
+
+		#region int ReadByte()
 
 		/// <summary>
 		/// Reads a byte from the stream and advances the position within the stream by one byte,
@@ -616,161 +677,175 @@ namespace GriffinPlus.Lib.Io
 		/// The unsigned byte cast to an Int32;
 		/// -1, if at the end of the stream.
 		/// </returns>
+		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		public override int ReadByte()
 		{
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
+
 			if (mPosition == mLength)
-			{
 				return -1; // end of the stream
+
+			// return byte and advance position of the stream
+			int index = PrepareReadingBlock(1, out _);
+			mPosition++;
+			byte value = mCurrentBlock.InternalBuffer[index];
+			CompleteReadingBlock();
+			return value;
+		}
+
+		#endregion
+
+		#region Internal Read Helpers
+
+		/// <summary>
+		/// Prepares reading data from the chain of buffers by adjusting the block under read and indices,
+		/// so a copy operation can follow to retrieve data from the buffer.
+		/// </summary>
+		/// <param name="remaining">Number of bytes remaining to be read.</param>
+		/// <param name="bytesToCopy">Receives the number of bytes to copy from the current block.</param>
+		/// <returns>Index in the current block the block buffer to read starts at.</returns>
+		private int PrepareReadingBlock(long remaining, out int bytesToCopy)
+		{
+			// get index in the current memory block
+			int index = (int)(mPosition - mCurrentBlockStartIndex);
+
+			// determine how many bytes can be read from the current memory block
+			int bytesToEnd = mCurrentBlock.InternalLength - index;
+
+			if (bytesToEnd == 0)
+			{
+				// memory block is at its end
+				// => continue reading the next memory block
+				if (mReleaseReadBlocks)
+				{
+					// if releasing read blocks is enabled, seeking is not supported
+					// => we've read the first block in the chain
+					Debug.Assert(mFirstBlock == mCurrentBlock);
+					var nextBlock = mCurrentBlock.InternalNext;
+					mCurrentBlock.Release();
+					mCurrentBlock = nextBlock;
+					mCurrentBlockStartIndex = mPosition;
+
+					// as the first block in the chain has been released, the current one becomes the first one
+					// (for consistency the stream capacity, length and position remain the same)
+					mFirstBlock = mCurrentBlock;
+				}
+				else
+				{
+					mCurrentBlock = mCurrentBlock.InternalNext;
+					mCurrentBlockStartIndex = mPosition;
+				}
+
+				// the caller should have ensured that there is enough data to read!
+				Debug.Assert(mCurrentBlock != null);
+
+				// update index in the current memory block
+				index = (int)(mPosition - mCurrentBlockStartIndex);
 			}
 
-			return ReadByteInternal();
+			// copy as many bytes as requested and possible
+			bytesToCopy = (int)Math.Min(mCurrentBlock.InternalLength - index, remaining);
+			return index;
 		}
 
 		/// <summary>
-		/// Reads a byte from the stream and advances the position within the stream by one byte.
+		/// Should be called after a read operation to release the current block, if it has been read completely.
 		/// </summary>
-		/// <returns>The value of the read byte.</returns>
-		private int ReadByteInternal()
+		private void CompleteReadingBlock()
 		{
-			while (true)
+			// abort, if the chain of blocks is already empty
+			if (mCurrentBlock == null)
+				return;
+
+			// get index in the current memory block
+			int index = (int)(mPosition - mCurrentBlockStartIndex);
+
+			// determine how many bytes can be read from the current memory block
+			int bytesToEnd = mCurrentBlock.InternalLength - index;
+
+			if (bytesToEnd == 0)
 			{
-				// get index in the current memory block
-				int index = (int)(mPosition - mCurrentBlockStartIndex);
-
-				// determine how many bytes can be read from the current memory block
-				int bytesToEnd = mCurrentBlock.InternalLength - index;
-
-				if (bytesToEnd == 0)
+				// memory block is at its end
+				// => skip to next memory block
+				if (mReleaseReadBlocks)
 				{
-					// memory block is at its end
-					// => continue reading the next memory block
-					if (mReleaseReadBlocks)
-					{
-						// if releasing read blocks is enabled, seeking is not supported
-						// => we've read the first block in the chain
-						Debug.Assert(mFirstBlock == mCurrentBlock);
-						var nextBlock = mCurrentBlock.InternalNext;
-						mCurrentBlock.Release();
-						mCurrentBlock = nextBlock;
-						mCurrentBlockStartIndex = mPosition;
+					// if releasing read blocks is enabled, seeking is not supported
+					// => we've read the first block in the chain
+					Debug.Assert(mFirstBlock == mCurrentBlock);
+					var nextBlock = mCurrentBlock.InternalNext;
+					mCurrentBlock.Release();
+					mCurrentBlock = nextBlock;
+					mCurrentBlockStartIndex = mPosition;
 
-						// as the first block in the chain has been released, the current one becomes the first one
-						// (for consistency the stream length and position remain the same)
-						mFirstBlock = mCurrentBlock;
-					}
-					else
-					{
-						mCurrentBlock = mCurrentBlock.InternalNext;
-						mCurrentBlockStartIndex = mPosition;
-					}
-
-					// the caller should have ensured that there is enough data to read!
-					Debug.Assert(mCurrentBlock != null);
-
-					// update index in the current memory block
-					index = (int)(mPosition - mCurrentBlockStartIndex);
+					// as the first block in the chain has been released, the current one becomes the first one
+					// (for consistency the stream capacity, length and position remain the same)
+					mFirstBlock = mCurrentBlock;
+				}
+				else
+				{
+					mCurrentBlock = mCurrentBlock.InternalNext;
+					mCurrentBlockStartIndex = mPosition;
 				}
 
-				// return byte and advance position of the stream
-				if (mCurrentBlock.InternalLength - index > 0)
-				{
-					mPosition++;
-					return mCurrentBlock.InternalBuffer[index];
-				}
+				// if the chain is empty now, adjust the last block
+				if (mFirstBlock == null) mLastBlock = null;
 			}
 		}
 
 		#endregion
 
-		#region Writing
+		#region void Write(byte[] buffer, int offset, int count)
 
 		/// <summary>
-		/// Writes a sequence of bytes to the stream and advances the position within this stream by the
-		/// number of bytes written.
+		/// Writes a sequence of bytes to the stream and advances the position within this stream by the number of
+		/// bytes written.
 		/// </summary>
-		/// <param name="buffer">Buffer containing data to write to the stream.</param>
-		/// <param name="offset">Offset in the buffer to start writing data from.</param>
-		/// <param name="count">Number of bytes to write.</param>
-		/// <exception cref="ArgumentException">The specified range is out of bounds.</exception>
+		/// <param name="buffer">The buffer to write to the stream.</param>
+		/// <param name="offset">
+		/// The zero-based byte offset in <paramref name="buffer"/> at which to begin copying bytes to the current stream.
+		/// </param>
+		/// <param name="count">The number of bytes to be written to the current stream.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="buffer"/> is <see langword="null"/>.
+		/// </exception>
+		/// <exception cref="ArgumentException">
+		/// The sum of <paramref name="offset"/> and <paramref name="count"/> is greater than the buffer length.
+		/// </exception>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// <paramref name="offset"/> or <paramref name="count"/> is negative.
+		/// </exception>
+		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		public override void Write(byte[] buffer, int offset, int count)
 		{
-			if (count == 0) return;
-			if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
+
+			if (count == 0)
+				return;
+
+			if (buffer == null)
+				throw new ArgumentNullException(nameof(buffer));
 
 			if (offset < 0)
-			{
-				throw new ArgumentException(
-					"Offset must be greater than or equal to 0.",
-					nameof(offset));
-			}
+				throw new ArgumentOutOfRangeException(nameof(offset), "Offset must be greater than or equal to 0.");
 
 			if (count < 0)
-			{
-				throw new ArgumentException(
-					"Count must be greater than or equal to 0.",
-					nameof(count));
-			}
+				throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than or equal to 0.");
 
 			if (offset >= buffer.Length)
-			{
-				throw new ArgumentException(
-					"Offset exceeds the end of the buffer.",
-					nameof(offset));
-			}
+				throw new ArgumentException("The offset exceeds the end of the buffer.", nameof(offset));
 
 			if (offset + count > buffer.Length)
-			{
-				throw new ArgumentException(
-					"The buffer's length is less than offset + count.",
-					nameof(count));
-			}
+				throw new ArgumentException("The sum of offset + count is greater than the buffer's length.", nameof(count));
 
 			// write data to the stream
-			WriteInternal(buffer, offset, count);
-		}
-
-		/// <summary>
-		/// Writes a sequence of bytes to the stream and advances the position within this stream by the number of bytes written.
-		/// </summary>
-		/// <param name="buffer">Buffer containing data to write to the stream.</param>
-		/// <param name="offset">Offset in the buffer to start writing data from.</param>
-		/// <param name="count">Number of bytes to write.</param>
-		private void WriteInternal(byte[] buffer, int offset, int count)
-		{
 			int bytesRemaining = count;
 			while (bytesRemaining > 0)
 			{
-				// get index in the current memory block
-				int index = (int)(mPosition - mCurrentBlockStartIndex);
-
-				// determine how many bytes can be written to the current memory block
-				int bytesToEnd = 0;
-				if (mCurrentBlock != null)
-				{
-					bytesToEnd = mCurrentBlock.InternalNext != null ? mCurrentBlock.InternalLength - index : mCurrentBlock.Capacity - index;
-				}
-
-				if (bytesToEnd == 0)
-				{
-					// memory block is at its end
-					// => continue writing the next memory block
-					if (mCurrentBlock?.InternalNext != null)
-					{
-						mCurrentBlock = mCurrentBlock.InternalNext;
-						bytesToEnd = mCurrentBlock.InternalLength;
-					}
-					else
-					{
-						if (!AppendNewBuffer()) mCurrentBlock = mCurrentBlock.InternalNext;
-						bytesToEnd = mCurrentBlock.Capacity;
-					}
-
-					mCurrentBlockStartIndex = mPosition;
-					index = 0;
-				}
-
 				// copy as many bytes as requested and possible
-				int bytesToCopy = Math.Min(bytesToEnd, bytesRemaining);
+				int index = PrepareWritingBlock(out int bytesToEndOfBlock);
+				int bytesToCopy = Math.Min(bytesToEndOfBlock, bytesRemaining);
 				Array.Copy(buffer, offset, mCurrentBlock.InternalBuffer, index, bytesToCopy);
 				offset += bytesToCopy;
 				bytesRemaining -= bytesToCopy;
@@ -783,82 +858,64 @@ namespace GriffinPlus.Lib.Io
 			mLength = Math.Max(mLength, mPosition);
 		}
 
+		#endregion
+
+		#region void WriteByte(byte value)
+
 		/// <summary>
-		/// Writes a sequence of bytes to the stream and advances the position within this stream by the number of bytes written.
+		/// Writes a byte to the current position in the stream and advances the position within the stream by one byte.
 		/// </summary>
-		/// <param name="pBuffer">Buffer containing data to write to the stream.</param>
-		/// <param name="count">Number of bytes to write.</param>
-		/// <exception cref="ArgumentException">
-		/// Buffer is null and count is not 0 -or-\n
-		/// count is less than 0.
-		/// </exception>
-		public void Write(IntPtr pBuffer, int count)
+		/// <param name="value">The byte to write to the stream.</param>
+		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
+		public override void WriteByte(byte value)
 		{
-			if (count == 0) return;
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
 
-			if (pBuffer == IntPtr.Zero && count > 0)
-			{
-				throw new ArgumentException(
-					"The specified buffer must not be a null pointer, if 'count' is greater than 0.",
-					nameof(pBuffer));
-			}
-
-			if (count < 0)
-			{
-				throw new ArgumentException(
-					"Count must be greater than or equal to 0.",
-					nameof(count));
-			}
-
-			// write data to the stream
-			WriteInternal(pBuffer, count);
+			int index = PrepareWritingBlock(out _);
+			mCurrentBlock.InternalBuffer[index] = value;
+			mCurrentBlock.InternalLength = Math.Max(mCurrentBlock.InternalLength, index + 1);
+			mPosition++;
+			mLength = Math.Max(mLength, mPosition);
 		}
 
+		#endregion
+
+		#region void Write(ReadOnlySpan<byte> buffer)
+
 		/// <summary>
-		/// Writes a sequence of bytes to the stream and advances the position within this stream by the number
-		/// of bytes written.
+		/// Writes a sequence of bytes to the current stream and advances the current position within this stream by the
+		/// number of bytes written.
 		/// </summary>
-		/// <param name="pBuffer">Buffer containing data to write to the stream.</param>
-		/// <param name="count">Number of bytes to write.</param>
-		private void WriteInternal(IntPtr pBuffer, int count)
+		/// <param name="buffer">A region of memory. This method copies the contents of this region to the current stream.</param>
+		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
+		public
+#if NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0
+			override
+#elif !NETSTANDARD2_0 && !NET461
+#error Unhandled target framework.
+#endif
+			void Write(ReadOnlySpan<byte> buffer)
 		{
-			int bytesRemaining = count;
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
+
+			if (buffer.Length == 0)
+				return;
+
+			// write data to the stream
+			int bytesRemaining = buffer.Length;
+			int offset = 0;
 			while (bytesRemaining > 0)
 			{
-				// get index in the current memory block
-				int index = (int)(mPosition - mCurrentBlockStartIndex);
-
-				// determine how many bytes can be written to the current memory block
-				int bytesToEnd = 0;
-				if (mCurrentBlock != null)
-				{
-					bytesToEnd = mCurrentBlock.InternalNext != null ? mCurrentBlock.InternalLength - index : mCurrentBlock.Capacity - index;
-				}
-
-				if (bytesToEnd == 0)
-				{
-					// memory block is at its end
-					// => continue writing the next memory block
-					if (mCurrentBlock?.InternalNext != null)
-					{
-						mCurrentBlock = mCurrentBlock.InternalNext;
-						bytesToEnd = mCurrentBlock.InternalLength;
-					}
-					else
-					{
-						if (!AppendNewBuffer()) mCurrentBlock = mCurrentBlock.InternalNext;
-						bytesToEnd = mCurrentBlock.Capacity;
-					}
-
-					mCurrentBlockStartIndex = mPosition;
-					index = 0;
-				}
-
 				// copy as many bytes as requested and possible
-				int bytesToCopy = Math.Min(bytesToEnd, bytesRemaining);
-				Marshal.Copy(pBuffer, mCurrentBlock.InternalBuffer, index, bytesToCopy);
-				pBuffer += bytesToCopy;
+				int index = PrepareWritingBlock(out int bytesToEndOfBlock);
+				int bytesToCopy = Math.Min(bytesToEndOfBlock, bytesRemaining);
+				var source = buffer.Slice(offset, bytesToCopy);
+				var destination = new Span<byte>(mCurrentBlock.InternalBuffer, index, bytesToCopy);
+				source.CopyTo(destination);
 				bytesRemaining -= bytesToCopy;
+				offset += bytesToCopy;
 				mPosition += bytesToCopy;
 
 				// update length of the memory block
@@ -868,54 +925,107 @@ namespace GriffinPlus.Lib.Io
 			mLength = Math.Max(mLength, mPosition);
 		}
 
+		#endregion
+
+		#region Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+
 		/// <summary>
-		/// Writes a byte to the current position in the stream and advances the position within the stream by one byte.
+		/// Asynchronously writes a sequence of bytes to the current stream, advances the current position within this stream
+		/// by the number of bytes written, and monitors cancellation requests.
 		/// </summary>
-		/// <param name="value">The byte to write to the stream.</param>
-		public override void WriteByte(byte value)
+		/// <param name="buffer">The buffer to write data from.</param>
+		/// <param name="offset">
+		/// The zero-based byte offset in <paramref name="buffer"/> from which to begin copying bytes to the stream.
+		/// </param>
+		/// <param name="count">The maximum number of bytes to write.</param>
+		/// <param name="cancellationToken">
+		/// The token to monitor for cancellation requests. The default value is <see cref="P:System.Threading.CancellationToken.None"/>.
+		/// </param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="buffer"/> is <see langword="null"/>.
+		/// </exception>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// <paramref name="offset"/> or <paramref name="count"/> is negative.
+		/// </exception>
+		/// <exception cref="ArgumentException">
+		/// The sum of <paramref name="offset"/> and <paramref name="count"/> is larger than the buffer length.
+		/// </exception>
+		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
+		/// <exception cref="InvalidOperationException">The stream is currently in use by a previous write operation.</exception>
+		/// <returns>A task that represents the asynchronous write operation.</returns>
+		public override Task WriteAsync(
+			byte[]            buffer,
+			int               offset,
+			int               count,
+			CancellationToken cancellationToken)
 		{
-			while (true)
-			{
-				// get index in the current memory block
-				int index = (int)(mPosition - mCurrentBlockStartIndex);
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
 
-				// determine how many bytes can be written to the current memory block
-				int bytesToEnd = 0;
-				if (mCurrentBlock != null)
-				{
-					bytesToEnd = mCurrentBlock.InternalNext != null ? mCurrentBlock.InternalLength - index : mCurrentBlock.Capacity - index;
-				}
+			// abort, if cancellation is pending
+			if (cancellationToken.IsCancellationRequested)
+				return Task.FromCanceled<int>(cancellationToken);
 
-				if (bytesToEnd == 0)
-				{
-					// memory block is at its end
-					// => continue writing the next memory block
-					if (mCurrentBlock?.InternalNext != null)
-					{
-						mCurrentBlock = mCurrentBlock.InternalNext;
-						bytesToEnd = mCurrentBlock.InternalLength;
-					}
-					else
-					{
-						if (!AppendNewBuffer()) mCurrentBlock = mCurrentBlock.InternalNext;
-						bytesToEnd = mCurrentBlock.Capacity;
-					}
-
-					mCurrentBlockStartIndex = mPosition;
-					index = 0;
-				}
-
-				// copy as many bytes as requested and possible
-				if (bytesToEnd > 0)
-				{
-					mCurrentBlock.InternalBuffer[index] = value;
-					mCurrentBlock.InternalLength = Math.Max(mCurrentBlock.InternalLength, index + 1);
-					mPosition++;
-					mLength = Math.Max(mLength, mPosition);
-					return;
-				}
-			}
+			// The stream is purely in memory, so offloading to another thread doesn't make sense
+			// => complete synchronously
+			Write(buffer, offset, count);
+			return Task.CompletedTask;
 		}
+
+		#endregion
+
+		#region ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+
+		/// <summary>
+		/// Asynchronously writes a sequence of bytes to the current stream, advances the current position within this stream
+		/// by the number of bytes written, and monitors cancellation requests.
+		/// </summary>
+		/// <param name="buffer">The region of memory to write data from.</param>
+		/// <param name="cancellationToken">
+		/// The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.
+		/// </param>
+		/// <returns>A task that represents the asynchronous write operation.</returns>
+#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET461
+		public
+#if NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1
+			override
+#endif
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+			async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+		{
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
+
+			// abort, if cancellation is pending
+			cancellationToken.ThrowIfCancellationRequested();
+
+			// The stream is purely in memory, so offloading to another thread doesn't make sense
+			// => complete synchronously
+			Write(buffer.Span);
+		}
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+#elif NET5_0
+		public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+		{
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
+
+			// abort, if cancellation is pending
+			if (cancellationToken.IsCancellationRequested)
+				return ValueTask.FromCanceled(cancellationToken);
+
+			// The stream is purely in memory, so offloading to another thread doesn't make sense
+			// => complete synchronously
+			Write(buffer.Span);
+			return ValueTask.CompletedTask;
+		}
+#else
+#error Unhandled target framework.
+#endif
+
+		#endregion
+
+		#region long Write(Stream stream)
 
 		/// <summary>
 		/// Writes a sequence of bytes to the stream and advances the position within this stream by the number
@@ -939,59 +1049,125 @@ namespace GriffinPlus.Lib.Io
 			if (bytesInSourceStream == 0)
 				return 0;
 
+			// write data to the stream
 			long count = 0;
 			while (true)
 			{
-				// get index in the current memory block
-				int index = (int)(mPosition - mCurrentBlockStartIndex);
-
-				// determine how many bytes can be written to the current memory block
-				int bytesToEnd = 0;
-				if (mCurrentBlock != null)
-				{
-					bytesToEnd = mCurrentBlock.InternalNext != null ? mCurrentBlock.InternalLength - index : mCurrentBlock.Capacity - index;
-				}
-
-				if (bytesToEnd == 0)
-				{
-					// memory block is at its end
-					// => continue writing the next memory block
-					if (mCurrentBlock?.InternalNext != null)
-					{
-						mCurrentBlock = mCurrentBlock.InternalNext;
-						bytesToEnd = mCurrentBlock.InternalLength;
-					}
-					else
-					{
-						if (!AppendNewBuffer()) mCurrentBlock = mCurrentBlock.InternalNext;
-						bytesToEnd = mCurrentBlock.Capacity;
-					}
-
-					mCurrentBlockStartIndex = mPosition;
-					index = 0;
-				}
-
 				// copy as many bytes as requested and possible
-				int bytesRead = stream.Read(mCurrentBlock.InternalBuffer, index, bytesToEnd);
+				int index = PrepareWritingBlock(out int bytesToEndOfBlock);
+				int bytesRead = stream.Read(mCurrentBlock.InternalBuffer, index, bytesToEndOfBlock);
 				mPosition += bytesRead;
 				count += bytesRead;
 
 				// update length of the memory block
 				mCurrentBlock.InternalLength = Math.Max(mCurrentBlock.InternalLength, index + bytesRead);
-				mLength = Math.Max(mLength, mPosition);
 
-				// abort, if stream is at its end
-				if (bytesRead < bytesToEnd) break;
+				if (bytesRead < bytesToEndOfBlock) break;
 			}
 
+			mLength = Math.Max(mLength, mPosition);
 			return count;
 		}
 
+		#endregion
+
+		#region ValueTask<long> WriteAsync(Stream stream, CancellationToken cancellationToken)
+
 		/// <summary>
-		/// Does not do anything for this stream (for interface compatibility only).
+		/// Writes a sequence of bytes to the stream and advances the position within this stream by the number
+		/// of bytes written.
 		/// </summary>
-		public override void Flush()
+		/// <param name="stream">Stream containing data to write.</param>
+		/// <param name="cancellationToken">
+		/// The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.
+		/// </param>
+		/// <returns>Number of written bytes.</returns>
+		/// <exception cref="ArgumentNullException">Specified stream is a null.</exception>
+		public async ValueTask<long> WriteAsync(Stream stream, CancellationToken cancellationToken = default)
 		{
+			if (stream == null) throw new ArgumentNullException(nameof(stream));
+
+			// try to determine the size of the stream
+			long bytesInSourceStream = stream.CanSeek ? stream.Length - stream.Position : -1;
+
+			// abort, if the source stream is empty
+			if (bytesInSourceStream == 0)
+				return 0;
+
+			// write data to the stream
+			long count = 0;
+			while (true)
+			{
+				// copy as many bytes as requested and possible
+				int index = PrepareWritingBlock(out int bytesToEndOfBlock);
+
+				int bytesRead = await stream.ReadAsync(
+						                mCurrentBlock.InternalBuffer,
+						                index,
+						                bytesToEndOfBlock,
+						                cancellationToken)
+					                .ConfigureAwait(false);
+
+				mPosition += bytesRead;
+				count += bytesRead;
+
+				// update length of the memory block
+				mCurrentBlock.InternalLength = Math.Max(mCurrentBlock.InternalLength, index + bytesRead);
+
+				if (bytesRead < bytesToEndOfBlock) break;
+			}
+
+			mLength = Math.Max(mLength, mPosition);
+			return count;
+		}
+
+		#endregion
+
+		#region Internal Write Helpers
+
+		/// <summary>
+		/// Prepares writing data to the chain of buffers by adjusting the block under write and indices,
+		/// so a copy operation can follow to copy data into the buffer.
+		/// </summary>
+		/// <param name="bytesToEndOfBlock">
+		/// Receives the number of bytes from the current position to the end of the block to fill.
+		/// </param>
+		/// <returns>Index in the current block the block buffer to write starts at.</returns>
+		private int PrepareWritingBlock(out int bytesToEndOfBlock)
+		{
+			// get index in the current memory block
+			int index = (int)(mPosition - mCurrentBlockStartIndex);
+
+			// determine how many bytes can be written to the current memory block
+			bytesToEndOfBlock = 0;
+			if (mCurrentBlock != null)
+			{
+				bytesToEndOfBlock = mCurrentBlock.InternalNext != null
+					                    ? mCurrentBlock.InternalLength - index
+					                    : mCurrentBlock.Capacity - index;
+			}
+
+			if (bytesToEndOfBlock == 0)
+			{
+				// memory block is at its end
+				// => continue writing the next memory block
+				if (mCurrentBlock?.InternalNext != null)
+				{
+					mCurrentBlock = mCurrentBlock.InternalNext;
+					bytesToEndOfBlock = mCurrentBlock.InternalLength;
+				}
+				else
+				{
+					if (!AppendNewBuffer()) mCurrentBlock = mCurrentBlock.InternalNext;
+					Debug.Assert(mCurrentBlock != null, nameof(mCurrentBlock) + " != null");
+					bytesToEndOfBlock = mCurrentBlock.Capacity;
+				}
+
+				mCurrentBlockStartIndex = mPosition;
+				index = 0;
+			}
+
+			return index;
 		}
 
 		/// <summary>
@@ -1003,11 +1179,10 @@ namespace GriffinPlus.Lib.Io
 		/// </returns>
 		private bool AppendNewBuffer()
 		{
-			bool isFirstBuffer = mCapacity == 0;
+			bool isFirstBuffer = mFirstBlock == null;
 
-			if (mCapacity == 0)
+			if (mFirstBlock == null)
 			{
-				Debug.Assert(mCurrentBlock == null);
 				mCurrentBlock = new ChainableMemoryBlock(mBlockSize, mArrayPool, false);
 				mFirstBlock = mCurrentBlock;
 				mLastBlock = mCurrentBlock;
@@ -1026,6 +1201,122 @@ namespace GriffinPlus.Lib.Io
 
 		#endregion
 
+		#region void CopyTo(Stream destination, int bufferSize)
+
+		/// <summary>
+		/// Reads the bytes from the current stream and writes them to another stream, using a specified buffer size.
+		/// </summary>
+		/// <param name="destination">The stream to which the contents of the current stream will be copied.</param>
+		/// <param name="bufferSize">The size of the buffer. This value must be greater than zero. The default size is 81920.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="destination"/> is <see langword="null"/>.
+		/// </exception>
+		/// <exception cref="T:System.ArgumentOutOfRangeException">
+		/// <paramref name="bufferSize"/> is negative or zero.
+		/// </exception>
+		/// <exception cref="NotSupportedException"><paramref name="destination"/> does not support writing.</exception>
+		/// <exception cref="ObjectDisposedException">
+		/// Either the current stream or <paramref name="destination"/> have been disposed.
+		/// </exception>
+		public
+#if NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0
+			override
+#elif NETSTANDARD2_0 || NET461
+			new
+#endif
+			void CopyTo(Stream destination, int bufferSize)
+		{
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
+
+			if (destination == null)
+				throw new ArgumentNullException(nameof(destination));
+
+			long bytesToRead = mLength - mPosition;
+			Debug.Assert(bytesToRead >= 0);
+			long remaining = bytesToRead;
+			while (remaining > 0)
+			{
+				// copy as many bytes as requested and possible
+				int index = PrepareReadingBlock(remaining, out int bytesToCopy);
+				destination.Write(mCurrentBlock.InternalBuffer, index, bytesToCopy);
+				remaining -= bytesToCopy;
+				mPosition += bytesToCopy;
+			}
+
+			CompleteReadingBlock();
+		}
+
+		#endregion
+
+		#region Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+
+		/// <summary>
+		/// Asynchronously reads the bytes from the current stream and writes them to another stream, using a specified
+		/// buffer size and cancellation token.
+		/// </summary>
+		/// <param name="destination">The stream to which the contents of the current stream will be copied.</param>
+		/// <param name="bufferSize">
+		/// The size of the buffer (in bytes).
+		/// This value must be greater than zero.
+		/// The default size is 81920.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// The token to monitor for cancellation requests. The default value is <see cref="P:System.Threading.CancellationToken.None"/>.
+		/// </param>
+		/// <exception cref="ArgumentNullException"> <paramref name="destination"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentOutOfRangeException"> <paramref name="bufferSize"/> is negative or zero.</exception>
+		/// <exception cref="ObjectDisposedException">Either the current stream or the destination stream is disposed.</exception>
+		/// <exception cref="NotSupportedException">The destination stream does not support writing.</exception>
+		/// <returns>A task that represents the asynchronous copy operation.</returns>
+		public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+		{
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
+
+			if (destination == null)
+				throw new ArgumentNullException(nameof(destination));
+
+			// abort, if cancellation is pending
+			cancellationToken.ThrowIfCancellationRequested();
+
+			long bytesToRead = mLength - mPosition;
+			Debug.Assert(bytesToRead >= 0);
+			long remaining = bytesToRead;
+			while (remaining > 0)
+			{
+				// copy as many bytes as requested and possible
+				int index = PrepareReadingBlock(remaining, out int bytesToCopy);
+				await destination.WriteAsync(mCurrentBlock.InternalBuffer, index, bytesToCopy, cancellationToken).ConfigureAwait(false);
+				remaining -= bytesToCopy;
+				mPosition += bytesToCopy;
+			}
+
+			CompleteReadingBlock();
+		}
+
+		#endregion
+
+		#region Flushing
+
+		/// <summary>
+		/// Flushes the stream (does not do anything for this stream).
+		/// </summary>
+		public override void Flush()
+		{
+		}
+
+		/// <summary>
+		/// Flushes the stream asynchronously (does not do anything for this stream).
+		/// </summary>
+		/// <param name="cancellationToken">Cancellation token that can be signaled to cancel the operation.</param>
+		public override Task FlushAsync(CancellationToken cancellationToken)
+		{
+			return Task.CompletedTask;
+		}
+
+		#endregion
+
 		#region Attaching / Detaching Buffers
 
 		/// <summary>
@@ -1033,13 +1324,18 @@ namespace GriffinPlus.Lib.Io
 		/// </summary>
 		/// <param name="buffer">Memory block to append to the stream.</param>
 		/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <c>null</c>.</exception>
+		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		/// <remarks>
 		/// The specified buffer must not be accessed directly after this operation.
 		/// The stream takes care of returning buffers to their array pool, if necessary.
 		/// </remarks>
 		public void AppendBuffer(ChainableMemoryBlock buffer)
 		{
-			if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
+
+			if (buffer == null)
+				throw new ArgumentNullException(nameof(buffer));
 
 			if (mLastBlock != null)
 			{
@@ -1111,6 +1407,7 @@ namespace GriffinPlus.Lib.Io
 		/// </summary>
 		/// <param name="buffer">Memory block to attach to the stream (null to clear the stream).</param>
 		/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <c>null</c>.</exception>
+		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		/// <remarks>
 		/// This method allows you to exchange the underlying memory block buffer.
 		/// The stream is reset, so the position is 0 after attaching the new buffer.
@@ -1119,6 +1416,9 @@ namespace GriffinPlus.Lib.Io
 		/// </remarks>
 		public void AttachBuffer(ChainableMemoryBlock buffer)
 		{
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
+
 			// exchange buffer
 			mFirstBlock = buffer;
 
@@ -1151,6 +1451,7 @@ namespace GriffinPlus.Lib.Io
 		/// Detaches the underlying memory block buffer from the stream.
 		/// </summary>
 		/// <returns>Underlying memory block buffer (can be a chained with other memory blocks).</returns>
+		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		/// <remarks>
 		/// This method allows you to detach the underlying buffer from the stream and use it in another place.
 		/// If blocks contain buffers that have been rented from an array pool, the returned block chain must
@@ -1158,6 +1459,9 @@ namespace GriffinPlus.Lib.Io
 		/// </remarks>
 		public ChainableMemoryBlock DetachBuffer()
 		{
+			if (mDisposed)
+				throw new ObjectDisposedException(nameof(MemoryBlockStream));
+
 			var buffer = mFirstBlock;
 			mFirstBlock = null;
 			mCurrentBlock = null;
@@ -1168,6 +1472,16 @@ namespace GriffinPlus.Lib.Io
 			mLength = 0;
 			return buffer;
 		}
+
+		#endregion
+
+		#region Access Points for Unit Tests
+
+		/// <summary>
+		/// Gets a value indicating whether the stream releases read buffers.
+		/// </summary>
+		// ReSharper disable once ConvertToAutoPropertyWhenPossible
+		internal bool ReleaseReadBlocks => mReleaseReadBlocks;
 
 		#endregion
 	}
