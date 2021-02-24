@@ -35,9 +35,9 @@ namespace GriffinPlus.Lib.Io
 	{
 		/// <summary>
 		/// Default size of block in the stream.
-		/// 64 kByte is small enough for the regular heap and avoids allocation from the large object heap.
+		/// 80 kByte is small enough for the regular heap and avoids allocation on the large object heap.
 		/// </summary>
-		private const int DefaultBlockSize = 64 * 1024;
+		private const int DefaultBlockSize = 80 * 1024;
 
 		private          long                 mPosition;
 		private          long                 mLength;
@@ -57,7 +57,7 @@ namespace GriffinPlus.Lib.Io
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class.
 		/// Buffers are allocated on the heap.
-		/// The block size defaults to 64 kByte.
+		/// The block size defaults to 80 kByte.
 		/// The stream is seekable and grows as data is written.
 		/// </summary>
 		public MemoryBlockStream() : this(DefaultBlockSize, null, false)
@@ -67,7 +67,7 @@ namespace GriffinPlus.Lib.Io
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class.
 		/// Buffers are rented from the specified array pool.
-		/// The block size defaults to 64 kByte.
+		/// The block size defaults to 80 kByte.
 		/// The stream is seekable and grows as data is written.
 		/// </summary>
 		/// <param name="pool">Array pool to use for allocating buffers.</param>
