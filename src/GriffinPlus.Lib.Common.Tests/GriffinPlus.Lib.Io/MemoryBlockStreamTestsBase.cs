@@ -6,6 +6,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -29,9 +30,11 @@ namespace GriffinPlus.Lib.Io
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MemoryBlockStreamTestsBase"/> class.
 		/// </summary>
-		/// <param name="usePool"></param>
-		protected MemoryBlockStreamTestsBase(bool usePool)
+		/// <param name="synchronized"><c>true</c> if the stream is synchronized; otherwise <c>false</c>.</param>
+		/// <param name="usePool"><c>true</c> if the stream uses buffer pooling; otherwise <c>false</c>.</param>
+		protected MemoryBlockStreamTestsBase(bool synchronized, bool usePool)
 		{
+			StreamIsSynchronized = synchronized;
 			if (usePool) BufferPool = new ArrayPoolMock();
 		}
 
@@ -41,7 +44,7 @@ namespace GriffinPlus.Lib.Io
 		public void Dispose()
 		{
 			// ensure that the stream has returned rented buffers to the pool
-			EnsureBuffersHaveBeenReturned();
+			EnsureBuffersHaveBeenReturned(0);
 		}
 
 		#region Test Specific Overrides
@@ -49,8 +52,9 @@ namespace GriffinPlus.Lib.Io
 		/// <summary>
 		/// Creates the <see cref="MemoryBlockStream"/> to test.
 		/// </summary>
-		/// <returns></returns>
-		protected abstract MemoryBlockStream CreateStreamToTest();
+		/// <param name="minimumBlockSize">Minimum size of a memory block in the stream (in bytes).</param>
+		/// <returns>The stream to test.</returns>
+		protected abstract MemoryBlockStream CreateStreamToTest(int minimumBlockSize = -1);
 
 		/// <summary>
 		/// Gets a value indicating whether the stream can seek.
@@ -61,6 +65,11 @@ namespace GriffinPlus.Lib.Io
 		/// Gets the expected size of a memory block in the stream.
 		/// </summary>
 		protected abstract int StreamMemoryBlockSize { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether the stream is synchronized.
+		/// </summary>
+		protected bool StreamIsSynchronized { get; }
 
 		/// <summary>
 		/// Gets the array pool used by the stream, if the stream uses pooled buffers.
@@ -84,6 +93,7 @@ namespace GriffinPlus.Lib.Io
 			Assert.True(stream.CanRead);
 			Assert.True(stream.CanWrite);
 			Assert.Equal(StreamCanSeek, stream.CanSeek);
+			Assert.Equal(StreamIsSynchronized, stream.IsSynchronized);
 
 			// check position and length of the stream
 			Assert.Equal(0, stream.Position);
@@ -100,7 +110,7 @@ namespace GriffinPlus.Lib.Io
 
 		#endregion
 
-		#region Flush()
+		#region void Flush()
 
 		/// <summary>
 		/// Tests flushing the stream using <see cref="MemoryBlockStream.Flush"/>
@@ -115,7 +125,7 @@ namespace GriffinPlus.Lib.Io
 
 		#endregion
 
-		#region FlushAsync()
+		#region Task FlushAsync()
 
 		/// <summary>
 		/// Tests flushing the stream using <see cref="MemoryBlockStream.FlushAsync(CancellationToken)"/>
@@ -130,101 +140,96 @@ namespace GriffinPlus.Lib.Io
 
 		#endregion
 
-		#region Read()
+		#region int Read(byte[],int,int)
 
 		/// <summary>
 		/// Prepares a chain of memory blocks, attaches it to the stream and reads the stream
 		/// using <see cref="MemoryBlockStream.Read(byte[],int,int)"/>.
 		/// </summary>
 		[Theory]
-		[InlineData(0)]            // empty stream
-		[InlineData(1)]            // stream with 1 byte in a single block
-		[InlineData(TestDataSize)] // huge stream with multiple blocks
-		public void Read_Buffer(int initialLength)
+		[InlineData(false, 0)]            // empty stream
+		[InlineData(false, 1)]            // stream with 1 byte in a single block
+		[InlineData(false, TestDataSize)] // huge stream with multiple blocks, read all in single operation
+		[InlineData(true, TestDataSize)]  // huge stream with multiple blocks, read in chunks
+		public void Read_Buffer(bool chunkedRead, int initialLength)
 		{
 			int Operation(MemoryBlockStream stream, byte[] readBuffer, ref int bytesToRead)
 			{
 				return stream.Read(readBuffer, 0, bytesToRead);
 			}
 
-			Read_Common(initialLength, Operation);
+			TestRead(initialLength, chunkedRead, Operation);
 		}
+
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.Read(byte[],int,int)"/> blocks, if the stream is synchronized,
+		/// and does not block, if the stream is not synchronized.
+		/// </summary>
+		[Fact]
+		public void Read_Buffer_WaitOnLockIfSynchronized()
+		{
+			void Operation(MemoryBlockStream stream)
+			{
+				byte[] buffer = new byte[1];
+				stream.Read(buffer, 0, buffer.Length);
+			}
+
+			TestWaitOnLockIfSynchronized(Operation);
+		}
+
+		#endregion
+
+		#region int Read(Span<byte>)
 
 		/// <summary>
 		/// Prepares a chain of memory blocks, attaches it to the stream and reads the stream
 		/// using <see cref="MemoryBlockStream.Read(Span{byte})"/>.
 		/// </summary>
 		[Theory]
-		[InlineData(0)]            // empty stream
-		[InlineData(1)]            // stream with 1 byte in a single block
-		[InlineData(TestDataSize)] // huge stream with multiple blocks
-		public void Read_Span(int initialLength)
+		[InlineData(false, 0)]            // empty stream
+		[InlineData(false, 1)]            // stream with 1 byte in a single block
+		[InlineData(false, TestDataSize)] // huge stream with multiple blocks, read all in single operation
+		[InlineData(true, TestDataSize)]  // huge stream with multiple blocks, read in chunks
+		public void Read_Span(bool chunkedRead, int initialLength)
 		{
 			int Operation(MemoryBlockStream stream, byte[] readBuffer, ref int bytesToRead)
 			{
 				return stream.Read(readBuffer.AsSpan(0, bytesToRead));
 			}
 
-			Read_Common(initialLength, Operation);
+			TestRead(initialLength, chunkedRead, Operation);
 		}
 
-		private delegate int ReadOperation(MemoryBlockStream Stream, byte[] readBuffer, ref int bytesToRead);
-
 		/// <summary>
-		/// Common test frame for synchronous read operations.
+		/// Checks whether <see cref="MemoryBlockStream.Read(Span{byte})"/> blocks, if the stream is synchronized,
+		/// and does not block, if the stream is not synchronized.
 		/// </summary>
-		/// <param name="initialLength">Initial length of the stream.</param>
-		/// <param name="operation">Operation that performs the read operation.</param>
-		private void Read_Common(int initialLength, ReadOperation operation)
+		[Fact]
+		public void Read_Span_WaitOnLockIfSynchronized()
 		{
-			// create a new stream
-			using (var stream = CreateStreamToTest())
+			void Operation(MemoryBlockStream stream)
 			{
-				// generate some test data and attach it to the stream
-				var chain = GetRandomTestDataChain(initialLength, StreamMemoryBlockSize, out var expectedData);
-				stream.AttachBuffer(chain);
-
-				// read data in chunks of random size
-				var random = new Random(0);
-				byte[] readBuffer = new byte[8 * 1024];
-				var readData = new List<byte>(expectedData.Count);
-				int remaining = expectedData.Count;
-				while (true)
-				{
-					int bytesToRead = random.Next(1, readBuffer.Length);
-					int bytesRead = operation(stream, readBuffer, ref bytesToRead);
-					int expectedByteRead = Math.Min(bytesToRead, remaining);
-					Assert.Equal(expectedByteRead, bytesRead);
-					if (bytesRead == 0) break;
-					readData.AddRange(readBuffer.Take(bytesRead));
-					remaining -= bytesRead;
-				}
-
-				// the stream has been read to the end
-				// it should be empty now and read data should equal the expected test data
-				Assert.Equal(expectedData.Count, stream.Position);
-				Assert.Equal(expectedData.Count, stream.Length);
-				Assert.Equal(expectedData, readData);
-
-				// the stream should have returned its buffers to the pool, if release-after-read is enabled
-				if (stream.ReleaseReadBlocks) EnsureBuffersHaveBeenReturned();
-				else if (initialLength > 0) EnsureBuffersHaveNotBeenReturned();
+				byte[] readBuffer = new byte[1];
+				stream.Read(readBuffer.AsSpan());
 			}
+
+			TestWaitOnLockIfSynchronized(Operation);
 		}
 
 		#endregion
 
-		#region ReadAsync()
+		#region int ReadAsync(byte[],int,int,CancellationToken)
 
 		/// <summary>
 		/// Prepares a chain of memory blocks, attaches it to the stream and reads the stream
 		/// using <see cref="MemoryBlockStream.ReadAsync(byte[],int,int,CancellationToken)"/>.
 		/// </summary>
 		[Theory]
-		[InlineData(0)]            // empty stream
-		[InlineData(1)]            // stream with 1 byte in a single block
-		[InlineData(TestDataSize)] // huge stream with multiple blocks
-		public async Task ReadAsync_Buffer(int initialLength)
+		[InlineData(false, 0)]            // empty stream
+		[InlineData(false, 1)]            // stream with 1 byte in a single block
+		[InlineData(false, TestDataSize)] // huge stream with multiple blocks, read all in single operation
+		[InlineData(true, TestDataSize)]  // huge stream with multiple blocks, read in chunks
+		public async Task ReadAsync_Buffer(bool chunkedRead, int initialLength)
 		{
 			async Task<int> Operation(MemoryBlockStream stream, byte[] readBuffer, int bytesToRead)
 			{
@@ -237,18 +242,45 @@ namespace GriffinPlus.Lib.Io
 				return readByteCount;
 			}
 
-			await ReadAsync_Common(initialLength, Operation).ConfigureAwait(false);
+			await TestReadAsync(initialLength, chunkedRead, Operation).ConfigureAwait(false);
 		}
+
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.ReadAsync(byte[],int,int,CancellationToken)"/> blocks,
+		/// if the stream is synchronized, and does not block, if the stream is not synchronized. Furthermore tests
+		/// cancellation, if the operation is blocked at the lock as well as cancellation with a pre-signaled token.
+		/// </summary>
+		[Fact]
+		public async Task ReadAsync_Buffer_WaitOnLockIfSynchronizedAndCancellation()
+		{
+			async Task Operation(MemoryBlockStream stream, CancellationToken cancellationToken)
+			{
+				byte[] readBuffer = new byte[1];
+				await stream.ReadAsync(
+						readBuffer,
+						0,
+						readBuffer.Length,
+						cancellationToken)
+					.ConfigureAwait(false);
+			}
+
+			await TestWaitOnLockIfSynchronizedAndCancellation(Operation).ConfigureAwait(false);
+		}
+
+		#endregion
+
+		#region int ReadAsync(Memory{byte},CancellationToken)
 
 		/// <summary>
 		/// Prepares a chain of memory blocks, attaches it to the stream and reads the stream
 		/// using <see cref="MemoryBlockStream.ReadAsync(Memory{byte},CancellationToken)"/>.
 		/// </summary>
 		[Theory]
-		[InlineData(0)]            // empty stream
-		[InlineData(1)]            // stream with 1 byte in a single block
-		[InlineData(TestDataSize)] // huge stream with multiple blocks
-		public async Task ReadAsync_Memory(int initialLength)
+		[InlineData(false, 0)]            // empty stream
+		[InlineData(false, 1)]            // stream with 1 byte in a single block
+		[InlineData(false, TestDataSize)] // huge stream with multiple blocks, read all in single operation
+		[InlineData(true, TestDataSize)]  // huge stream with multiple blocks, read in chunks
+		public async Task ReadAsync_Memory(bool chunkedRead, int initialLength)
 		{
 			async Task<int> Operation(MemoryBlockStream stream, byte[] readBuffer, int bytesToRead)
 			{
@@ -259,50 +291,31 @@ namespace GriffinPlus.Lib.Io
 				return readByteCount;
 			}
 
-			await ReadAsync_Common(initialLength, Operation).ConfigureAwait(false);
+			await TestReadAsync(initialLength, chunkedRead, Operation).ConfigureAwait(false);
 		}
 
 		/// <summary>
-		/// Common test frame for asynchronous read operations.
+		/// Checks whether <see cref="MemoryBlockStream.ReadAsync(byte[],int,int,CancellationToken)"/> blocks,
+		/// if the stream is synchronized, and does not block, if the stream is not synchronized. Furthermore tests
+		/// cancellation, if the operation is blocked at the lock as well as cancellation with a pre-signaled token.
 		/// </summary>
-		/// <param name="initialLength">Initial length of the stream.</param>
-		/// <param name="operation">Operation that performs the read operation.</param>
-		private async Task ReadAsync_Common(int initialLength, Func<MemoryBlockStream, byte[], int, Task<int>> operation)
+		[Fact]
+		public async Task ReadAsync_Memory_WaitOnLockIfSynchronizedAndCancellation()
 		{
-			// create a new stream
-			using (var stream = CreateStreamToTest())
+			async Task Operation(MemoryBlockStream stream, CancellationToken cancellationToken)
 			{
-				// generate some test data and attach it to the stream
-				var chain = GetRandomTestDataChain(initialLength, StreamMemoryBlockSize, out var expectedData);
-				stream.AttachBuffer(chain);
-
-				// read data in chunks of random size
-				var random = new Random(0);
-				byte[] readBuffer = new byte[8 * 1024];
-				var readData = new List<byte>(expectedData.Count);
-				while (true)
-				{
-					int bytesToRead = random.Next(1, readBuffer.Length);
-					int bytesRead = await operation(stream, readBuffer, bytesToRead).ConfigureAwait(false);
-					if (bytesRead == 0) break;
-					readData.AddRange(readBuffer.Take(bytesRead));
-				}
-
-				// the stream has been read to the end
-				// it should be empty now and read data should equal the expected test data
-				Assert.Equal(expectedData.Count, stream.Position);
-				Assert.Equal(expectedData.Count, stream.Length);
-				Assert.Equal(expectedData, readData);
-
-				// the stream should have returned its buffers to the pool, if release-after-read is enabled
-				if (stream.ReleaseReadBlocks) EnsureBuffersHaveBeenReturned();
-				else if (initialLength > 0) EnsureBuffersHaveNotBeenReturned();
+				byte[] readBuffer = new byte[1];
+				await stream
+					.ReadAsync(readBuffer.AsMemory(), cancellationToken)
+					.ConfigureAwait(false);
 			}
+
+			await TestWaitOnLockIfSynchronizedAndCancellation(Operation).ConfigureAwait(false);
 		}
 
 		#endregion
 
-		#region ReadByte()
+		#region int ReadByte()
 
 		/// <summary>
 		/// Prepares a chain of blocks, attaches it to the stream and reads the stream
@@ -323,12 +336,29 @@ namespace GriffinPlus.Lib.Io
 				return 1;
 			}
 
-			Read_Common(initialLength, Operation);
+			// test reading byte-wise
+			// (use chunked reading as the operation overrides the number of bytes to read)
+			TestRead(initialLength, true, Operation);
+		}
+
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.ReadByte"/> blocks, if the stream is synchronized,
+		/// and does not block, if the stream is not synchronized.
+		/// </summary>
+		[Fact]
+		public void ReadByte_WaitOnLockIfSynchronized()
+		{
+			void Operation(MemoryBlockStream stream)
+			{
+				stream.ReadByte();
+			}
+
+			TestWaitOnLockIfSynchronized(Operation);
 		}
 
 		#endregion
 
-		#region Write()
+		#region void Write(byte[],int,int)
 
 		/// <summary>
 		/// Writes a random set of bytes into the stream using <see cref="MemoryBlockStream.Write(byte[],int,int)"/>.
@@ -345,7 +375,7 @@ namespace GriffinPlus.Lib.Io
 				stream.Write(data, 0, data.Length);
 			}
 
-			Write_Common(count, Operation);
+			TestWrite(count, Operation);
 		}
 
 		/// <summary>
@@ -368,8 +398,28 @@ namespace GriffinPlus.Lib.Io
 				} while (offset < data.Length);
 			}
 
-			Write_Common(count, Operation);
+			TestWrite(count, Operation);
 		}
+
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.Write(byte[],int,int)"/> blocks, if the stream is synchronized,
+		/// and does not block, if the stream is not synchronized.
+		/// </summary>
+		[Fact]
+		public void Write_Buffer_WaitOnLockIfSynchronized()
+		{
+			void Operation(MemoryBlockStream stream)
+			{
+				byte[] data = new byte[1];
+				stream.Write(data, 0, data.Length);
+			}
+
+			TestWaitOnLockIfSynchronized(Operation);
+		}
+
+		#endregion
+
+		#region void Write(ReadOnlySpan<byte>)
 
 		/// <summary>
 		/// Writes a random set of bytes into the stream using <see cref="MemoryBlockStream.Write(ReadOnlySpan{byte})"/>.
@@ -386,7 +436,7 @@ namespace GriffinPlus.Lib.Io
 				stream.Write(data.AsSpan(0, data.Length));
 			}
 
-			Write_Common(count, Operation);
+			TestWrite(count, Operation);
 		}
 
 		/// <summary>
@@ -410,8 +460,28 @@ namespace GriffinPlus.Lib.Io
 				} while (offset < data.Length);
 			}
 
-			Write_Common(count, Operation);
+			TestWrite(count, Operation);
 		}
+
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.Write(ReadOnlySpan{byte})"/> blocks, if the stream is synchronized,
+		/// and does not block, if the stream is not synchronized.
+		/// </summary>
+		[Fact]
+		public void Write_ReadOnlySpan_WaitOnLockIfSynchronized()
+		{
+			void Operation(MemoryBlockStream stream)
+			{
+				byte[] data = new byte[1];
+				stream.Write(data.AsSpan(0, data.Length));
+			}
+
+			TestWaitOnLockIfSynchronized(Operation);
+		}
+
+		#endregion
+
+		#region long Write(Stream)
 
 		/// <summary>
 		/// Writes a random set of bytes into the stream using <see cref="MemoryBlockStream.Write(Stream)"/>.
@@ -424,45 +494,69 @@ namespace GriffinPlus.Lib.Io
 		{
 			void Operation(MemoryBlockStream stream, byte[] data)
 			{
-				stream.Write(new MemoryStream(data));
+				long bytesWritten = stream.Write(new MemoryStream(data));
+				Assert.Equal(data.Length, bytesWritten);
 			}
 
-			Write_Common(count, Operation);
+			TestWrite(count, Operation);
 		}
 
 		/// <summary>
-		/// Common test frame for synchronous write operations.
+		/// Checks whether <see cref="MemoryBlockStream.Write(Stream)"/> blocks, if the stream is synchronized,
+		/// and does not block, if the stream is not synchronized.
 		/// </summary>
-		/// <param name="count">Number of bytes to write to the stream.</param>
-		/// <param name="operation">Operation that performs the write operation.</param>
-		private void Write_Common(int count, Action<MemoryBlockStream, byte[]> operation)
+		[Fact]
+		public void Write_Stream_WaitOnLockIfSynchronized()
 		{
-			// create a new stream
-			using (var stream = CreateStreamToTest())
+			void Operation(MemoryBlockStream stream)
 			{
-				// generate some test data
-				using (GetRandomTestDataChain(count, StreamMemoryBlockSize, out var list))
-				{
-					byte[] data = list.ToArray();
-
-					// write data to the stream
-					operation(stream, data);
-
-					// the stream should contain the written data now
-					Assert.Equal(data.Length, stream.Position);
-					Assert.Equal(data.Length, stream.Length);
-					using (var detachedBuffer = stream.DetachBuffer())
-					{
-						if (count > 0) Assert.Equal(data, detachedBuffer.GetChainData());
-						else Assert.Null(detachedBuffer);
-					}
-				}
+				byte[] data = new byte[1];
+				long bytesWritten = stream.Write(new MemoryStream(data));
+				Assert.Equal(data.Length, bytesWritten);
 			}
+
+			TestWaitOnLockIfSynchronized(Operation);
 		}
 
 		#endregion
 
-		#region WriteAsync()
+		#region WriteByte()
+
+		/// <summary>
+		/// Writes a random set of bytes into the stream using <see cref="MemoryBlockStream.WriteByte"/>.
+		/// </summary>
+		[Theory]
+		[InlineData(0)]            // write empty buffer
+		[InlineData(1)]            // write buffer with 1 byte
+		[InlineData(TestDataSize)] // write huge buffer that results in multiple blocks in the stream
+		public void WriteByte(int count)
+		{
+			void Operation(MemoryBlockStream stream, byte[] data)
+			{
+				foreach (byte x in data) stream.WriteByte(x);
+			}
+
+			TestWrite(count, Operation);
+		}
+
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.WriteByte"/> blocks, if the stream is synchronized,
+		/// and does not block, if the stream is not synchronized.
+		/// </summary>
+		[Fact]
+		public void WriteByte_WaitOnLockIfSynchronized()
+		{
+			void Operation(MemoryBlockStream stream)
+			{
+				stream.WriteByte(0);
+			}
+
+			TestWaitOnLockIfSynchronized(Operation);
+		}
+
+		#endregion
+
+		#region Task WriteAsync(byte[],int,int,CancellationToken)
 
 		/// <summary>
 		/// Writes a random set of bytes into the stream using <see cref="MemoryBlockStream.WriteAsync(byte[],int,int,CancellationToken)"/>.
@@ -479,7 +573,7 @@ namespace GriffinPlus.Lib.Io
 				await stream.WriteAsync(data, 0, data.Length, CancellationToken.None).ConfigureAwait(false);
 			}
 
-			await WriteAsync_Common(count, Operation).ConfigureAwait(false);
+			await TestWriteAsync(count, Operation).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -509,8 +603,31 @@ namespace GriffinPlus.Lib.Io
 				} while (offset < data.Length);
 			}
 
-			await WriteAsync_Common(count, Operation).ConfigureAwait(false);
+			await TestWriteAsync(count, Operation).ConfigureAwait(false);
 		}
+
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.WriteAsync(byte[],int,int,CancellationToken)"/> blocks,
+		/// if the stream is synchronized, and does not block, if the stream is not synchronized. Furthermore tests
+		/// cancellation, if the operation is blocked at the lock as well as cancellation with a pre-signaled token.
+		/// </summary>
+		[Fact]
+		public async Task WriteAsync_Buffer_WaitOnLockIfSynchronizedAndCancellation()
+		{
+			async Task Operation(MemoryBlockStream stream, CancellationToken cancellationToken)
+			{
+				byte[] data = new byte[1];
+				await stream
+					.WriteAsync(data, 0, data.Length, cancellationToken)
+					.ConfigureAwait(false);
+			}
+
+			await TestWaitOnLockIfSynchronizedAndCancellation(Operation).ConfigureAwait(false);
+		}
+
+		#endregion
+
+		#region Task WriteAsync(ReadOnlyMemory<byte>,CancellationToken)
 
 		/// <summary>
 		/// Writes a random set of bytes into the stream using <see cref="MemoryBlockStream.WriteAsync(ReadOnlyMemory{byte},CancellationToken)"/>.
@@ -530,7 +647,7 @@ namespace GriffinPlus.Lib.Io
 					.ConfigureAwait(false);
 			}
 
-			await WriteAsync_Common(count, Operation).ConfigureAwait(false);
+			await TestWriteAsync(count, Operation).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -559,8 +676,32 @@ namespace GriffinPlus.Lib.Io
 				} while (offset < data.Length);
 			}
 
-			await WriteAsync_Common(count, Operation).ConfigureAwait(false);
+			await TestWriteAsync(count, Operation).ConfigureAwait(false);
 		}
+
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.WriteAsync(ReadOnlyMemory{byte},CancellationToken)"/> blocks,
+		/// if the stream is synchronized, and does not block, if the stream is not synchronized. Furthermore tests
+		/// cancellation, if the operation is blocked at the lock as well as cancellation with a pre-signaled token.
+		/// </summary>
+		[Fact]
+		public async Task WriteAsync_ReadOnlyMemory_WaitOnLockIfSynchronizedAndCancellation()
+		{
+			async Task Operation(MemoryBlockStream stream, CancellationToken cancellationToken)
+			{
+				byte[] data = new byte[1];
+				await stream.WriteAsync(
+						data.AsMemory(0, data.Length),
+						cancellationToken)
+					.ConfigureAwait(false);
+			}
+
+			await TestWaitOnLockIfSynchronizedAndCancellation(Operation).ConfigureAwait(false);
+		}
+
+		#endregion
+
+		#region Task WriteAsync(Stream,CancellationToken)
 
 		/// <summary>
 		/// Writes a random set of bytes into the stream using <see cref="MemoryBlockStream.WriteAsync(Stream,CancellationToken)"/>.
@@ -579,67 +720,36 @@ namespace GriffinPlus.Lib.Io
 					.ConfigureAwait(false);
 			}
 
-			await WriteAsync_Common(count, Operation).ConfigureAwait(false);
+			await TestWriteAsync(count, Operation).ConfigureAwait(false);
 		}
 
 		/// <summary>
-		/// Common test frame for asynchronous write operations.
+		/// Checks whether <see cref="MemoryBlockStream.WriteAsync(Stream,CancellationToken)"/> blocks,
+		/// if the stream is synchronized, and does not block, if the stream is not synchronized. Furthermore tests
+		/// cancellation, if the operation is blocked at the lock as well as cancellation with a pre-signaled token.
 		/// </summary>
-		/// <param name="count">Number of bytes to write to the stream.</param>
-		/// <param name="operation">Operation that performs the write operation.</param>
-		private async Task WriteAsync_Common(int count, Func<MemoryBlockStream, byte[], Task> operation)
+		[Fact]
+		public async Task WriteAsync_Stream_WaitOnLockIfSynchronizedAndCancellation()
 		{
-			// create a new stream
-			using (var stream = CreateStreamToTest())
+			async Task Operation(MemoryBlockStream stream, CancellationToken cancellationToken)
 			{
-				// generate some test data
-				using (GetRandomTestDataChain(count, StreamMemoryBlockSize, out var list))
-				{
-					byte[] data = list.ToArray();
-
-					// write the buffer
-					await operation(stream, data).ConfigureAwait(false);
-
-					// the stream should contain the written data now
-					Assert.Equal(data.Length, stream.Position);
-					Assert.Equal(data.Length, stream.Length);
-					using (var detachedBuffer = stream.DetachBuffer())
-					{
-						if (count > 0) Assert.Equal(data, detachedBuffer.GetChainData());
-						else Assert.Null(detachedBuffer);
-					}
-				}
+				byte[] data = new byte[1];
+				await stream.WriteAsync(
+						new MemoryStream(data),
+						cancellationToken)
+					.ConfigureAwait(false);
 			}
+
+			await TestWaitOnLockIfSynchronizedAndCancellation(Operation).ConfigureAwait(false);
 		}
 
 		#endregion
 
-		#region WriteByte()
-
-		/// <summary>
-		/// Writes a random set of bytes into the stream using <see cref="MemoryBlockStream.WriteByte"/>.
-		/// </summary>
-		[Theory]
-		[InlineData(0)]            // write empty buffer
-		[InlineData(1)]            // write buffer with 1 byte
-		[InlineData(TestDataSize)] // write huge buffer that results in multiple blocks in the stream
-		public void WriteByte(int count)
-		{
-			void Operation(MemoryBlockStream stream, byte[] data)
-			{
-				foreach (byte x in data) stream.WriteByte(x);
-			}
-
-			Write_Common(count, Operation);
-		}
-
-		#endregion
-
-		#region CopyTo()
+		#region void CopyTo()
 
 		/// <summary>
 		/// Copies a random set of bytes into the stream and copies the stream to another stream
-		/// using <see cref="MemoryBlockStream.CopyTo(Stream)"/>.
+		/// using <see cref="MemoryBlockStream.CopyTo(System.IO.Stream,int)"/>.
 		/// </summary>
 		[Theory]
 		[InlineData(0)]            // write empty buffer
@@ -675,9 +785,25 @@ namespace GriffinPlus.Lib.Io
 			}
 		}
 
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.CopyTo(System.IO.Stream,int)"/> blocks, if the stream is synchronized,
+		/// and does not block, if the stream is not synchronized.
+		/// </summary>
+		[Fact]
+		public void CopyTo_WaitOnLockIfSynchronized()
+		{
+			void Operation(MemoryBlockStream stream)
+			{
+				var otherStream = new MemoryStream();
+				stream.CopyTo(otherStream, 8 * 1024);
+			}
+
+			TestWaitOnLockIfSynchronized(Operation);
+		}
+
 		#endregion
 
-		#region CopyToAsync()
+		#region Task CopyToAsync()
 
 		/// <summary>
 		/// Copies a random set of bytes into the stream and copies the stream to another stream
@@ -698,7 +824,7 @@ namespace GriffinPlus.Lib.Io
 					byte[] data = list.ToArray();
 
 					// attach chain of blocks to the stream
-					stream.AttachBuffer(chain);
+					await stream.AttachBufferAsync(chain).ConfigureAwait(false);
 
 					// copy the stream to another stream
 					var otherStream = new MemoryStream();
@@ -721,9 +847,30 @@ namespace GriffinPlus.Lib.Io
 			}
 		}
 
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.CopyToAsync(Stream,int,CancellationToken)"/> blocks,
+		/// if the stream is synchronized, and does not block, if the stream is not synchronized. Furthermore tests
+		/// cancellation, if the operation is blocked at the lock as well as cancellation with a pre-signaled token.
+		/// </summary>
+		[Fact]
+		public async Task CopyToAsync_WaitOnLockIfSynchronizedAndCancellation()
+		{
+			async Task Operation(MemoryBlockStream stream, CancellationToken cancellationToken)
+			{
+				var otherStream = new MemoryStream();
+				await stream.CopyToAsync(
+						otherStream,
+						8 * 1024,
+						cancellationToken)
+					.ConfigureAwait(false);
+			}
+
+			await TestWaitOnLockIfSynchronizedAndCancellation(Operation).ConfigureAwait(false);
+		}
+
 		#endregion
 
-		#region AttachBuffer()
+		#region void AttachBuffer()
 
 		/// <summary>
 		/// Attaches a prepared chain of memory blocks to the stream using <see cref="MemoryBlockStream.AttachBuffer"/>.
@@ -744,9 +891,74 @@ namespace GriffinPlus.Lib.Io
 			}
 		}
 
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.AttachBuffer"/> blocks, if the stream is synchronized,
+		/// and does not block, if the stream is not synchronized.
+		/// </summary>
+		[Fact]
+		public void AttachBuffer_WaitOnLockIfSynchronized()
+		{
+			void Operation(MemoryBlockStream stream)
+			{
+				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				stream.AttachBuffer(chain);
+			}
+
+			TestWaitOnLockIfSynchronized(Operation);
+		}
+
 		#endregion
 
-		#region DetachBuffer()
+		#region Task AttachBufferAsync()
+
+		/// <summary>
+		/// Attaches a prepared chain of memory blocks to the stream using <see cref="MemoryBlockStream.AttachBufferAsync"/>.
+		/// </summary>
+		[Fact]
+		public async Task AttachBufferAsync()
+		{
+			// create a new stream
+			using (var stream = CreateStreamToTest())
+			{
+				// generate some test data and attach the buffer to the stream
+				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				await stream.AttachBufferAsync(chain, CancellationToken.None).ConfigureAwait(false);
+
+				// the stream's properties should reflect the new buffer
+				Assert.Equal(0, stream.Position);
+				Assert.Equal(data.Count, stream.Length);
+			}
+		}
+
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.AttachBufferAsync"/> blocks,
+		/// if the stream is synchronized, and does not block, if the stream is not synchronized. Furthermore tests
+		/// cancellation, if the operation is blocked at the lock as well as cancellation with a pre-signaled token.
+		/// </summary>
+		[Fact]
+		public async Task AttachBufferAsync_WaitOnLockIfSynchronizedAndCancellation()
+		{
+			async Task Operation(MemoryBlockStream stream, CancellationToken cancellationToken)
+			{
+				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				try
+				{
+					await stream.AttachBufferAsync(chain, cancellationToken).ConfigureAwait(false);
+				}
+				catch
+				{
+					Assert.Null(chain.Previous); // the chain should not have been linked to the chain of blocks backing the stream
+					chain.ReleaseChain();
+					throw;
+				}
+			}
+
+			await TestWaitOnLockIfSynchronizedAndCancellation(Operation).ConfigureAwait(false);
+		}
+
+		#endregion
+
+		#region ChainableMemoryBlock DetachBuffer()
 
 		/// <summary>
 		/// Detaches the chain of memory blocks from the stream using <see cref="MemoryBlockStream.DetachBuffer"/>.
@@ -781,9 +993,83 @@ namespace GriffinPlus.Lib.Io
 			}
 		}
 
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.DetachBuffer"/> blocks, if the stream is synchronized,
+		/// and does not block, if the stream is not synchronized.
+		/// </summary>
+		[Fact]
+		public void DetachBuffer_WaitOnLockIfSynchronized()
+		{
+			void Operation(MemoryBlockStream stream)
+			{
+				// stream is empty, but that's irrelevant for the locking behavior
+				using (var firstBlock = stream.DetachBuffer())
+				{
+				}
+			}
+
+			TestWaitOnLockIfSynchronized(Operation);
+		}
+
 		#endregion
 
-		#region AppendBuffer()
+		#region ChainableMemoryBlock DetachBufferAsync(CancellationToken)
+
+		/// <summary>
+		/// Detaches the chain of memory blocks from the stream using <see cref="MemoryBlockStream.DetachBufferAsync"/>.
+		/// </summary>
+		[Fact]
+		public async Task DetachBufferAsync()
+		{
+			// create a new stream
+			using (var stream = CreateStreamToTest())
+			{
+				// generate some test data and pass ownership to the stream
+				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				await stream.AttachBufferAsync(chain).ConfigureAwait(false);
+
+				// the stream's properties should reflect the new buffer
+				Assert.Equal(0, stream.Position);
+				Assert.Equal(data.Count, stream.Length);
+
+				// detach the buffer, should be the same as attached
+				using (var firstBlock = await stream.DetachBufferAsync(CancellationToken.None).ConfigureAwait(false))
+				{
+					Assert.Same(chain, firstBlock);
+
+					// the stream should be empty now
+					Assert.Equal(0, stream.Position);
+					Assert.Equal(0, stream.Length);
+
+					// check whether the detached buffer contains the same data as the attached buffer
+					// (ensures that the stream did not modify it during the procedure)
+					Assert.Equal(data, firstBlock.GetChainData());
+				}
+			}
+		}
+
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.DetachBufferAsync"/> blocks,
+		/// if the stream is synchronized, and does not block, if the stream is not synchronized. Furthermore tests
+		/// cancellation, if the operation is blocked at the lock as well as cancellation with a pre-signaled token.
+		/// </summary>
+		[Fact]
+		public async Task DetachBufferAsync_WaitOnLockIfSynchronized()
+		{
+			async Task Operation(MemoryBlockStream stream, CancellationToken cancellationToken)
+			{
+				// stream is empty, but that's irrelevant for the locking behavior
+				using (var firstBlock = await stream.DetachBufferAsync(cancellationToken).ConfigureAwait(false))
+				{
+				}
+			}
+
+			await TestWaitOnLockIfSynchronizedAndCancellation(Operation).ConfigureAwait(false);
+		}
+
+		#endregion
+
+		#region void AppendBuffer(ChainableMemoryBlock)
 
 		/// <summary>
 		/// Appends a memory block to the stream using <see cref="MemoryBlockStream.AppendBuffer"/>.
@@ -841,9 +1127,420 @@ namespace GriffinPlus.Lib.Io
 			}
 		}
 
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.AppendBuffer"/> blocks, if the stream is synchronized,
+		/// and does not block, if the stream is not synchronized.
+		/// </summary>
+		[Fact]
+		public void AppendBuffer_WaitOnLockIfSynchronized()
+		{
+			void Operation(MemoryBlockStream stream)
+			{
+				// stream is empty, but that's irrelevant for the locking behavior
+				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data1);
+				stream.AppendBuffer(chain);
+			}
+
+			TestWaitOnLockIfSynchronized(Operation);
+		}
+
 		#endregion
 
-		#region Generating Test Data
+		#region Task AppendBufferAsync(ChainableMemoryBlock,CancellationToken)
+
+		/// <summary>
+		/// Appends a memory block to the stream using <see cref="MemoryBlockStream.AppendBufferAsync"/>.
+		/// The initial stream is empty.
+		/// </summary>
+		[Fact]
+		public async Task AppendBufferAsync_EmptyStream()
+		{
+			// create a new stream
+			using (var stream = CreateStreamToTest())
+			{
+				// generate some test data
+				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+
+				// append the second buffer
+				await stream.AppendBufferAsync(chain, CancellationToken.None);
+
+				// the stream should contain data from both buffers
+				Assert.Equal(0, stream.Position);
+				Assert.Equal(data.Count, stream.Length);
+				using (var detachedBuffer = await stream.DetachBufferAsync().ConfigureAwait(false))
+				{
+					Assert.Equal(data, detachedBuffer.GetChainData());
+				}
+			}
+		}
+
+		/// <summary>
+		/// Appends a memory block to the stream using <see cref="MemoryBlockStream.AppendBufferAsync"/>.
+		/// The initial stream contains some data.
+		/// </summary>
+		[Fact]
+		public async Task AppendBufferAsync_NonEmptyStream()
+		{
+			// create a new stream
+			using (var stream = CreateStreamToTest())
+			{
+				// generate some test data
+				var chain1 = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data1);
+				var chain2 = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data2);
+
+				// attach the first buffer to the stream
+				await stream.AttachBufferAsync(chain1, CancellationToken.None).ConfigureAwait(false);
+
+				// append the second buffer
+				await stream.AppendBufferAsync(chain2, CancellationToken.None).ConfigureAwait(false);
+
+				// the stream should contain data from both buffers
+				Assert.Equal(0, stream.Position);
+				Assert.Equal(data1.Count + data2.Count, stream.Length);
+				using (var detachedBuffer = await stream.DetachBufferAsync().ConfigureAwait(false))
+				{
+					Assert.Equal(data1.Concat(data2), detachedBuffer.GetChainData());
+				}
+			}
+		}
+
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.AppendBufferAsync"/> blocks,
+		/// if the stream is synchronized, and does not block, if the stream is not synchronized. Furthermore tests
+		/// cancellation, if the operation is blocked at the lock as well as cancellation with a pre-signaled token.
+		/// </summary>
+		[Fact]
+		public async Task AppendBufferAsync_WaitOnLockIfSynchronized()
+		{
+			async Task Operation(MemoryBlockStream stream, CancellationToken cancellationToken)
+			{
+				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				try
+				{
+					await stream.AppendBufferAsync(chain, cancellationToken).ConfigureAwait(false);
+				}
+				catch
+				{
+					Assert.Null(chain.Previous); // the chain should not have been linked to the chain of blocks backing the stream
+					chain.ReleaseChain();
+					throw;
+				}
+			}
+
+			await TestWaitOnLockIfSynchronizedAndCancellation(Operation).ConfigureAwait(false);
+		}
+
+		#endregion
+
+		#region [[ Read Test Frames ]]
+
+		private delegate int ReadOperation(MemoryBlockStream stream, byte[] readBuffer, ref int bytesToRead);
+
+		/// <summary>
+		/// Common test frame for synchronous read operations.
+		/// </summary>
+		/// <param name="initialLength">Initial length of the stream.</param>
+		/// <param name="randomChunks">
+		/// <c>true</c> to read in chunks of random size;
+		/// <c>false</c> to read the entire stream at once.
+		/// </param>
+		/// <param name="operation">Operation that performs the read operation.</param>
+		private void TestRead(int initialLength, bool randomChunks, ReadOperation operation)
+		{
+			// create a new stream
+			using (var stream = CreateStreamToTest())
+			{
+				// generate some test data and attach it to the stream
+				var chain = GetRandomTestDataChain(initialLength, StreamMemoryBlockSize, out var expectedData);
+				stream.AttachBuffer(chain);
+
+				var readData = new List<byte>(expectedData.Count);
+				if (randomChunks)
+				{
+					// read data in chunks of random size
+					var random = new Random(0);
+					byte[] readBuffer = new byte[8 * 1024];
+					int remaining = expectedData.Count;
+					while (true)
+					{
+						int bytesToRead = random.Next(1, readBuffer.Length);
+						int bytesRead = operation(stream, readBuffer, ref bytesToRead);
+						int expectedByteRead = Math.Min(bytesToRead, remaining);
+						Assert.Equal(expectedByteRead, bytesRead);
+						if (bytesRead == 0) break;
+						readData.AddRange(readBuffer.Take(bytesRead));
+						remaining -= bytesRead;
+					}
+				}
+				else
+				{
+					// read entire stream at once
+					byte[] readBuffer = new byte[expectedData.Count + 1];
+					int bytesToRead = readBuffer.Length;
+					int bytesRead = operation(stream, readBuffer, ref bytesToRead); // operation should not override bytesToRead
+					readData.AddRange(readBuffer.Take(bytesRead));
+				}
+
+				// the stream has been read to the end
+				// it should be empty now and read data should equal the expected test data
+				Assert.Equal(expectedData.Count, stream.Position);
+				Assert.Equal(expectedData.Count, stream.Length);
+				Assert.Equal(expectedData, readData);
+
+				// the stream should have returned its buffers to the pool, if release-after-read is enabled
+				if (initialLength > 0)
+				{
+					if (stream.ReleaseReadBlocks) EnsureBuffersHaveBeenReturned(1);
+					else EnsureBuffersHaveNotBeenReturned();
+				}
+				else
+				{
+					EnsureBuffersHaveBeenReturned(0);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Common test frame for asynchronous read operations.
+		/// </summary>
+		/// <param name="initialLength">Initial length of the stream.</param>
+		/// <param name="randomChunks">
+		/// <c>true</c> to read in chunks of random size;
+		/// <c>false</c> to read the entire stream at once.
+		/// </param>
+		/// <param name="operation">Operation that performs the read operation.</param>
+		private async Task TestReadAsync(int initialLength, bool randomChunks, Func<MemoryBlockStream, byte[], int, Task<int>> operation)
+		{
+			// create a new stream
+			using (var stream = CreateStreamToTest())
+			{
+				// generate some test data and attach it to the stream
+				var chain = GetRandomTestDataChain(initialLength, StreamMemoryBlockSize, out var expectedData);
+				await stream.AttachBufferAsync(chain).ConfigureAwait(false);
+
+				var readData = new List<byte>(expectedData.Count);
+				if (randomChunks)
+				{
+					// read data in chunks of random size
+					var random = new Random(0);
+					byte[] readBuffer = new byte[8 * 1024];
+					while (true)
+					{
+						int bytesToRead = random.Next(1, readBuffer.Length);
+						int bytesRead = await operation(stream, readBuffer, bytesToRead).ConfigureAwait(false);
+						if (bytesRead == 0) break;
+						readData.AddRange(readBuffer.Take(bytesRead));
+					}
+				}
+				else
+				{
+					// read entire stream at once
+					byte[] readBuffer = new byte[expectedData.Count + 1];
+					int bytesToRead = readBuffer.Length;
+					int bytesRead = await operation(stream, readBuffer, bytesToRead).ConfigureAwait(false);
+					readData.AddRange(readBuffer.Take(bytesRead));
+				}
+
+				// the stream has been read to the end
+				// it should be empty now and read data should equal the expected test data
+				Assert.Equal(expectedData.Count, stream.Position);
+				Assert.Equal(expectedData.Count, stream.Length);
+				Assert.Equal(expectedData, readData);
+
+				// the stream should have returned its buffers to the pool, if release-after-read is enabled
+				if (initialLength > 0)
+				{
+					if (stream.ReleaseReadBlocks) EnsureBuffersHaveBeenReturned(1);
+					else EnsureBuffersHaveNotBeenReturned();
+				}
+				else
+				{
+					EnsureBuffersHaveBeenReturned(0);
+				}
+			}
+		}
+
+		#endregion
+
+		#region [[ Write Test Frames ]]
+
+		/// <summary>
+		/// Common test frame for synchronous write operations.
+		/// </summary>
+		/// <param name="count">Number of bytes to write to the stream.</param>
+		/// <param name="operation">Operation that performs the write operation.</param>
+		private void TestWrite(int count, Action<MemoryBlockStream, byte[]> operation)
+		{
+			// create a new stream
+			using (var stream = CreateStreamToTest())
+			{
+				// generate some test data
+				using (GetRandomTestDataChain(count, StreamMemoryBlockSize, out var list))
+				{
+					byte[] data = list.ToArray();
+
+					// write data to the stream
+					operation(stream, data);
+
+					// the stream should contain the written data now
+					Assert.Equal(data.Length, stream.Position);
+					Assert.Equal(data.Length, stream.Length);
+					using (var detachedBuffer = stream.DetachBuffer())
+					{
+						if (count > 0) Assert.Equal(data, detachedBuffer.GetChainData());
+						else Assert.Null(detachedBuffer);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Common test frame for asynchronous write operations.
+		/// </summary>
+		/// <param name="count">Number of bytes to write to the stream.</param>
+		/// <param name="operation">Operation that performs the write operation.</param>
+		private async Task TestWriteAsync(int count, Func<MemoryBlockStream, byte[], Task> operation)
+		{
+			// create a new stream
+			using (var stream = CreateStreamToTest())
+			{
+				// generate some test data
+				using (GetRandomTestDataChain(count, StreamMemoryBlockSize, out var list))
+				{
+					byte[] data = list.ToArray();
+
+					// write the buffer
+					await operation(stream, data).ConfigureAwait(false);
+
+					// the stream should contain the written data now
+					Assert.Equal(data.Length, stream.Position);
+					Assert.Equal(data.Length, stream.Length);
+					using (var detachedBuffer = await stream.DetachBufferAsync().ConfigureAwait(false))
+					{
+						if (count > 0) Assert.Equal(data, detachedBuffer.GetChainData());
+						else Assert.Null(detachedBuffer);
+					}
+				}
+			}
+		}
+
+		#endregion
+
+		#region [[ Lock/Cancellation Test Frames ]]
+
+		/// <summary>
+		/// Common test for checking the locking behavior of synchronous methods.
+		/// </summary>
+		public void TestWaitOnLockIfSynchronized(Action<MemoryBlockStream> operation)
+		{
+			using (var stream = CreateStreamToTest())
+			{
+				Assert.Equal(StreamIsSynchronized, stream.IsSynchronized);
+
+				// acquire the stream lock
+				stream.EnterLock();
+
+				// schedule releasing the lock
+				var timeToWait = TimeSpan.FromSeconds(5);
+				var delayUnlockTask = Task.Delay(timeToWait).ContinueWith((task, obj) => ((MemoryBlockStream)obj).ExitLock(), stream);
+
+				// start stop watch
+				var watch = new Stopwatch();
+				watch.Start();
+
+				// invoke stream operation (should block)
+				operation(stream);
+
+				// stop stopwatch and check whether the read method has really blocked
+				watch.Stop();
+				if (StreamIsSynchronized)
+				{
+					Assert.True(watch.Elapsed >= timeToWait - TimeSpan.FromMilliseconds(100)); // -100ms to handle time jitter
+				}
+				else
+				{
+					// stream is not synchronized => reading should complete instantly
+					Assert.True(watch.Elapsed < TimeSpan.FromMilliseconds(1000)); // -1000ms to handle undeterministic delays on the CI server
+				}
+
+				// wait for the stream to get unlocked
+				// (should already be done, if everything runs fine...)
+				delayUnlockTask.Wait();
+			}
+		}
+
+		/// <summary>
+		/// Common test for checking the locking/cancellation behavior of asynchronous methods.
+		/// </summary>
+		public async Task TestWaitOnLockIfSynchronizedAndCancellation(Func<MemoryBlockStream, CancellationToken, Task> operation)
+		{
+			var timeToWait = TimeSpan.FromSeconds(5);
+
+			using (var stream = CreateStreamToTest())
+			{
+				Assert.Equal(StreamIsSynchronized, stream.IsSynchronized);
+
+				#region Test cancellation with pre-signaled cancellation token (synchronized/unsynchronized streams)
+
+				{
+					var ct = new CancellationToken(true);
+					await Assert.ThrowsAnyAsync<OperationCanceledException>(() => operation(stream, ct)).ConfigureAwait(false);
+				}
+
+				#endregion
+
+				#region Test cancellation with delay-signaled cancellation token (synchronized streams only)
+
+				{
+					if (StreamIsSynchronized)
+					{
+						stream.EnterLock();
+						var delayUnlockTask = Task.Delay(timeToWait).ContinueWith((task, obj) => ((MemoryBlockStream)obj).ExitLock(), stream);
+						var cts = new CancellationTokenSource(1000);
+						await Assert.ThrowsAnyAsync<OperationCanceledException>(() => operation(stream, cts.Token)).ConfigureAwait(false);
+						await delayUnlockTask.ConfigureAwait(false);
+					}
+				}
+
+				#endregion
+
+				#region Test locking
+
+				{
+					// start stop watch
+					var watch = new Stopwatch();
+					watch.Start();
+
+					// acquire the stream lock
+					stream.EnterLock();
+
+					// invoke stream operation (should block)
+					var delayUnlockTask = Task.Delay(timeToWait).ContinueWith((task, obj) => ((MemoryBlockStream)obj).ExitLock(), stream);
+					await operation(stream, CancellationToken.None).ConfigureAwait(false);
+
+					// stop stopwatch and check whether the read method has really blocked
+					watch.Stop();
+					if (StreamIsSynchronized)
+					{
+						Assert.True(watch.Elapsed >= timeToWait - TimeSpan.FromMilliseconds(100)); // -100ms to handle time jitter
+					}
+					else
+					{
+						// stream is not synchronized => reading should complete instantly
+						Assert.True(watch.Elapsed < TimeSpan.FromMilliseconds(1000)); // -1000ms to handle undeterministic delays on the CI server
+					}
+
+					// wait for the unlock task to complete
+					await delayUnlockTask.ConfigureAwait(false);
+				}
+
+				#endregion
+			}
+		}
+
+		#endregion
+
+		#region [[ Generating Test Data ]]
 
 		/// <summary>
 		/// Gets some random test data packed into a chain of memory blocks that can be attached to a memory block stream.
@@ -870,10 +1567,10 @@ namespace GriffinPlus.Lib.Io
 				// allocate or rent a buffer 
 				// (buffer may be larger than requested, if rented from the pool)
 				var block = new ChainableMemoryBlock(blockSize, BufferPool, false);
-				random.NextBytes(block.InternalBuffer);
+				random.NextBytes(block.Buffer);
 				block.Length = Math.Min(remaining, block.Capacity);
-				if (previousBlock != null) previousBlock.InternalNext = block;
-				data.AddRange(block.InternalBuffer.Take(block.Length));
+				if (previousBlock != null) previousBlock.Next = block;
+				data.AddRange(block.Buffer.Take(block.Length));
 				remaining -= block.Length;
 				if (firstBlock == null) firstBlock = block;
 				previousBlock = block;
@@ -884,16 +1581,16 @@ namespace GriffinPlus.Lib.Io
 
 		#endregion
 
-		#region Rented Buffer Checks
+		#region [[ Rented Buffer Checks ]]
 
 		/// <summary>
 		/// Checks whether all buffers have been returned to the array pool, if applicable.
 		/// </summary>
-		protected void EnsureBuffersHaveBeenReturned()
+		protected void EnsureBuffersHaveBeenReturned(int expectedBufferCount)
 		{
 			if (BufferPool != null)
 			{
-				Assert.Equal(0, BufferPool.RentedBufferCount);
+				Assert.Equal(expectedBufferCount, BufferPool.RentedBufferCount);
 			}
 		}
 
@@ -910,7 +1607,7 @@ namespace GriffinPlus.Lib.Io
 
 		#endregion
 
-		#region Array Pool Mock
+		#region [[ Array Pool Mock ]]
 
 		protected class ArrayPoolMock : ArrayPool<byte>
 		{

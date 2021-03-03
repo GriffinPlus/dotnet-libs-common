@@ -4,6 +4,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 
 using Xunit;
 
@@ -94,6 +95,207 @@ namespace GriffinPlus.Lib.Io
 			block1.Next = block2;
 			Assert.Equal(30, block1.ChainLength);
 			Assert.Equal(20, block2.ChainLength);
+		}
+
+		/// <summary>
+		/// Chains two memory blocks using <see cref="ChainableMemoryBlock.Previous"/>
+		/// and determines whether <see cref="ChainableMemoryBlock.Previous"/> and <see cref="ChainableMemoryBlock.Next"/> are set appropriately.
+		/// </summary>
+		[Fact]
+		public void Previous()
+		{
+			// create chain of two blocks
+			var block1 = new ChainableMemoryBlock(100);
+			var block2 = new ChainableMemoryBlock(100);
+			block2.Previous = block1;
+
+			// check previous/next of block1
+			Assert.Null(block1.Previous);
+			Assert.Same(block2, block1.Next);
+
+			// check previous/next of block2
+			Assert.Same(block1, block2.Previous);
+			Assert.Null(block2.Next);
+		}
+
+		/// <summary>
+		/// Chains two memory blocks using <see cref="ChainableMemoryBlock.Next"/>
+		/// and determines whether <see cref="ChainableMemoryBlock.Previous"/> and <see cref="ChainableMemoryBlock.Next"/> are set appropriately.
+		/// </summary>
+		[Fact]
+		public void Next()
+		{
+			// create chain of two blocks
+			var block1 = new ChainableMemoryBlock(100);
+			var block2 = new ChainableMemoryBlock(100);
+			block1.Next = block2;
+
+			// check previous/next of block1
+			Assert.Null(block1.Previous);
+			Assert.Same(block2, block1.Next);
+
+			// check previous/next of block2
+			Assert.Same(block1, block2.Previous);
+			Assert.Null(block2.Next);
+		}
+
+		/// <summary>
+		/// Chains multiple blocks and tries to get the first block of the chain using <see cref="ChainableMemoryBlock.GetStartOfChain()"/>.
+		/// </summary>
+		/// <param name="chainLength">Initial length of the chain.</param>
+		/// <param name="startIndex">Index of the block to start at.</param>
+		[Theory]
+		[InlineData(1, 0)] // single block
+		[InlineData(5, 0)] // multiple blocks, start at first block
+		[InlineData(5, 1)] // multiple blocks, start left of in the middle
+		[InlineData(5, 3)] // multiple blocks, start right of in the middle
+		[InlineData(5, 4)] // multiple blocks, start at last block
+		public void GetStartOfChain_WithoutLength(int chainLength, int startIndex)
+		{
+			// create chain of blocks
+			var blocks = new ChainableMemoryBlock[chainLength];
+			for (int i = 0; i < chainLength; i++)
+			{
+				blocks[i] = new ChainableMemoryBlock(100)
+				{
+					Length = 10,
+					Previous = i > 0 ? blocks[i - 1] : null
+				};
+			}
+
+			// get the first block of the chain
+			var block = blocks[startIndex].GetStartOfChain();
+			Assert.Same(blocks[0], block);
+		}
+
+		/// <summary>
+		/// Chains multiple blocks and tries to get the first block of the chain using <see cref="ChainableMemoryBlock.GetStartOfChain(out long)"/>.
+		/// </summary>
+		/// <param name="chainLength">Initial length of the chain.</param>
+		/// <param name="startIndex">Index of the block to start at.</param>
+		[Theory]
+		[InlineData(1, 0)] // single block
+		[InlineData(5, 0)] // multiple blocks, start at first block
+		[InlineData(5, 1)] // multiple blocks, start left of in the middle
+		[InlineData(5, 3)] // multiple blocks, start right of in the middle
+		[InlineData(5, 4)] // multiple blocks, start at last block
+		public void GetStartOfChain_WithLength(int chainLength, int startIndex)
+		{
+			// create chain of blocks
+			var blocks = new ChainableMemoryBlock[chainLength];
+			for (int i = 0; i < chainLength; i++)
+			{
+				blocks[i] = new ChainableMemoryBlock(100)
+				{
+					Length = 10,
+					Previous = i > 0 ? blocks[i - 1] : null
+				};
+			}
+
+			// calculate the expected accumulated length of the chain
+			long expectedAccumulatedLength = 10 * (startIndex + 1);
+
+			// get the first block of the chain and the accumulated length of all blocks on the way
+			var block = blocks[startIndex].GetStartOfChain(out long accumulatedLength);
+			Assert.Same(blocks[0], block);
+			Assert.Equal(expectedAccumulatedLength, accumulatedLength);
+		}
+
+		/// <summary>
+		/// Chains multiple blocks and tries to get the last block of the chain using <see cref="ChainableMemoryBlock.GetEndOfChain()"/>.
+		/// </summary>
+		/// <param name="chainLength">Initial length of the chain.</param>
+		/// <param name="startIndex">Index of the block to start at.</param>
+		[Theory]
+		[InlineData(1, 0)] // single block
+		[InlineData(5, 0)] // multiple blocks, start at first block
+		[InlineData(5, 1)] // multiple blocks, start left of in the middle
+		[InlineData(5, 3)] // multiple blocks, start right of in the middle
+		[InlineData(5, 4)] // multiple blocks, start at last block
+		public void GetEndOfChain_WithoutLength(int chainLength, int startIndex)
+		{
+			// create chain of blocks
+			var blocks = new ChainableMemoryBlock[chainLength];
+			for (int i = 0; i < chainLength; i++)
+			{
+				blocks[i] = new ChainableMemoryBlock(100)
+				{
+					Length = 10,
+					Previous = i > 0 ? blocks[i - 1] : null
+				};
+			}
+
+			// get the last block of the chain
+			var block = blocks[startIndex].GetEndOfChain();
+			Assert.Same(blocks[chainLength - 1], block);
+		}
+
+		/// <summary>
+		/// Chains multiple blocks and tries to get the last block of the chain using <see cref="ChainableMemoryBlock.GetEndOfChain(out long)"/>.
+		/// </summary>
+		/// <param name="chainLength">Initial length of the chain.</param>
+		/// <param name="startIndex">Index of the block to start at.</param>
+		[Theory]
+		[InlineData(1, 0)] // single block
+		[InlineData(5, 0)] // multiple blocks, start at first block
+		[InlineData(5, 1)] // multiple blocks, start left of in the middle
+		[InlineData(5, 3)] // multiple blocks, start right of in the middle
+		[InlineData(5, 4)] // multiple blocks, start at last block
+		public void GetEndOfChain_WithLength(int chainLength, int startIndex)
+		{
+			// create chain of blocks
+			var blocks = new ChainableMemoryBlock[chainLength];
+			for (int i = 0; i < chainLength; i++)
+			{
+				blocks[i] = new ChainableMemoryBlock(100)
+				{
+					Length = 10,
+					Previous = i > 0 ? blocks[i - 1] : null
+				};
+			}
+
+			// calculate the expected accumulated length of the chain
+			long expectedAccumulatedLength = 10 * (chainLength - startIndex);
+
+			// get the first block of the chain and the accumulated length of all blocks on the way
+			var block = blocks[startIndex].GetEndOfChain(out long accumulatedLength);
+			Assert.Same(blocks[chainLength - 1], block);
+			Assert.Equal(expectedAccumulatedLength, accumulatedLength);
+		}
+
+		/// <summary>
+		/// Chains multiple blocks and tries to get all data stored in the chain using <see cref="ChainableMemoryBlock.GetChainData"/>.
+		/// </summary>
+		[Theory]
+		[InlineData(1, 0)] // single block
+		[InlineData(5, 0)] // multiple blocks, start at first block
+		[InlineData(5, 1)] // multiple blocks, start left of in the middle
+		[InlineData(5, 3)] // multiple blocks, start right of in the middle
+		[InlineData(5, 4)] // multiple blocks, start at last block
+		public void GetChainData(int chainLength, int startIndex)
+		{
+			// create chain of blocks of variable size and with random data
+			var random = new Random(0);
+			var expectedData = new List<byte>();
+			var blocks = new ChainableMemoryBlock[chainLength];
+			for (int i = 0; i < chainLength; i++)
+			{
+				int blockLength = 10 * (i + 1);
+				blocks[i] = new ChainableMemoryBlock(10 * chainLength)
+				{
+					Length = blockLength,
+					Previous = i > 0 ? blocks[i - 1] : null
+				};
+
+				byte[] data = new byte[blockLength];
+				random.NextBytes(data);
+				Array.Copy(data, blocks[i].Buffer, data.Length);
+				if (i >= startIndex) expectedData.AddRange(data);
+			}
+
+			// get data in the chain starting at the specified block
+			byte[] dataInChain = blocks[startIndex].GetChainData();
+			Assert.Equal(expectedData, dataInChain);
 		}
 	}
 

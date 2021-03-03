@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Xunit;
 
@@ -22,8 +24,9 @@ namespace GriffinPlus.Lib.Io
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MemoryBlockStreamTestsBase_Seekable"/> class.
 		/// </summary>
+		/// <param name="synchronized"><c>true</c> if the stream is synchronized; otherwise <c>false</c>.</param>
 		/// <param name="usePool"><c>true</c> if the stream uses buffer pooling; otherwise <c>false</c>.</param>
-		protected MemoryBlockStreamTestsBase_Seekable(bool usePool) : base(usePool)
+		protected MemoryBlockStreamTestsBase_Seekable(bool synchronized, bool usePool) : base(synchronized, usePool)
 		{
 		}
 
@@ -182,6 +185,239 @@ namespace GriffinPlus.Lib.Io
 				// the length should not have been changed
 				Assert.Equal(expectedData.Count, stream.Length);
 			}
+		}
+
+		#endregion
+
+		#region InjectBufferAtCurrentPosition()
+
+		/// <summary>
+		/// Test data for the <see cref="InjectBufferAtCurrentPosition"/> test method.
+		/// </summary>
+		public static IEnumerable<object[]> InjectBufferAtCurrentPosition_TestData
+		{
+			get
+			{
+				const int streamBlockSize = 1000;
+
+				foreach (int blocksToInsertSize in new[] { streamBlockSize / 4, streamBlockSize / 3, streamBlockSize / 2, streamBlockSize, 3 * streamBlockSize / 2, 2 * streamBlockSize })
+				foreach (int blocksToInsertCount in new[] { 1, 2, 3 })
+				foreach (int initialLength in new[] { 0, 1, 500, 999, 1000, 1001, 1500, 1999, 2000, 2001, 2500, 2999, 3000, 3001, 3500, 3999, 4000 })
+				foreach (bool overwrite in new[] { false, true })
+				foreach (bool advancePosition in new[] { false, true })
+				{
+					// inject at the beginning of the stream
+					yield return new object[]
+					{
+						streamBlockSize,
+						initialLength,
+						0,
+						overwrite,
+						advancePosition,
+						blocksToInsertCount,
+						blocksToInsertSize
+					};
+
+
+					// inject in the middle of the stream
+					if (initialLength > 2)
+					{
+						yield return new object[]
+						{
+							streamBlockSize,
+							initialLength,
+							initialLength / 2,
+							overwrite,
+							advancePosition,
+							blocksToInsertCount,
+							blocksToInsertSize
+						};
+					}
+
+					// inject at the end of the stream
+					// (may be in the middle of the last block, so the injected block fits into the remaining space of the block)
+					if (initialLength > 1)
+					{
+						yield return new object[]
+						{
+							streamBlockSize,
+							initialLength,
+							initialLength - 1,
+							overwrite,
+							advancePosition,
+							blocksToInsertCount,
+							blocksToInsertSize
+						};
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Injects a chain of memory blocks at the current position of the stream using <see cref="MemoryBlockStream.InjectBufferAtCurrentPosition"/>.
+		/// The initial stream is empty.
+		/// </summary>
+		[Theory]
+		[MemberData(nameof(InjectBufferAtCurrentPosition_TestData))]
+		public void InjectBufferAtCurrentPosition(
+			int  streamBlockSize,
+			int  initialLength,
+			int  position,
+			bool overwrite,
+			bool advancePosition,
+			int  blockToInsertCount,
+			int  blockToInsertSize)
+		{
+			using (var stream = CreateStreamToTest(streamBlockSize))
+			{
+				// generate some test data and attach it to the stream
+				var chain = GetRandomTestDataChain(initialLength, streamBlockSize, out var initialStreamData);
+				stream.AttachBuffer(chain);
+
+				// set position of the stream to inject the blocks into
+				stream.Position = position;
+
+				// inject a chain of blocks into the existing chain of blocks backing the stream
+				var chainToInsert = GetRandomTestDataChain(blockToInsertCount * blockToInsertSize, blockToInsertSize, out var dataToInsert);
+				stream.InjectBufferAtCurrentPosition(
+					chainToInsert,
+					overwrite,
+					advancePosition);
+
+				// check whether the stream length reflects the change
+				long expectedLength = overwrite
+					                      ? Math.Max(initialStreamData.Count, position + dataToInsert.Count)
+					                      : initialStreamData.Count + dataToInsert.Count;
+				Assert.Equal(expectedLength, stream.Length);
+
+				// check whether the stream position has changed as expected
+				long expectedPosition = advancePosition
+					                        ? position + dataToInsert.Count
+					                        : position;
+				Assert.Equal(expectedPosition, stream.Position);
+
+				// check whether the data in the stream has changed as expected
+				var expectedData = new List<byte>();
+				expectedData.AddRange(initialStreamData.Take(position));
+				expectedData.AddRange(dataToInsert);
+				expectedData.AddRange(initialStreamData.Skip(position));
+				if (overwrite) expectedData.RemoveRange(position + dataToInsert.Count, Math.Min(dataToInsert.Count, expectedData.Count - position - dataToInsert.Count));
+				using (var detachedBuffer = stream.DetachBuffer())
+				{
+					byte[] data = detachedBuffer.GetChainData();
+					Assert.Equal(expectedData.Count, data.Length);
+					Assert.Equal(expectedData, data);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.InjectBufferAtCurrentPosition"/> blocks, if the stream is synchronized,
+		/// and does not block, if the stream is not synchronized.
+		/// </summary>
+		[Fact]
+		public void InjectBufferAtCurrentPosition_WaitOnLockIfSynchronized()
+		{
+			void Operation(MemoryBlockStream stream)
+			{
+				// stream is empty, but that's irrelevant for the locking behavior
+				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				stream.InjectBufferAtCurrentPosition(chain, false, false);
+			}
+
+			TestWaitOnLockIfSynchronized(Operation);
+		}
+
+		#endregion
+
+		#region InjectBufferAtCurrentPositionAsync()
+
+		/// <summary>
+		/// Injects a chain of memory blocks at the current position of the stream using <see cref="MemoryBlockStream.InjectBufferAtCurrentPositionAsync"/>.
+		/// The initial stream is empty.
+		/// </summary>
+		[Theory]
+		[MemberData(nameof(InjectBufferAtCurrentPosition_TestData))]
+		public async Task InjectBufferAtCurrentPositionAsync(
+			int  streamBlockSize,
+			int  initialLength,
+			int  position,
+			bool overwrite,
+			bool advancePosition,
+			int  blockToInsertCount,
+			int  blockToInsertSize)
+		{
+			using (var stream = CreateStreamToTest(streamBlockSize))
+			{
+				// generate some test data and attach it to the stream
+				var chain = GetRandomTestDataChain(initialLength, streamBlockSize, out var initialStreamData);
+				await stream.AttachBufferAsync(chain).ConfigureAwait(false);
+
+				// set position of the stream to inject the blocks into
+				stream.Position = position;
+
+				// inject a chain of blocks into the existing chain of blocks backing the stream
+				var chainToInsert = GetRandomTestDataChain(blockToInsertCount * blockToInsertSize, blockToInsertSize, out var dataToInsert);
+				await stream.InjectBufferAtCurrentPositionAsync(
+						chainToInsert,
+						overwrite,
+						advancePosition,
+						CancellationToken.None)
+					.ConfigureAwait(false);
+
+				// check whether the stream length reflects the change
+				long expectedLength = overwrite
+					                      ? Math.Max(initialStreamData.Count, position + dataToInsert.Count)
+					                      : initialStreamData.Count + dataToInsert.Count;
+				Assert.Equal(expectedLength, stream.Length);
+
+				// check whether the stream position has changed as expected
+				long expectedPosition = advancePosition
+					                        ? position + dataToInsert.Count
+					                        : position;
+				Assert.Equal(expectedPosition, stream.Position);
+
+				// check whether the data in the stream has changed as expected
+				var expectedData = new List<byte>();
+				expectedData.AddRange(initialStreamData.Take(position));
+				expectedData.AddRange(dataToInsert);
+				expectedData.AddRange(initialStreamData.Skip(position));
+				if (overwrite) expectedData.RemoveRange(position + dataToInsert.Count, Math.Min(dataToInsert.Count, expectedData.Count - position - dataToInsert.Count));
+				using (var detachedBuffer = await stream.DetachBufferAsync(CancellationToken.None).ConfigureAwait(false))
+				{
+					byte[] data = detachedBuffer.GetChainData();
+					Assert.Equal(expectedData.Count, data.Length);
+					Assert.Equal(expectedData, data);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Checks whether <see cref="MemoryBlockStream.InjectBufferAtCurrentPositionAsync"/> blocks,
+		/// if the stream is synchronized, and does not block, if the stream is not synchronized. Furthermore tests
+		/// cancellation, if the operation is blocked at the lock as well as cancellation with a pre-signaled token.
+		/// </summary>
+		[Fact]
+		public async Task InjectBufferAtCurrentPositionAsync_WaitOnLockIfSynchronized()
+		{
+			async Task Operation(MemoryBlockStream stream, CancellationToken cancellationToken)
+			{
+				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				try
+				{
+					await stream
+						.InjectBufferAtCurrentPositionAsync(chain, false, false, cancellationToken)
+						.ConfigureAwait(false);
+				}
+				catch
+				{
+					Assert.Null(chain.Previous); // the chain should not have been linked to the chain of blocks backing the stream
+					chain.ReleaseChain();
+					throw;
+				}
+			}
+
+			await TestWaitOnLockIfSynchronizedAndCancellation(Operation).ConfigureAwait(false);
 		}
 
 		#endregion

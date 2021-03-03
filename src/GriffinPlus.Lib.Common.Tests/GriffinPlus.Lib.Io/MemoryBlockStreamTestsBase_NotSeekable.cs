@@ -20,8 +20,9 @@ namespace GriffinPlus.Lib.Io
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MemoryBlockStreamTestsBase_NotSeekable"/> class.
 		/// </summary>
+		/// <param name="synchronized"><c>true</c> if the stream is synchronized; otherwise <c>false</c>.</param>
 		/// <param name="usePool"><c>true</c> if the stream uses buffer pooling; otherwise <c>false</c>.</param>
-		protected MemoryBlockStreamTestsBase_NotSeekable(bool usePool) : base(usePool)
+		protected MemoryBlockStreamTestsBase_NotSeekable(bool synchronized, bool usePool) : base(synchronized, usePool)
 		{
 		}
 
