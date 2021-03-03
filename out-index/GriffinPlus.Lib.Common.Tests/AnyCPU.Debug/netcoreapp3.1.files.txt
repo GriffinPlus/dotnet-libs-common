@@ -17,7 +17,6 @@
 .\Microsoft.VisualStudio.TestPlatform.ObjectModel.dll
 .\Newtonsoft.Json.dll
 .\NuGet.Frameworks.dll
-.\System.Collections.Immutable.dll
 .\testhost.dll
 .\testhost.exe
 .\xunit.abstractions.dll

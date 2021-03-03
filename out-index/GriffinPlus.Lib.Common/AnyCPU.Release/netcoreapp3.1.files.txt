@@ -1,0 +1,4 @@
+﻿.\GriffinPlus.Lib.Common.deps.json
+.\GriffinPlus.Lib.Common.dll
+.\GriffinPlus.Lib.Common.pdb
+.\GriffinPlus.Lib.Common.xml
