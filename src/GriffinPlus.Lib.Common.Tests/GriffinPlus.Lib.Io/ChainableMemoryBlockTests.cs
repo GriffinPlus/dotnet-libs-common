@@ -4,6 +4,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 
 using Xunit;
@@ -17,20 +18,129 @@ namespace GriffinPlus.Lib.Io
 	public class ChainableMemoryBlockTests
 	{
 		/// <summary>
-		/// Checks the creation of a memory block.
+		/// Test data for <see cref="CreateTestData_Capacity"/> and <see cref="GetPooled_Capacity"/>.
+		/// </summary>
+		public static IEnumerable<object[]> CreateTestData_Capacity
+		{
+			get
+			{
+				foreach (int capacity in new[] { 0, 1, 10, 100, 1000 })
+				{
+					yield return new object[] { capacity };
+				}
+			}
+		}
+
+		/// <summary>
+		/// Test data for <see cref="CreateTestData_Full"/> and <see cref="GetPooled_Full"/>.
+		/// </summary>
+		public static IEnumerable<object[]> CreateTestData_Full
+		{
+			get
+			{
+				foreach (int capacity in new[] { 0, 1, 10, 100, 1000 })
+				foreach (bool poolBuffer in new[] { false, true })
+				foreach (bool clearBuffer in new[] { false, true })
+				{
+					yield return new object[] { capacity, poolBuffer, clearBuffer };
+				}
+			}
+		}
+
+		/// <summary>
+		/// Checks the creation of a memory block using <see cref="MemoryBlockStream(int)"/>.
 		/// </summary>
 		/// <param name="capacity">Capacity of the memory block to create.</param>
 		[Theory]
-		[InlineData(0)]
-		[InlineData(1)]
+		[MemberData(nameof(CreateTestData_Capacity))]
 		// [InlineData(int.MaxValue)] // will cause problems on build servers with low memory
-		public void Create(int capacity)
+		public void Create_Capacity(int capacity)
 		{
 			var block = new ChainableMemoryBlock(capacity);
+			Assert.False(block.IsPooled);
+			Assert.Null(block.BufferPool);
 			Assert.Equal(capacity, block.Capacity);
 			Assert.NotNull(block.Buffer);
 			Assert.Equal(capacity, block.Buffer.Length);
 			Assert.Equal(0, block.Length);
+			Assert.Null(block.Previous);
+			Assert.Null(block.Next);
+		}
+
+		/// <summary>
+		/// Checks getting a pooled memory block using <see cref="ChainableMemoryBlock(int,ArrayPool{byte},bool)"/>.
+		/// </summary>
+		/// <param name="capacity">Capacity of the memory block to create.</param>
+		/// <param name="poolBuffer">
+		/// <c>true</c> to take the buffers in the block from a pool;
+		/// <c>false</c> to allocate it on the heap.
+		/// </param>
+		/// <param name="clearBuffer">
+		/// <c>true</c> to fill the buffer with zeros;
+		/// <c>false</c> to keep the buffer as it is (may contain old data).
+		/// </param>
+		[Theory]
+		[MemberData(nameof(CreateTestData_Full))]
+		public void Create_Full(int capacity, bool poolBuffer, bool clearBuffer)
+		{
+			var arrayPool = poolBuffer ? new ArrayPoolMock() : null;
+			var block = new ChainableMemoryBlock(capacity, arrayPool, clearBuffer);
+			Assert.False(block.IsPooled);
+			Assert.Same(arrayPool, block.BufferPool);
+			if (poolBuffer) Assert.True(block.Capacity >= capacity);
+			else Assert.Equal(capacity, block.Capacity);
+			Assert.NotNull(block.Buffer);
+			Assert.Equal(block.Capacity, block.Buffer.Length);
+			Assert.Equal(0, block.Length);
+			Assert.Null(block.Previous);
+			Assert.Null(block.Next);
+		}
+
+		/// <summary>
+		/// Checks getting a pooled memory block using <see cref="ChainableMemoryBlock.GetPooled(int)"/>.
+		/// </summary>
+		/// <param name="capacity">Capacity of the memory block to create.</param>
+		[Theory]
+		[MemberData(nameof(CreateTestData_Capacity))]
+		public void GetPooled_Capacity(int capacity)
+		{
+			var block = ChainableMemoryBlock.GetPooled(capacity);
+			Assert.True(block.IsPooled);
+			Assert.Null(block.BufferPool);
+			Assert.Equal(capacity, block.Capacity);
+			Assert.NotNull(block.Buffer);
+			Assert.Equal(capacity, block.Buffer.Length);
+			Assert.Equal(0, block.Length);
+			Assert.Null(block.Previous);
+			Assert.Null(block.Next);
+		}
+
+		/// <summary>
+		/// Checks getting a pooled memory block using <see cref="ChainableMemoryBlock.GetPooled(int,ArrayPool{byte},bool)"/>.
+		/// </summary>
+		/// <param name="capacity">Capacity of the memory block to create.</param>
+		/// <param name="poolBuffer">
+		/// <c>true</c> to take the buffers in the block from a pool;
+		/// <c>false</c> to allocate it on the heap.
+		/// </param>
+		/// <param name="clearBuffer">
+		/// <c>true</c> to fill the buffer with zeros;
+		/// <c>false</c> to keep the buffer as it is (may contain old data).
+		/// </param>
+		[Theory]
+		[MemberData(nameof(CreateTestData_Full))]
+		public void GetPooled_Full(int capacity, bool poolBuffer, bool clearBuffer)
+		{
+			var arrayPool = poolBuffer ? new ArrayPoolMock() : null;
+			var block = ChainableMemoryBlock.GetPooled(capacity, arrayPool, clearBuffer);
+			Assert.True(block.IsPooled);
+			Assert.Same(arrayPool, block.BufferPool);
+			if (poolBuffer) Assert.True(block.Capacity >= capacity);
+			else Assert.Equal(capacity, block.Capacity);
+			Assert.NotNull(block.Buffer);
+			Assert.Equal(block.Capacity, block.Buffer.Length);
+			Assert.Equal(0, block.Length);
+			Assert.Null(block.Previous);
 			Assert.Null(block.Next);
 		}
 

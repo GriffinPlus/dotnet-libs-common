@@ -14,12 +14,30 @@ namespace GriffinPlus.Lib.Io
 	/// </summary>
 	public sealed class ChainableMemoryBlock : IDisposable
 	{
-		private readonly ArrayPool<byte>      mPool;
-		private readonly byte[]               mBuffer;
-		private          int                  mLength;
-		private          ChainableMemoryBlock mPreviousBlock;
-		private          ChainableMemoryBlock mNextBlock;
-		private          bool                 mReleased;
+		private static readonly ObjectPool<ChainableMemoryBlock> sObjectPool;
+		private readonly        bool                             mPooled;
+		private                 ArrayPool<byte>                  mBufferPool;
+		private                 byte[]                           mBuffer;
+		private                 int                              mLength;
+		private                 ChainableMemoryBlock             mPreviousBlock;
+		private                 ChainableMemoryBlock             mNextBlock;
+
+		/// <summary>
+		/// Initializes the <see cref="ChainableMemoryBlock"/> class.
+		/// </summary>
+		static ChainableMemoryBlock()
+		{
+			sObjectPool = new ObjectPool<ChainableMemoryBlock>(() => new ChainableMemoryBlock(true));
+		}
+
+		/// <summary>
+		/// Initializes a uninitialized instance of the <see cref="ChainableMemoryBlock"/> class (for internal use only).
+		/// </summary>
+		/// <param name="pooled"><c>true</c> if the block is in the object pool; otherwise <c>false</c>.</param>
+		private ChainableMemoryBlock(bool pooled)
+		{
+			mPooled = pooled;
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ChainableMemoryBlock"/> class with the specified capacity.
@@ -32,20 +50,21 @@ namespace GriffinPlus.Lib.Io
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ChainableMemoryBlock"/> class with the specified capacity.
-		/// The buffer is rented from the specified array pool.
+		/// The buffer can be rented from the specified array pool or allocated on the heap.
 		/// </summary>
 		/// <param name="capacity">Capacity of the memory block to create.</param>
 		/// <param name="pool">Array pool to rent the buffer from (<c>null</c> to use the regular heap).</param>
 		/// <param name="clear"><c>true</c> to initialize the buffer with zeros; otherwise <c>false</c>.</param>
 		public ChainableMemoryBlock(int capacity, ArrayPool<byte> pool, bool clear = false)
 		{
-			mPool = pool;
-			mBuffer = mPool != null ? mPool.Rent(capacity) : new byte[capacity];
+			mBufferPool = pool;
+			mBuffer = mBufferPool != null ? mBufferPool.Rent(capacity) : new byte[capacity];
 			mLength = 0;
+			mPooled = false;
 
 			// clear the buffer, if it was retrieved from the pool
 			// (not necessary for buffers allocated on the heap)
-			if (mPool != null && clear)
+			if (mBufferPool != null && clear)
 				Array.Clear(mBuffer, 0, mBuffer.Length);
 		}
 
@@ -63,16 +82,24 @@ namespace GriffinPlus.Lib.Io
 		/// </summary>
 		public void Release()
 		{
-			if (!mReleased)
+			if (mBuffer != null)
 			{
-				mPool?.Return(mBuffer);
-				mReleased = true;
+				Previous = null;
+				Next = null;
+				mBufferPool?.Return(mBuffer);
+				mBufferPool = null;
+				mBuffer = null;
+				mLength = -1;
+
+				if (mPooled)
+					sObjectPool.Return(this);
 			}
 		}
 
 		/// <summary>
 		/// Releases the current block and all chained blocks returning rented buffers to the appropriate array pools, if necessary.
 		/// </summary>
+		/// <exception cref="InvalidOperationException">The block has a predecessor, it would break the chain.</exception>
 		public void ReleaseChain()
 		{
 			mNextBlock?.ReleaseChain();
@@ -80,10 +107,53 @@ namespace GriffinPlus.Lib.Io
 		}
 
 		/// <summary>
+		/// Gets an instance of the <see cref="ChainableMemoryBlock"/> class from the pool, creates a new instance, if necessary.
+		/// The block is created with the specified capacity.
+		/// The buffer is allocated on the heap.
+		/// The block returns to the pool, when <see cref="Release"/> or <see cref="ReleaseChain"/> is called.
+		/// </summary>
+		/// <param name="capacity">Capacity of the memory block to create.</param>
+		public static ChainableMemoryBlock GetPooled(int capacity)
+		{
+			return GetPooled(capacity, null, false);
+		}
+
+		/// <summary>
+		/// Gets an instance of the <see cref="ChainableMemoryBlock"/> class from the pool, creates a new instance, if necessary.
+		/// The block is created with the specified capacity.
+		/// The buffer can be rented from the specified array pool or allocated on the heap.
+		/// The block returns to the pool, when <see cref="Release"/> or <see cref="ReleaseChain"/> is called.
+		/// </summary>
+		/// <param name="capacity">Capacity of the memory block to create.</param>
+		/// <param name="pool">Array pool to rent the buffer from (<c>null</c> to use the regular heap).</param>
+		/// <param name="clear"><c>true</c> to initialize the buffer with zeros; otherwise <c>false</c>.</param>
+		public static ChainableMemoryBlock GetPooled(int capacity, ArrayPool<byte> pool, bool clear = false)
+		{
+			var block = sObjectPool.Get();
+
+			block.mBufferPool = pool;
+			block.mBuffer = block.mBufferPool != null ? block.mBufferPool.Rent(capacity) : new byte[capacity];
+			block.mLength = 0;
+
+			// clear the buffer, if it was retrieved from the pool
+			// (not necessary for buffers allocated on the heap)
+			if (block.mBufferPool != null && clear)
+				Array.Clear(block.mBuffer, 0, block.mBuffer.Length);
+
+			return block;
+		}
+
+		/// <summary>
 		/// Get the array pool the buffer was rented from
 		/// (<c>null</c>, if the the buffer was allocated on the heap).
 		/// </summary>
-		public ArrayPool<byte> Pool => mPool;
+		public ArrayPool<byte> BufferPool => mBufferPool;
+
+		/// <summary>
+		/// Gets a value indicating whether the memory block is pooled.
+		/// Pooled blocks can be fetched using <see cref="GetPooled(int)"/> and <see cref="GetPooled(int,ArrayPool{byte},bool)"/>.
+		/// </summary>
+		public bool IsPooled => mPooled;
 
 		/// <summary>
 		/// Gets the underlying buffer.

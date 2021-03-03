@@ -4,7 +4,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -74,7 +73,7 @@ namespace GriffinPlus.Lib.Io
 		/// <summary>
 		/// Gets the array pool used by the stream, if the stream uses pooled buffers.
 		/// </summary>
-		protected ArrayPoolMock BufferPool { get; }
+		internal ArrayPoolMock BufferPool { get; }
 
 		#endregion
 
@@ -1603,30 +1602,6 @@ namespace GriffinPlus.Lib.Io
 			if (BufferPool != null)
 			{
 				Assert.True(BufferPool.RentedBufferCount > 0);
-			}
-		}
-
-		#endregion
-
-		#region [[ Array Pool Mock ]]
-
-		protected class ArrayPoolMock : ArrayPool<byte>
-		{
-			private readonly ArrayPool<byte> mPool = Create();
-			private          int             mRentedBufferCount;
-
-			public int RentedBufferCount => Volatile.Read(ref mRentedBufferCount);
-
-			public override byte[] Rent(int minimumLength)
-			{
-				Interlocked.Increment(ref mRentedBufferCount);
-				return mPool.Rent(minimumLength);
-			}
-
-			public override void Return(byte[] array, bool clearArray = false)
-			{
-				Interlocked.Decrement(ref mRentedBufferCount);
-				mPool.Return(array, clearArray);
 			}
 		}
 

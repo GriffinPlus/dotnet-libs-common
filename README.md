@@ -18,6 +18,7 @@ This namespace provides common functionality and contains the following classes:
 
 - `BitMask`: A bit mask with variable length that supports all relevant comparisons and logical operations.
 - `IdentityComparer`: An equality comparer that uses `System.Object.ReferenceEquals()` to check two objects for equality.
+- `ObjectPool<T>`: A simple thread-safe implementation of an object pool that allows re-using objects.
 - `RegexHelpers`: Helper methods providing common functionality when pattern matching is required.
 
 Extension methods for common types
