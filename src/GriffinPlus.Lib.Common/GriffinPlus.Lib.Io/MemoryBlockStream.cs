@@ -330,7 +330,7 @@ namespace GriffinPlus.Lib.Io
 					long lengthOfLastBlock = length - capacity;
 					while (true)
 					{
-						var newBlock = new ChainableMemoryBlock(mBlockSize, mArrayPool, true); // initializes the buffer with zeros
+						var newBlock = ChainableMemoryBlock.GetPooled(mBlockSize, mArrayPool, true); // initializes the buffer with zeros
 						if (mFirstBlock == null)
 						{
 							// no block in the chain, yet
@@ -1173,7 +1173,7 @@ namespace GriffinPlus.Lib.Io
 				while (true)
 				{
 					// allocate a new block
-					var block = new ChainableMemoryBlock(mBlockSize, mArrayPool);
+					var block = ChainableMemoryBlock.GetPooled(mBlockSize, mArrayPool);
 					if (firstBlock == null) firstBlock = block;
 					if (previousBlock != null) previousBlock.Next = block;
 
@@ -1250,7 +1250,7 @@ namespace GriffinPlus.Lib.Io
 				while (true)
 				{
 					// allocate a new block
-					var block = new ChainableMemoryBlock(mBlockSize, mArrayPool);
+					var block = ChainableMemoryBlock.GetPooled(mBlockSize, mArrayPool);
 					if (firstBlock == null) firstBlock = block;
 					if (previousBlock != null) previousBlock.Next = block;
 
@@ -1411,7 +1411,7 @@ namespace GriffinPlus.Lib.Io
 		{
 			bool isFirstBuffer = mFirstBlock == null;
 
-			var block = new ChainableMemoryBlock(mBlockSize, mArrayPool, false);
+			var block = ChainableMemoryBlock.GetPooled(mBlockSize, mArrayPool, false);
 
 			if (mFirstBlock == null)
 			{
@@ -2245,7 +2245,7 @@ namespace GriffinPlus.Lib.Io
 									int remainingBytesToAllocate = bytesToEndOfCurrentBlock - unusedSpace;
 									while (remainingBytesToAllocate > 0)
 									{
-										var block = new ChainableMemoryBlock(mBlockSize, mArrayPool);
+										var block = ChainableMemoryBlock.GetPooled(mBlockSize, mArrayPool);
 										adjustedEndOfChainToInsert.Next = block;
 										adjustedEndOfChainToInsert = block;
 										remainingBytesToAllocate -= block.Capacity;
