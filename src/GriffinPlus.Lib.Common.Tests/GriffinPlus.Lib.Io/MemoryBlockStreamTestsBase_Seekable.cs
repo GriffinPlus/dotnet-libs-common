@@ -201,10 +201,8 @@ namespace GriffinPlus.Lib.Io
 				const int streamBlockSize = 1000;
 
 				foreach (int blocksToInsertSize in new[] { streamBlockSize / 4, streamBlockSize / 3, streamBlockSize / 2, streamBlockSize, 3 * streamBlockSize / 2, 2 * streamBlockSize })
-				foreach (int blocksToInsertCount in new[] { 1, 2, 3 })
+				foreach (int blocksToInsertCount in new[] { 1, 2 })
 				foreach (int initialLength in new[] { 0, 1, 500, 999, 1000, 1001, 1500, 1999, 2000, 2001, 2500, 2999, 3000, 3001, 3500, 3999, 4000 })
-				foreach (bool overwrite in new[] { false, true })
-				foreach (bool advancePosition in new[] { false, true })
 				{
 					// inject at the beginning of the stream
 					yield return new object[]
@@ -212,12 +210,9 @@ namespace GriffinPlus.Lib.Io
 						streamBlockSize,
 						initialLength,
 						0,
-						overwrite,
-						advancePosition,
 						blocksToInsertCount,
 						blocksToInsertSize
 					};
-
 
 					// inject in the middle of the stream
 					if (initialLength > 2)
@@ -227,8 +222,6 @@ namespace GriffinPlus.Lib.Io
 							streamBlockSize,
 							initialLength,
 							initialLength / 2,
-							overwrite,
-							advancePosition,
 							blocksToInsertCount,
 							blocksToInsertSize
 						};
@@ -243,8 +236,6 @@ namespace GriffinPlus.Lib.Io
 							streamBlockSize,
 							initialLength,
 							initialLength - 1,
-							overwrite,
-							advancePosition,
 							blocksToInsertCount,
 							blocksToInsertSize
 						};
@@ -255,11 +246,104 @@ namespace GriffinPlus.Lib.Io
 
 		/// <summary>
 		/// Injects a chain of memory blocks at the current position of the stream using <see cref="MemoryBlockStream.InjectBufferAtCurrentPosition"/>.
-		/// The initial stream is empty.
 		/// </summary>
 		[Theory]
 		[MemberData(nameof(InjectBufferAtCurrentPosition_TestData))]
-		public void InjectBufferAtCurrentPosition(
+		public void InjectBufferAtCurrentPosition_Insert_KeepPosition(
+			int streamBlockSize,
+			int initialLength,
+			int position,
+			int blockToInsertCount,
+			int blockToInsertSize)
+		{
+			const bool overwrite = false;
+			const bool advancePosition = false;
+			InjectBufferAtCurrentPosition(
+				streamBlockSize,
+				initialLength,
+				position,
+				overwrite,
+				advancePosition,
+				blockToInsertCount,
+				blockToInsertSize);
+		}
+
+		/// <summary>
+		/// Injects a chain of memory blocks at the current position of the stream using <see cref="MemoryBlockStream.InjectBufferAtCurrentPosition"/>.
+		/// </summary>
+		[Theory]
+		[MemberData(nameof(InjectBufferAtCurrentPosition_TestData))]
+		public void InjectBufferAtCurrentPosition_Insert_AdvancePosition(
+			int streamBlockSize,
+			int initialLength,
+			int position,
+			int blockToInsertCount,
+			int blockToInsertSize)
+		{
+			const bool overwrite = false;
+			const bool advancePosition = true;
+			InjectBufferAtCurrentPosition(
+				streamBlockSize,
+				initialLength,
+				position,
+				overwrite,
+				advancePosition,
+				blockToInsertCount,
+				blockToInsertSize);
+		}
+
+		/// <summary>
+		/// Injects a chain of memory blocks at the current position of the stream using <see cref="MemoryBlockStream.InjectBufferAtCurrentPosition"/>.
+		/// </summary>
+		[Theory]
+		[MemberData(nameof(InjectBufferAtCurrentPosition_TestData))]
+		public void InjectBufferAtCurrentPosition_Overwrite_KeepPosition(
+			int streamBlockSize,
+			int initialLength,
+			int position,
+			int blockToInsertCount,
+			int blockToInsertSize)
+		{
+			const bool overwrite = true;
+			const bool advancePosition = false;
+			InjectBufferAtCurrentPosition(
+				streamBlockSize,
+				initialLength,
+				position,
+				overwrite,
+				advancePosition,
+				blockToInsertCount,
+				blockToInsertSize);
+		}
+
+		/// <summary>
+		/// Injects a chain of memory blocks at the current position of the stream using <see cref="MemoryBlockStream.InjectBufferAtCurrentPosition"/>.
+		/// </summary>
+		[Theory]
+		[MemberData(nameof(InjectBufferAtCurrentPosition_TestData))]
+		public void InjectBufferAtCurrentPosition_Overwrite_AdvancePosition(
+			int streamBlockSize,
+			int initialLength,
+			int position,
+			int blockToInsertCount,
+			int blockToInsertSize)
+		{
+			const bool overwrite = true;
+			const bool advancePosition = true;
+			InjectBufferAtCurrentPosition(
+				streamBlockSize,
+				initialLength,
+				position,
+				overwrite,
+				advancePosition,
+				blockToInsertCount,
+				blockToInsertSize);
+		}
+
+		/// <summary>
+		/// Injects a chain of memory blocks at the current position of the stream using <see cref="MemoryBlockStream.InjectBufferAtCurrentPosition"/>.
+		/// </summary>
+		private void InjectBufferAtCurrentPosition(
 			int  streamBlockSize,
 			int  initialLength,
 			int  position,
@@ -334,11 +418,108 @@ namespace GriffinPlus.Lib.Io
 
 		/// <summary>
 		/// Injects a chain of memory blocks at the current position of the stream using <see cref="MemoryBlockStream.InjectBufferAtCurrentPositionAsync"/>.
-		/// The initial stream is empty.
 		/// </summary>
 		[Theory]
 		[MemberData(nameof(InjectBufferAtCurrentPosition_TestData))]
-		public async Task InjectBufferAtCurrentPositionAsync(
+		public async Task InjectBufferAtCurrentPositionAsync_Insert_KeepPosition(
+			int  streamBlockSize,
+			int  initialLength,
+			int  position,
+			int  blockToInsertCount,
+			int  blockToInsertSize)
+		{
+			const bool overwrite = false;
+			const bool advancePosition = false;
+			await InjectBufferAtCurrentPositionAsync(
+					streamBlockSize,
+					initialLength,
+					position,
+					overwrite,
+					advancePosition,
+					blockToInsertCount,
+					blockToInsertSize)
+				.ConfigureAwait(false);
+		}
+
+		/// <summary>
+		/// Injects a chain of memory blocks at the current position of the stream using <see cref="MemoryBlockStream.InjectBufferAtCurrentPositionAsync"/>.
+		/// </summary>
+		[Theory]
+		[MemberData(nameof(InjectBufferAtCurrentPosition_TestData))]
+		public async Task InjectBufferAtCurrentPositionAsync_Insert_AdvancePosition(
+			int streamBlockSize,
+			int initialLength,
+			int position,
+			int blockToInsertCount,
+			int blockToInsertSize)
+		{
+			const bool overwrite = false;
+			const bool advancePosition = true;
+			await InjectBufferAtCurrentPositionAsync(
+					streamBlockSize,
+					initialLength,
+					position,
+					overwrite,
+					advancePosition,
+					blockToInsertCount,
+					blockToInsertSize)
+				.ConfigureAwait(false);
+		}
+
+		/// <summary>
+		/// Injects a chain of memory blocks at the current position of the stream using <see cref="MemoryBlockStream.InjectBufferAtCurrentPositionAsync"/>.
+		/// </summary>
+		[Theory]
+		[MemberData(nameof(InjectBufferAtCurrentPosition_TestData))]
+		public async Task InjectBufferAtCurrentPositionAsync_Overwrite_KeepPosition(
+			int streamBlockSize,
+			int initialLength,
+			int position,
+			int blockToInsertCount,
+			int blockToInsertSize)
+		{
+			const bool overwrite = true;
+			const bool advancePosition = false;
+			await InjectBufferAtCurrentPositionAsync(
+					streamBlockSize,
+					initialLength,
+					position,
+					overwrite,
+					advancePosition,
+					blockToInsertCount,
+					blockToInsertSize)
+				.ConfigureAwait(false);
+		}
+
+		/// <summary>
+		/// Injects a chain of memory blocks at the current position of the stream using <see cref="MemoryBlockStream.InjectBufferAtCurrentPositionAsync"/>.
+		/// </summary>
+		[Theory]
+		[MemberData(nameof(InjectBufferAtCurrentPosition_TestData))]
+		public async Task InjectBufferAtCurrentPositionAsync_Overwrite_AdvancePosition(
+			int streamBlockSize,
+			int initialLength,
+			int position,
+			int blockToInsertCount,
+			int blockToInsertSize)
+		{
+			const bool overwrite = true;
+			const bool advancePosition = true;
+			await InjectBufferAtCurrentPositionAsync(
+					streamBlockSize,
+					initialLength,
+					position,
+					overwrite,
+					advancePosition,
+					blockToInsertCount,
+					blockToInsertSize)
+				.ConfigureAwait(false);
+		}
+
+		/// <summary>
+		/// Injects a chain of memory blocks at the current position of the stream using <see cref="MemoryBlockStream.InjectBufferAtCurrentPositionAsync"/>.
+		/// </summary>
+		private async Task InjectBufferAtCurrentPositionAsync(
 			int  streamBlockSize,
 			int  initialLength,
 			int  position,
