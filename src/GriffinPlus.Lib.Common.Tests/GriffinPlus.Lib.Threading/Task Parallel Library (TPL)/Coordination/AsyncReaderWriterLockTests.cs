@@ -80,7 +80,7 @@ namespace GriffinPlus.Lib.Threading
 			var rwl = new AsyncReaderWriterLock();
 			var firstWriteLockTaken = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 			var releaseFirstWriteLock = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
-			var task = Task.Run(
+			var _ = Task.Run(
 				async () =>
 				{
 					using (await rwl.WriterLockAsync())
@@ -262,17 +262,18 @@ namespace GriffinPlus.Lib.Threading
 		public async Task ReadLock_WriteLockCanceled_TakesLock()
 		{
 			var rwl = new AsyncReaderWriterLock();
-			var readKey = rwl.ReaderLock();
+			rwl.ReaderLock();
 			var cts = new CancellationTokenSource();
 
 			var writerLockReady = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-			var writerLockTask = Task.Run(
+			var _ = Task.Run(
 				async () =>
 				{
 					var writeKeyTask = rwl.WriterLockAsync(cts.Token);
 					writerLockReady.SetResult(null);
 					await Assert.ThrowsAnyAsync<OperationCanceledException>(() => writeKeyTask);
-				});
+				},
+				CancellationToken.None);
 			await writerLockReady.Task;
 
 			var readerLockReady = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -282,7 +283,8 @@ namespace GriffinPlus.Lib.Threading
 					var readKeyTask = rwl.ReaderLockAsync();
 					readerLockReady.SetResult(null);
 					await readKeyTask;
-				});
+				},
+				CancellationToken.None);
 
 			await readerLockReady.Task;
 			cts.Cancel();

@@ -17,7 +17,7 @@ namespace GriffinPlus.Lib.Threading
 	/// </summary>
 	public class ReaderWriterLockSlimExtensionsTests
 	{
-		private const int TIMEOUT = 100; // ms
+		private const int Timeout = 100; // ms
 
 		#region LockReadOnly()
 
@@ -41,7 +41,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
-			using (rwlock.LockReadOnly(TIMEOUT))
+			using (rwlock.LockReadOnly(Timeout))
 			{
 				Assert.True(rwlock.IsReadLockHeld);
 			}
@@ -60,7 +60,7 @@ namespace GriffinPlus.Lib.Threading
 			await Task.Run(() => rwlock.EnterWriteLock());
 
 			// current thread should timeout now
-			Assert.Throws<TimeoutException>(() => { rwlock.LockReadOnly(TIMEOUT); });
+			Assert.Throws<TimeoutException>(() => { rwlock.LockReadOnly(Timeout); });
 		}
 
 		#endregion
@@ -111,7 +111,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
-			using (rwlock.LockUpgradeableRead(TIMEOUT))
+			using (rwlock.LockUpgradeableRead(Timeout))
 			{
 				Assert.True(rwlock.IsUpgradeableReadLockHeld);
 			}
@@ -130,7 +130,7 @@ namespace GriffinPlus.Lib.Threading
 			await Task.Run(() => rwlock.EnterWriteLock());
 
 			// current thread should timeout now
-			Assert.Throws<TimeoutException>(() => { rwlock.LockUpgradeableRead(TIMEOUT); });
+			Assert.Throws<TimeoutException>(() => { rwlock.LockUpgradeableRead(Timeout); });
 		}
 
 		#endregion
@@ -157,7 +157,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
-			using (rwlock.LockUpgradeableRead(TIMEOUT))
+			using (rwlock.LockUpgradeableRead(Timeout))
 			{
 				Assert.True(rwlock.IsUpgradeableReadLockHeld);
 			}
@@ -176,7 +176,7 @@ namespace GriffinPlus.Lib.Threading
 			await Task.Run(() => rwlock.EnterWriteLock());
 
 			// current thread should timeout now
-			Assert.Throws<TimeoutException>(() => { rwlock.LockReadWrite(TIMEOUT); });
+			Assert.Throws<TimeoutException>(() => { rwlock.LockReadWrite(Timeout); });
 		}
 
 		#endregion

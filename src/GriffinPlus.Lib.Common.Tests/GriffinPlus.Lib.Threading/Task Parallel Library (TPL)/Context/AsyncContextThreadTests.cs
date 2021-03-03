@@ -67,7 +67,7 @@ namespace GriffinPlus.Lib.Threading
 		public async Task Join_StopsTask()
 		{
 			var context = new AsyncContextThread();
-			var thread = await context.Factory.Run(() => Thread.CurrentThread);
+			await context.Factory.Run(() => Thread.CurrentThread);
 			await context.JoinAsync();
 		}
 

@@ -50,7 +50,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void WaitAndUnwrapException_Faulted_UnwrapsException()
 		{
-			var task = Task.Run(() => { throw new NotImplementedException(); });
+			var task = Task.Run(() => throw new NotImplementedException());
 			Assert.Throws<NotImplementedException>(() => task.WaitAndUnwrapException());
 		}
 
@@ -65,7 +65,7 @@ namespace GriffinPlus.Lib.Threading
 		public void WaitAndUnwrapExceptionWithCT_Faulted_UnwrapsException()
 		{
 			var cts = new CancellationTokenSource();
-			var task = Task.Run(() => { throw new NotImplementedException(); });
+			var task = Task.Run(() => throw new NotImplementedException(), CancellationToken.None);
 			Assert.Throws<NotImplementedException>(() => task.WaitAndUnwrapException(cts.Token));
 		}
 
@@ -88,7 +88,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void WaitAndUnwrapExceptionResult_Faulted_UnwrapsException()
 		{
-			var task = Task.Run((Func<int>)(() => { throw new NotImplementedException(); }));
+			var task = Task.Run((Func<int>)(() => throw new NotImplementedException()));
 			Assert.Throws<NotImplementedException>(() => task.WaitAndUnwrapException());
 		}
 
@@ -103,7 +103,7 @@ namespace GriffinPlus.Lib.Threading
 		public void WaitAndUnwrapExceptionResultWithCT_Faulted_UnwrapsException()
 		{
 			var cts = new CancellationTokenSource();
-			var task = Task.Run((Func<int>)(() => { throw new NotImplementedException(); }));
+			var task = Task.Run((Func<int>)(() => throw new NotImplementedException()), CancellationToken.None);
 			Assert.Throws<NotImplementedException>(() => task.WaitAndUnwrapException(cts.Token));
 		}
 
@@ -131,7 +131,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void WaitWithoutException_Faulted_DoesNotBlockOrThrow()
 		{
-			var task = Task.Run(() => { throw new NotImplementedException(); });
+			var task = Task.Run(() => throw new NotImplementedException());
 			task.WaitWithoutException();
 		}
 
@@ -150,7 +150,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void WaitWithoutExceptionResult_Faulted_DoesNotBlockOrThrow()
 		{
-			var task = Task.Run((Func<int>)(() => { throw new NotImplementedException(); }));
+			var task = Task.Run((Func<int>)(() => throw new NotImplementedException()));
 			task.WaitWithoutException();
 		}
 
@@ -169,7 +169,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void WaitWithoutExceptionWithCancellationToken_Faulted_DoesNotBlockOrThrow()
 		{
-			var task = Task.Run(() => { throw new NotImplementedException(); });
+			var task = Task.Run(() => throw new NotImplementedException());
 			task.WaitWithoutException(new CancellationToken());
 		}
 
@@ -188,7 +188,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void WaitWithoutExceptionResultWithCancellationToken_Faulted_DoesNotBlockOrThrow()
 		{
-			var task = Task.Run((Func<int>)(() => { throw new NotImplementedException(); }));
+			var task = Task.Run((Func<int>)(() => throw new NotImplementedException()));
 			task.WaitWithoutException(new CancellationToken());
 		}
 
@@ -206,7 +206,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			Task sourceTask = new TaskCompletionSource<object>().Task;
 			var cts = new CancellationTokenSource();
-			var task = Task.Run(() => sourceTask.WaitWithoutException(cts.Token));
+			var task = Task.Run(() => sourceTask.WaitWithoutException(cts.Token), CancellationToken.None);
 			bool result = task.Wait(500);
 			Assert.False(result);
 			cts.Cancel();

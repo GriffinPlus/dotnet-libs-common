@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -62,6 +63,8 @@ namespace GriffinPlus.Lib.Events
 						Expression.Parameter(typeof(object), "sender"),
 						Expression.Parameter(typeof(TEventArgs), "e")
 					};
+
+					Debug.Assert(handler.Method.DeclaringType != null, "handler.Method.DeclaringType != null");
 
 					var callerExpression = Expression.Lambda(
 						typeof(InvokeDelegate),

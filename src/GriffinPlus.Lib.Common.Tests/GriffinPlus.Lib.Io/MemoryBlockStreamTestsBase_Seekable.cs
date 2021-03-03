@@ -321,7 +321,7 @@ namespace GriffinPlus.Lib.Io
 			void Operation(MemoryBlockStream stream)
 			{
 				// stream is empty, but that's irrelevant for the locking behavior
-				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out _);
 				stream.InjectBufferAtCurrentPosition(chain, false, false);
 			}
 
@@ -402,7 +402,7 @@ namespace GriffinPlus.Lib.Io
 		{
 			async Task Operation(MemoryBlockStream stream, CancellationToken cancellationToken)
 			{
-				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out _);
 				try
 				{
 					await stream

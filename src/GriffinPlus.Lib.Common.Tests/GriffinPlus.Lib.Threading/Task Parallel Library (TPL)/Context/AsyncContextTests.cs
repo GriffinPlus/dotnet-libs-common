@@ -66,12 +66,13 @@ namespace GriffinPlus.Lib.Threading
 			int result = AsyncContext.Run(
 				() =>
 				{
-					Action asyncVoid = async () =>
+					async void Action()
 					{
 						await Task.Yield();
 						resumed = true;
-					};
-					asyncVoid();
+					}
+
+					Action();
 					return 13;
 				});
 			Assert.True(resumed);
@@ -170,33 +171,44 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void Run_PropagatesException()
 		{
-			Action test = () => AsyncContext.Run(() => { throw new NotImplementedException(); });
-			Assert.Throws<NotImplementedException>(test);
+			void Test()
+			{
+				AsyncContext.Run(() => throw new NotImplementedException());
+			}
+
+			Assert.Throws<NotImplementedException>(Test);
 		}
 
 		[Fact]
 		public void Run_Async_PropagatesException()
 		{
-			Action test = () => AsyncContext.Run(
-				async () =>
-				{
-					await Task.Yield();
-					throw new NotImplementedException();
-				});
-			Assert.Throws<NotImplementedException>(test);
+			void Test()
+			{
+				AsyncContext.Run(
+					async () =>
+					{
+						await Task.Yield();
+						throw new NotImplementedException();
+					});
+			}
+
+			Assert.Throws<NotImplementedException>(Test);
 		}
 
 		[Fact]
 		public void SynchronizationContextPost_PropagatesException()
 		{
-			Action test = () => AsyncContext.Run(
-				async () =>
-				{
-					SynchronizationContext.Current.Post(_ => { throw new NotImplementedException(); }, null);
-					await Task.Yield();
-				});
+			void Test()
+			{
+				AsyncContext.Run(
+					async () =>
+					{
+						SynchronizationContext.Current.Post(_ => throw new NotImplementedException(), null);
+						await Task.Yield();
+					});
+			}
 
-			Assert.Throws<NotImplementedException>(test);
+			Assert.Throws<NotImplementedException>(Test);
 		}
 
 		[Fact]
@@ -237,7 +249,7 @@ namespace GriffinPlus.Lib.Threading
 
 			var task = context.Factory.Run(() => { value = 2; });
 
-			task.ContinueWith(_ => { throw new Exception("Should not run"); }, TaskScheduler.Default);
+			task.ContinueWith(_ => throw new Exception("Should not run"), TaskScheduler.Default);
 			Assert.Equal(1, value);
 		}
 

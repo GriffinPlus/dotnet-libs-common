@@ -28,6 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
@@ -59,6 +60,7 @@ namespace GriffinPlus.Lib.Threading
 
 			if (task.IsFaulted)
 			{
+				Debug.Assert(task.Exception != null, "task.Exception != null");
 				return @this.TrySetException(task.Exception.InnerExceptions);
 			}
 
@@ -104,6 +106,7 @@ namespace GriffinPlus.Lib.Threading
 
 			if (task.IsFaulted)
 			{
+				Debug.Assert(task.Exception != null, "task.Exception != null");
 				return @this.TrySetException(task.Exception.InnerExceptions);
 			}
 

@@ -87,7 +87,7 @@ This namespace contains classes concerning event handling. The event manager cla
 This namespace provides everything concerning generic i/o operations and contains the following classes:
 
 - `ChainableMemoryBlock`: A buffer that can be linked with other buffers (can be allocated on the heap or rented from an `ArrayPool<byte>`).
-- `MemoryBlockStream`: A stream that grows on demand by maintaining a linked list of `ChainableMemoryBlock` buffers.
+- `MemoryBlockStream`: A stream that grows on demand by maintaining a linked list of `ChainableMemoryBlock` buffers. Optionally synchronized for use in multi-threaded scenarios.
 
 #### Namespace: GriffinPlus.Lib.Threading
 

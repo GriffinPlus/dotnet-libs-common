@@ -82,13 +82,11 @@ namespace GriffinPlus.Lib.Io
 		public void ChainLength()
 		{
 			// create the first block
-			var block1 = new ChainableMemoryBlock(100);
-			block1.Length = 10;
+			var block1 = new ChainableMemoryBlock(100) { Length = 10 };
 			Assert.Equal(10, block1.ChainLength);
 
 			// create the second block
-			var block2 = new ChainableMemoryBlock(200);
-			block2.Length = 20;
+			var block2 = new ChainableMemoryBlock(200) { Length = 20 };
 			Assert.Equal(20, block2.ChainLength);
 
 			// chain both blocks together
@@ -106,8 +104,7 @@ namespace GriffinPlus.Lib.Io
 		{
 			// create chain of two blocks
 			var block1 = new ChainableMemoryBlock(100);
-			var block2 = new ChainableMemoryBlock(100);
-			block2.Previous = block1;
+			var block2 = new ChainableMemoryBlock(100) { Previous = block1 };
 
 			// check previous/next of block1
 			Assert.Null(block1.Previous);

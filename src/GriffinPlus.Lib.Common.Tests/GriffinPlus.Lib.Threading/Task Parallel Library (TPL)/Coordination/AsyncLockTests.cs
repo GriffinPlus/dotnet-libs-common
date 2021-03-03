@@ -208,7 +208,8 @@ namespace GriffinPlus.Lib.Threading
 					var lockTask = mutex.LockAsync(cts.Token);
 					taskReady.SetResult(null);
 					await lockTask;
-				});
+				},
+				CancellationToken.None);
 			await taskReady.Task;
 			cts.Cancel();
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);

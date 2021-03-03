@@ -32,7 +32,6 @@ namespace GriffinPlus.Lib.Io
 		/// <returns>The created stream.</returns>
 		protected override MemoryBlockStream CreateStreamToTest(int minimumBlockSize = -1)
 		{
-			if (minimumBlockSize < 0) minimumBlockSize = StreamMemoryBlockSize;
 			return new MemoryBlockStream();
 		}
 	}

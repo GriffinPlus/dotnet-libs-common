@@ -941,6 +941,7 @@ namespace GriffinPlus.Lib.Collections
 			}
 
 			[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+			// ReSharper disable once UnusedMember.Local
 			public T[] Items => mDeque.ToArray();
 		}
 	}

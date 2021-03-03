@@ -49,7 +49,7 @@ namespace GriffinPlus.Lib.Threading
 				return Task.FromResult(13);
 			}
 
-			var lazy = new AsyncLazy<int>(Func);
+			var _ = new AsyncLazy<int>(Func);
 		}
 
 		[Fact]
@@ -192,15 +192,17 @@ namespace GriffinPlus.Lib.Threading
 		public async Task AsyncLazy_WithRetryOnFailure_DoesNotRetryOnSuccess()
 		{
 			int invokeCount = 0;
-			Func<Task<int>> func = async () =>
+
+			async Task<int> Func()
 			{
 				Interlocked.Increment(ref invokeCount);
 				await Task.Yield();
 				if (invokeCount == 1)
 					throw new InvalidOperationException("Not today, punk.");
 				return 13;
-			};
-			var lazy = new AsyncLazy<int>(func, AsyncLazyFlags.RetryOnFailure);
+			}
+
+			var lazy = new AsyncLazy<int>(Func, AsyncLazyFlags.RetryOnFailure);
 			await Assert.ThrowsAsync<InvalidOperationException>(() => lazy.Task);
 
 			await lazy;

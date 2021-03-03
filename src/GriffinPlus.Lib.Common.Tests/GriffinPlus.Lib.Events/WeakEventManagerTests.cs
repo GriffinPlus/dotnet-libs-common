@@ -614,6 +614,7 @@ namespace GriffinPlus.Lib.Events
 		public void EnsureEventProvidersAreCollectable(bool scheduleAlways)
 		{
 			// the event handler
+			// ReSharper disable once ConvertToLocalFunction
 			EventHandler<EventManagerEventArgs> handler = (sender, e) => { };
 
 			// register an event handler to a dummy event provider object

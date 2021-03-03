@@ -47,8 +47,11 @@ namespace GriffinPlus.Lib
 		/// <returns>true, if both arrays are equal; otherwise false.</returns>
 		public static bool Equals(this byte[] a1, byte[] a2)
 		{
-			if (a1 != null && a2 == null || a1 == null && a2 != null) return false;
+			if (a1 == a2) return true;
+			if (a1 != null && a2 == null || a1 == null) return false;
 			if (a1.Length != a2.Length) return false;
+
+			// ReSharper disable once LoopCanBeConvertedToQuery
 			for (int i = 0; i < a1.Length; i++)
 			{
 				if (a1[i] != a2[i]) return false;

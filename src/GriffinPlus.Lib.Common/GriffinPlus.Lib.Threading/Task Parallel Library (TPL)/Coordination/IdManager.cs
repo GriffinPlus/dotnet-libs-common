@@ -42,6 +42,7 @@ namespace GriffinPlus.Lib.Threading
 	/// This is similar to the Id system used by <see cref="Task"/> and <see cref="TaskScheduler"/>.
 	/// </summary>
 	/// <typeparam name="TTag">The type for which ids are generated.</typeparam>
+	// ReSharper disable once UnusedTypeParameter
 	static class IdManager<TTag>
 	{
 		/// <summary>

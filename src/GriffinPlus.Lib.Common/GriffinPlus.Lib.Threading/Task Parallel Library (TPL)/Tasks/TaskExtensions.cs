@@ -361,7 +361,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			if (@this == null) throw new ArgumentNullException(nameof(@this));
 
-			// This is a combination of Jon Skeet's approach and Stephen Toub's approach:
+			// This is a combination of Jon Skeet´s approach and Stephen Toub´s approach:
 			//  http://msmvps.com/blogs/jon_skeet/archive/2012/01/16/eduasync-part-19-ordering-by-completion-ahead-of-time.aspx
 			//  http://blogs.msdn.com/b/pfxteam/archive/2012/08/02/processing-tasks-as-they-complete.aspx
 

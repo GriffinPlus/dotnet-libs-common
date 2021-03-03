@@ -329,6 +329,7 @@ namespace GriffinPlus.Lib.Io
 		{
 			int Operation(MemoryBlockStream stream, byte[] readBuffer, ref int bytesToRead)
 			{
+				Debug.Assert(bytesToRead >= 1);
 				bytesToRead = 1; // overrides the number of bytes to read, so the test does not fail...
 				int readByte = stream.ReadByte();
 				if (readByte < 0) return 0;
@@ -900,7 +901,7 @@ namespace GriffinPlus.Lib.Io
 		{
 			void Operation(MemoryBlockStream stream)
 			{
-				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out _);
 				stream.AttachBuffer(chain);
 			}
 
@@ -940,7 +941,7 @@ namespace GriffinPlus.Lib.Io
 		{
 			async Task Operation(MemoryBlockStream stream, CancellationToken cancellationToken)
 			{
-				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out _);
 				try
 				{
 					await stream.AttachBufferAsync(chain, cancellationToken).ConfigureAwait(false);
@@ -1003,7 +1004,7 @@ namespace GriffinPlus.Lib.Io
 			void Operation(MemoryBlockStream stream)
 			{
 				// stream is empty, but that's irrelevant for the locking behavior
-				using (var firstBlock = stream.DetachBuffer())
+				using (stream.DetachBuffer())
 				{
 				}
 			}
@@ -1059,7 +1060,7 @@ namespace GriffinPlus.Lib.Io
 			async Task Operation(MemoryBlockStream stream, CancellationToken cancellationToken)
 			{
 				// stream is empty, but that's irrelevant for the locking behavior
-				using (var firstBlock = await stream.DetachBufferAsync(cancellationToken).ConfigureAwait(false))
+				using (await stream.DetachBufferAsync(cancellationToken).ConfigureAwait(false))
 				{
 				}
 			}
@@ -1137,7 +1138,7 @@ namespace GriffinPlus.Lib.Io
 			void Operation(MemoryBlockStream stream)
 			{
 				// stream is empty, but that's irrelevant for the locking behavior
-				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data1);
+				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out _);
 				stream.AppendBuffer(chain);
 			}
 
@@ -1214,7 +1215,7 @@ namespace GriffinPlus.Lib.Io
 		{
 			async Task Operation(MemoryBlockStream stream, CancellationToken cancellationToken)
 			{
-				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out _);
 				try
 				{
 					await stream.AppendBufferAsync(chain, cancellationToken).ConfigureAwait(false);
