@@ -1441,7 +1441,7 @@ namespace GriffinPlus.Lib.Io
 				stream.EnterLock();
 
 				// schedule releasing the lock
-				var timeToWait = TimeSpan.FromSeconds(5);
+				var timeToWait = TimeSpan.FromSeconds(10);
 				var delayUnlockTask = Task.Delay(timeToWait).ContinueWith((task, obj) => ((MemoryBlockStream)obj).ExitLock(), stream);
 
 				// start stop watch
@@ -1474,7 +1474,7 @@ namespace GriffinPlus.Lib.Io
 		/// </summary>
 		public async Task TestWaitOnLockIfSynchronizedAndCancellation(Func<MemoryBlockStream, CancellationToken, Task> operation)
 		{
-			var timeToWait = TimeSpan.FromSeconds(5);
+			var timeToWait = TimeSpan.FromSeconds(10);
 
 			using (var stream = CreateStreamToTest())
 			{
