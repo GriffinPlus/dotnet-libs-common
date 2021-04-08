@@ -92,14 +92,14 @@ namespace GriffinPlus.Lib.Threading
 		public int Capacity => mCapacity;
 
 		/// <summary>
-		/// Pushes an item onto the stack.
+		/// Tries to push an item onto the stack.
 		/// </summary>
 		/// <param name="element">Element to push onto the stack.</param>
 		/// <returns>
 		/// true, if the item was successfully pushed onto the stack;
 		/// false, if the stack is full and resizing is not allowed.
 		/// </returns>
-		public bool Push(T element)
+		public bool TryPush(T element)
 		{
 			// get item from the 'free' stack
 			Item item;
@@ -148,7 +148,7 @@ namespace GriffinPlus.Lib.Threading
 		}
 
 		/// <summary>
-		/// Pushes an item onto the stack.
+		/// Tries tp push an item onto the stack.
 		/// </summary>
 		/// <param name="element">Element to push onto the stack.</param>
 		/// <param name="first">
@@ -159,7 +159,7 @@ namespace GriffinPlus.Lib.Threading
 		/// true, if the item was successfully pushed onto the stack;
 		/// false, if the stack is full and resizing is not allowed.
 		/// </returns>
-		public bool Push(T element, out bool first)
+		public bool TryPush(T element, out bool first)
 		{
 			// get item from the 'free' stack
 			var item = GetFreeItem();
@@ -187,20 +187,20 @@ namespace GriffinPlus.Lib.Threading
 		}
 
 		/// <summary>
-		/// Pushes an item onto the stack.
+		/// Tries to atomically push multiple items onto the stack.
 		/// </summary>
 		/// <param name="elements">Elements to push onto the stack.</param>
 		/// <returns>
 		/// true, if all items was successfully pushed onto the stack;
 		/// false, if the stack is full and resizing is not allowed.
 		/// </returns>
-		public bool PushMany(T[] elements)
+		public bool TryPushMany(T[] elements)
 		{
-			return PushMany(elements, out _);
+			return TryPushMany(elements, out _);
 		}
 
 		/// <summary>
-		/// Pushes multiple items onto the stack.
+		/// Tries to atomically push multiple items onto the stack.
 		/// </summary>
 		/// <param name="elements">Elements to push onto the stack.</param>
 		/// <param name="first">
@@ -211,7 +211,7 @@ namespace GriffinPlus.Lib.Threading
 		/// true, if all items were successfully pushed onto the stack;
 		/// false, if the stack is full and resizing is not allowed.
 		/// </returns>
-		public bool PushMany(T[] elements, out bool first)
+		public bool TryPushMany(T[] elements, out bool first)
 		{
 			// ensure the specified array is not null
 			if (elements == null)
@@ -255,14 +255,14 @@ namespace GriffinPlus.Lib.Threading
 		}
 
 		/// <summary>
-		/// Pops an item from the stack.
+		/// Tries to pop an item from the stack.
 		/// </summary>
 		/// <param name="element">Receives the the popped element.</param>
 		/// <returns>
 		/// true, if the element was popped successfully;
 		/// false, if the stack is empty.
 		/// </returns>
-		public bool Pop(out T element)
+		public bool TryPop(out T element)
 		{
 			// get item from the 'free' stack
 			Item item;

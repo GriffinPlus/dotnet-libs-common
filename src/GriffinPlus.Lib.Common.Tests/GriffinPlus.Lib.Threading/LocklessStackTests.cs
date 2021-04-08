@@ -78,13 +78,13 @@ namespace GriffinPlus.Lib.Threading
 			{
 				Assert.Equal(capacity - i, stack.FreeItemCount);
 				Assert.Equal(i, stack.UsedItemCount);
-				Assert.True(stack.Push(i));
+				Assert.True(stack.TryPush(i));
 				Assert.Equal(capacity - i - 1, stack.FreeItemCount);
 				Assert.Equal(i + 1, stack.UsedItemCount);
 			}
 
 			// pushing another item should fail
-			Assert.False(stack.Push(42));
+			Assert.False(stack.TryPush(42));
 		}
 
 
@@ -96,7 +96,7 @@ namespace GriffinPlus.Lib.Threading
 		[Theory]
 		[InlineData(1)]
 		[InlineData(10)]
-		public void Push_Grow(int capacity)
+		public void TryPush_Grow(int capacity)
 		{
 			var stack = new LocklessStack<int>(capacity, true);
 
@@ -105,7 +105,7 @@ namespace GriffinPlus.Lib.Threading
 			{
 				Assert.Equal(capacity - i, stack.FreeItemCount);
 				Assert.Equal(i, stack.UsedItemCount);
-				Assert.True(stack.Push(i));
+				Assert.True(stack.TryPush(i));
 				Assert.Equal(capacity - i - 1, stack.FreeItemCount);
 				Assert.Equal(i + 1, stack.UsedItemCount);
 			}
@@ -114,7 +114,7 @@ namespace GriffinPlus.Lib.Threading
 			Assert.Equal(capacity, stack.Capacity);
 			Assert.Equal(0, stack.FreeItemCount);
 			Assert.Equal(capacity, stack.UsedItemCount);
-			Assert.True(stack.Push(42));
+			Assert.True(stack.TryPush(42));
 			Assert.Equal(capacity + 1, stack.Capacity);
 			Assert.Equal(0, stack.FreeItemCount);
 			Assert.Equal(capacity + 1, stack.UsedItemCount);
@@ -128,7 +128,7 @@ namespace GriffinPlus.Lib.Threading
 		[Theory]
 		[InlineData(1)]
 		[InlineData(10)]
-		public void PushMany_NoGrow(int capacity)
+		public void TryPushMany_NoGrow(int capacity)
 		{
 			// create and populate the stack
 			var stack = new LocklessStack<int>(capacity, false);
@@ -136,7 +136,7 @@ namespace GriffinPlus.Lib.Threading
 
 			// pushing another item should fail
 			int[] data = { 42 };
-			Assert.False(stack.PushMany(data));
+			Assert.False(stack.TryPushMany(data));
 		}
 
 
@@ -148,7 +148,7 @@ namespace GriffinPlus.Lib.Threading
 		[Theory]
 		[InlineData(1)]
 		[InlineData(10)]
-		public void PushMany_Grow(int capacity)
+		public void TryPushMany_Grow(int capacity)
 		{
 			// create and populate the stack
 			var stack = new LocklessStack<int>(capacity, true);
@@ -159,7 +159,7 @@ namespace GriffinPlus.Lib.Threading
 			Assert.Equal(capacity, stack.Capacity);
 			Assert.Equal(0, stack.FreeItemCount);
 			Assert.Equal(capacity, stack.UsedItemCount);
-			Assert.True(stack.PushMany(data));
+			Assert.True(stack.TryPushMany(data));
 			Assert.Equal(capacity + 1, stack.Capacity);
 			Assert.Equal(0, stack.FreeItemCount);
 			Assert.Equal(capacity + 1, stack.UsedItemCount);
@@ -177,14 +177,14 @@ namespace GriffinPlus.Lib.Threading
 		[InlineData(10, 2)]
 		[InlineData(10, 9)]
 		[InlineData(10, 10)]
-		public void Pop(int capacity, int itemCount)
+		public void TryPop(int capacity, int itemCount)
 		{
 			// create and populate the stack
 			var stack = new LocklessStack<int>(capacity, true);
 			PopulateStack(stack, capacity, itemCount);
 
 			// pop an item from the stack
-			Assert.True(stack.Pop(out int item));
+			Assert.True(stack.TryPop(out int item));
 			Assert.Equal(itemCount - 1, item);
 			Assert.Equal(capacity - itemCount + 1, stack.FreeItemCount);
 			Assert.Equal(itemCount - 1, stack.UsedItemCount);
@@ -256,7 +256,7 @@ namespace GriffinPlus.Lib.Threading
 			for (int i = 0; i < itemCount; i++) data[i] = i;
 			Assert.Equal(capacity, stack.FreeItemCount);
 			Assert.Equal(0, stack.UsedItemCount);
-			Assert.True(stack.PushMany(data));
+			Assert.True(stack.TryPushMany(data));
 			Assert.Equal(capacity - itemCount, stack.FreeItemCount);
 			Assert.Equal(itemCount, stack.UsedItemCount);
 			return data;
