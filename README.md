@@ -18,6 +18,7 @@ This namespace provides common functionality and contains the following classes:
 
 - `BitMask`: A bit mask with variable length that supports all relevant comparisons and logical operations.
 - `IdentityComparer`: An equality comparer that uses `System.Object.ReferenceEquals()` to check two objects for equality.
+- `Immutability`: Utility class that assists with determining whether a type is immutable. It analyses types on its own, but supports overriding by annotating types with the `[Immutable]` attribute. Alternatively types can be declared immutable using `AddImmutableType<T>()`.
 - `ObjectPool<T>`: A simple thread-safe implementation of an object pool that allows re-using objects.
 - `RegexHelpers`: Helper methods providing common functionality when pattern matching is required.
 
@@ -44,7 +45,8 @@ Extension methods for common types
 | `System.SByte`    | `Equals`: Equality comparison with tolerance.
 | `System.String`   | `HexToByteArray`: Parses the hexadecimal encoded byte array. 
 | `System.Type`     | `GetPublicMethods`: Gets public methods of a type (supports extended interfaces).
-|                   | `GetPublicProperties` Gets public properties of a type (supports extended interfaces).
+|                   | `GetPublicProperties` : Gets public properties of a type (supports extended interfaces).
+|                   | `IsImmutable` : Checks whether a type is immutable.
 |                   | `IsSubclassOfRawGeneric`: Checks whether a type is an instance of a certain generic type definition.
 
 #### Namespace: GriffinPlus.Lib.Collections

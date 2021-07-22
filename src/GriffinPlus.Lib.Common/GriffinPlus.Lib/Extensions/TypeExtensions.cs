@@ -89,11 +89,27 @@ namespace GriffinPlus.Lib
 		}
 
 		/// <summary>
+		/// Determines whether the specified type is immutable.
+		/// </summary>
+		/// <param name="typeToCheck">Type to check.</param>
+		/// <returns>
+		/// <c>true</c>, if the specified type is immutable;
+		/// otherwise <c>false</c>.
+		/// </returns>
+		public static bool IsImmutable(this Type typeToCheck)
+		{
+			return Immutability.IsImmutable(typeToCheck);
+		}
+
+		/// <summary>
 		/// Determines whether the specified type is a subclass of the specified generic class.
 		/// </summary>
-		/// <param name="genericType">Generic class to check for.</param>
 		/// <param name="typeToCheck">Type to check.</param>
-		/// <returns>true, if the specified type derives from the specified generic type; otherwise false.</returns>
+		/// <param name="genericType">Generic class to check for.</param>
+		/// <returns>
+		/// <c>true</c>, if the specified type derives from the specified generic type;
+		/// otherwise <c>false</c>.
+		/// </returns>
 		public static bool IsSubclassOfRawGeneric(this Type typeToCheck, Type genericType)
 		{
 			while (typeToCheck != null && typeToCheck != typeof(object))
