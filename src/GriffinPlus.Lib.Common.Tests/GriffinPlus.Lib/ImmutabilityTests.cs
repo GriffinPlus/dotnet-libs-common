@@ -19,7 +19,7 @@ namespace GriffinPlus.Lib
 	/// </summary>
 	public class ImmutabilityTests
 	{
-		#region IsImmutable<T>() and IsImmutable(...)
+		#region Common Test Data
 
 		public class TestClass_Mutable
 		{
@@ -32,7 +32,30 @@ namespace GriffinPlus.Lib
 		}
 
 		[Immutable]
-		public class TestClass_ImmutableByAttribute
+		public class TestClass_Public_Unsealed_ImmutableByAttribute
+		{
+			private string mField;
+		}
+
+		[Immutable]
+		internal class TestClass_Internal_Unsealed_ImmutableByAttribute_NoDerivations
+		{
+			private string mField;
+		}
+
+		[Immutable]
+		internal class TestClass_Internal_Unsealed_ImmutableByAttribute_HasMutableDerivation
+		{
+			private string mField;
+		}
+
+		internal class TestClass_Mutable_DerivedFromImmutable : TestClass_Internal_Unsealed_ImmutableByAttribute_HasMutableDerivation
+		{
+			private string mField;
+		}
+
+		[Immutable]
+		public sealed class TestClass_Sealed_ImmutableByAttribute
 		{
 			private string mField;
 		}
@@ -48,48 +71,77 @@ namespace GriffinPlus.Lib
 			get
 			{
 				// primitive types are inherently immutable
+				// ----------------------------------------------------------------------------------------------------
 				string reason = "primitive type, inherently immutable";
-				yield return new object[] { typeof(bool), true, reason };
-				yield return new object[] { typeof(sbyte), true, reason };
-				yield return new object[] { typeof(byte), true, reason };
-				yield return new object[] { typeof(short), true, reason };
-				yield return new object[] { typeof(ushort), true, reason };
-				yield return new object[] { typeof(int), true, reason };
-				yield return new object[] { typeof(uint), true, reason };
-				yield return new object[] { typeof(long), true, reason };
-				yield return new object[] { typeof(ulong), true, reason };
-				yield return new object[] { typeof(float), true, reason };
-				yield return new object[] { typeof(double), true, reason };
-				yield return new object[] { typeof(char), true, reason };
-				yield return new object[] { typeof(IntPtr), true, reason };
-				yield return new object[] { typeof(UIntPtr), true, reason };
+				yield return new object[] { typeof(bool), true, true, reason };
+				yield return new object[] { typeof(sbyte), true, true, reason };
+				yield return new object[] { typeof(byte), true, true, reason };
+				yield return new object[] { typeof(short), true, true, reason };
+				yield return new object[] { typeof(ushort), true, true, reason };
+				yield return new object[] { typeof(int), true, true, reason };
+				yield return new object[] { typeof(uint), true, true, reason };
+				yield return new object[] { typeof(long), true, true, reason };
+				yield return new object[] { typeof(ulong), true, true, reason };
+				yield return new object[] { typeof(float), true, true, reason };
+				yield return new object[] { typeof(double), true, true, reason };
+				yield return new object[] { typeof(char), true, true, reason };
+				yield return new object[] { typeof(IntPtr), true, true, reason };
+				yield return new object[] { typeof(UIntPtr), true, true, reason };
 
 				// built-in types that are known to be immutable in practice
-				reason = "builtin type known to be immutable";
-				yield return new object[] { typeof(Guid), true, reason };
-				yield return new object[] { typeof(DateTime), true, reason };
-				yield return new object[] { typeof(DateTimeOffset), true, reason };
-				yield return new object[] { typeof(string), true, reason };
-				yield return new object[] { typeof(TimeSpan), true, reason };
-				yield return new object[] { typeof(TimeZoneInfo), true, reason };
-				yield return new object[] { typeof(Type), true, reason };
-				yield return new object[] { typeof(Uri), true, reason };
+				// ----------------------------------------------------------------------------------------------------
+				reason = "builtin type, known to be immutable";
+				yield return new object[] { typeof(Guid), true, true, reason };
+				yield return new object[] { typeof(DateTime), true, true, reason };
+				yield return new object[] { typeof(DateTimeOffset), true, true, reason };
+				yield return new object[] { typeof(object), true, true, reason };
+				yield return new object[] { typeof(string), true, true, reason };
+				yield return new object[] { typeof(TimeSpan), true, true, reason };
+				yield return new object[] { typeof(TimeZoneInfo), true, true, reason };
+				yield return new object[] { typeof(Type), true, true, reason };
+				yield return new object[] { typeof(Uri), true, true, reason };
 
 				// enum types
+				// ----------------------------------------------------------------------------------------------------
 				reason = "enum type, inherently immutable";
-				yield return new object[] { typeof(DateTimeKind), true, reason };
+				yield return new object[] { typeof(DateTimeKind), true, true, reason };
 
 				// types that have been annotated with the 'Immutable' attribute
+				// ----------------------------------------------------------------------------------------------------
 				reason = "type was declared immutable (by attribute)";
-				yield return new object[] { typeof(TestClass_ImmutableByAttribute), true, reason };
-				yield return new object[] { typeof(TestStruct_ImmutableByAttribute), true, reason };
+
+				// unsealed public class, may have mutable derivations in other assemblies
+				yield return new object[] { typeof(TestClass_Public_Unsealed_ImmutableByAttribute), true, false, reason };
+
+				// unsealed internal class, current assembly does not contain mutable derivations
+				yield return new object[] { typeof(TestClass_Internal_Unsealed_ImmutableByAttribute_NoDerivations), true, true, reason };
+
+				// unsealed internal class, current assembly contains mutable derivations
+				yield return new object[] { typeof(TestClass_Internal_Unsealed_ImmutableByAttribute_HasMutableDerivation), true, false, reason };
+
+				// sealed class, cannot have derivations
+				yield return new object[] { typeof(TestClass_Sealed_ImmutableByAttribute), true, true, reason };
+
+				// struct, cannot have derivations
+				yield return new object[] { typeof(TestStruct_ImmutableByAttribute), true, true, reason };
+
+				// interfaces
+				// ----------------------------------------------------------------------------------------------------
+				reason = "interface type, inherently mutable";
+				yield return new object[] { typeof(IDisposable), false, false, reason };
 
 				// mutable types
+				// ----------------------------------------------------------------------------------------------------
 				reason = "analysis yielded mutability";
-				yield return new object[] { typeof(TestClass_Mutable), false, reason };
-				yield return new object[] { typeof(TestStruct_Mutable), false, reason };
+				yield return new object[] { typeof(TestClass_Mutable), false, false, reason };
+				yield return new object[] { typeof(TestStruct_Mutable), false, false, reason };
+				yield return new object[] { typeof(TestClass_Mutable_DerivedFromImmutable), false, false, reason };
 			}
 		}
+
+		#endregion
+
+		#region IsImmutable<T>() and IsImmutable(...)
 
 		/// <summary>
 		/// Tests whether <see cref="Immutability.IsImmutable{T}"/> works as expected.
@@ -99,10 +151,18 @@ namespace GriffinPlus.Lib
 		/// <c>true</c>, if the type is expected to reported as immutable;
 		/// otherwise <c>false</c>.
 		/// </param>
+		/// <param name="hasImmutableDerivationsOnly">
+		/// <c>true</c> if the type is immutable and all derived types (if any) are immutable as well;
+		/// otherwise <c>false</c>.
+		/// </param>
 		/// <param name="reason">Expected reason associated with the evaluation result.</param>
 		[Theory]
 		[MemberData(nameof(IsImmutable_TestData))]
-		public void IsImmutableT(Type type, bool isImmutable, string reason)
+		public void IsImmutableT(
+			Type   type,
+			bool   isImmutable,
+			bool   hasImmutableDerivationsOnly,
+			string reason)
 		{
 			// invoke IsImmutable<T>()
 			var method = typeof(Immutability)
@@ -116,6 +176,7 @@ namespace GriffinPlus.Lib
 			var info = Immutability.EvaluatedTypeInfos.FirstOrDefault(x => x.Type == type);
 			Assert.NotNull(info);
 			Assert.Equal(isImmutable, info.IsImmutable);
+			Assert.Equal(hasImmutableDerivationsOnly, info.HasImmutableDerivationsOnly);
 			Assert.Equal(reason, info.Reason);
 		}
 
@@ -124,13 +185,20 @@ namespace GriffinPlus.Lib
 		/// </summary>
 		/// <param name="type">Type to check for immutability.</param>
 		/// <param name="isImmutable">
-		/// <c>true</c>, if the type is expected to reported as immutable;
+		/// <c>true</c>, if the type is expected to reported as immutable; otherwise <c>false</c>.
+		/// </param>
+		/// <param name="hasImmutableDerivationsOnly">
+		/// <c>true</c> if the type is immutable and all derived types (if any) are immutable as well;
 		/// otherwise <c>false</c>.
 		/// </param>
 		/// <param name="reason">Expected reason associated with the evaluation result.</param>
 		[Theory]
 		[MemberData(nameof(IsImmutable_TestData))]
-		public void IsImmutable(Type type, bool isImmutable, string reason)
+		public void IsImmutable(
+			Type   type,
+			bool   isImmutable,
+			bool   hasImmutableDerivationsOnly,
+			string reason)
 		{
 			// invoke IsImmutable(Type)
 			bool actualIsImmutable = Immutability.IsImmutable(type);
@@ -140,6 +208,80 @@ namespace GriffinPlus.Lib
 			var info = Immutability.EvaluatedTypeInfos.FirstOrDefault(x => x.Type == type);
 			Assert.NotNull(info);
 			Assert.Equal(isImmutable, info.IsImmutable);
+			Assert.Equal(hasImmutableDerivationsOnly, info.HasImmutableDerivationsOnly);
+			Assert.Equal(reason, info.Reason);
+		}
+
+		#endregion
+
+		#region IsImmutableFieldType<T>() and IsImmutableFieldType(...)
+
+		/// <summary>
+		/// Tests whether <see cref="Immutability.HasImmutableDerivationsOnly{T}"/> works as expected.
+		/// </summary>
+		/// <param name="type">Type to check for immutability.</param>
+		/// <param name="isImmutable">
+		/// <c>true</c>, if the type is expected to reported as immutable;
+		/// otherwise <c>false</c>.
+		/// </param>
+		/// <param name="hasImmutableDerivationsOnly">
+		/// <c>true</c> if the type is immutable and all derived types (if any) are immutable as well;
+		/// otherwise <c>false</c>.
+		/// </param>
+		/// <param name="reason">Expected reason associated with the evaluation result.</param>
+		[Theory]
+		[MemberData(nameof(IsImmutable_TestData))]
+		public void HasImmutableDerivationsOnlyT(
+			Type   type,
+			bool   isImmutable,
+			bool   hasImmutableDerivationsOnly,
+			string reason)
+		{
+			// invoke IsImmutable<T>()
+			var method = typeof(Immutability)
+				.GetMethods()
+				.First(x => x.Name == nameof(Immutability.HasImmutableDerivationsOnly) && x.IsGenericMethod)
+				.MakeGenericMethod(type);
+			object actualHasImmutableDerivationsOnly = method.Invoke(null, new object[] { });
+			Assert.Equal(hasImmutableDerivationsOnly, actualHasImmutableDerivationsOnly);
+
+			// check cached information about the type
+			var info = Immutability.EvaluatedTypeInfos.FirstOrDefault(x => x.Type == type);
+			Assert.NotNull(info);
+			Assert.Equal(isImmutable, info.IsImmutable);
+			Assert.Equal(hasImmutableDerivationsOnly, info.HasImmutableDerivationsOnly);
+			Assert.Equal(reason, info.Reason);
+		}
+
+		/// <summary>
+		/// Tests whether <see cref="Immutability.IsImmutable"/> works as expected.
+		/// </summary>
+		/// <param name="type">Type to check for immutability.</param>
+		/// <param name="isImmutable">
+		/// <c>true</c>, if the type is expected to reported as immutable; otherwise <c>false</c>.
+		/// </param>
+		/// <param name="hasImmutableDerivationsOnly">
+		/// <c>true</c> if the type is immutable and all derived types (if any) are immutable as well;
+		/// otherwise <c>false</c>.
+		/// </param>
+		/// <param name="reason">Expected reason associated with the evaluation result.</param>
+		[Theory]
+		[MemberData(nameof(IsImmutable_TestData))]
+		public void HasImmutableDerivationsOnly(
+			Type   type,
+			bool   isImmutable,
+			bool   hasImmutableDerivationsOnly,
+			string reason)
+		{
+			// invoke IsImmutable(Type)
+			bool actualHasImmutableDerivationsOnly = Immutability.HasImmutableDerivationsOnly(type);
+			Assert.Equal(hasImmutableDerivationsOnly, actualHasImmutableDerivationsOnly);
+
+			// check cached information about the type
+			var info = Immutability.EvaluatedTypeInfos.FirstOrDefault(x => x.Type == type);
+			Assert.NotNull(info);
+			Assert.Equal(isImmutable, info.IsImmutable);
+			Assert.Equal(hasImmutableDerivationsOnly, info.HasImmutableDerivationsOnly);
 			Assert.Equal(reason, info.Reason);
 		}
 
