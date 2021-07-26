@@ -394,10 +394,10 @@ namespace GriffinPlus.Lib.Threading
 			var task = new[] { tcs.Task }.WhenAll();
 			Assert.False(task.IsCompleted);
 
-			var expectedResult = new object();
+			object expectedResult = new object();
 			tcs.SetResult(expectedResult);
 
-			var result = await task;
+			object[] result = await task;
 			Assert.Equal(new[] { expectedResult }, result);
 		}
 
@@ -408,7 +408,7 @@ namespace GriffinPlus.Lib.Threading
 			var task = new Task[] { tcs.Task }.WhenAll();
 			Assert.False(task.IsCompleted);
 
-			var expectedResult = new object();
+			object expectedResult = new object();
 			tcs.SetResult(expectedResult);
 
 			await task;

@@ -41,7 +41,7 @@ namespace GriffinPlus.Lib.Disposables
 		[Fact]
 		public void ConstructedWithContext_DisposeReceivesThatContext()
 		{
-			var providedContext = new object();
+			object providedContext = new object();
 			object seenContext = null;
 			var disposable = new DelegateSingleDisposable<object>(providedContext, context => { seenContext = context; });
 			disposable.Dispose();

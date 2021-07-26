@@ -59,7 +59,7 @@ namespace GriffinPlus.Lib.Events
 
 				if (Handler.Target != null)
 				{
-					var target = Handler.Target.Target;
+					object target = Handler.Target.Target;
 					if (target == null) return ItemMatchResult.Collected;
 					if (!ReferenceEquals(target, handler.Target)) return ItemMatchResult.NoMatch;
 				}

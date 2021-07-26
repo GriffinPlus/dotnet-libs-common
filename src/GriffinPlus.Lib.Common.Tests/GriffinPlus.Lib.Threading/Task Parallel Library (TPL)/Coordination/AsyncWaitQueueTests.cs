@@ -88,7 +88,7 @@ namespace GriffinPlus.Lib.Threading
 		public void Dequeue_WithResult_SynchronouslyCompletesWithResult()
 		{
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
-			var result = new object();
+			object result = new object();
 			var task = queue.Enqueue();
 			queue.Dequeue(result);
 			Assert.Same(result, task.Result);
@@ -129,7 +129,7 @@ namespace GriffinPlus.Lib.Threading
 		public void DequeueAll_WithResult_CompletesAllTasksWithResult()
 		{
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
-			var result = new object();
+			object result = new object();
 			var task1 = queue.Enqueue();
 			var task2 = queue.Enqueue();
 			queue.DequeueAll(result);

@@ -109,7 +109,7 @@ namespace GriffinPlus.Lib.Events
 			if (Target != null)
 			{
 				// event handler is an instance method
-				var target = Target.Target;
+				object target = Target.Target;
 				if (target != null)
 				{
 					// the target instance is still alive

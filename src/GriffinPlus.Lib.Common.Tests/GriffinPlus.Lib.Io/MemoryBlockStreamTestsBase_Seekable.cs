@@ -422,11 +422,11 @@ namespace GriffinPlus.Lib.Io
 		[Theory]
 		[MemberData(nameof(InjectBufferAtCurrentPosition_TestData))]
 		public async Task InjectBufferAtCurrentPositionAsync_Insert_KeepPosition(
-			int  streamBlockSize,
-			int  initialLength,
-			int  position,
-			int  blockToInsertCount,
-			int  blockToInsertSize)
+			int streamBlockSize,
+			int initialLength,
+			int position,
+			int blockToInsertCount,
+			int blockToInsertSize)
 		{
 			const bool overwrite = false;
 			const bool advancePosition = false;

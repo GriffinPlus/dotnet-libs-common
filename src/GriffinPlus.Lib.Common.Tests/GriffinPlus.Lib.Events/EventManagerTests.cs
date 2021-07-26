@@ -605,7 +605,7 @@ namespace GriffinPlus.Lib.Events
 			var weakReferenceProvider = new Func<WeakReference>(
 				() =>
 				{
-					var provider = new object();
+					object provider = new object();
 					int regCount = EventManager<EventManagerEventArgs>.RegisterEventHandler(provider, EventName, handler, null, scheduleAlways);
 					Assert.Equal(1, regCount);
 					return new WeakReference(provider);

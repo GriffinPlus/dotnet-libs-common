@@ -51,7 +51,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var tcs = new TaskCompletionSource<object>();
 			tcs.TryCompleteFromCompletedTask(TaskConstants.Int32NegativeOne);
-			var result = await tcs.Task;
+			object result = await tcs.Task;
 			Assert.Equal(-1, result);
 		}
 
