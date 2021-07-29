@@ -36,6 +36,7 @@ using Xunit;
 namespace GriffinPlus.Lib.Threading
 {
 
+	[Collection(nameof(NoParallelizationCollection))]
 	public class AsyncManualResetEventTests
 	{
 		[Fact]

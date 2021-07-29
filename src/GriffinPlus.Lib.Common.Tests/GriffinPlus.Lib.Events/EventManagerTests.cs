@@ -21,6 +21,7 @@ namespace GriffinPlus.Lib.Events
 	/// <summary>
 	/// Unit tests targeting the <see cref="EventManager{T}"/> class.
 	/// </summary>
+	[Collection(nameof(NoParallelizationCollection))]
 	public class EventManagerTests : IDisposable
 	{
 		private const string EventName = "MyEvent";
@@ -55,30 +56,20 @@ namespace GriffinPlus.Lib.Events
 		[InlineData(true)]
 		public void Complete_WithoutSynchronizationContext(bool scheduleAlways)
 		{
-			SynchronizationContext handlerThreadSynchronizationContext = null;
-			string handlerData = null;
-			var handlerCalledEvent = new ManualResetEvent(false);
-
-			// the event handler
-			void Handler(object sender, EventManagerEventArgs e)
-			{
-				handlerThreadSynchronizationContext = SynchronizationContext.Current;
-				handlerData = e.MyString;
-				handlerCalledEvent.Set();
-			}
+			var recipient = new EventManagerEventArgsRecipient();
 
 			// register event handler
 			int regCount = EventManager<EventManagerEventArgs>.RegisterEventHandler(
 				this,
 				EventName,
-				Handler,
+				recipient.Handler,
 				null,
 				scheduleAlways);
 			Assert.Equal(1, regCount);
 
 			// check whether the handler is registered
 			Assert.True(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
-			Assert.True(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, Handler));
+			Assert.True(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
 
 			// fire event
 			string testData = Guid.NewGuid().ToString("D");
@@ -88,26 +79,26 @@ namespace GriffinPlus.Lib.Events
 			{
 				// handler is called asynchronously
 				// => wait for the handler to be called and continue
-				Assert.True(handlerCalledEvent.WaitOne(60000));
-				Assert.Null(handlerThreadSynchronizationContext); // synchronization context should be null for thread pool threads
+				Assert.True(recipient.HandlerCalledEvent.Wait(1000));
+				Assert.Null(recipient.SynchronizationContext); // synchronization context should be null for thread pool threads
 			}
 			else
 			{
 				// handler is called synchronously
-				Assert.NotNull(handlerThreadSynchronizationContext);
-				Assert.Same(SynchronizationContext.Current, handlerThreadSynchronizationContext);
+				Assert.NotNull(recipient.SynchronizationContext);
+				Assert.Same(SynchronizationContext.Current, recipient.SynchronizationContext);
 			}
 
 			// the event should have received the expected test data
-			Assert.Equal(testData, handlerData);
+			Assert.Equal(testData, recipient.Data);
 
 			// unregister event handler
-			regCount = EventManager<EventManagerEventArgs>.UnregisterEventHandler(this, EventName, Handler);
+			regCount = EventManager<EventManagerEventArgs>.UnregisterEventHandler(this, EventName, recipient.Handler);
 			Assert.Equal(0, regCount);
 
 			// check whether the handler is not registered
 			Assert.False(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
-			Assert.False(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, Handler));
+			Assert.False(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
 		}
 
 		/// <summary>
@@ -118,17 +109,7 @@ namespace GriffinPlus.Lib.Events
 		[InlineData(true)]
 		public void Complete_WithoutSynchronizationContext_FireImmediately(bool scheduleAlways)
 		{
-			SynchronizationContext handlerThreadSynchronizationContext = null;
-			string handlerData = null;
-			var handlerCalledEvent = new ManualResetEventSlim(false);
-
-			// the event handler
-			void Handler(object sender, EventManagerEventArgs e)
-			{
-				handlerThreadSynchronizationContext = SynchronizationContext.Current;
-				handlerData = e.MyString;
-				handlerCalledEvent.Set();
-			}
+			var recipient = new EventManagerEventArgsRecipient();
 
 			int regCount;
 			string testData = Guid.NewGuid().ToString("D");
@@ -138,7 +119,7 @@ namespace GriffinPlus.Lib.Events
 				regCount = EventManager<EventManagerEventArgs>.RegisterEventHandler(
 					this,
 					EventName,
-					Handler,
+					recipient.Handler,
 					null,
 					true,
 					true,
@@ -148,8 +129,8 @@ namespace GriffinPlus.Lib.Events
 
 				// handler is called asynchronously
 				// => wait for the handler to be called and continue
-				Assert.True(handlerCalledEvent.Wait(60000));
-				Assert.Null(handlerThreadSynchronizationContext); // synchronization context should be null for thread pool threads
+				Assert.True(recipient.HandlerCalledEvent.Wait(1000));
+				Assert.Null(recipient.SynchronizationContext); // synchronization context should be null for thread pool threads
 			}
 			else
 			{
@@ -157,7 +138,7 @@ namespace GriffinPlus.Lib.Events
 				regCount = EventManager<EventManagerEventArgs>.RegisterEventHandler(
 					this,
 					EventName,
-					Handler,
+					recipient.Handler,
 					null,
 					false,
 					true,
@@ -166,24 +147,24 @@ namespace GriffinPlus.Lib.Events
 				Assert.Equal(1, regCount);
 
 				// handler is called synchronously
-				Assert.NotNull(handlerThreadSynchronizationContext);
-				Assert.Same(SynchronizationContext.Current, handlerThreadSynchronizationContext);
+				Assert.NotNull(recipient.SynchronizationContext);
+				Assert.Same(SynchronizationContext.Current, recipient.SynchronizationContext);
 			}
 
 			// the event should have received the expected test data
-			Assert.Equal(testData, handlerData);
+			Assert.Equal(testData, recipient.Data);
 
 			// check whether the handler is registered
 			Assert.True(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
-			Assert.True(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, Handler));
+			Assert.True(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
 
 			// unregister event handler
-			regCount = EventManager<EventManagerEventArgs>.UnregisterEventHandler(this, EventName, Handler);
+			regCount = EventManager<EventManagerEventArgs>.UnregisterEventHandler(this, EventName, recipient.Handler);
 			Assert.Equal(0, regCount);
 
 			// check whether the handler is not registered
 			Assert.False(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
-			Assert.False(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, Handler));
+			Assert.False(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
 		}
 
 		/// <summary>
@@ -196,30 +177,25 @@ namespace GriffinPlus.Lib.Events
 		[InlineData(true, true)]
 		public async Task Complete_WithSynchronizationContext(bool scheduleAlways, bool fireOnSameThread)
 		{
-			SynchronizationContext handlerThreadSynchronizationContext = null;
-			string handlerData = null;
-			var handlerCalledEvent = new ManualResetEventSlim(false);
-
-			// the event handler
-			void Handler(object sender, EventManagerEventArgs e)
-			{
-				handlerThreadSynchronizationContext = SynchronizationContext.Current;
-				handlerData = e.MyString;
-				handlerCalledEvent.Set();
-			}
+			var recipient = new EventManagerEventArgsRecipient();
 
 			// register event handler
 			await mThread.Factory.Run(
 				() =>
 				{
 					Assert.NotNull(SynchronizationContext.Current);
-					int regCount1 = EventManager<EventManagerEventArgs>.RegisterEventHandler(this, EventName, Handler, SynchronizationContext.Current, scheduleAlways);
+					int regCount1 = EventManager<EventManagerEventArgs>.RegisterEventHandler(
+						this,
+						EventName,
+						recipient.Handler,
+						SynchronizationContext.Current,
+						scheduleAlways);
 					Assert.Equal(1, regCount1);
 				});
 
 			// check whether the handler is registered
 			Assert.True(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
-			Assert.True(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, Handler));
+			Assert.True(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
 
 			string testData = Guid.NewGuid().ToString("D");
 			if (fireOnSameThread)
@@ -233,12 +209,12 @@ namespace GriffinPlus.Lib.Events
 						{
 							Assert.NotNull(SynchronizationContext.Current);
 							EventManager<EventManagerEventArgs>.FireEvent(this, EventName, this, new EventManagerEventArgs(testData));
-							Assert.False(handlerCalledEvent.IsSet, "Handler was invoked directly, should have been scheduled.");
+							Assert.False(recipient.HandlerCalledEvent.IsSet, "Handler was invoked directly, should have been scheduled.");
 						});
 
-					Assert.True(handlerCalledEvent.Wait(60000));
-					Assert.Same(mThread.Context.SynchronizationContext, handlerThreadSynchronizationContext);
-					Assert.Equal(testData, handlerData);
+					Assert.True(recipient.HandlerCalledEvent.Wait(1000));
+					Assert.Same(mThread.Context.SynchronizationContext, recipient.SynchronizationContext);
+					Assert.Equal(testData, recipient.Data);
 				}
 				else
 				{
@@ -249,9 +225,9 @@ namespace GriffinPlus.Lib.Events
 						{
 							Assert.NotNull(SynchronizationContext.Current);
 							EventManager<EventManagerEventArgs>.FireEvent(this, EventName, this, new EventManagerEventArgs(testData));
-							Assert.True(handlerCalledEvent.IsSet, "Handler was not invoked directly");
-							Assert.Same(SynchronizationContext.Current, handlerThreadSynchronizationContext);
-							Assert.Equal(testData, handlerData);
+							Assert.True(recipient.HandlerCalledEvent.IsSet, "Handler was not invoked directly");
+							Assert.Same(SynchronizationContext.Current, recipient.SynchronizationContext);
+							Assert.Equal(testData, recipient.Data);
 						});
 				}
 			}
@@ -260,18 +236,18 @@ namespace GriffinPlus.Lib.Events
 				// let the executing thread fire the event (other thread than the one that registered the handler)
 				// => handler should be invoked using the synchronization context of the thread that registered the handler
 				EventManager<EventManagerEventArgs>.FireEvent(this, EventName, this, new EventManagerEventArgs(testData));
-				Assert.True(handlerCalledEvent.Wait(60000));
-				Assert.Same(mThread.Context.SynchronizationContext, handlerThreadSynchronizationContext);
-				Assert.Equal(testData, handlerData);
+				Assert.True(recipient.HandlerCalledEvent.Wait(1000));
+				Assert.Same(mThread.Context.SynchronizationContext, recipient.SynchronizationContext);
+				Assert.Equal(testData, recipient.Data);
 			}
 
 			// unregister event handler
-			int regCount2 = EventManager<EventManagerEventArgs>.UnregisterEventHandler(this, EventName, Handler);
+			int regCount2 = EventManager<EventManagerEventArgs>.UnregisterEventHandler(this, EventName, recipient.Handler);
 			Assert.Equal(0, regCount2);
 
 			// check whether the handler is not registered
 			Assert.False(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
-			Assert.False(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, Handler));
+			Assert.False(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
 		}
 
 		/// <summary>
@@ -282,17 +258,7 @@ namespace GriffinPlus.Lib.Events
 		[InlineData(true)]
 		public async Task Complete_WithSynchronizationContext_FireImmediately(bool scheduleAlways)
 		{
-			SynchronizationContext handlerThreadSynchronizationContext = null;
-			string handlerData = null;
-			var handlerCalledEvent = new ManualResetEventSlim(false);
-
-			// the event handler
-			void Handler(object sender, EventManagerEventArgs e)
-			{
-				handlerThreadSynchronizationContext = SynchronizationContext.Current;
-				handlerData = e.MyString;
-				handlerCalledEvent.Set();
-			}
+			var recipient = new EventManagerEventArgsRecipient();
 
 			// register event handler and let it fire immediately
 			string testData = Guid.NewGuid().ToString("D");
@@ -307,19 +273,19 @@ namespace GriffinPlus.Lib.Events
 						int regCount1 = EventManager<EventManagerEventArgs>.RegisterEventHandler(
 							this,
 							EventName,
-							Handler,
+							recipient.Handler,
 							SynchronizationContext.Current,
 							true,
 							true,
 							this,
 							new EventManagerEventArgs(testData));
 						Assert.Equal(1, regCount1);
-						Assert.False(handlerCalledEvent.IsSet, "Handler was invoked directly, should have been scheduled.");
+						Assert.False(recipient.HandlerCalledEvent.IsSet, "Handler was invoked directly, should have been scheduled.");
 					});
 
-				Assert.True(handlerCalledEvent.Wait(60000));
-				Assert.Same(mThread.Context.SynchronizationContext, handlerThreadSynchronizationContext);
-				Assert.Equal(testData, handlerData);
+				Assert.True(recipient.HandlerCalledEvent.Wait(1000));
+				Assert.Same(mThread.Context.SynchronizationContext, recipient.SynchronizationContext);
+				Assert.Equal(testData, recipient.Data);
 			}
 			else
 			{
@@ -331,30 +297,30 @@ namespace GriffinPlus.Lib.Events
 						int regCount1 = EventManager<EventManagerEventArgs>.RegisterEventHandler(
 							this,
 							EventName,
-							Handler,
+							recipient.Handler,
 							SynchronizationContext.Current,
 							false,
 							true,
 							this,
 							new EventManagerEventArgs(testData));
 						Assert.Equal(1, regCount1);
-						Assert.True(handlerCalledEvent.IsSet, "Handler was not invoked directly");
-						Assert.Same(SynchronizationContext.Current, handlerThreadSynchronizationContext);
-						Assert.Equal(testData, handlerData);
+						Assert.True(recipient.HandlerCalledEvent.IsSet, "Handler was not invoked directly");
+						Assert.Same(SynchronizationContext.Current, recipient.SynchronizationContext);
+						Assert.Equal(testData, recipient.Data);
 					});
 			}
 
 			// check whether the handler is registered
 			Assert.True(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
-			Assert.True(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, Handler));
+			Assert.True(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
 
 			// unregister event handler
-			int regCount2 = EventManager<EventManagerEventArgs>.UnregisterEventHandler(this, EventName, Handler);
+			int regCount2 = EventManager<EventManagerEventArgs>.UnregisterEventHandler(this, EventName, recipient.Handler);
 			Assert.Equal(0, regCount2);
 
 			// check whether the handler is not registered
 			Assert.False(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
-			Assert.False(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, Handler));
+			Assert.False(EventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
 		}
 
 		/// <summary>
@@ -365,32 +331,12 @@ namespace GriffinPlus.Lib.Events
 		[InlineData(true)]
 		public void GetEventCallers_WithoutSynchronizationContext(bool scheduleAlways)
 		{
-			SynchronizationContext handlerThreadSynchronizationContext1 = null;
-			SynchronizationContext handlerThreadSynchronizationContext2 = null;
-			string handlerData1 = null;
-			string handlerData2 = null;
-			var handlerCalledEvent1 = new ManualResetEventSlim(false);
-			var handlerCalledEvent2 = new ManualResetEventSlim(false);
-
-			// event handler 1
-			void Handler1(object sender, EventManagerEventArgs e)
-			{
-				handlerThreadSynchronizationContext1 = SynchronizationContext.Current;
-				handlerData1 = e.MyString;
-				handlerCalledEvent1.Set();
-			}
-
-			// event handler 2
-			void Handler2(object sender, EventManagerEventArgs e)
-			{
-				handlerThreadSynchronizationContext2 = SynchronizationContext.Current;
-				handlerData2 = e.MyString;
-				handlerCalledEvent2.Set();
-			}
+			var recipient1 = new EventManagerEventArgsRecipient();
+			var recipient2 = new EventManagerEventArgsRecipient();
 
 			// register event handlers
-			EventManager<EventManagerEventArgs>.RegisterEventHandler(this, EventName, Handler1, null, scheduleAlways);
-			EventManager<EventManagerEventArgs>.RegisterEventHandler(this, EventName, Handler2, null, scheduleAlways);
+			EventManager<EventManagerEventArgs>.RegisterEventHandler(this, EventName, recipient1.Handler, null, scheduleAlways);
+			EventManager<EventManagerEventArgs>.RegisterEventHandler(this, EventName, recipient2.Handler, null, scheduleAlways);
 
 			// get event callers
 			var callers = EventManager<EventManagerEventArgs>.GetEventCallers(this, EventName);
@@ -403,23 +349,23 @@ namespace GriffinPlus.Lib.Events
 			{
 				delegates[0](this, new EventManagerEventArgs("Test1"));
 				delegates[1](this, new EventManagerEventArgs("Test2"));
-				Assert.True(handlerCalledEvent1.Wait(60000));
-				Assert.True(handlerCalledEvent2.Wait(60000));
-				Assert.Null(handlerThreadSynchronizationContext1);
-				Assert.Null(handlerThreadSynchronizationContext2);
-				Assert.Equal("Test1", handlerData1);
-				Assert.Equal("Test2", handlerData2);
+				Assert.True(recipient1.HandlerCalledEvent.Wait(1000));
+				Assert.True(recipient2.HandlerCalledEvent.Wait(1000));
+				Assert.Null(recipient1.SynchronizationContext);
+				Assert.Null(recipient2.SynchronizationContext);
+				Assert.Equal("Test1", recipient1.Data);
+				Assert.Equal("Test2", recipient2.Data);
 			}
 			else
 			{
 				// the handlers should be called directly
 				delegates[0](this, new EventManagerEventArgs("Test1"));
-				Assert.True(handlerCalledEvent1.IsSet, "Handler was not invoked directly");
-				Assert.Equal("Test1", handlerData1);
+				Assert.True(recipient1.HandlerCalledEvent.IsSet, "Handler was not invoked directly");
+				Assert.Equal("Test1", recipient1.Data);
 
 				delegates[1](this, new EventManagerEventArgs("Test2"));
-				Assert.True(handlerCalledEvent2.IsSet, "Handler was not invoked directly");
-				Assert.Equal("Test2", handlerData2);
+				Assert.True(recipient2.HandlerCalledEvent.IsSet, "Handler was not invoked directly");
+				Assert.Equal("Test2", recipient2.Data);
 			}
 		}
 
@@ -434,28 +380,8 @@ namespace GriffinPlus.Lib.Events
 		[SuppressMessage("ReSharper", "RedundantAssignment")]
 		public async Task GetEventCallers_WithSynchronizationContext(bool scheduleAlways, bool fireOnSameThread)
 		{
-			SynchronizationContext handlerThreadSynchronizationContext1 = null;
-			SynchronizationContext handlerThreadSynchronizationContext2 = null;
-			string handlerData1 = null;
-			string handlerData2 = null;
-			var handlerCalledEvent1 = new ManualResetEventSlim(false);
-			var handlerCalledEvent2 = new ManualResetEventSlim(false);
-
-			// event handler 1
-			void Handler1(object sender, EventManagerEventArgs e)
-			{
-				handlerThreadSynchronizationContext1 = SynchronizationContext.Current;
-				handlerData1 = e.MyString;
-				handlerCalledEvent1.Set();
-			}
-
-			// event handler 2
-			void Handler2(object sender, EventManagerEventArgs e)
-			{
-				handlerThreadSynchronizationContext2 = SynchronizationContext.Current;
-				handlerData2 = e.MyString;
-				handlerCalledEvent2.Set();
-			}
+			var recipient1 = new EventManagerEventArgsRecipient();
+			var recipient2 = new EventManagerEventArgsRecipient();
 
 			// register handler 1 only, but do not trigger firing immediately
 			await mThread.Factory.Run(
@@ -466,16 +392,16 @@ namespace GriffinPlus.Lib.Events
 					EventManager<EventManagerEventArgs>.RegisterEventHandler(
 						this,
 						EventName,
-						Handler1,
+						recipient1.Handler,
 						SynchronizationContext.Current,
 						scheduleAlways);
 
-					Assert.False(handlerCalledEvent1.IsSet, "Event handler was called unexpectedly.");
+					Assert.False(recipient1.HandlerCalledEvent.IsSet, "Event handler was called unexpectedly.");
 				});
 
 			// handler 1 should not be called immediately
-			Assert.False(handlerCalledEvent1.Wait(60000), "Event handler was scheduled to be called unexpectedly.");
-			Assert.Null(handlerData1);
+			Assert.False(recipient1.HandlerCalledEvent.Wait(1000), "Event handler was scheduled to be called unexpectedly.");
+			Assert.Null(recipient1.Data);
 
 			if (scheduleAlways)
 			{
@@ -488,20 +414,20 @@ namespace GriffinPlus.Lib.Events
 						EventManager<EventManagerEventArgs>.RegisterEventHandler(
 							this,
 							EventName,
-							Handler2,
+							recipient2.Handler,
 							SynchronizationContext.Current,
 							true,
 							true,
 							this,
 							new EventManagerEventArgs("Test2"));
 
-						Assert.False(handlerCalledEvent2.IsSet, "Event handler was called immediately, should have been scheduled to be executed...");
+						Assert.False(recipient2.HandlerCalledEvent.IsSet, "Event handler was called immediately, should have been scheduled to be executed...");
 					});
 
 				// handler 2 should have been called after some time
-				Assert.True(handlerCalledEvent2.Wait(60000), "The event was not called asynchronously.");
-				Assert.Same(mThread.Context.SynchronizationContext, handlerThreadSynchronizationContext2);
-				Assert.Equal("Test2", handlerData2);
+				Assert.True(recipient2.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
+				Assert.Same(mThread.Context.SynchronizationContext, recipient2.SynchronizationContext);
+				Assert.Equal("Test2", recipient2.Data);
 			}
 			else
 			{
@@ -514,19 +440,19 @@ namespace GriffinPlus.Lib.Events
 						EventManager<EventManagerEventArgs>.RegisterEventHandler(
 							this,
 							EventName,
-							Handler2,
+							recipient2.Handler,
 							SynchronizationContext.Current,
 							false,
 							true,
 							this,
 							new EventManagerEventArgs("Test2"));
 
-						Assert.True(handlerCalledEvent2.IsSet, "Event handler should have been called immediately.");
+						Assert.True(recipient2.HandlerCalledEvent.IsSet, "Event handler should have been called immediately.");
 					});
 
 				// handler 2 should have been called after some time
-				Assert.Same(mThread.Context.SynchronizationContext, handlerThreadSynchronizationContext2);
-				Assert.Equal("Test2", handlerData2);
+				Assert.Same(mThread.Context.SynchronizationContext, recipient2.SynchronizationContext);
+				Assert.Equal("Test2", recipient2.Data);
 			}
 
 			// get delegates invoking the event handlers
@@ -535,10 +461,11 @@ namespace GriffinPlus.Lib.Events
 			var delegates = callers.GetInvocationList().Cast<EventHandler<EventManagerEventArgs>>().ToArray();
 			Assert.Equal(2, delegates.Length);
 
+			// reset event handler data
+			recipient1.Reset();
+			recipient2.Reset();
+
 			// call handlers
-			handlerCalledEvent1.Reset();
-			handlerCalledEvent2.Reset();
-			handlerData1 = handlerData2 = null;
 			if (fireOnSameThread)
 			{
 				// call handlers in the context of the thread that registered the event
@@ -551,12 +478,12 @@ namespace GriffinPlus.Lib.Events
 						{
 							delegates[0](this, new EventManagerEventArgs("Test1"));
 							delegates[1](this, new EventManagerEventArgs("Test2"));
-							Assert.False(handlerCalledEvent1.IsSet, "Event handler was called unexpectedly.");
-							Assert.False(handlerCalledEvent2.IsSet, "Event handler was called unexpectedly.");
+							Assert.False(recipient1.HandlerCalledEvent.IsSet, "Event handler was called unexpectedly.");
+							Assert.False(recipient2.HandlerCalledEvent.IsSet, "Event handler was called unexpectedly.");
 						});
 
-					Assert.True(handlerCalledEvent1.Wait(60000), "The event was not called asynchronously.");
-					Assert.True(handlerCalledEvent2.Wait(60000), "The event was not called asynchronously.");
+					Assert.True(recipient1.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
+					Assert.True(recipient2.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
 				}
 				else
 				{
@@ -567,8 +494,8 @@ namespace GriffinPlus.Lib.Events
 						{
 							delegates[0](this, new EventManagerEventArgs("Test1"));
 							delegates[1](this, new EventManagerEventArgs("Test2"));
-							Assert.True(handlerCalledEvent1.IsSet, "Event handler should have been called directly.");
-							Assert.True(handlerCalledEvent2.IsSet, "Event handler should have been called directly.");
+							Assert.True(recipient1.HandlerCalledEvent.IsSet, "Event handler should have been called directly.");
+							Assert.True(recipient2.HandlerCalledEvent.IsSet, "Event handler should have been called directly.");
 						});
 				}
 			}
@@ -578,15 +505,15 @@ namespace GriffinPlus.Lib.Events
 				// => handlers should be called in the context of the thread registering the event
 				delegates[0](this, new EventManagerEventArgs("Test1"));
 				delegates[1](this, new EventManagerEventArgs("Test2"));
-				Assert.True(handlerCalledEvent1.Wait(60000), "The event was not called asynchronously.");
-				Assert.True(handlerCalledEvent2.Wait(60000), "The event was not called asynchronously.");
+				Assert.True(recipient1.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
+				Assert.True(recipient2.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
 			}
 
 			// the handlers should have run in the context of the thread that registered them
-			Assert.Same(mThread.Context.SynchronizationContext, handlerThreadSynchronizationContext1);
-			Assert.Same(mThread.Context.SynchronizationContext, handlerThreadSynchronizationContext2);
-			Assert.Equal("Test1", handlerData1);
-			Assert.Equal("Test2", handlerData2);
+			Assert.Same(mThread.Context.SynchronizationContext, recipient1.SynchronizationContext);
+			Assert.Same(mThread.Context.SynchronizationContext, recipient2.SynchronizationContext);
+			Assert.Equal("Test1", recipient1.Data);
+			Assert.Equal("Test2", recipient2.Data);
 		}
 
 		/// <summary>
@@ -597,8 +524,7 @@ namespace GriffinPlus.Lib.Events
 		[InlineData(true)]
 		public void EnsureEventProvidersAreCollectable(bool scheduleAlways)
 		{
-			// the event handler
-			EventHandler<EventManagerEventArgs> handler = (sender, e) => { };
+			var recipient = new EventManagerEventArgsRecipient();
 
 			// register an event handler to a dummy event provider object
 			// (must not be done in the same method to allow the object to be collected in the next step)
@@ -606,7 +532,7 @@ namespace GriffinPlus.Lib.Events
 				() =>
 				{
 					object provider = new object();
-					int regCount = EventManager<EventManagerEventArgs>.RegisterEventHandler(provider, EventName, handler, null, scheduleAlways);
+					int regCount = EventManager<EventManagerEventArgs>.RegisterEventHandler(provider, EventName, recipient.Handler, null, scheduleAlways);
 					Assert.Equal(1, regCount);
 					return new WeakReference(provider);
 				}).Invoke();

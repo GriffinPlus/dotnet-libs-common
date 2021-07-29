@@ -37,6 +37,7 @@ using Xunit;
 namespace GriffinPlus.Lib.Threading
 {
 
+	[Collection(nameof(NoParallelizationCollection))]
 	public class AsyncMonitorUnitTests
 	{
 		[Fact]

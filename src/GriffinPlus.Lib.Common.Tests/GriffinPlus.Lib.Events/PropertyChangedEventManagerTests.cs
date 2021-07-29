@@ -20,21 +20,12 @@ namespace GriffinPlus.Lib.Events
 	/// <summary>
 	/// Unit tests targeting the <see cref="PropertyChangedEventManager"/> class.
 	/// </summary>
+	[Collection(nameof(NoParallelizationCollection))]
 	public class PropertyChangedEventManagerTests : IDisposable
 	{
 		private const string PropertyName = "MyProperty";
 
 		private AsyncContextThread mThread;
-
-		public class TestEventRecipient
-		{
-			public string MyString { get; set; }
-
-			public void EH_MyEvent(object sender, EventManagerEventArgs e)
-			{
-				MyString = e.MyString;
-			}
-		}
 
 		/// <summary>
 		/// Initializes an instance the <see cref="PropertyChangedEventManagerTests"/> class performing common initialization before running a test.
@@ -64,20 +55,10 @@ namespace GriffinPlus.Lib.Events
 		[InlineData(true)]
 		public void Complete_WithoutSynchronizationContext(bool scheduleAlways)
 		{
-			SynchronizationContext handlerThreadSynchronizationContext = null;
-			string changedPropertyName = null;
-			var handlerCalledEvent = new ManualResetEventSlim(false);
-
-			// the event handler
-			void Handler(object sender, PropertyChangedEventArgs e)
-			{
-				handlerThreadSynchronizationContext = SynchronizationContext.Current;
-				changedPropertyName = e.PropertyName;
-				handlerCalledEvent.Set();
-			}
+			var recipient = new PropertyChangedEventRecipient();
 
 			// register event handler
-			int regCount = PropertyChangedEventManager.RegisterEventHandler(this, Handler, null, scheduleAlways);
+			int regCount = PropertyChangedEventManager.RegisterEventHandler(this, recipient.Handler, null, scheduleAlways);
 			Assert.Equal(1, regCount);
 
 			// check whether the handler is registered
@@ -90,21 +71,21 @@ namespace GriffinPlus.Lib.Events
 			{
 				// handler is called asynchronously
 				// => wait for the handler to be called and continue
-				Assert.True(handlerCalledEvent.Wait(60000));
-				Assert.Null(handlerThreadSynchronizationContext); // synchronization context should be null for thread pool threads
+				Assert.True(recipient.HandlerCalledEvent.Wait(1000));
+				Assert.Null(recipient.SynchronizationContext); // synchronization context should be null for thread pool threads
 			}
 			else
 			{
 				// handler is called synchronously
-				Assert.NotNull(handlerThreadSynchronizationContext);
-				Assert.Same(SynchronizationContext.Current, handlerThreadSynchronizationContext);
+				Assert.NotNull(recipient.SynchronizationContext);
+				Assert.Same(SynchronizationContext.Current, recipient.SynchronizationContext);
 			}
 
 			// the event should have received the property name
-			Assert.Equal(PropertyName, changedPropertyName);
+			Assert.Equal(PropertyName, recipient.ChangedPropertyName);
 
 			// unregister event handler
-			regCount = PropertyChangedEventManager.UnregisterEventHandler(this, Handler);
+			regCount = PropertyChangedEventManager.UnregisterEventHandler(this, recipient.Handler);
 			Assert.Equal(0, regCount);
 
 			// check whether the handler is not registered
@@ -119,17 +100,7 @@ namespace GriffinPlus.Lib.Events
 		[InlineData(true)]
 		public void Complete_WithoutSynchronizationContext_FireImmediately(bool scheduleAlways)
 		{
-			SynchronizationContext handlerThreadSynchronizationContext = null;
-			string changedPropertyName = null;
-			var handlerCalledEvent = new ManualResetEventSlim(false);
-
-			// the event handler
-			void Handler(object sender, PropertyChangedEventArgs e)
-			{
-				handlerThreadSynchronizationContext = SynchronizationContext.Current;
-				changedPropertyName = e.PropertyName;
-				handlerCalledEvent.Set();
-			}
+			var recipient = new PropertyChangedEventRecipient();
 
 			int regCount;
 			if (scheduleAlways)
@@ -137,7 +108,7 @@ namespace GriffinPlus.Lib.Events
 				// register event handler and fire it immediately
 				regCount = PropertyChangedEventManager.RegisterEventHandler(
 					this,
-					Handler,
+					recipient.Handler,
 					null,
 					true,
 					true,
@@ -147,15 +118,15 @@ namespace GriffinPlus.Lib.Events
 
 				// handler is called asynchronously
 				// => wait for the handler to be called and continue
-				Assert.True(handlerCalledEvent.Wait(60000));
-				Assert.Null(handlerThreadSynchronizationContext); // synchronization context should be null for thread pool threads
+				Assert.True(recipient.HandlerCalledEvent.Wait(1000));
+				Assert.Null(recipient.SynchronizationContext); // synchronization context should be null for thread pool threads
 			}
 			else
 			{
 				// register event handler and fire it immediately
 				regCount = PropertyChangedEventManager.RegisterEventHandler(
 					this,
-					Handler,
+					recipient.Handler,
 					null,
 					false,
 					true,
@@ -164,18 +135,18 @@ namespace GriffinPlus.Lib.Events
 				Assert.Equal(1, regCount);
 
 				// handler is called synchronously
-				Assert.NotNull(handlerThreadSynchronizationContext);
-				Assert.Same(SynchronizationContext.Current, handlerThreadSynchronizationContext);
+				Assert.NotNull(recipient.SynchronizationContext);
+				Assert.Same(SynchronizationContext.Current, recipient.SynchronizationContext);
 			}
 
 			// the event should have received the property name
-			Assert.Equal(PropertyName, changedPropertyName);
+			Assert.Equal(PropertyName, recipient.ChangedPropertyName);
 
 			// check whether the handler is registered
 			Assert.True(PropertyChangedEventManager.IsHandlerRegistered(this));
 
 			// unregister event handler
-			regCount = PropertyChangedEventManager.UnregisterEventHandler(this, Handler);
+			regCount = PropertyChangedEventManager.UnregisterEventHandler(this, recipient.Handler);
 			Assert.Equal(0, regCount);
 
 			// check whether the handler is not registered any more
@@ -192,24 +163,18 @@ namespace GriffinPlus.Lib.Events
 		[InlineData(true, true)]
 		public async Task Complete_WithSynchronizationContext(bool scheduleAlways, bool fireOnSameThread)
 		{
-			SynchronizationContext handlerThreadSynchronizationContext = null;
-			string changedPropertyName = null;
-			var handlerCalledEvent = new ManualResetEventSlim();
-
-			// the event handler that is expected to be called
-			void Handler(object sender, PropertyChangedEventArgs e)
-			{
-				handlerThreadSynchronizationContext = SynchronizationContext.Current;
-				changedPropertyName = e.PropertyName;
-				handlerCalledEvent.Set();
-			}
+			var recipient = new PropertyChangedEventRecipient();
 
 			// register event handler
 			await mThread.Factory.Run(
 				() =>
 				{
 					Assert.NotNull(SynchronizationContext.Current);
-					int regCount1 = PropertyChangedEventManager.RegisterEventHandler(this, Handler, SynchronizationContext.Current, scheduleAlways);
+					int regCount1 = PropertyChangedEventManager.RegisterEventHandler(
+						this,
+						recipient.Handler,
+						SynchronizationContext.Current,
+						scheduleAlways);
 					Assert.Equal(1, regCount1);
 				});
 
@@ -227,12 +192,12 @@ namespace GriffinPlus.Lib.Events
 						{
 							Assert.NotNull(SynchronizationContext.Current);
 							PropertyChangedEventManager.FireEvent(this, PropertyName);
-							Assert.False(handlerCalledEvent.IsSet, "Handler was invoked directly, should have been scheduled.");
+							Assert.False(recipient.HandlerCalledEvent.IsSet, "Handler was invoked directly, should have been scheduled.");
 						});
 
-					Assert.True(handlerCalledEvent.Wait(60000));
-					Assert.Same(mThread.Context.SynchronizationContext, handlerThreadSynchronizationContext);
-					Assert.Equal(PropertyName, changedPropertyName);
+					Assert.True(recipient.HandlerCalledEvent.Wait(1000));
+					Assert.Same(mThread.Context.SynchronizationContext, recipient.SynchronizationContext);
+					Assert.Equal(PropertyName, recipient.ChangedPropertyName);
 				}
 				else
 				{
@@ -243,9 +208,9 @@ namespace GriffinPlus.Lib.Events
 						{
 							Assert.NotNull(SynchronizationContext.Current);
 							PropertyChangedEventManager.FireEvent(this, PropertyName);
-							Assert.True(handlerCalledEvent.IsSet, "Handler was not invoked directly");
-							Assert.Same(SynchronizationContext.Current, handlerThreadSynchronizationContext);
-							Assert.Equal(PropertyName, changedPropertyName);
+							Assert.True(recipient.HandlerCalledEvent.IsSet, "Handler was not invoked directly");
+							Assert.Same(SynchronizationContext.Current, recipient.SynchronizationContext);
+							Assert.Equal(PropertyName, recipient.ChangedPropertyName);
 						});
 				}
 			}
@@ -254,13 +219,13 @@ namespace GriffinPlus.Lib.Events
 				// let the executing thread fire the event (other thread than the one that registered the handler)
 				// => handler should be invoked using the synchronization context of the thread that registered the handler
 				PropertyChangedEventManager.FireEvent(this, PropertyName);
-				Assert.True(handlerCalledEvent.Wait(60000));
-				Assert.Same(mThread.Context.SynchronizationContext, handlerThreadSynchronizationContext);
-				Assert.Equal(PropertyName, changedPropertyName);
+				Assert.True(recipient.HandlerCalledEvent.Wait(1000));
+				Assert.Same(mThread.Context.SynchronizationContext, recipient.SynchronizationContext);
+				Assert.Equal(PropertyName, recipient.ChangedPropertyName);
 			}
 
 			// unregister event handler
-			int regCount2 = PropertyChangedEventManager.UnregisterEventHandler(this, Handler);
+			int regCount2 = PropertyChangedEventManager.UnregisterEventHandler(this, recipient.Handler);
 			Assert.Equal(0, regCount2);
 
 			// check whether the handler is not registered any more
@@ -276,17 +241,7 @@ namespace GriffinPlus.Lib.Events
 		[InlineData(true)]
 		public async Task Complete_WithSynchronizationContext_FireImmediately(bool scheduleAlways)
 		{
-			SynchronizationContext handlerThreadSynchronizationContext = null;
-			string changedPropertyName = null;
-			var handlerCalledEvent = new ManualResetEventSlim();
-
-			// the event handler that is expected to be called
-			void Handler(object sender, PropertyChangedEventArgs e)
-			{
-				handlerThreadSynchronizationContext = SynchronizationContext.Current;
-				changedPropertyName = e.PropertyName;
-				handlerCalledEvent.Set();
-			}
+			var recipient = new PropertyChangedEventRecipient();
 
 			if (scheduleAlways)
 			{
@@ -298,19 +253,19 @@ namespace GriffinPlus.Lib.Events
 						Assert.NotNull(SynchronizationContext.Current);
 						int regCount1 = PropertyChangedEventManager.RegisterEventHandler(
 							this,
-							Handler,
+							recipient.Handler,
 							SynchronizationContext.Current,
 							true,
 							true,
 							this,
 							PropertyName);
 						Assert.Equal(1, regCount1);
-						Assert.False(handlerCalledEvent.IsSet, "Handler was invoked directly, should have been scheduled.");
+						Assert.False(recipient.HandlerCalledEvent.IsSet, "Handler was invoked directly, should have been scheduled.");
 					});
 
-				Assert.True(handlerCalledEvent.Wait(60000));
-				Assert.Same(mThread.Context.SynchronizationContext, handlerThreadSynchronizationContext);
-				Assert.Equal(PropertyName, changedPropertyName);
+				Assert.True(recipient.HandlerCalledEvent.Wait(1000));
+				Assert.Same(mThread.Context.SynchronizationContext, recipient.SynchronizationContext);
+				Assert.Equal(PropertyName, recipient.ChangedPropertyName);
 			}
 			else
 			{
@@ -321,16 +276,16 @@ namespace GriffinPlus.Lib.Events
 						Assert.NotNull(SynchronizationContext.Current);
 						int regCount1 = PropertyChangedEventManager.RegisterEventHandler(
 							this,
-							Handler,
+							recipient.Handler,
 							SynchronizationContext.Current,
 							false,
 							true,
 							this,
 							PropertyName);
 						Assert.Equal(1, regCount1);
-						Assert.True(handlerCalledEvent.IsSet, "Handler was not invoked directly");
-						Assert.Same(SynchronizationContext.Current, handlerThreadSynchronizationContext);
-						Assert.Equal(PropertyName, changedPropertyName);
+						Assert.True(recipient.HandlerCalledEvent.IsSet, "Handler was not invoked directly");
+						Assert.Same(SynchronizationContext.Current, recipient.SynchronizationContext);
+						Assert.Equal(PropertyName, recipient.ChangedPropertyName);
 					});
 			}
 
@@ -338,7 +293,7 @@ namespace GriffinPlus.Lib.Events
 			Assert.True(PropertyChangedEventManager.IsHandlerRegistered(this));
 
 			// unregister event handler
-			int regCount2 = PropertyChangedEventManager.UnregisterEventHandler(this, Handler);
+			int regCount2 = PropertyChangedEventManager.UnregisterEventHandler(this, recipient.Handler);
 			Assert.Equal(0, regCount2);
 
 			// check whether the handler is not registered any more
@@ -353,32 +308,12 @@ namespace GriffinPlus.Lib.Events
 		[InlineData(true)]
 		public void GetEventCallers_WithoutSynchronizationContext(bool scheduleAlways)
 		{
-			SynchronizationContext handlerThreadSynchronizationContext1 = null;
-			SynchronizationContext handlerThreadSynchronizationContext2 = null;
-			string changedPropertyName1 = null;
-			string changedPropertyName2 = null;
-			var handlerCalledEvent1 = new ManualResetEventSlim(false);
-			var handlerCalledEvent2 = new ManualResetEventSlim(false);
-
-			// event handler 1
-			void Handler1(object sender, PropertyChangedEventArgs e)
-			{
-				handlerThreadSynchronizationContext1 = SynchronizationContext.Current;
-				changedPropertyName1 = e.PropertyName;
-				handlerCalledEvent1.Set();
-			}
-
-			// event handler 2
-			void Handler2(object sender, PropertyChangedEventArgs e)
-			{
-				handlerThreadSynchronizationContext2 = SynchronizationContext.Current;
-				changedPropertyName2 = e.PropertyName;
-				handlerCalledEvent2.Set();
-			}
+			var recipient1 = new PropertyChangedEventRecipient();
+			var recipient2 = new PropertyChangedEventRecipient();
 
 			// register event handlers
-			PropertyChangedEventManager.RegisterEventHandler(this, Handler1, null, scheduleAlways);
-			PropertyChangedEventManager.RegisterEventHandler(this, Handler2, null, scheduleAlways);
+			PropertyChangedEventManager.RegisterEventHandler(this, recipient1.Handler, null, scheduleAlways);
+			PropertyChangedEventManager.RegisterEventHandler(this, recipient2.Handler, null, scheduleAlways);
 
 			// get event callers
 			var callers = PropertyChangedEventManager.GetEventCallers(this);
@@ -391,23 +326,23 @@ namespace GriffinPlus.Lib.Events
 			{
 				delegates[0](this, new PropertyChangedEventArgs("Test1"));
 				delegates[1](this, new PropertyChangedEventArgs("Test2"));
-				Assert.True(handlerCalledEvent1.Wait(60000));
-				Assert.True(handlerCalledEvent2.Wait(60000));
-				Assert.Null(handlerThreadSynchronizationContext1);
-				Assert.Null(handlerThreadSynchronizationContext2);
-				Assert.Equal("Test1", changedPropertyName1);
-				Assert.Equal("Test2", changedPropertyName2);
+				Assert.True(recipient1.HandlerCalledEvent.Wait(1000));
+				Assert.True(recipient2.HandlerCalledEvent.Wait(1000));
+				Assert.Null(recipient1.SynchronizationContext);
+				Assert.Null(recipient2.SynchronizationContext);
+				Assert.Equal("Test1", recipient1.ChangedPropertyName);
+				Assert.Equal("Test2", recipient2.ChangedPropertyName);
 			}
 			else
 			{
 				// the handlers should be called directly
 				delegates[0](this, new PropertyChangedEventArgs("Test1"));
-				Assert.True(handlerCalledEvent1.IsSet, "Handler was not invoked directly");
-				Assert.Equal("Test1", changedPropertyName1);
+				Assert.True(recipient1.HandlerCalledEvent.IsSet, "Handler was not invoked directly");
+				Assert.Equal("Test1", recipient1.ChangedPropertyName);
 
 				delegates[1](this, new PropertyChangedEventArgs("Test2"));
-				Assert.True(handlerCalledEvent2.IsSet, "Handler was not invoked directly");
-				Assert.Equal("Test2", changedPropertyName2);
+				Assert.True(recipient2.HandlerCalledEvent.IsSet, "Handler was not invoked directly");
+				Assert.Equal("Test2", recipient2.ChangedPropertyName);
 			}
 		}
 
@@ -422,28 +357,8 @@ namespace GriffinPlus.Lib.Events
 		[SuppressMessage("ReSharper", "RedundantAssignment")]
 		public async Task GetEventCallers_WithSynchronizationContext(bool scheduleAlways, bool fireOnSameThread)
 		{
-			SynchronizationContext handlerThreadSynchronizationContext1 = null;
-			SynchronizationContext handlerThreadSynchronizationContext2 = null;
-			string changedPropertyName1 = null;
-			string changedPropertyName2 = null;
-			var handlerCalledEvent1 = new ManualResetEventSlim(false);
-			var handlerCalledEvent2 = new ManualResetEventSlim(false);
-
-			// event handler 1
-			void Handler1(object sender, PropertyChangedEventArgs e)
-			{
-				handlerThreadSynchronizationContext1 = SynchronizationContext.Current;
-				changedPropertyName1 = e.PropertyName;
-				handlerCalledEvent1.Set();
-			}
-
-			// event handler 2
-			void Handler2(object sender, PropertyChangedEventArgs e)
-			{
-				handlerThreadSynchronizationContext2 = SynchronizationContext.Current;
-				changedPropertyName2 = e.PropertyName;
-				handlerCalledEvent2.Set();
-			}
+			var recipient1 = new PropertyChangedEventRecipient();
+			var recipient2 = new PropertyChangedEventRecipient();
 
 			// register handler 1 only, but do not trigger firing immediately
 			await mThread.Factory.Run(
@@ -453,16 +368,16 @@ namespace GriffinPlus.Lib.Events
 
 					PropertyChangedEventManager.RegisterEventHandler(
 						this,
-						Handler1,
+						recipient1.Handler,
 						SynchronizationContext.Current,
 						scheduleAlways);
 
-					Assert.False(handlerCalledEvent1.IsSet, "Event handler was called unexpectedly.");
+					Assert.False(recipient1.HandlerCalledEvent.IsSet, "Event handler was called unexpectedly.");
 				});
 
 			// handler 1 should not be called immediately
-			Assert.False(handlerCalledEvent1.Wait(60000), "Event handler was scheduled to be called unexpectedly.");
-			Assert.Null(changedPropertyName1);
+			Assert.False(recipient1.HandlerCalledEvent.Wait(1000), "Event handler was scheduled to be called unexpectedly.");
+			Assert.Null(recipient1.ChangedPropertyName);
 
 			if (scheduleAlways)
 			{
@@ -474,20 +389,20 @@ namespace GriffinPlus.Lib.Events
 
 						PropertyChangedEventManager.RegisterEventHandler(
 							this,
-							Handler2,
+							recipient2.Handler,
 							SynchronizationContext.Current,
 							true,
 							true,
 							this,
 							"Test2");
 
-						Assert.False(handlerCalledEvent2.IsSet, "Event handler was called immediately, should have been scheduled to be executed...");
+						Assert.False(recipient2.HandlerCalledEvent.IsSet, "Event handler was called immediately, should have been scheduled to be executed...");
 					});
 
 				// handler 2 should have been called after some time
-				Assert.True(handlerCalledEvent2.Wait(60000), "The event was not called asynchronously.");
-				Assert.Same(mThread.Context.SynchronizationContext, handlerThreadSynchronizationContext2);
-				Assert.Equal("Test2", changedPropertyName2);
+				Assert.True(recipient2.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
+				Assert.Same(mThread.Context.SynchronizationContext, recipient2.SynchronizationContext);
+				Assert.Equal("Test2", recipient2.ChangedPropertyName);
 			}
 			else
 			{
@@ -499,19 +414,19 @@ namespace GriffinPlus.Lib.Events
 
 						PropertyChangedEventManager.RegisterEventHandler(
 							this,
-							Handler2,
+							recipient2.Handler,
 							SynchronizationContext.Current,
 							false,
 							true,
 							this,
 							"Test2");
 
-						Assert.True(handlerCalledEvent2.IsSet, "Event handler should have been called immediately.");
+						Assert.True(recipient2.HandlerCalledEvent.IsSet, "Event handler should have been called immediately.");
 					});
 
 				// handler 2 should have been called after some time
-				Assert.Same(mThread.Context.SynchronizationContext, handlerThreadSynchronizationContext2);
-				Assert.Equal("Test2", changedPropertyName2);
+				Assert.Same(mThread.Context.SynchronizationContext, recipient2.SynchronizationContext);
+				Assert.Equal("Test2", recipient2.ChangedPropertyName);
 			}
 
 			// get delegates invoking the event handlers
@@ -520,10 +435,11 @@ namespace GriffinPlus.Lib.Events
 			var delegates = callers.GetInvocationList().Cast<PropertyChangedEventHandler>().ToArray();
 			Assert.Equal(2, delegates.Length);
 
+			// reset event handler data
+			recipient1.Reset();
+			recipient2.Reset();
+
 			// call handlers
-			handlerCalledEvent1.Reset();
-			handlerCalledEvent2.Reset();
-			changedPropertyName1 = changedPropertyName2 = null;
 			if (fireOnSameThread)
 			{
 				// call handlers in the context of the thread that registered the event
@@ -536,12 +452,12 @@ namespace GriffinPlus.Lib.Events
 						{
 							delegates[0](this, new PropertyChangedEventArgs("Test1"));
 							delegates[1](this, new PropertyChangedEventArgs("Test2"));
-							Assert.False(handlerCalledEvent1.IsSet, "Event handler was called unexpectedly.");
-							Assert.False(handlerCalledEvent2.IsSet, "Event handler was called unexpectedly.");
+							Assert.False(recipient1.HandlerCalledEvent.IsSet, "Event handler was called unexpectedly.");
+							Assert.False(recipient2.HandlerCalledEvent.IsSet, "Event handler was called unexpectedly.");
 						});
 
-					Assert.True(handlerCalledEvent1.Wait(60000), "The event was not called asynchronously.");
-					Assert.True(handlerCalledEvent2.Wait(60000), "The event was not called asynchronously.");
+					Assert.True(recipient1.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
+					Assert.True(recipient2.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
 				}
 				else
 				{
@@ -552,8 +468,8 @@ namespace GriffinPlus.Lib.Events
 						{
 							delegates[0](this, new PropertyChangedEventArgs("Test1"));
 							delegates[1](this, new PropertyChangedEventArgs("Test2"));
-							Assert.True(handlerCalledEvent1.IsSet, "Event handler should have been called directly.");
-							Assert.True(handlerCalledEvent2.IsSet, "Event handler should have been called directly.");
+							Assert.True(recipient1.HandlerCalledEvent.IsSet, "Event handler should have been called directly.");
+							Assert.True(recipient2.HandlerCalledEvent.IsSet, "Event handler should have been called directly.");
 						});
 				}
 			}
@@ -563,15 +479,15 @@ namespace GriffinPlus.Lib.Events
 				// => handlers should be called in the context of the thread registering the event
 				delegates[0](this, new PropertyChangedEventArgs("Test1"));
 				delegates[1](this, new PropertyChangedEventArgs("Test2"));
-				Assert.True(handlerCalledEvent1.Wait(60000), "The event was not called asynchronously.");
-				Assert.True(handlerCalledEvent2.Wait(60000), "The event was not called asynchronously.");
+				Assert.True(recipient1.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
+				Assert.True(recipient2.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
 			}
 
 			// the handlers should have run in the context of the thread that registered them
-			Assert.Same(mThread.Context.SynchronizationContext, handlerThreadSynchronizationContext1);
-			Assert.Same(mThread.Context.SynchronizationContext, handlerThreadSynchronizationContext2);
-			Assert.Equal("Test1", changedPropertyName1);
-			Assert.Equal("Test2", changedPropertyName2);
+			Assert.Same(mThread.Context.SynchronizationContext, recipient1.SynchronizationContext);
+			Assert.Same(mThread.Context.SynchronizationContext, recipient2.SynchronizationContext);
+			Assert.Equal("Test1", recipient1.ChangedPropertyName);
+			Assert.Equal("Test2", recipient2.ChangedPropertyName);
 		}
 
 		/// <summary>
@@ -582,18 +498,15 @@ namespace GriffinPlus.Lib.Events
 		[InlineData(true)]
 		public void EnsureEventProvidersAreCollectable(bool scheduleAlways)
 		{
-			// the event handler
-			void Handler(object sender, PropertyChangedEventArgs e)
-			{
-			}
+			var recipient = new PropertyChangedEventRecipient();
 
 			// register an event handler to a dummy event provider object
 			// (must not be done in the same method to allow the object to be collected in the next step)
 			var weakReferenceProvider = new Func<WeakReference>(
 				() =>
 				{
-					var provider = new object();
-					int regCount = PropertyChangedEventManager.RegisterEventHandler(provider, Handler, null, scheduleAlways);
+					object provider = new object();
+					int regCount = PropertyChangedEventManager.RegisterEventHandler(provider, recipient.Handler, null, scheduleAlways);
 					Assert.Equal(1, regCount);
 					return new WeakReference(provider);
 				}).Invoke();
