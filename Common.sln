@@ -24,6 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build.vs", "build.vs", "{30
 		build.vs\AssemblyInfoVersion.mcpp = build.vs\AssemblyInfoVersion.mcpp
 		build.vs\Build.psm1 = build.vs\Build.psm1
 		build.vs\Clean.psm1 = build.vs\Clean.psm1
+		build.vs\CombineOutputBinaries.psm1 = build.vs\CombineOutputBinaries.psm1
 		build.vs\Configuration.psm1 = build.vs\Configuration.psm1
 		build.vs\CopyFilesFromListToFolder.psm1 = build.vs\CopyFilesFromListToFolder.psm1
 		build.vs\CopyToReleaseFolder.psm1 = build.vs\CopyToReleaseFolder.psm1
