@@ -21,10 +21,10 @@ For any licenses that require disclosure of source, sources are available at:
 
 -----------------------------------------------------------------------------------------------------------------------
 
-## License Notice for *dotnet/corefx*
+## License Notice for *dotnet/runtime*
 
 - Project: [https://dot.net](https://dot.net)
-- License: [https://github.com/dotnet/corefx/blob/master/LICENSE.TXT](https://github.com/dotnet/corefx/blob/master/LICENSE.TXT)
+- License: [https://github.com/dotnet/runtime/blob/main/LICENSE.TXT](https://github.com/dotnet/runtime/blob/main/LICENSE.TXT)
 
 ```
 The MIT License (MIT)
