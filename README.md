@@ -55,6 +55,7 @@ Extension methods for common types
 This namespace provides common functionality and contains the following classes:
 
 - `Deque`: A double-ended queue that supports adding/removing items at both ends efficiently.
+- `ByteSequenceKeyedDictionary`: A generic dictionary that uses a byte sequence as key (with span support).
 
 #### Namespace: GriffinPlus.Lib.Conversion
 
