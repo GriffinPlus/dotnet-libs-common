@@ -3,6 +3,7 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 
 namespace GriffinPlus.Lib
@@ -37,6 +38,7 @@ namespace GriffinPlus.Lib
 		/// <returns>A hash code for the specified object.</returns>
 		public int GetHashCode(T obj)
 		{
+			if (obj == null) throw new ArgumentNullException(nameof(obj));
 			return obj.GetHashCode();
 		}
 	}
