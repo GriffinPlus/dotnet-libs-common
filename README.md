@@ -16,9 +16,15 @@ It contains the following functionality (organized by namespace):
 
 This namespace provides common functionality and contains the following classes:
 
+- Comparers (`IComparer<T>`)
+  - `ArrayComparer<T>`: An comparer for arrays of items that implement the `IComparable<T>` interface.
+  - `ReadOnlyListComparer<T>`: An comparer for collections implementing the `IReadOnlyList<T>` interface containing items implementing the `IComparable<T>` interface.
+- Equality Comparers (`IEqualityComparer<T>`)
+  - `ByteArrayEqualityComparer`: An equality comparer for byte arrays (with span support).
+  - `IdentityComparer<T>`: An equality comparer that uses `System.Object.ReferenceEquals()` to check two objects for equality.
+  - `KeyValuePairEqualityComparer<TKey,TValue>`: An equality comparer for `KeyValuePair<TKey,TValue>` delegating comparison to specific comparers for key and value.
+  - `ReadOnlyListEqualityComparer<T>`: An equality comparer for collections implementing the `IReadOnlyList<T>` interface.
 - `BitMask`: A bit mask with variable length that supports all relevant comparisons and logical operations.
-- `ByteArrayEqualityComparer`: An equality comparer for byte arrays (with span support).
-- `IdentityComparer`: An equality comparer that uses `System.Object.ReferenceEquals()` to check two objects for equality.
 - `Immutability`: Utility class that assists with determining whether a type is immutable. It analyses types on its own, but supports overriding by annotating types with the `[Immutable]` attribute. Alternatively types can be declared immutable using `AddImmutableType<T>()`.
 - `ObjectPool<T>`: A simple thread-safe implementation of an object pool that allows re-using objects.
 - `RegexHelpers`: Helper methods providing common functionality when pattern matching is required.
