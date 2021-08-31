@@ -156,9 +156,18 @@ namespace GriffinPlus.Lib.Threading
 		/// The cancellation token used to cancel the wait.
 		/// If this is already set, then this method will attempt to take the slot immediately (succeeding if a slot is currently available).
 		/// </param>
-		public void Wait(CancellationToken cancellationToken = default)
+		public void Wait(CancellationToken cancellationToken)
 		{
 			WaitAsync(cancellationToken).WaitAndUnwrapException(CancellationToken.None);
+		}
+
+		/// <summary>
+		/// Synchronously waits for a slot in the semaphore to be available.
+		/// This method may block the calling thread.
+		/// </summary>
+		public void Wait()
+		{
+			Wait(CancellationToken.None);
 		}
 
 		/// <summary>
@@ -208,9 +217,18 @@ namespace GriffinPlus.Lib.Threading
 		/// The cancellation token used to cancel the wait.
 		/// If this is already set, then this method will attempt to take the slot immediately (succeeding if a slot is currently available).
 		/// </param>
-		public AwaitableDisposable<IDisposable> LockAsync(CancellationToken cancellationToken = default)
+		public AwaitableDisposable<IDisposable> LockAsync(CancellationToken cancellationToken)
 		{
 			return new AwaitableDisposable<IDisposable>(DoLockAsync(cancellationToken));
+		}
+
+		/// <summary>
+		/// Asynchronously waits on the semaphore, and returns a disposable that releases the semaphore when disposed, thus treating this semaphore as a
+		/// "multi-lock".
+		/// </summary>
+		public AwaitableDisposable<IDisposable> LockAsync()
+		{
+			return LockAsync(CancellationToken.None);
 		}
 
 		/// <summary>
@@ -221,10 +239,19 @@ namespace GriffinPlus.Lib.Threading
 		/// The cancellation token used to cancel the wait.
 		/// If this is already set, then this method will attempt to take the slot immediately (succeeding if a slot is currently available).
 		/// </param>
-		public IDisposable Lock(CancellationToken cancellationToken = default)
+		public IDisposable Lock(CancellationToken cancellationToken)
 		{
 			Wait(cancellationToken);
 			return AnonymousDisposable.Create(Release);
+		}
+
+		/// <summary>
+		/// Synchronously waits on the semaphore, and returns a disposable that releases the semaphore when disposed, thus treating this semaphore as a
+		/// "multi-lock".
+		/// </summary>
+		public IDisposable Lock()
+		{
+			return Lock(CancellationToken.None);
 		}
 
 		// ReSharper disable UnusedMember.Local

@@ -115,9 +115,19 @@ namespace GriffinPlus.Lib.Threading
 		/// The cancellation token used to cancel the enter.
 		/// If this is already set, then this method will attempt to enter the monitor immediately (succeeding if the monitor is currently available).
 		/// </param>
-		public IDisposable Enter(CancellationToken cancellationToken = default)
+		public IDisposable Enter(CancellationToken cancellationToken)
 		{
 			return mAsyncLock.Lock(cancellationToken);
+		}
+
+		/// <summary>
+		/// Asynchronously enters the monitor.
+		/// Returns a disposable that leaves the monitor when disposed.
+		/// This method may block the calling thread.
+		/// </summary>
+		public IDisposable Enter()
+		{
+			return Enter(CancellationToken.None);
 		}
 
 		/// <summary>
@@ -126,9 +136,19 @@ namespace GriffinPlus.Lib.Threading
 		/// This method internally will leave the monitor while waiting for a notification.
 		/// </summary>
 		/// <param name="cancellationToken">The cancellation signal used to cancel this wait.</param>
-		public Task WaitAsync(CancellationToken cancellationToken = default)
+		public Task WaitAsync(CancellationToken cancellationToken)
 		{
 			return mConditionVariable.WaitAsync(cancellationToken);
+		}
+
+		/// <summary>
+		/// Asynchronously waits for a pulse signal on this monitor.
+		/// The monitor MUST already be entered when calling this method, and it will still be entered when this method returns.
+		/// This method internally will leave the monitor while waiting for a notification.
+		/// </summary>
+		public Task WaitAsync()
+		{
+			return WaitAsync(CancellationToken.None);
 		}
 
 		/// <summary>
@@ -138,9 +158,20 @@ namespace GriffinPlus.Lib.Threading
 		/// This method internally will leave the monitor while waiting for a notification.
 		/// </summary>
 		/// <param name="cancellationToken">The cancellation signal used to cancel this wait.</param>
-		public void Wait(CancellationToken cancellationToken = default)
+		public void Wait(CancellationToken cancellationToken)
 		{
 			mConditionVariable.Wait(cancellationToken);
+		}
+
+		/// <summary>
+		/// Asynchronously waits for a pulse signal on this monitor.
+		/// This method may block the calling thread. The monitor MUST already be entered when calling this method, and it will still be entered when this method
+		/// returns.
+		/// This method internally will leave the monitor while waiting for a notification.
+		/// </summary>
+		public void Wait()
+		{
+			Wait(CancellationToken.None);
 		}
 
 		/// <summary>

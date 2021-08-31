@@ -56,13 +56,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			Context = context;
 			mThread = Task.Factory.StartNew(
-				() =>
-				{
-					using (Context)
-					{
-						Context.Execute();
-					}
-				},
+				Execute,
 				CancellationToken.None,
 				TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach,
 				TaskScheduler.Default);
@@ -90,6 +84,14 @@ namespace GriffinPlus.Lib.Threading
 		/// Gets the <see cref="AsyncContext"/> executed by this thread.
 		/// </summary>
 		public AsyncContext Context { get; }
+
+		private void Execute()
+		{
+			using (Context)
+			{
+				Context.Execute();
+			}
+		}
 
 		/// <summary>
 		/// Permits the thread to exit, if we have not already done so.

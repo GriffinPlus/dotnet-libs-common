@@ -169,9 +169,19 @@ namespace GriffinPlus.Lib.Threading
 		/// If this is already set, then this method will attempt to take the lock immediately (succeeding if the lock is currently available).
 		/// </param>
 		/// <returns>A disposable that releases the lock when disposed.</returns>
-		public AwaitableDisposable<IDisposable> ReaderLockAsync(CancellationToken cancellationToken = default)
+		public AwaitableDisposable<IDisposable> ReaderLockAsync(CancellationToken cancellationToken)
 		{
 			return new AwaitableDisposable<IDisposable>(RequestReaderLockAsync(cancellationToken));
+		}
+
+		/// <summary>
+		/// Asynchronously acquires the lock as a reader.
+		/// Returns a disposable that releases the lock when disposed.
+		/// </summary>
+		/// <returns>A disposable that releases the lock when disposed.</returns>
+		public AwaitableDisposable<IDisposable> ReaderLockAsync()
+		{
+			return ReaderLockAsync(CancellationToken.None);
 		}
 
 		/// <summary>
@@ -184,9 +194,20 @@ namespace GriffinPlus.Lib.Threading
 		/// If this is already set, then this method will attempt to take the lock immediately (succeeding if the lock is currently available).
 		/// </param>
 		/// <returns>A disposable that releases the lock when disposed.</returns>
-		public IDisposable ReaderLock(CancellationToken cancellationToken = default)
+		public IDisposable ReaderLock(CancellationToken cancellationToken)
 		{
 			return RequestReaderLockAsync(cancellationToken).WaitAndUnwrapException();
+		}
+
+		/// <summary>
+		/// Synchronously acquires the lock as a reader.
+		/// Returns a disposable that releases the lock when disposed.
+		/// This method may block the calling thread.
+		/// </summary>
+		/// <returns>A disposable that releases the lock when disposed.</returns>
+		public IDisposable ReaderLock()
+		{
+			return ReaderLock(CancellationToken.None);
 		}
 
 		/// <summary>
@@ -229,9 +250,19 @@ namespace GriffinPlus.Lib.Threading
 		/// If this is already set, then this method will attempt to take the lock immediately (succeeding if the lock is currently available).
 		/// </param>
 		/// <returns>A disposable that releases the lock when disposed.</returns>
-		public AwaitableDisposable<IDisposable> WriterLockAsync(CancellationToken cancellationToken = default)
+		public AwaitableDisposable<IDisposable> WriterLockAsync(CancellationToken cancellationToken)
 		{
 			return new AwaitableDisposable<IDisposable>(RequestWriterLockAsync(cancellationToken));
+		}
+
+		/// <summary>
+		/// Asynchronously acquires the lock as a writer.
+		/// Returns a disposable that releases the lock when disposed.
+		/// </summary>
+		/// <returns>A disposable that releases the lock when disposed.</returns>
+		public AwaitableDisposable<IDisposable> WriterLockAsync()
+		{
+			return WriterLockAsync(CancellationToken.None);
 		}
 
 		/// <summary>
@@ -244,9 +275,20 @@ namespace GriffinPlus.Lib.Threading
 		/// If this is already set, then this method will attempt to take the lock immediately (succeeding if the lock is currently available).
 		/// </param>
 		/// <returns>A disposable that releases the lock when disposed.</returns>
-		public IDisposable WriterLock(CancellationToken cancellationToken = default)
+		public IDisposable WriterLock(CancellationToken cancellationToken)
 		{
 			return RequestWriterLockAsync(cancellationToken).WaitAndUnwrapException();
+		}
+
+		/// <summary>
+		/// Asynchronously acquires the lock as a writer.
+		/// Returns a disposable that releases the lock when disposed.
+		/// This method may block the calling thread.
+		/// </summary>
+		/// <returns>A disposable that releases the lock when disposed.</returns>
+		public IDisposable WriterLock()
+		{
+			return WriterLock(CancellationToken.None);
 		}
 
 		/// <summary>

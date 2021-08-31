@@ -75,6 +75,8 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="action">The delegate to execute.</param>
 		public static void NoContext(Action action)
 		{
+			if (action == null) throw new ArgumentNullException(nameof(action));
+
 			using (new SynchronizationContextSwitcher(null))
 			{
 				action();
@@ -88,6 +90,8 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="action">The delegate to execute.</param>
 		public static T NoContext<T>(Func<T> action)
 		{
+			if (action == null) throw new ArgumentNullException(nameof(action));
+
 			using (new SynchronizationContextSwitcher(null))
 			{
 				return action();
@@ -102,6 +106,8 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="action">The delegate to execute.</param>
 		public static void ApplyContext(SynchronizationContext context, Action action)
 		{
+			if (action == null) throw new ArgumentNullException(nameof(action));
+
 			using (new SynchronizationContextSwitcher(context))
 			{
 				action();
@@ -116,6 +122,8 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="action">The delegate to execute.</param>
 		public static T ApplyContext<T>(SynchronizationContext context, Func<T> action)
 		{
+			if (action == null) throw new ArgumentNullException(nameof(action));
+
 			using (new SynchronizationContextSwitcher(context))
 			{
 				return action();

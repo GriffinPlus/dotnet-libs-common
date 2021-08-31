@@ -81,13 +81,30 @@ namespace GriffinPlus.Lib.Threading
 		/// <summary>
 		/// Asynchronously waits for the count to reach zero.
 		/// </summary>
+		public Task WaitAsync()
+		{
+			return mManualResetEvent.WaitAsync();
+		}
+
+		/// <summary>
+		/// Asynchronously waits for the count to reach zero.
+		/// </summary>
 		/// <param name="cancellationToken">
 		/// The cancellation token used to cancel the wait.
 		/// If this token is already canceled, this method will first check whether the event is set.
 		/// </param>
-		public Task WaitAsync(CancellationToken cancellationToken = default)
+		public Task WaitAsync(CancellationToken cancellationToken)
 		{
 			return mManualResetEvent.WaitAsync(cancellationToken);
+		}
+
+		/// <summary>
+		/// Synchronously waits for the count to reach zero.
+		/// This method may block the calling thread.
+		/// </summary>
+		public void Wait()
+		{
+			mManualResetEvent.Wait();
 		}
 
 		/// <summary>
@@ -98,7 +115,7 @@ namespace GriffinPlus.Lib.Threading
 		/// The cancellation token used to cancel the wait.
 		/// If this token is already canceled, this method will first check whether the event is set.
 		/// </param>
-		public void Wait(CancellationToken cancellationToken = default)
+		public void Wait(CancellationToken cancellationToken)
 		{
 			mManualResetEvent.Wait(cancellationToken);
 		}

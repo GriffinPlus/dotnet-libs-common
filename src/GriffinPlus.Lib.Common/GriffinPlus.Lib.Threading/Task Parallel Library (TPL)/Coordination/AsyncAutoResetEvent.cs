@@ -120,7 +120,7 @@ namespace GriffinPlus.Lib.Threading
 		/// If the wait is canceled, then it will not auto-reset this event.
 		/// </summary>
 		/// <param name="cancellationToken">The cancellation token used to cancel this wait.</param>
-		public Task WaitAsync(CancellationToken cancellationToken = default)
+		public Task WaitAsync(CancellationToken cancellationToken)
 		{
 			Task task;
 			lock (mMutex)
@@ -140,15 +140,34 @@ namespace GriffinPlus.Lib.Threading
 		}
 
 		/// <summary>
+		/// Asynchronously waits for this event to be set.
+		/// If the event is set, this method will auto-reset it and return immediately.
+		/// </summary>
+		public Task WaitAsync()
+		{
+			return WaitAsync(CancellationToken.None);
+		}
+
+		/// <summary>
 		/// Synchronously waits for this event to be set.
 		/// If the event is set, this method will auto-reset it and return immediately, even if the cancellation token is already signaled.
 		/// If the wait is canceled, then it will not auto-reset this event.
 		/// This method may block the calling thread.
 		/// </summary>
 		/// <param name="cancellationToken">The cancellation token used to cancel this wait.</param>
-		public void Wait(CancellationToken cancellationToken = default)
+		public void Wait(CancellationToken cancellationToken)
 		{
 			WaitAsync(cancellationToken).WaitAndUnwrapException(cancellationToken);
+		}
+
+		/// <summary>
+		/// Synchronously waits for this event to be set.
+		/// If the event is set, this method will auto-reset it and return immediately.
+		/// This method may block the calling thread.
+		/// </summary>
+		public void Wait()
+		{
+			Wait(CancellationToken.None);
 		}
 
 		/// <summary>

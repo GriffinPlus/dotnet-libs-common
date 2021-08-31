@@ -49,17 +49,17 @@ namespace GriffinPlus.Lib.Threading
 	///     an <c>async</c>-ready lock.
 	///     </para>
 	///     <para>
-	///     An <see cref="AsyncLock"/> is either taken or not. The lock can be asynchronously acquired by calling <see cref="LockAsync"/>,
+	///     An <see cref="AsyncLock"/> is either taken or not. The lock can be asynchronously acquired by calling <see cref="LockAsync()"/>,
 	///     and it is released by disposing the result of that task. It takes an optional <see cref="CancellationToken"/>, which can be used
 	///     to cancel the acquiring of the lock.
 	///     </para>
 	///     <para>
-	///     The task returned from <see cref="LockAsync"/> will enter the <c>Completed</c> state when it has acquired the <see cref="AsyncLock"/>.
+	///     The task returned from <see cref="LockAsync()"/> will enter the <c>Completed</c> state when it has acquired the <see cref="AsyncLock"/>.
 	///     The same task will enter the <c>Canceled</c> state if the <see cref="CancellationToken"/> is signaled before the wait is satisfied;
 	///     in that case, the <see cref="AsyncLock"/> is not taken by that task.
 	///     </para>
 	///     <para>
-	///     You can call <see cref="Lock"/> or <see cref="LockAsync"/> with an already-cancelled <see cref="CancellationToken"/> to attempt to
+	///     You can call <see cref="Lock()"/> or <see cref="LockAsync()"/> with an already-cancelled <see cref="CancellationToken"/> to attempt to
 	///     acquire the <see cref="AsyncLock"/> immediately without actually entering the wait queue.
 	///     </para>
 	/// </remarks>
@@ -177,9 +177,19 @@ namespace GriffinPlus.Lib.Threading
 		/// If this is already set, then this method will attempt to take the lock immediately (succeeding if the lock is currently available).
 		/// </param>
 		/// <returns>A disposable that releases the lock when disposed.</returns>
-		public AwaitableDisposable<IDisposable> LockAsync(CancellationToken cancellationToken = default)
+		public AwaitableDisposable<IDisposable> LockAsync(CancellationToken cancellationToken)
 		{
 			return new AwaitableDisposable<IDisposable>(RequestLockAsync(cancellationToken));
+		}
+
+		/// <summary>
+		/// Asynchronously acquires the lock.
+		/// Returns a disposable that releases the lock when disposed.
+		/// </summary>
+		/// <returns>A disposable that releases the lock when disposed.</returns>
+		public AwaitableDisposable<IDisposable> LockAsync()
+		{
+			return LockAsync(CancellationToken.None);
 		}
 
 		/// <summary>
@@ -191,9 +201,19 @@ namespace GriffinPlus.Lib.Threading
 		/// The cancellation token used to cancel the lock.
 		/// If this is already set, then this method will attempt to take the lock immediately (succeeding if the lock is currently available).
 		/// </param>
-		public IDisposable Lock(CancellationToken cancellationToken = default)
+		public IDisposable Lock(CancellationToken cancellationToken)
 		{
 			return RequestLockAsync(cancellationToken).WaitAndUnwrapException();
+		}
+
+		/// <summary>
+		/// Synchronously acquires the lock.
+		/// Returns a disposable that releases the lock when disposed.
+		/// This method may block the calling thread.
+		/// </summary>
+		public IDisposable Lock()
+		{
+			return Lock(CancellationToken.None);
 		}
 
 		/// <summary>

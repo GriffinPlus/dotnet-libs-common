@@ -193,7 +193,6 @@ namespace GriffinPlus.Lib.Threading
 		/// Asynchronous infrastructure support.
 		/// This method permits instances of <see cref="AsyncLazy{T}"/> to be awaited.
 		/// </summary>
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public ConfiguredTaskAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
 		{
 			return Task.ConfigureAwait(continueOnCapturedContext);

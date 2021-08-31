@@ -101,11 +101,22 @@ namespace GriffinPlus.Lib.Threading
 		/// <summary>
 		/// Asynchronously waits for this event to be set.
 		/// </summary>
+		public Task WaitAsync()
+		{
+			lock (mMutex)
+			{
+				return mTcs.Task;
+			}
+		}
+
+		/// <summary>
+		/// Asynchronously waits for this event to be set.
+		/// </summary>
 		/// <param name="cancellationToken">
 		/// The cancellation token used to cancel the wait.
 		/// If this token is already canceled, this method will first check whether the event is set.
 		/// </param>
-		public Task WaitAsync(CancellationToken cancellationToken = default)
+		public Task WaitAsync(CancellationToken cancellationToken)
 		{
 			Task waitTask;
 			lock (mMutex) waitTask = mTcs.Task;
@@ -117,11 +128,20 @@ namespace GriffinPlus.Lib.Threading
 		/// Synchronously waits for this event to be set.
 		/// This method may block the calling thread.
 		/// </summary>
+		public void Wait()
+		{
+			WaitAsync().WaitAndUnwrapException();
+		}
+
+		/// <summary>
+		/// Synchronously waits for this event to be set.
+		/// This method may block the calling thread.
+		/// </summary>
 		/// <param name="cancellationToken">
 		/// The cancellation token used to cancel the wait.
 		/// If this token is already canceled, this method will first check whether the event is set.
 		/// </param>
-		public void Wait(CancellationToken cancellationToken = default)
+		public void Wait(CancellationToken cancellationToken)
 		{
 			Task waitTask;
 			lock (mMutex) waitTask = mTcs.Task;
@@ -130,7 +150,7 @@ namespace GriffinPlus.Lib.Threading
 		}
 
 		/// <summary>
-		/// Sets the event, atomically completing every task returned by <see cref="WaitAsync"/>.
+		/// Sets the event, atomically completing every task returned by <see cref="WaitAsync()"/>.
 		/// If the event is already set, this method does nothing.
 		/// </summary>
 		public void Set()

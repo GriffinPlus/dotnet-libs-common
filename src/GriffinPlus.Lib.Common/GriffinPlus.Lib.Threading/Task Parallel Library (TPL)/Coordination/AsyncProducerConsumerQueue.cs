@@ -197,9 +197,20 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="item">The item to enqueue.</param>
 		/// <param name="cancellationToken">A cancellation token that can be used to abort the enqueue operation.</param>
 		/// <exception cref="InvalidOperationException">The producer/consumer queue has been marked complete for adding.</exception>
-		public Task EnqueueAsync(T item, CancellationToken cancellationToken = default)
+		public Task EnqueueAsync(T item, CancellationToken cancellationToken)
 		{
 			return DoEnqueueAsync(item, cancellationToken, false);
+		}
+
+		/// <summary>
+		/// Enqueues an item to the producer/consumer queue.
+		/// Throws <see cref="InvalidOperationException"/> if the producer/consumer queue has completed adding.
+		/// </summary>
+		/// <param name="item">The item to enqueue.</param>
+		/// <exception cref="InvalidOperationException">The producer/consumer queue has been marked complete for adding.</exception>
+		public Task EnqueueAsync(T item)
+		{
+			return EnqueueAsync(item, CancellationToken.None);
 		}
 
 		/// <summary>
@@ -210,9 +221,20 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="item">The item to enqueue.</param>
 		/// <param name="cancellationToken">A cancellation token that can be used to abort the enqueue operation.</param>
 		/// <exception cref="InvalidOperationException">The producer/consumer queue has been marked complete for adding.</exception>
-		public void Enqueue(T item, CancellationToken cancellationToken = default)
+		public void Enqueue(T item, CancellationToken cancellationToken)
 		{
 			DoEnqueueAsync(item, cancellationToken, true).WaitAndUnwrapException(CancellationToken.None);
+		}
+
+		/// <summary>
+		/// Enqueues an item to the producer/consumer queue. This method may block the calling thread.
+		/// Throws <see cref="InvalidOperationException"/> if the producer/consumer queue has completed adding.
+		/// </summary>
+		/// <param name="item">The item to enqueue.</param>
+		/// <exception cref="InvalidOperationException">The producer/consumer queue has been marked complete for adding.</exception>
+		public void Enqueue(T item)
+		{
+			Enqueue(item, CancellationToken.None);
 		}
 
 		/// <summary>
@@ -246,9 +268,18 @@ namespace GriffinPlus.Lib.Threading
 		/// Returns <c>false</c> if the producer/consumer queue has completed adding and there are no more items.
 		/// </summary>
 		/// <param name="cancellationToken">A cancellation token that can be used to abort the asynchronous wait.</param>
-		public Task<bool> OutputAvailableAsync(CancellationToken cancellationToken = default)
+		public Task<bool> OutputAvailableAsync(CancellationToken cancellationToken)
 		{
 			return DoOutputAvailableAsync(cancellationToken, false);
+		}
+
+		/// <summary>
+		/// Asynchronously waits until an item is available to dequeue.
+		/// Returns <c>false</c> if the producer/consumer queue has completed adding and there are no more items.
+		/// </summary>
+		public Task<bool> OutputAvailableAsync()
+		{
+			return OutputAvailableAsync(CancellationToken.None);
 		}
 
 		/// <summary>
@@ -256,16 +287,25 @@ namespace GriffinPlus.Lib.Threading
 		/// Returns <c>false</c> if the producer/consumer queue has completed adding and there are no more items.
 		/// </summary>
 		/// <param name="cancellationToken">A cancellation token that can be used to abort the asynchronous wait.</param>
-		public bool OutputAvailable(CancellationToken cancellationToken = default)
+		public bool OutputAvailable(CancellationToken cancellationToken)
 		{
 			return DoOutputAvailableAsync(cancellationToken, true).WaitAndUnwrapException();
+		}
+
+		/// <summary>
+		/// Synchronously waits until an item is available to dequeue.
+		/// Returns <c>false</c> if the producer/consumer queue has completed adding and there are no more items.
+		/// </summary>
+		public bool OutputAvailable()
+		{
+			return OutputAvailable(CancellationToken.None);
 		}
 
 		/// <summary>
 		/// Provides a (synchronous) consuming enumerable for items in the producer/consumer queue.
 		/// </summary>
 		/// <param name="cancellationToken">A cancellation token that can be used to abort the synchronous enumeration.</param>
-		public IEnumerable<T> GetConsumingEnumerable(CancellationToken cancellationToken = default)
+		public IEnumerable<T> GetConsumingEnumerable(CancellationToken cancellationToken)
 		{
 			while (true)
 			{
@@ -275,6 +315,14 @@ namespace GriffinPlus.Lib.Threading
 
 				yield return result.Item2;
 			}
+		}
+
+		/// <summary>
+		/// Provides a (synchronous) consuming enumerable for items in the producer/consumer queue.
+		/// </summary>
+		public IEnumerable<T> GetConsumingEnumerable()
+		{
+			return GetConsumingEnumerable(CancellationToken.None);
 		}
 
 		/// <summary>
@@ -333,9 +381,20 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="cancellationToken">A cancellation token that can be used to abort the dequeue operation.</param>
 		/// <returns>The dequeued item.</returns>
 		/// <exception cref="InvalidOperationException">The producer/consumer queue has been marked complete for adding and is empty.</exception>
-		public Task<T> DequeueAsync(CancellationToken cancellationToken = default)
+		public Task<T> DequeueAsync(CancellationToken cancellationToken)
 		{
 			return DoDequeueAsync(cancellationToken, false);
+		}
+
+		/// <summary>
+		/// Dequeues an item from the producer/consumer queue. Returns the dequeued item.
+		/// Throws <see cref="InvalidOperationException"/> if the producer/consumer queue has completed adding and is empty.
+		/// </summary>
+		/// <returns>The dequeued item.</returns>
+		/// <exception cref="InvalidOperationException">The producer/consumer queue has been marked complete for adding and is empty.</exception>
+		public Task<T> DequeueAsync()
+		{
+			return DequeueAsync(CancellationToken.None);
 		}
 
 		/// <summary>
@@ -347,9 +406,21 @@ namespace GriffinPlus.Lib.Threading
 		/// <param name="cancellationToken">A cancellation token that can be used to abort the dequeue operation.</param>
 		/// <returns>The dequeued item.</returns>
 		/// <exception cref="InvalidOperationException">The producer/consumer queue has been marked complete for adding and is empty.</exception>
-		public T Dequeue(CancellationToken cancellationToken = default)
+		public T Dequeue(CancellationToken cancellationToken)
 		{
 			return DoDequeueAsync(cancellationToken, true).WaitAndUnwrapException();
+		}
+
+		/// <summary>
+		/// Dequeues an item from the producer/consumer queue.
+		/// Returns the dequeued item. This method may block the calling thread.
+		/// Throws <see cref="InvalidOperationException"/> if the producer/consumer queue has completed adding and is empty.
+		/// </summary>
+		/// <returns>The dequeued item.</returns>
+		/// <exception cref="InvalidOperationException">The producer/consumer queue has been marked complete for adding and is empty.</exception>
+		public T Dequeue()
+		{
+			return Dequeue(CancellationToken.None);
 		}
 
 		[DebuggerNonUserCode]
