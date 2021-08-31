@@ -24,7 +24,7 @@ namespace GriffinPlus.Lib.Io
 		/// <summary>
 		/// The size of of test data sets tests juggle with.
 		/// </summary>
-		protected const int TestDataSize = 1 * 1024 * 1024;
+		protected const int TestDataSize = 256 * 1024;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MemoryBlockStreamTestsBase"/> class.
