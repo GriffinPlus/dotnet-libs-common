@@ -29,6 +29,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
@@ -39,6 +40,23 @@ namespace GriffinPlus.Lib.Threading
 	/// </summary>
 	public static class TaskCompletionSourceExtensions
 	{
+		private const int MinWorkerThreads = 4;
+
+		/// <summary>
+		/// Initializes the <see cref="DefaultAsyncWaitQueue{T}"/> class.
+		/// </summary>
+		static TaskCompletionSourceExtensions()
+		{
+			// Increase the number of threads in the .NET thread pool on machines with only few CPUs.
+			// The AsyncEx synchronization primitives in this library need a thread pool thread to execute continuations.
+			// If there is no thread in the pool the application will hang for some time until the thread pool creates another
+			// thread to solve the issue. Increasing the number of threads to a higher value than the number of CPUs comes at
+			// the cost of some performance, so the actual issue should be fixed and this workaround should be eliminated to
+			// restore the original behavior.
+			ThreadPool.GetMinThreads(out int minWorkerThreads, out int minCompletionPortThreads);
+			if (minWorkerThreads < MinWorkerThreads) ThreadPool.SetMinThreads(MinWorkerThreads, minCompletionPortThreads);
+		}
+
 		/// <summary>
 		/// Attempts to complete a <see cref="TaskCompletionSource{TResult}"/>,
 		/// propagating the completion of <paramref name="task"/>.
