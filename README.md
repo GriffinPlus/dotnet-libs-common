@@ -28,6 +28,7 @@ This namespace provides common functionality and contains the following classes:
 - `Immutability`: Utility class that assists with determining whether a type is immutable. It analyses types on its own, but supports overriding by annotating types with the `[Immutable]` attribute. Alternatively types can be declared immutable using `AddImmutableType<T>()`.
 - `ObjectPool<T>`: A simple thread-safe implementation of an object pool that allows re-using objects.
 - `RegexHelpers`: Helper methods providing common functionality when pattern matching is required.
+- `TypeDecomposer`: Utility class that assists with decomposing types to generic type definitions and non-generic types.
 
 Extension methods for common types
 
