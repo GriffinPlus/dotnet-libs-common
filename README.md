@@ -56,6 +56,7 @@ Extension methods for common types
 |                   | `GetPublicProperties` : Gets public properties of a type (supports extended interfaces).
 |                   | `IsImmutable` : Checks whether a type is immutable.
 |                   | `IsSubclassOfRawGeneric`: Checks whether a type is an instance of a certain generic type definition.
+|                   | `Decompose`: Decomposes a type to generic type definitions and non-generic types.
 
 #### Namespace: GriffinPlus.Lib.Collections
 

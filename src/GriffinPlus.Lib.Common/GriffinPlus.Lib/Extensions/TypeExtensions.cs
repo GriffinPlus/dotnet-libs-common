@@ -121,6 +121,18 @@ namespace GriffinPlus.Lib
 
 			return false;
 		}
+
+		/// <summary>
+		/// Decomposes the type.
+		/// The result contains generic type definitions and non-generic types only.
+		/// </summary>
+		/// <returns>Information about the decomposed type.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="this"/> is <c>null</c>.</exception>
+		public static DecomposedType Decompose(this Type @this)
+		{
+			if (@this == null) throw new ArgumentNullException(nameof(@this));
+			return TypeDecomposer.DecomposeType(@this);
+		}
 	}
 
 }
