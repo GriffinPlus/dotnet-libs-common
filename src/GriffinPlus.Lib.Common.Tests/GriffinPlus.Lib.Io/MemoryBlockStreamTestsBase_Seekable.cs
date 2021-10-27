@@ -395,23 +395,6 @@ namespace GriffinPlus.Lib.Io
 			}
 		}
 
-		/// <summary>
-		/// Checks whether <see cref="MemoryBlockStream.InjectBufferAtCurrentPosition"/> blocks, if the stream is synchronized,
-		/// and does not block, if the stream is not synchronized.
-		/// </summary>
-		[Fact]
-		public void InjectBufferAtCurrentPosition_WaitOnLockIfSynchronized()
-		{
-			void Operation(MemoryBlockStream stream)
-			{
-				// stream is empty, but that's irrelevant for the locking behavior
-				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out _);
-				stream.InjectBufferAtCurrentPosition(chain, false, false);
-			}
-
-			TestWaitOnLockIfSynchronized(Operation);
-		}
-
 		#endregion
 
 		#region InjectBufferAtCurrentPositionAsync()
@@ -571,34 +554,6 @@ namespace GriffinPlus.Lib.Io
 					Assert.Equal(expectedData, data);
 				}
 			}
-		}
-
-		/// <summary>
-		/// Checks whether <see cref="MemoryBlockStream.InjectBufferAtCurrentPositionAsync"/> blocks,
-		/// if the stream is synchronized, and does not block, if the stream is not synchronized. Furthermore tests
-		/// cancellation, if the operation is blocked at the lock as well as cancellation with a pre-signaled token.
-		/// </summary>
-		[Fact]
-		public async Task InjectBufferAtCurrentPositionAsync_WaitOnLockIfSynchronized()
-		{
-			async Task Operation(MemoryBlockStream stream, CancellationToken cancellationToken)
-			{
-				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out _);
-				try
-				{
-					await stream
-						.InjectBufferAtCurrentPositionAsync(chain, false, false, cancellationToken)
-						.ConfigureAwait(false);
-				}
-				catch
-				{
-					Assert.Null(chain.Previous); // the chain should not have been linked to the chain of blocks backing the stream
-					chain.ReleaseChain();
-					throw;
-				}
-			}
-
-			await TestWaitOnLockIfSynchronizedAndCancellation(Operation).ConfigureAwait(false);
 		}
 
 		#endregion

@@ -3,23 +3,20 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using System.Buffers;
-
 namespace GriffinPlus.Lib.Io
 {
 
 	/// <summary>
 	/// Unit tests targeting the <see cref="MemoryBlockStream"/> class.
-	/// The tests create a stream using <see cref="MemoryBlockStream(bool,int,ArrayPool{byte},bool)"/> constructor.
-	/// The stream is not seekable and uses a custom block size and rents buffers from an array pool.
-	/// The stream synchronizes accesses.
+	/// The tests create a stream using <see cref="MemoryBlockStream(int)"/> constructor.
+	/// The stream is seekable and uses a custom block size and allocates buffers on the heap.
 	/// </summary>
-	public class MemoryBlockStreamTests_Synchronized_NotSeekable_CustomBlockSize_Pool : MemoryBlockStreamTestsBase_NotSeekable
+	public class MemoryBlockStreamTests_Seekable_CustomBlockSize : MemoryBlockStreamTestsBase_Seekable
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="MemoryBlockStreamTests_Synchronized_NotSeekable_CustomBlockSize_Pool"/> class.
+		/// Initializes a new instance of the <see cref="MemoryBlockStreamTests_Seekable_CustomBlockSize"/> class.
 		/// </summary>
-		public MemoryBlockStreamTests_Synchronized_NotSeekable_CustomBlockSize_Pool() : base(true, true)
+		public MemoryBlockStreamTests_Seekable_CustomBlockSize() : base(false, false)
 		{
 		}
 
@@ -36,7 +33,7 @@ namespace GriffinPlus.Lib.Io
 		protected override MemoryBlockStream CreateStreamToTest(int minimumBlockSize = -1)
 		{
 			if (minimumBlockSize < 0) minimumBlockSize = StreamMemoryBlockSize;
-			return new MemoryBlockStream(true, minimumBlockSize, BufferPool, true);
+			return new MemoryBlockStream(minimumBlockSize);
 		}
 	}
 

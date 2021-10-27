@@ -3,30 +3,27 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using System.Buffers;
-
 namespace GriffinPlus.Lib.Io
 {
 
 	/// <summary>
 	/// Unit tests targeting the <see cref="MemoryBlockStream"/> class.
-	/// The tests create a stream using <see cref="MemoryBlockStream(bool,int,ArrayPool{byte},bool)"/> constructor.
-	/// The stream is not seekable and uses a custom block size and allocates buffers on the heap.
-	/// The stream synchronizes accesses.
+	/// The tests create a stream using <see cref="MemoryBlockStream()"/> constructor.
+	/// The stream is seekable and uses the default block size and allocates buffers on the heap.
 	/// </summary>
-	public class MemoryBlockStreamTests_Synchronized_NotSeekable_CustomBlockSize_Heap : MemoryBlockStreamTestsBase_NotSeekable
+	public class MemoryBlockStreamTests_Seekable_Default : MemoryBlockStreamTestsBase_Seekable
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="MemoryBlockStreamTests_Synchronized_NotSeekable_CustomBlockSize_Heap"/> class.
+		/// Initializes a new instance of the <see cref="MemoryBlockStreamTests_Seekable_Default"/> class.
 		/// </summary>
-		public MemoryBlockStreamTests_Synchronized_NotSeekable_CustomBlockSize_Heap() : base(true, false)
+		public MemoryBlockStreamTests_Seekable_Default() : base(false, false)
 		{
 		}
 
 		/// <summary>
 		/// Gets the expected size of a memory block in the stream.
 		/// </summary>
-		protected override int StreamMemoryBlockSize => 8 * 1024;
+		protected override int StreamMemoryBlockSize => 64 * 1024;
 
 		/// <summary>
 		/// Creates the <see cref="MemoryBlockStream"/> to test.
@@ -35,8 +32,7 @@ namespace GriffinPlus.Lib.Io
 		/// <returns>The created stream.</returns>
 		protected override MemoryBlockStream CreateStreamToTest(int minimumBlockSize = -1)
 		{
-			if (minimumBlockSize < 0) minimumBlockSize = StreamMemoryBlockSize;
-			return new MemoryBlockStream(true, minimumBlockSize, null, true);
+			return new MemoryBlockStream();
 		}
 	}
 
