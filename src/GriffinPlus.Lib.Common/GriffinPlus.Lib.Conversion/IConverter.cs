@@ -27,6 +27,8 @@ namespace GriffinPlus.Lib.Conversion
 		/// (null to use the current thread's culture to determine the format).
 		/// </param>
 		/// <returns>The string representation of the object.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="obj"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="obj"/> is not of the type handled by the converter.</exception>
 		string ConvertObjectToString(object obj, IFormatProvider provider = null);
 
 		/// <summary>
@@ -38,6 +40,9 @@ namespace GriffinPlus.Lib.Conversion
 		/// (null to use the current thread's culture to determine the format).
 		/// </param>
 		/// <returns>The created object.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="s"/> is <c>null</c>.</exception>
+		/// <exception cref="FormatException">Parsing <paramref name="s"/> failed.</exception>
+		/// <exception cref="OverflowException">Parsing <paramref name="s"/> succeeded, but the result does not fit into target type.</exception>
 		object ConvertStringToObject(string s, IFormatProvider provider = null);
 	}
 

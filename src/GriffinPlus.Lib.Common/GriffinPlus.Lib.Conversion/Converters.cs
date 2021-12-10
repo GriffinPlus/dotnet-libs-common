@@ -5,204 +5,203 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 
 namespace GriffinPlus.Lib.Conversion
 {
 
 	/// <summary>
-	/// A couple of converters the library provides.
+	/// Converters the configuration subsystem uses to format and parse setting values.
 	/// </summary>
-	public class Converters
+	public static class Converters
 	{
-		#region Predefined Converters
-
-		/// <summary>
-		/// Gets all converters that are provided by the <see cref="Converters"/> class out-of-the-box.
-		/// </summary>
-		public static readonly IConverter[] Predefined;
-
 		/// <summary>
 		/// A converter for translating a <see cref="System.Boolean"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter_Boolean Boolean;
+		public static readonly Converter<bool> Boolean = new Converter<bool>((s, provider) => bool.Parse(s));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.SByte"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter_SByte SByte;
+		public static readonly Converter<sbyte> SByte = new Converter<sbyte>((s, provider) => sbyte.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Byte"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter_Byte Byte;
+		public static readonly Converter<byte> Byte = new Converter<byte>((s, provider) => byte.Parse(s, provider));
 
 		/// <summary>
-		/// A converter for translating an array of <see cref="System.Byte"/> to a string and vice versa.
+		/// A converter for translating an array of <see cref="System.Byte"/> to a BASE64 encoded string and vice versa.
 		/// </summary>
-		public static readonly Converter_ByteArray ByteArray;
+		public static readonly Converter<byte[]> ByteArray = new Converter<byte[]>(
+			(s,   provider) => Convert.FromBase64String(s),
+			(obj, provider) => Convert.ToBase64String(obj));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Int16"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter_Int16 Int16;
+		public static readonly Converter<short> Int16 = new Converter<short>((s, provider) => short.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.UInt16"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter_UInt16 UInt16;
+		public static readonly Converter<ushort> UInt16 = new Converter<ushort>((s, provider) => ushort.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Int32"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter_Int32 Int32;
+		public static readonly Converter<int> Int32 = new Converter<int>((s, provider) => int.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.UInt32"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter_UInt32 UInt32;
+		public static readonly Converter<uint> UInt32 = new Converter<uint>((s, provider) => uint.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Int64"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter_Int64 Int64;
+		public static readonly Converter<long> Int64 = new Converter<long>((s, provider) => long.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.UInt64"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter_UInt64 UInt64;
+		public static readonly Converter<ulong> UInt64 = new Converter<ulong>((s, provider) => ulong.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Decimal"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter_Decimal Decimal;
+		public static readonly Converter<decimal> Decimal = new Converter<decimal>((s, provider) => decimal.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Single"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter_Single Single;
+		public static readonly Converter<float> Single = new Converter<float>((s, provider) => float.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Double"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter_Double Double;
+		public static readonly Converter<double> Double = new Converter<double>((s, provider) => double.Parse(s, provider));
 
 		/// <summary>
 		/// The string identity conversion (the string remains the same).
 		/// </summary>
-		public static readonly Converter_String String;
+		public static readonly Converter<string> String = new Converter<string>((s, provider) => s, (obj, provider) => obj);
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Guid"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter_Guid Guid;
+		public static readonly Converter<Guid> Guid = new Converter<Guid>(
+			(s,   provider) => System.Guid.Parse(s),
+			(obj, provider) => obj.ToString("D"));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.DateTime"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter_DateTime DateTime;
+		public static readonly Converter<DateTime> DateTime = new Converter<DateTime>(
+			(s,   provider) => System.DateTime.Parse(s, provider),
+			(obj, provider) => obj.ToString("o", provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.TimeSpan"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter_TimeSpan TimeSpan;
+		public static readonly Converter<TimeSpan> TimeSpan = new Converter<TimeSpan>(
+			(s,   provider) => System.TimeSpan.Parse(s, provider),
+			(obj, provider) => obj.ToString("c", provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Net.IPAddress"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter_IpAddress IpAddress;
+		// ReSharper disable once InconsistentNaming
+		public static readonly Converter<IPAddress> IPAddress = new Converter<IPAddress>((s, provider) => System.Net.IPAddress.Parse(s));
 
-		#endregion
-
-		#region Class Variables
+		/// <summary>
+		/// Gets all converters that are provided by the <see cref="Converters"/> class out-of-the-box.
+		/// </summary>
+		public static readonly IConverter[] Predefined =
+		{
+			Boolean,
+			SByte,
+			Byte,
+			ByteArray,
+			Int16,
+			UInt16,
+			Int32,
+			UInt32,
+			Int64,
+			UInt64,
+			Decimal,
+			Single,
+			Double,
+			String,
+			Guid,
+			DateTime,
+			TimeSpan,
+			IPAddress
+		};
 
 		private static readonly object                       sSync = new object();
 		private static volatile Dictionary<Type, IConverter> sConverters;
-
-		#endregion
-
-		#region Construction
 
 		/// <summary>
 		/// Initializes the <see cref="Converters"/> class.
 		/// </summary>
 		static Converters()
 		{
-			Predefined = new IConverter[]
-			{
-				Boolean = new Converter_Boolean(),
-				SByte = new Converter_SByte(),
-				Byte = new Converter_Byte(),
-				ByteArray = new Converter_ByteArray(),
-				Int16 = new Converter_Int16(),
-				UInt16 = new Converter_UInt16(),
-				Int32 = new Converter_Int32(),
-				UInt32 = new Converter_UInt32(),
-				Int64 = new Converter_Int64(),
-				UInt64 = new Converter_UInt64(),
-				Decimal = new Converter_Decimal(),
-				Single = new Converter_Single(),
-				Double = new Converter_Double(),
-				String = new Converter_String(),
-				Guid = new Converter_Guid(),
-				DateTime = new Converter_DateTime(),
-				TimeSpan = new Converter_TimeSpan(),
-				IpAddress = new Converter_IpAddress()
-			};
-
-			// add predefined converters to the list of global converters
+			// add predefined converters to the list of converters
 			sConverters = new Dictionary<Type, IConverter>();
-			foreach (var converter in Predefined)
+			foreach (IConverter converter in Predefined)
 			{
 				sConverters.Add(converter.Type, converter);
 			}
 		}
 
 		/// <summary>
-		/// Not available, since this is a utility class.
+		/// Registers a converter for global use, i.e. it can be queried using the <see cref="GetGlobalConverter(Type)"/> method.
 		/// </summary>
-		private Converters()
-		{
-		}
-
-		#endregion
-
-		#region Global Converters
-
-		/// <summary>
-		/// Registers a converter for global use, i.e. it can be queried using the <see cref="GetGlobalConverter"/> method.
-		/// </summary>
-		/// <param name="converter">Converter to register</param>
+		/// <param name="converter">Converter to register.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="converter"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="converter"/> returns <c>null</c> via it's <see cref="IConverter.Type"/> property.</exception>
+		/// <exception cref="InvalidOperationException">A converter for the same type is already registered.</exception>
 		public static void RegisterGlobalConverter(IConverter converter)
 		{
+			if (converter == null) throw new ArgumentNullException(nameof(converter));
+			if (converter.Type == null) throw new ArgumentException("The specified converter's Type property returns <null>.", nameof(converter));
+
 			lock (sSync)
 			{
-				// copy the current global converter dictionary
-				var copy = new Dictionary<Type, IConverter>();
-				foreach (var kvp in sConverters)
-				{
-					copy.Add(kvp.Key, kvp.Value);
-				}
-
-				// add the new converter to the copy
-				copy.Add(converter.Type, converter);
+				// check whether a converter for the same type has already been registered
+				if (sConverters.Any(x => x.Key == converter.Type))
+					throw new InvalidOperationException($"A converter for the type ({converter.Type.FullName}) is already registered.");
 
 				// replace the old converter dictionary
-				sConverters = copy;
+				// with a copy of the current global converter dictionary plus the new converter
+				sConverters = new Dictionary<Type, IConverter>(sConverters) { { converter.Type, converter } };
 			}
 		}
 
 		/// <summary>
-		/// Gets a global converter for the specified type.
+		/// Gets a converter for the specified type.
 		/// </summary>
 		/// <param name="type">Type of the value to get a converter for.</param>
 		/// <returns>
 		/// A converter for the specified type;
-		/// null, if there is no global converter for the specified type.
+		/// <c>null</c>, if there is no converter for the specified type.
 		/// </returns>
 		public static IConverter GetGlobalConverter(Type type)
 		{
-			if (type.IsEnum) return new Converter_Enum(type);
-			sConverters.TryGetValue(type, out var converter);
+			if (sConverters.TryGetValue(type, out var converter))
+			{
+				// converter is not known, yet
+				if (type.IsEnum)
+				{
+					// type is an enum, register a new converter for it
+					// (enums are supported out of the box)
+					converter = new Converter_Enum(type);
+					RegisterGlobalConverter(converter);
+				}
+			}
+
 			return converter;
 		}
 
@@ -210,8 +209,6 @@ namespace GriffinPlus.Lib.Conversion
 		/// Gets converters that are predefined or have been registered using the <see cref="RegisterGlobalConverter"/> method.
 		/// </summary>
 		public static IEnumerable<IConverter> GlobalConverters => sConverters.Values;
-
-		#endregion
 	}
 
 }

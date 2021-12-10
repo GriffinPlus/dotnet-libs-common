@@ -4,7 +4,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics;
 
 namespace GriffinPlus.Lib.Conversion
 {
@@ -37,9 +36,14 @@ namespace GriffinPlus.Lib.Conversion
 		/// (null to use the current thread's culture to determine the format).
 		/// </param>
 		/// <returns>The string representation of the object.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="obj"/> is <c>null</c>.</exception>
+		/// <exception cref="ArgumentException"><paramref name="obj"/> is not of the type handled by the converter.</exception>
 		public string ConvertObjectToString(object obj, IFormatProvider provider = null)
 		{
-			Debug.Assert(obj.GetType() == Type);
+			if (obj == null) throw new ArgumentNullException(nameof(obj));
+			if (obj.GetType() != Type)
+				throw new ArgumentException($"Expecting an object of type {Type.FullName}, got {obj.GetType().FullName}.", nameof(obj));
+
 			return obj.ToString();
 		}
 
@@ -52,8 +56,11 @@ namespace GriffinPlus.Lib.Conversion
 		/// (null to use the current thread's culture to determine the format).
 		/// </param>
 		/// <returns>The created object.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="s"/> is <c>null</c>.</exception>
+		/// <exception cref="FormatException">Parsing <paramref name="s"/> failed.</exception>
 		public object ConvertStringToObject(string s, IFormatProvider provider = null)
 		{
+			if (s == null) throw new ArgumentNullException(nameof(s));
 			return Enum.Parse(Type, s);
 		}
 	}
