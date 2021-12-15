@@ -24,7 +24,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void LockReadOnly_WithoutTimeout()
 		{
-			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
 			using (rwlock.LockReadOnly())
 			{
@@ -39,7 +39,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void LockReadOnly_WithTimeout_Success()
 		{
-			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
 			using (rwlock.LockReadOnly(Timeout))
 			{
@@ -54,7 +54,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task LockReadOnly_WithTimeout_Timeout()
 		{
-			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
 			// let some other thread acquire the lock
 			await Task.Run(() => rwlock.EnterWriteLock());
@@ -140,7 +140,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void LockReadWrite_WithoutTimeout()
 		{
-			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
 			using (rwlock.LockReadWrite())
 			{
@@ -155,7 +155,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void LockReadWrite_WithTimeout_Success()
 		{
-			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
 			using (rwlock.LockUpgradeableRead(Timeout))
 			{
@@ -170,7 +170,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task LockReadWrite_WithTimeout_Timeout()
 		{
-			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
 			// let some other thread acquire the lock
 			await Task.Run(() => rwlock.EnterWriteLock());
