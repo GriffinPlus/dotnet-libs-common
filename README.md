@@ -131,7 +131,7 @@ This namespace provides threading specific functionality and contains the follow
 
 The library is entirely written in C# using .NET Standard 2.0.
 
-More specific builds for .NET Standard 2.1, .NET Framework 4.6.1, .NET Core 2.1/3.1 and .NET 5.0 minimize dependencies to framework
+More specific builds for .NET Standard 2.1, .NET Framework 4.6.1, .NET Core 3.1 and .NET 5.0 minimize dependencies to framework
 components and provide optimizations for the different frameworks.
 
 Therefore it should work on the following platforms (or higher):

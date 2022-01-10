@@ -42,12 +42,6 @@ stages:
   - job: 'Build'
     steps:
     - task: UseDotNet@2
-      displayName: 'Use .NET Core 2.1 SDK'
-      inputs:
-        packageType: 'sdk'
-        version: '2.1.x'
-        installationPath: '$(Agent.ToolsDirectory)/dotnet'
-    - task: UseDotNet@2
       displayName: 'Use .NET Core 3.1 SDK'
       inputs:
         packageType: 'sdk'
@@ -134,12 +128,6 @@ stages:
       vmImage: '$(VmImage)'
     steps:
     - task: UseDotNet@2
-      displayName: 'Use .NET Core 2.1 SDK'
-      inputs:
-        packageType: 'sdk'
-        version: '2.1.x'
-        installationPath: '$(Agent.ToolsDirectory)/dotnet'
-    - task: UseDotNet@2
       displayName: 'Use .NET Core 3.1 SDK'
       inputs:
         packageType: 'sdk'
@@ -168,13 +156,6 @@ stages:
         searchFolder: '$(Build.SourcesDirectory)/_build'
         runSettingsFile: '$(Build.SourcesDirectory)/src/tests.runsettings'
         otherConsoleOptions: '/Framework:.NETFramework,Version=v4.6.1'
-    - task: DotNetCoreCLI@2
-      displayName: 'Test .NET Core 2.1'
-      inputs:
-        command: 'test'
-        projects: '**/*Tests/*.csproj'
-        nobuild: true
-        arguments: '--framework netcoreapp2.1'
     - task: DotNetCoreCLI@2
       displayName: 'Test .NET Core 3.1'
       inputs:
