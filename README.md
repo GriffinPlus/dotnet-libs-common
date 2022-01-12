@@ -66,6 +66,10 @@ This namespace provides common functionality and contains the following classes:
 - `Deque<T>`: A double-ended queue that supports adding/removing items at both ends efficiently.
 - `FixedItemReadOnlyList<T>`: A read-only list that provides a certain object a specific number of times.
 
+#### Namespace: GriffinPlus.Lib.Configuration
+
+This namespace provides a configuration subsystem with hierarchical configurations that are cascadable, i.e. multiple configurations can be stacked on another. This allows to create a composite configuration that automatically merges settings from different sources into a single configuration. Configurations at a higher level override settings derived from configurations at a lower level. The configuration subsystem comes with built-in support for persisting settings to XML. Custom persistence strategies can be added as well. Details can be found [here](./docs/configuration.md).
+
 #### Namespace: GriffinPlus.Lib.Conversion
 
 The `Converters` class provides converters for converting objects of the following types to a string and vice versa:
