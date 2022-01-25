@@ -191,7 +191,7 @@ namespace GriffinPlus.Lib.Conversion
 		/// </returns>
 		public static IConverter GetGlobalConverter(Type type)
 		{
-			if (sConverters.TryGetValue(type, out var converter))
+			if (!sConverters.TryGetValue(type, out var converter))
 			{
 				// converter is not known, yet
 				if (type.IsEnum)
