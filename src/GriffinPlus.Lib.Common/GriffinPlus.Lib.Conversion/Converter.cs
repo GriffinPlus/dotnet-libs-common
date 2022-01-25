@@ -12,24 +12,8 @@ namespace GriffinPlus.Lib.Conversion
 	/// Base class for converters implementing common parts of a converter.
 	/// </summary>
 	/// <typeparam name="T">The type of the value the converter works with.</typeparam>
-	public class Converter<T> : IConverter
+	public sealed class Converter<T> : IConverter
 	{
-		/// <summary>
-		/// Delegate for functions converting an object to a string.
-		/// </summary>
-		/// <param name="obj">Object to convert to a string.</param>
-		/// <param name="provider">Format provider to use.</param>
-		/// <returns>The object as a string.</returns>
-		public delegate string ObjectToStringConversionDelegate(T obj, IFormatProvider provider = null);
-
-		/// <summary>
-		/// Delegate for functions converting a string to the corresponding object.
-		/// </summary>
-		/// <param name="s">String to parse.</param>
-		/// <param name="provider">Format provider to use.</param>
-		/// <returns>The created object built from the specified string.</returns>
-		public delegate T StringToObjectConversionDelegate(string s, IFormatProvider provider = null);
-
 		/// <summary>
 		/// Initializes the <see cref="Converter{T}"/> class.
 		/// </summary>
@@ -54,7 +38,7 @@ namespace GriffinPlus.Lib.Conversion
 		/// (null to use a primitive conversion using <see cref="string.Format(IFormatProvider, string, object)"/>, which
 		/// suits the needs in most cases).
 		/// </param>
-		public Converter(StringToObjectConversionDelegate string2Obj, ObjectToStringConversionDelegate obj2String = null)
+		public Converter(StringToObjectConversionDelegate<T> string2Obj, ObjectToStringConversionDelegate<T> obj2String = null)
 		{
 			ObjectToStringConversion = obj2String ?? DefaultObjectToStringConversion;
 			StringToObjectConversion = string2Obj;
@@ -69,18 +53,30 @@ namespace GriffinPlus.Lib.Conversion
 		/// Gets the default conversion from an object of the corresponding type to its string representation using
 		/// <see cref="string.Format(IFormatProvider, string, object)"/>, which suits the needs in most cases.
 		/// </summary>
-		public static ObjectToStringConversionDelegate DefaultObjectToStringConversion { get; }
+		public static ObjectToStringConversionDelegate<T> DefaultObjectToStringConversion { get; }
 
 		/// <summary>
 		/// Gets the function that converts an object of the corresponding type to its string representation.
 		/// </summary>
-		public ObjectToStringConversionDelegate ObjectToStringConversion { get; }
+		public ObjectToStringConversionDelegate<T> ObjectToStringConversion { get; }
+
+		/// <summary>
+		/// Gets the strongly typed conversion delegate converting from the object to a string
+		/// (always an instance of <see cref="ObjectToStringConversionDelegate{T}"/> where <c>T</c> is the same as <see cref="Type"/>).
+		/// </summary>
+		Delegate IConverter.ObjectToStringConversion => ObjectToStringConversion;
 
 		/// <summary>
 		/// Gets the function that parses the string representation of an object of the corresponding type
 		/// to the actual object.
 		/// </summary>
-		public StringToObjectConversionDelegate StringToObjectConversion { get; }
+		public StringToObjectConversionDelegate<T> StringToObjectConversion { get; }
+
+		/// <summary>
+		/// Gets the strongly typed conversion delegate converting from a string to the object
+		/// (always an instance of <see cref="StringToObjectConversionDelegate{T}"/> where <c>T</c> is the same as <see cref="Type"/>).
+		/// </summary>
+		Delegate IConverter.StringToObjectConversion => StringToObjectConversion;
 
 		/// <summary>
 		/// Converts an object to its string representation.
@@ -88,12 +84,12 @@ namespace GriffinPlus.Lib.Conversion
 		/// <param name="obj">Object to convert.</param>
 		/// <param name="provider">
 		/// A format provider that controls how the conversion is done
-		/// (null to use the current thread's culture to determine the format).
+		/// (<c>null</c> to use the current thread's culture to determine the format).
 		/// </param>
 		/// <returns>The string representation of the object.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="obj"/> is <c>null</c>.</exception>
 		/// <exception cref="ArgumentException"><paramref name="obj"/> is not of the type handled by the converter.</exception>
-		public virtual string ConvertObjectToString(object obj, IFormatProvider provider = null)
+		public string ConvertObjectToString(object obj, IFormatProvider provider = null)
 		{
 			if (obj == null) throw new ArgumentNullException(nameof(obj));
 			if (obj.GetType() != typeof(T))
@@ -108,7 +104,7 @@ namespace GriffinPlus.Lib.Conversion
 		/// <param name="s">String to parse.</param>
 		/// <param name="provider">
 		/// A format provider that controls how the conversion is done
-		/// (null to use the current thread's culture to determine the format).
+		/// (<c>null</c> to use the current thread's culture to determine the format).
 		/// </param>
 		/// <returns>The created object.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="s"/> is <c>null</c>.</exception>

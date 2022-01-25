@@ -9,7 +9,7 @@ namespace GriffinPlus.Lib.Conversion
 {
 
 	/// <summary>
-	/// Interface for classes implementing a converter that can convert values to strings and vice versa.
+	/// Interface for classes implementing a converter that can convert an object of a specific type to a string and vice versa.
 	/// </summary>
 	public interface IConverter
 	{
@@ -17,6 +17,18 @@ namespace GriffinPlus.Lib.Conversion
 		/// Gets the type of the value the current converter is working with.
 		/// </summary>
 		Type Type { get; }
+
+		/// <summary>
+		/// Gets the strongly typed conversion delegate converting from the object of the specific type to a corresponding string
+		/// (always an instance of <see cref="ObjectToStringConversionDelegate{T}"/> where <c>T</c> is the same as <see cref="Type"/>).
+		/// </summary>
+		Delegate ObjectToStringConversion { get; }
+
+		/// <summary>
+		/// Gets the strongly typed conversion delegate converting from a string to the corresponding object
+		/// (always an instance of <see cref="StringToObjectConversionDelegate{T}"/> where <c>T</c> is the same as <see cref="Type"/>).
+		/// </summary>
+		Delegate StringToObjectConversion { get; }
 
 		/// <summary>
 		/// Converts an object to its string representation.

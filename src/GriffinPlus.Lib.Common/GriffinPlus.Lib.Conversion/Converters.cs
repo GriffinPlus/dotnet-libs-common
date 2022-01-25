@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 
 namespace GriffinPlus.Lib.Conversion
 {
@@ -197,7 +198,8 @@ namespace GriffinPlus.Lib.Conversion
 				{
 					// type is an enum, register a new converter for it
 					// (enums are supported out of the box)
-					converter = new Converter_Enum(type);
+					Type converterType = typeof(Converter_Enum<>).MakeGenericType(type);
+					converter = (IConverter)Activator.CreateInstance(converterType);
 					RegisterGlobalConverter(converter);
 				}
 			}
