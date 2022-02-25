@@ -392,6 +392,10 @@ namespace GriffinPlus.Lib.Events
 				items = CleanupAndGetHandlers(obj, eventName);
 			}
 
+			// abort, if no handlers have been registered
+			if (items == null)
+				return;
+
 			// fire event
 			foreach (var item in items)
 			{
@@ -438,35 +442,38 @@ namespace GriffinPlus.Lib.Events
 
 			EventHandler<TEventArgs> handlers = null;
 
-			foreach (var item in items)
+			if (items != null)
 			{
-				if (item.SynchronizationContext != null)
+				foreach (var item in items)
 				{
-					// synchronization context was specified at registration
-					// => invoke the handler directly, if the current context is the same as the context at registration and scheduling is not enforced;
-					//    otherwise schedule the handler using the context specified at registration
-					handlers += (sender, e) =>
+					if (item.SynchronizationContext != null)
 					{
-						if (!item.ScheduleAlways && ReferenceEquals(SynchronizationContext.Current, item.SynchronizationContext))
+						// synchronization context was specified at registration
+						// => invoke the handler directly, if the current context is the same as the context at registration and scheduling is not enforced;
+						//    otherwise schedule the handler using the context specified at registration
+						handlers += (sender, e) =>
 						{
-							item.Fire(sender, e);
-						}
-						else
-						{
-							item.SynchronizationContext.Post(x => { ((Item)x).Fire(sender, e); }, item);
-						}
-					};
-				}
-				else
-				{
-					// synchronization context was not specified at registration
-					// => schedule handler in worker thread or invoke it directly
-					var itemCopy = item;
-					handlers += (sender, e) =>
+							if (!item.ScheduleAlways && ReferenceEquals(SynchronizationContext.Current, item.SynchronizationContext))
+							{
+								item.Fire(sender, e);
+							}
+							else
+							{
+								item.SynchronizationContext.Post(x => { ((Item)x).Fire(sender, e); }, item);
+							}
+						};
+					}
+					else
 					{
-						if (itemCopy.ScheduleAlways) Task.Run(() => itemCopy.Fire(sender, e));
-						else itemCopy.Fire(sender, e);
-					};
+						// synchronization context was not specified at registration
+						// => schedule handler in worker thread or invoke it directly
+						var itemCopy = item;
+						handlers += (sender, e) =>
+						{
+							if (itemCopy.ScheduleAlways) Task.Run(() => itemCopy.Fire(sender, e));
+							else itemCopy.Fire(sender, e);
+						};
+					}
 				}
 			}
 
