@@ -15,15 +15,26 @@ namespace GriffinPlus.Lib.Collections
 	public class ByteSequenceKeyedDictionaryTests_ReferenceType : ByteSequenceKeyedDictionaryTests_Base<string>
 	{
 		/// <summary>
+		/// Gets an instance of the dictionary to test, populated with the specified data.
+		/// </summary>
+		/// <param name="data">Data to populate the dictionary with.</param>
+		/// <returns>A new instance of the dictionary to test, populated with the specified data.</returns>
+		protected override IGenericDictionary<IReadOnlyList<byte>, string> GetDictionary(IDictionary<IReadOnlyList<byte>, string> data = null)
+		{
+			if (data != null) return new ByteSequenceKeyedDictionary<string>(data);
+			return new ByteSequenceKeyedDictionary<string>();
+		}
+
+		/// <summary>
 		/// Gets a dictionary containing some test data.
 		/// </summary>
 		/// <param name="count">Number of entries in the dictionary.</param>
-		/// <param name="minKeyLength">Minimum number of bytes forming the key.</param>
-		/// <param name="maxKeyLength">Maximum number of bytes forming the key.</param>
 		/// <returns>A test data dictionary.</returns>
-		protected override IDictionary<IReadOnlyList<byte>, string> GetTestData(int count, int minKeyLength = 0, int maxKeyLength = 50)
+		protected override IDictionary<IReadOnlyList<byte>, string> GetTestData(int count)
 		{
 			// generate random test data
+			const int minKeyLength = 10;
+			const int maxKeyLength = 50;
 			var dict = new Dictionary<IReadOnlyList<byte>, string>(ReadOnlyListEqualityComparer<byte>.Instance);
 			var random = new Random(0);
 			while (dict.Count < count)

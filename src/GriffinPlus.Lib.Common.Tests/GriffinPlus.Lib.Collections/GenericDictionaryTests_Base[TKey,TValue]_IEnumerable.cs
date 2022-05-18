@@ -10,13 +10,10 @@ using System.Linq;
 
 using Xunit;
 
-// ReSharper disable RedundantAssignment
-// ReSharper disable AssignNullToNotNullAttribute
-
 namespace GriffinPlus.Lib.Collections
 {
 
-	public abstract partial class ByteSequenceKeyedDictionaryTests_Base<TValue>
+	public abstract partial class GenericDictionaryTests_Base<TKey, TValue>
 	{
 		#region GetEnumerator() - incl. all enumerator functionality
 
@@ -30,7 +27,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data);
+			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 
 			// get an enumerator
 			var enumerator = ((IEnumerable)dict).GetEnumerator();
@@ -40,43 +37,44 @@ namespace GriffinPlus.Lib.Collections
 			object _ = enumerator.Current;
 
 			// enumerate the key/value pairs in the dictionary
-			var enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
+			var enumerated = new List<KeyValuePair<TKey, TValue>>();
 			while (enumerator.MoveNext())
 			{
-				Assert.IsType<KeyValuePair<IReadOnlyList<byte>, TValue>>(enumerator.Current);
-				var current = (KeyValuePair<IReadOnlyList<byte>, TValue>)enumerator.Current;
-				Assert.IsAssignableFrom<IReadOnlyList<byte>>(current.Key);
+				Assert.IsType<KeyValuePair<TKey, TValue>>(enumerator.Current);
+				var current = (KeyValuePair<TKey, TValue>)enumerator.Current;
+				Assert.IsAssignableFrom<TKey>(current.Key);
 				Assert.IsAssignableFrom<TValue>(current.Value);
 				enumerated.Add(current);
 			}
 
 			// compare collection elements with the expected values
 			Assert.Equal(
-				data.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				enumerated.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				sKeyValuePairEqualityComparer);
+				data.OrderBy(x => x.Key, KeyComparer),
+				enumerated.OrderBy(x => x.Key, KeyComparer),
+				KeyValuePairEqualityComparer);
 
 			// the enumerator should point to the position after the last valid element now,
 			// but the 'Current' property should not throw an exception
+			// ReSharper disable once RedundantAssignment
 			_ = enumerator.Current;
 
 			// reset the enumerator and try again
 			enumerator.Reset();
-			enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
+			enumerated = new List<KeyValuePair<TKey, TValue>>();
 			while (enumerator.MoveNext())
 			{
-				Assert.IsType<KeyValuePair<IReadOnlyList<byte>, TValue>>(enumerator.Current);
-				var current = (KeyValuePair<IReadOnlyList<byte>, TValue>)enumerator.Current;
-				Assert.IsAssignableFrom<IReadOnlyList<byte>>(current.Key);
+				Assert.IsType<KeyValuePair<TKey, TValue>>(enumerator.Current);
+				var current = (KeyValuePair<TKey, TValue>)enumerator.Current;
+				Assert.IsAssignableFrom<TKey>(current.Key);
 				Assert.IsAssignableFrom<TValue>(current.Value);
 				enumerated.Add(current);
 			}
 
 			// compare collection elements with the expected values
 			Assert.Equal(
-				data.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				enumerated.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				sKeyValuePairEqualityComparer);
+				data.OrderBy(x => x.Key, KeyComparer),
+				enumerated.OrderBy(x => x.Key, KeyComparer),
+				KeyValuePairEqualityComparer);
 
 			// modify the collection, the enumerator should recognize this
 			dict[KeyNotInTestData] = ValueNotInTestData;

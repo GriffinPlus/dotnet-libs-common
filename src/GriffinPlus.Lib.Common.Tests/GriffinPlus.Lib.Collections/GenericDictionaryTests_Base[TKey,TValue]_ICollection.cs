@@ -10,13 +10,28 @@ using System.Linq;
 
 using Xunit;
 
-// ReSharper disable AssignNullToNotNullAttribute
-
 namespace GriffinPlus.Lib.Collections
 {
 
-	public abstract partial class ByteSequenceKeyedDictionaryTests_Base<TValue>
+	public abstract partial class GenericDictionaryTests_Base<TKey, TValue>
 	{
+		#region ICollection.Count
+
+		/// <summary>
+		/// Tests getting the <see cref="ICollection.Count"/> property.
+		/// </summary>
+		/// <param name="count">Number of elements to populate the dictionary with before running the test.</param>
+		[Theory]
+		[MemberData(nameof(TestDataSetSizes))]
+		public void ICollection_Count_Get(int count)
+		{
+			var data = GetTestData(count);
+			var dict = GetDictionary(data) as ICollection;
+			Assert.Equal(data.Count, dict.Count);
+		}
+
+		#endregion
+
 		#region ICollection.IsSynchronized
 
 		/// <summary>
@@ -25,7 +40,7 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void ICollection_IsSynchronized_Get()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as ICollection;
+			var dict = GetDictionary() as ICollection;
 			Assert.False(dict.IsSynchronized);
 		}
 
@@ -39,7 +54,7 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void ICollection_SyncRoot_Get()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as ICollection;
+			var dict = GetDictionary() as ICollection;
 			object sync1 = dict.SyncRoot;
 			object sync2 = dict.SyncRoot;
 			Assert.NotNull(sync1);
@@ -61,20 +76,20 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as ICollection;
+			var dict = GetDictionary(data) as ICollection;
 
 			// copy the dictionary into an array
-			var destination = new KeyValuePair<IReadOnlyList<byte>, TValue>[count + index];
+			var destination = new KeyValuePair<TKey, TValue>[count + index];
 			dict.CopyTo(destination, index);
 
 			// compare collection elements with the expected data set
 			Assert.Equal(
 				data
-					.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
+					.OrderBy(x => x.Key, KeyComparer),
 				destination
 					.Skip(index)
-					.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				sKeyValuePairEqualityComparer);
+					.OrderBy(x => x.Key, KeyComparer),
+				KeyValuePairEqualityComparer);
 		}
 
 		/// <summary>
@@ -88,7 +103,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as ICollection;
+			var dict = GetDictionary(data) as ICollection;
 
 			// copy the dictionary into an array
 			var destination = new DictionaryEntry[count + index];
@@ -96,13 +111,12 @@ namespace GriffinPlus.Lib.Collections
 
 			// compare collection elements with the expected data set
 			Assert.Equal(
-				data
-					.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
+				data.OrderBy(x => x.Key, KeyComparer),
 				destination
 					.Skip(index)
-					.Select(x => new KeyValuePair<IReadOnlyList<byte>, TValue>((IReadOnlyList<byte>)x.Key, (TValue)x.Value))
-					.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				sKeyValuePairEqualityComparer);
+					.Select(x => new KeyValuePair<TKey, TValue>((TKey)x.Key, (TValue)x.Value))
+					.OrderBy(x => x.Key, KeyComparer),
+				KeyValuePairEqualityComparer);
 		}
 
 		/// <summary>
@@ -116,7 +130,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as ICollection;
+			var dict = GetDictionary(data) as ICollection;
 
 			// copy the dictionary into an array
 			object[] destination = new object[count + index];
@@ -125,12 +139,12 @@ namespace GriffinPlus.Lib.Collections
 			// compare collection elements with the expected data set
 			Assert.Equal(
 				data
-					.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
+					.OrderBy(x => x.Key, KeyComparer),
 				destination
 					.Skip(index)
-					.Cast<KeyValuePair<IReadOnlyList<byte>, TValue>>()
-					.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				sKeyValuePairEqualityComparer);
+					.Cast<KeyValuePair<TKey, TValue>>()
+					.OrderBy(x => x.Key, KeyComparer),
+				KeyValuePairEqualityComparer);
 		}
 
 		/// <summary>
@@ -139,7 +153,8 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void ICollection_CopyTo_ArrayNull()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as ICollection;
+			var dict = GetDictionary() as ICollection;
+			// ReSharper disable once AssignNullToNotNullAttribute
 			var exception = Assert.Throws<ArgumentNullException>(() => dict.CopyTo(null, 0));
 			Assert.Equal("array", exception.ParamName);
 		}
@@ -150,8 +165,8 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void ICollection_CopyTo_MultidimensionalArray()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as ICollection;
-			var destination = new KeyValuePair<IReadOnlyList<byte>, TValue>[0, 0];
+			var dict = GetDictionary() as ICollection;
+			var destination = new KeyValuePair<TKey, TValue>[0, 0];
 			var exception = Assert.Throws<ArgumentException>(() => dict.CopyTo(destination, 0));
 			Assert.Equal("array", exception.ParamName);
 			Assert.StartsWith("The array is multidimensional.", exception.Message);
@@ -166,8 +181,8 @@ namespace GriffinPlus.Lib.Collections
 		[InlineData(1)]
 		public void ICollection_CopyTo_InvalidLowerArrayBound(int lowerBound)
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as ICollection;
-			var destination = Array.CreateInstance(typeof(KeyValuePair<IReadOnlyList<byte>, TValue>), new[] { 0 }, new[] { lowerBound });
+			var dict = GetDictionary() as ICollection;
+			var destination = Array.CreateInstance(typeof(KeyValuePair<TKey, TValue>), new[] { 0 }, new[] { lowerBound });
 			var exception = Assert.Throws<ArgumentException>(() => dict.CopyTo(destination, 0));
 			Assert.Equal("array", exception.ParamName);
 		}
@@ -178,8 +193,8 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void ICollection_CopyTo_InvalidArrayType()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as ICollection;
-			float[] destination = new float[0];
+			var dict = GetDictionary() as ICollection;
+			int[] destination = Array.Empty<int>(); // actual collection element is always KeyValuePair<TKey,TValue>
 			var exception = Assert.Throws<ArgumentException>(() => dict.CopyTo(destination, 0));
 			Assert.Equal("array", exception.ParamName);
 			Assert.StartsWith("Invalid array type.", exception.Message);
@@ -195,8 +210,8 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollection_CopyTo_IndexOutOfRange(int count, int index)
 		{
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as ICollection;
-			var destination = new KeyValuePair<IReadOnlyList<byte>, TValue>[count];
+			var dict = GetDictionary(data) as ICollection;
+			var destination = new KeyValuePair<TKey, TValue>[count];
 			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => dict.CopyTo(destination, index));
 			Assert.Equal("index", exception.ParamName);
 		}
@@ -212,8 +227,8 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollection_CopyTo_ArrayTooSmall(int count, int arraySize, int index)
 		{
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as ICollection;
-			var destination = new KeyValuePair<IReadOnlyList<byte>, TValue>[arraySize];
+			var dict = GetDictionary(data) as ICollection;
+			var destination = new KeyValuePair<TKey, TValue>[arraySize];
 			var exception = Assert.Throws<ArgumentException>(() => dict.CopyTo(destination, index));
 			Assert.StartsWith("The destination array is too small.", exception.Message);
 		}

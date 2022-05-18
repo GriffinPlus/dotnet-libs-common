@@ -10,12 +10,10 @@ using System.Linq;
 
 using Xunit;
 
-// ReSharper disable AssignNullToNotNullAttribute
-
 namespace GriffinPlus.Lib.Collections
 {
 
-	public abstract partial class ByteSequenceKeyedDictionaryTests_Base<TValue>
+	public abstract partial class GenericDictionaryTests_Base<TKey, TValue>
 	{
 		#region IDictionary.IsFixedSize
 
@@ -25,7 +23,7 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void IDictionary_IsFixedSize_Get()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as IDictionary;
+			var dict = GetDictionary() as IDictionary;
 			Assert.False(dict.IsFixedSize);
 		}
 
@@ -39,77 +37,13 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void IDictionary_IsReadOnly_Get()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as IDictionary;
+			var dict = GetDictionary() as IDictionary;
 			Assert.False(dict.IsReadOnly);
 		}
 
 		#endregion
 
-		#region IDictionary.Keys
-
-		/// <summary>
-		/// Tests accessing the key collection via <see cref="IDictionary.Keys"/>.
-		/// The key collection should present all keys in the dictionary.
-		/// </summary>
-		/// <param name="count">Number of elements to populate the dictionary with before running the test.</param>
-		[Theory]
-		[MemberData(nameof(TestDataSetSizes))]
-		public void IDictionary_Keys(int count)
-		{
-			// get test data and create a new dictionary with it
-			var expected = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(expected) as IDictionary;
-
-			// enumerate the keys in the dictionary
-			var enumerated = new List<IReadOnlyList<byte>>();
-			foreach (object current in dict.Keys)
-			{
-				Assert.IsAssignableFrom<IReadOnlyList<byte>>(current);
-				enumerated.Add((IReadOnlyList<byte>)current);
-			}
-
-			// compare collection elements with the expected values
-			Assert.Equal(
-				expected.Select(x => x.Key).OrderBy(x => x, ReadOnlyListComparer<byte>.Instance).ToArray(),
-				enumerated.OrderBy(x => x, ReadOnlyListComparer<byte>.Instance).ToArray(),
-				ReadOnlyListEqualityComparer<byte>.Instance);
-		}
-
-		#endregion
-
-		#region IDictionary.Values
-
-		/// <summary>
-		/// Tests accessing the value collection via <see cref="IDictionary.Values"/>.
-		/// The value collection should present all values in the dictionary.
-		/// </summary>
-		/// <param name="count">Number of elements to populate the dictionary with before running the test.</param>
-		[Theory]
-		[MemberData(nameof(TestDataSetSizes))]
-		public void IDictionary_Values(int count)
-		{
-			// get test data and create a new dictionary with it
-			var expected = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(expected) as IDictionary;
-
-			// enumerate the keys in the dictionary
-			var enumerated = new List<TValue>();
-			foreach (object current in dict.Values)
-			{
-				Assert.IsAssignableFrom<TValue>(current);
-				enumerated.Add((TValue)current);
-			}
-
-			// compare collection elements with the expected values
-			Assert.Equal(
-				expected.Select(x => x.Value).OrderBy(x => x, Comparer<TValue>.Default).ToArray(),
-				enumerated.OrderBy(x => x, Comparer<TValue>.Default).ToArray(),
-				EqualityComparer<TValue>.Default);
-		}
-
-		#endregion
-
-		#region IDictionary.this[object]
+		#region IDictionary.Item[object]
 
 		/// <summary>
 		/// Tests accessing the key collection via <see cref="IDictionary.this"/>.
@@ -122,7 +56,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as IDictionary;
+			var dict = GetDictionary(data) as IDictionary;
 
 			// test whether keys of test data are reported to be in the dictionary
 			foreach (var kvp in data)
@@ -142,7 +76,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as IDictionary;
+			var dict = GetDictionary(data) as IDictionary;
 
 			// test whether some other key is reported to be not in the dictionary
 			Assert.Null(dict[KeyNotInTestData]);
@@ -154,7 +88,8 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void IDictionary_Indexer_Get_KeyNull()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as IDictionary;
+			var dict = GetDictionary() as IDictionary;
+			// ReSharper disable once AssignNullToNotNullAttribute
 			var exception = Assert.Throws<ArgumentNullException>(() => dict[null]);
 			Assert.Equal("key", exception.ParamName);
 		}
@@ -170,7 +105,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create an empty dictionary
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as IDictionary;
+			var dict = GetDictionary(data) as IDictionary;
 
 			// add data to the dictionary
 			foreach (var kvp in data)
@@ -179,21 +114,21 @@ namespace GriffinPlus.Lib.Collections
 			}
 
 			// enumerate the key/value pairs in the dictionary
-			var enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
+			var enumerated = new List<KeyValuePair<TKey, TValue>>();
 			foreach (object current in dict)
 			{
 				Assert.IsType<DictionaryEntry>(current);
 				var kvp = (DictionaryEntry)current;
-				Assert.IsAssignableFrom<IReadOnlyList<byte>>(kvp.Key);
+				Assert.IsAssignableFrom<TKey>(kvp.Key);
 				Assert.IsAssignableFrom<TValue>(kvp.Value);
-				enumerated.Add(new KeyValuePair<IReadOnlyList<byte>, TValue>((IReadOnlyList<byte>)kvp.Key, (TValue)kvp.Value));
+				enumerated.Add(new KeyValuePair<TKey, TValue>((TKey)kvp.Key, (TValue)kvp.Value));
 			}
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
-				data.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				enumerated.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				sKeyValuePairEqualityComparer);
+				data.OrderBy(x => x.Key, KeyComparer),
+				enumerated.OrderBy(x => x.Key, KeyComparer),
+				KeyValuePairEqualityComparer);
 		}
 
 		/// <summary>
@@ -207,7 +142,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create an empty dictionary
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as IDictionary;
+			var dict = GetDictionary() as IDictionary;
 
 			// add data to the dictionary
 			foreach (var kvp in data)
@@ -216,26 +151,26 @@ namespace GriffinPlus.Lib.Collections
 			}
 
 			// overwrite an item
-			byte[] key = data.First().Key.ToArray();
+			TKey key = data.First().Key;
 			data[key] = ValueNotInTestData;
 			dict[key] = ValueNotInTestData;
 
 			// enumerate the key/value pairs in the dictionary
-			var enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
+			var enumerated = new List<KeyValuePair<TKey, TValue>>();
 			foreach (object current in dict)
 			{
 				Assert.IsType<DictionaryEntry>(current);
 				var kvp = (DictionaryEntry)current;
-				Assert.IsAssignableFrom<IReadOnlyList<byte>>(kvp.Key);
+				Assert.IsAssignableFrom<TKey>(kvp.Key);
 				Assert.IsAssignableFrom<TValue>(kvp.Value);
-				enumerated.Add(new KeyValuePair<IReadOnlyList<byte>, TValue>((IReadOnlyList<byte>)kvp.Key, (TValue)kvp.Value));
+				enumerated.Add(new KeyValuePair<TKey, TValue>((TKey)kvp.Key, (TValue)kvp.Value));
 			}
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
-				data.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				enumerated.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				sKeyValuePairEqualityComparer);
+				data.OrderBy(x => x.Key, KeyComparer),
+				enumerated.OrderBy(x => x.Key, KeyComparer),
+				KeyValuePairEqualityComparer);
 		}
 
 		/// <summary>
@@ -244,7 +179,8 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void IDictionary_Indexer_Set_KeyNull()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as IDictionary;
+			var dict = GetDictionary() as IDictionary;
+			// ReSharper disable once AssignNullToNotNullAttribute
 			var exception = Assert.Throws<ArgumentNullException>(() => dict[null] = default(TValue));
 			Assert.Equal("key", exception.ParamName);
 		}
@@ -255,8 +191,9 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void IDictionary_Indexer_Set_InvalidKeyType()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as IDictionary;
-			int key = 0; // should be IReadOnlyList<byte>
+			var dict = GetDictionary() as IDictionary;
+			object key = 0;
+			if (typeof(TKey) == typeof(int)) key = 0u;
 			var exception = Assert.Throws<ArgumentException>(() => dict[key] = default(TValue));
 			Assert.Equal("key", exception.ParamName);
 			Assert.StartsWith("Wrong key type", exception.Message);
@@ -268,9 +205,11 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void IDictionary_Indexer_Set_InvalidValueType()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as IDictionary;
-			byte[] key = new byte[0];
-			float value = 0.0f; // float is not a value type used to test the dictionary
+			var data = GetTestData(1);
+			var dict = GetDictionary() as IDictionary; // do not add test data...
+			var key = data.First().Key;
+			object value = 0;
+			if (typeof(TValue) == typeof(int)) value = 0u;
 			var exception = Assert.Throws<ArgumentException>(() => dict[key] = value);
 			Assert.Equal("value", exception.ParamName);
 			Assert.StartsWith("Wrong value type", exception.Message);
@@ -283,8 +222,9 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void IDictionary_Indexer_Set_ValueNull()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as IDictionary;
-			byte[] key = new byte[0];
+			var data = GetTestData(1);
+			var dict = GetDictionary() as IDictionary; // do not add test data...
+			var key = data.First().Key;
 			if (typeof(TValue).IsValueType)
 			{
 				// TValue is a value type, null value is not allowed
@@ -301,6 +241,70 @@ namespace GriffinPlus.Lib.Collections
 
 		#endregion
 
+		#region IDictionary.Keys
+
+		/// <summary>
+		/// Tests accessing the key collection via <see cref="IDictionary.Keys"/>.
+		/// The key collection should present all keys in the dictionary.
+		/// </summary>
+		/// <param name="count">Number of elements to populate the dictionary with before running the test.</param>
+		[Theory]
+		[MemberData(nameof(TestDataSetSizes))]
+		public void IDictionary_Keys(int count)
+		{
+			// get test data and create a new dictionary with it
+			var expected = GetTestData(count);
+			var dict = GetDictionary(expected) as IDictionary;
+
+			// enumerate the keys in the dictionary
+			var enumerated = new List<TKey>();
+			foreach (object current in dict.Keys)
+			{
+				Assert.IsAssignableFrom<TKey>(current);
+				enumerated.Add((TKey)current);
+			}
+
+			// compare collection elements with the expected values
+			Assert.Equal(
+				expected.Select(x => x.Key).OrderBy(x => x, KeyComparer).ToArray(),
+				enumerated.OrderBy(x => x, KeyComparer).ToArray(),
+				KeyEqualityComparer);
+		}
+
+		#endregion
+
+		#region IDictionary.Values
+
+		/// <summary>
+		/// Tests accessing the value collection via <see cref="IDictionary.Values"/>.
+		/// The value collection should present all values in the dictionary.
+		/// </summary>
+		/// <param name="count">Number of elements to populate the dictionary with before running the test.</param>
+		[Theory]
+		[MemberData(nameof(TestDataSetSizes))]
+		public void IDictionary_Values(int count)
+		{
+			// get test data and create a new dictionary with it
+			var expected = GetTestData(count);
+			var dict = GetDictionary(expected) as IDictionary;
+
+			// enumerate the keys in the dictionary
+			var enumerated = new List<TValue>();
+			foreach (object current in dict.Values)
+			{
+				Assert.IsAssignableFrom<TValue>(current);
+				enumerated.Add((TValue)current);
+			}
+
+			// compare collection elements with the expected values
+			Assert.Equal(
+				expected.Select(x => x.Value).OrderBy(x => x, ValueComparer).ToArray(),
+				enumerated.OrderBy(x => x, ValueComparer).ToArray(),
+				ValueEqualityComparer);
+		}
+
+		#endregion
+
 		#region IDictionary.Add(object, object)
 
 		/// <summary>
@@ -313,7 +317,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create an empty dictionary
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as IDictionary;
+			var dict = GetDictionary() as IDictionary;
 
 			// add data to the dictionary
 			foreach (var kvp in data)
@@ -322,21 +326,21 @@ namespace GriffinPlus.Lib.Collections
 			}
 
 			// enumerate the key/value pairs in the dictionary
-			var enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
+			var enumerated = new List<KeyValuePair<TKey, TValue>>();
 			foreach (object current in dict)
 			{
 				Assert.IsType<DictionaryEntry>(current);
 				var kvp = (DictionaryEntry)current;
-				Assert.IsAssignableFrom<IReadOnlyList<byte>>(kvp.Key);
+				Assert.IsAssignableFrom<TKey>(kvp.Key);
 				Assert.IsAssignableFrom<TValue>(kvp.Value);
-				enumerated.Add(new KeyValuePair<IReadOnlyList<byte>, TValue>((IReadOnlyList<byte>)kvp.Key, (TValue)kvp.Value));
+				enumerated.Add(new KeyValuePair<TKey, TValue>((TKey)kvp.Key, (TValue)kvp.Value));
 			}
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
-				data.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				enumerated.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				sKeyValuePairEqualityComparer);
+				data.OrderBy(x => x.Key, KeyComparer),
+				enumerated.OrderBy(x => x.Key, KeyComparer),
+				KeyValuePairEqualityComparer);
 		}
 
 		/// <summary>
@@ -349,11 +353,11 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as IDictionary;
+			var dict = GetDictionary() as IDictionary;
 
 			// add data to the dictionary
-			KeyValuePair<IReadOnlyList<byte>, TValue>? first = null;
-			KeyValuePair<IReadOnlyList<byte>, TValue>? last = null;
+			KeyValuePair<TKey, TValue>? first = null;
+			KeyValuePair<TKey, TValue>? last = null;
 			foreach (var kvp in data)
 			{
 				if (first == null) first = kvp;
@@ -366,14 +370,14 @@ namespace GriffinPlus.Lib.Collections
 			if (last != null) Assert.Throws<ArgumentException>(() => dict.Add(last.Value.Key, last.Value.Value));
 
 			// enumerate the key/value pairs in the dictionary
-			var enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
-			foreach (DictionaryEntry kvp in dict) enumerated.Add(new KeyValuePair<IReadOnlyList<byte>, TValue>((IReadOnlyList<byte>)kvp.Key, (TValue)kvp.Value));
+			var enumerated = new List<KeyValuePair<TKey, TValue>>();
+			foreach (DictionaryEntry kvp in dict) enumerated.Add(new KeyValuePair<TKey, TValue>((TKey)kvp.Key, (TValue)kvp.Value));
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
-				data.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				enumerated.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				sKeyValuePairEqualityComparer);
+				data.OrderBy(x => x.Key, KeyComparer),
+				enumerated.OrderBy(x => x.Key, KeyComparer),
+				KeyValuePairEqualityComparer);
 		}
 
 		/// <summary>
@@ -382,7 +386,8 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void IDictionary_Add_KeyNull()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as IDictionary;
+			var dict = GetDictionary() as IDictionary;
+			// ReSharper disable once AssignNullToNotNullAttribute
 			var exception = Assert.Throws<ArgumentNullException>(() => dict.Add(null, default(TValue)));
 			Assert.Equal("key", exception.ParamName); // the 'key' is actually not the name of the method parameter
 		}
@@ -393,8 +398,9 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void IDictionary_Add_InvalidKeyType()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as IDictionary;
-			int key = 0; // should be IReadOnlyList<byte>
+			var dict = GetDictionary() as IDictionary;
+			object key = 0;
+			if (typeof(TKey) == typeof(int)) key = 0u;
 			var exception = Assert.Throws<ArgumentException>(() => dict.Add(key, default(TValue)));
 			Assert.Equal("key", exception.ParamName);
 			Assert.StartsWith("Wrong key type", exception.Message);
@@ -406,9 +412,11 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void IDictionary_Add_InvalidValueType()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as IDictionary;
-			byte[] key = new byte[0];
-			float value = 0.0f; // float is not a value type used to test the dictionary
+			var data = GetTestData(1);
+			var dict = GetDictionary() as IDictionary; // do not add test data...
+			TKey key = data.First().Key;
+			object value = 0;
+			if (typeof(TValue) == typeof(int)) value = 0u;
 			var exception = Assert.Throws<ArgumentException>(() => dict.Add(key, value));
 			Assert.Equal("value", exception.ParamName);
 			Assert.StartsWith("Wrong value type", exception.Message);
@@ -421,8 +429,9 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void IDictionary_Add_ValueNull()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as IDictionary;
-			byte[] key = new byte[0];
+			var data = GetTestData(1);
+			var dict = GetDictionary() as IDictionary; // do not add test data...
+			TKey key = data.First().Key;
 			if (typeof(TValue).IsValueType)
 			{
 				// TValue is a value type, null value is not allowed
@@ -435,6 +444,30 @@ namespace GriffinPlus.Lib.Collections
 				dict.Add(key, null);
 				Assert.Null(dict[key]);
 			}
+		}
+
+		#endregion
+
+		#region IDictionary.Clear()
+
+		/// <summary>
+		/// Tests the <see cref="IDictionary.Clear"/> method.
+		/// </summary>
+		/// <param name="count">Number of elements to populate the dictionary with before running the test.</param>
+		[Theory]
+		[MemberData(nameof(TestDataSetSizes))]
+		public void IDictionary_Clear(int count)
+		{
+			// get test data and create a new dictionary with it
+			var data = GetTestData(count);
+			var dict = GetDictionary(data) as IDictionary;
+
+			// clear the dictionary
+			dict.Clear();
+
+			// the dictionary should be empty now
+			Assert.Equal(0, dict.Count);
+			Assert.Empty(dict);
 		}
 
 		#endregion
@@ -452,7 +485,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as IDictionary;
+			var dict = GetDictionary(data) as IDictionary;
 
 			// test whether keys of test data are reported to be in the dictionary
 			foreach (var kvp in data)
@@ -472,7 +505,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as IDictionary;
+			var dict = GetDictionary(data) as IDictionary;
 
 			// test whether some other key is reported to be not in the dictionary
 			Assert.False(dict.Contains(KeyNotInTestData));
@@ -480,7 +513,7 @@ namespace GriffinPlus.Lib.Collections
 
 		/// <summary>
 		/// Tests the <see cref="IDictionary.Contains"/> method.
-		/// The key is not an <see cref="IReadOnlyList{T}"/> of <see cref="System.Byte"/>.
+		/// The key is not a <see cref="TKey"/>.
 		/// </summary>
 		/// <param name="count">Number of elements to populate the dictionary with before running the test.</param>
 		[Theory]
@@ -489,10 +522,11 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as IDictionary;
+			var dict = GetDictionary(data) as IDictionary;
 
-			// test whether some other key is reported to be not in the dictionary
-			int[] key = { 0xff }; // int[] (IReadOnlyList<int>) != byte[] (IReadOnlyList<byte>)
+			// test whether some incompatible key is reported to be not in the dictionary
+			object key = 0;
+			if (typeof(TKey) == typeof(int)) key = 0u;
 			Assert.False(dict.Contains(key));
 		}
 
@@ -502,7 +536,8 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void IDictionary_Contains_KeyNull()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as IDictionary;
+			var dict = GetDictionary() as IDictionary;
+			// ReSharper disable once AssignNullToNotNullAttribute
 			var exception = Assert.Throws<ArgumentNullException>(() => dict.Contains(null));
 			Assert.Equal("key", exception.ParamName);
 		}
@@ -521,7 +556,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as IDictionary;
+			var dict = GetDictionary(data) as IDictionary;
 
 			// get an enumerator
 			var enumerator = dict.GetEnumerator();
@@ -533,13 +568,13 @@ namespace GriffinPlus.Lib.Collections
 			object _ = enumerator.Current; // should not throw
 
 			// enumerate the key/value pairs in the dictionary
-			var enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
+			var enumerated = new List<KeyValuePair<TKey, TValue>>();
 			while (enumerator.MoveNext())
 			{
 				// IEnumerator
 				Assert.IsType<DictionaryEntry>(enumerator.Current);
 				var current = (DictionaryEntry)enumerator.Current;
-				Assert.IsAssignableFrom<IReadOnlyList<byte>>(current.Key);
+				Assert.IsAssignableFrom<TKey>(current.Key);
 				Assert.IsAssignableFrom<TValue>(current.Value);
 
 				// IDictionaryEnumerator
@@ -547,30 +582,31 @@ namespace GriffinPlus.Lib.Collections
 				Assert.Equal(current.Key, enumerator.Key);
 				Assert.Equal(current.Value, enumerator.Value);
 
-				enumerated.Add(new KeyValuePair<IReadOnlyList<byte>, TValue>((IReadOnlyList<byte>)current.Key, (TValue)current.Value));
+				enumerated.Add(new KeyValuePair<TKey, TValue>((TKey)current.Key, (TValue)current.Value));
 			}
 
 			// compare collection elements with the expected values
 			Assert.Equal(
-				data.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				enumerated.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				sKeyValuePairEqualityComparer);
+				data.OrderBy(x => x.Key, KeyComparer),
+				enumerated.OrderBy(x => x.Key, KeyComparer),
+				KeyValuePairEqualityComparer);
 
 			// the enumerator should point to the position after the last valid element now
 			Assert.Throws<InvalidOperationException>(() => enumerator.Entry);
 			Assert.Throws<InvalidOperationException>(() => enumerator.Key);
 			Assert.Throws<InvalidOperationException>(() => enumerator.Value);
+			// ReSharper disable once RedundantAssignment
 			_ = enumerator.Current; // should not throw
 
 			// reset the enumerator and try again
 			enumerator.Reset();
-			enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
+			enumerated = new List<KeyValuePair<TKey, TValue>>();
 			while (enumerator.MoveNext())
 			{
 				// IEnumerator
 				Assert.IsType<DictionaryEntry>(enumerator.Current);
 				var current = (DictionaryEntry)enumerator.Current;
-				Assert.IsAssignableFrom<IReadOnlyList<byte>>(current.Key);
+				Assert.IsAssignableFrom<TKey>(current.Key);
 				Assert.IsAssignableFrom<TValue>(current.Value);
 
 				// IDictionaryEnumerator
@@ -578,14 +614,14 @@ namespace GriffinPlus.Lib.Collections
 				Assert.Equal(current.Key, enumerator.Key);
 				Assert.Equal(current.Value, enumerator.Value);
 
-				enumerated.Add(new KeyValuePair<IReadOnlyList<byte>, TValue>((IReadOnlyList<byte>)current.Key, (TValue)current.Value));
+				enumerated.Add(new KeyValuePair<TKey, TValue>((TKey)current.Key, (TValue)current.Value));
 			}
 
 			// compare collection elements with the expected values
 			Assert.Equal(
-				data.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				enumerated.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				sKeyValuePairEqualityComparer);
+				data.OrderBy(x => x.Key, KeyComparer),
+				enumerated.OrderBy(x => x.Key, KeyComparer),
+				KeyValuePairEqualityComparer);
 
 			// modify the collection, the enumerator should recognize this
 			dict[KeyNotInTestData] = ValueNotInTestData;
@@ -608,7 +644,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as IDictionary;
+			var dict = GetDictionary(data) as IDictionary;
 
 			// remove elements in random order until the dictionary is empty
 			var random = new Random();
@@ -637,7 +673,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as IDictionary;
+			var dict = GetDictionary(data) as IDictionary;
 
 			// try to remove an element that does not exist
 			dict.Remove(KeyNotInTestData);
@@ -651,6 +687,7 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionary_Remove_KeyNull()
 		{
 			var dict = new ByteSequenceKeyedDictionary<TValue>() as IDictionary;
+			// ReSharper disable once AssignNullToNotNullAttribute
 			var exception = Assert.Throws<ArgumentNullException>(() => dict.Remove(null));
 			Assert.Equal("key", exception.ParamName); // the 'key' is actually not the name of the method parameter
 		}

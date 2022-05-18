@@ -9,13 +9,28 @@ using System.Linq;
 
 using Xunit;
 
-// ReSharper disable AssignNullToNotNullAttribute
-
 namespace GriffinPlus.Lib.Collections
 {
 
-	public abstract partial class ByteSequenceKeyedDictionaryTests_Base<TValue>
+	public abstract partial class GenericDictionaryTests_Base<TKey, TValue>
 	{
+		#region ICollection<T>.Count
+
+		/// <summary>
+		/// Tests getting the <see cref="ICollection{T}.Count"/> property.
+		/// </summary>
+		/// <param name="count">Number of elements to populate the dictionary with before running the test.</param>
+		[Theory]
+		[MemberData(nameof(TestDataSetSizes))]
+		public void ICollectionT_Count_Get(int count)
+		{
+			var data = GetTestData(count);
+			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
+			Assert.Equal(data.Count, dict.Count);
+		}
+
+		#endregion
+
 		#region ICollection<T>.IsReadOnly
 
 		/// <summary>
@@ -24,7 +39,7 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void ICollectionT_IsReadOnly_Get()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>;
+			var dict = GetDictionary() as ICollection<KeyValuePair<TKey, TValue>>;
 			Assert.False(dict.IsReadOnly);
 		}
 
@@ -42,23 +57,23 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>;
+			var dict = GetDictionary() as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// add data to the dictionary
 			foreach (var kvp in data)
 			{
-				dict.Add(new KeyValuePair<IReadOnlyList<byte>, TValue>(kvp.Key, kvp.Value));
+				dict.Add(new KeyValuePair<TKey, TValue>(kvp.Key, kvp.Value));
 			}
 
 			// enumerate the key/value pairs in the dictionary
-			var enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
+			var enumerated = new List<KeyValuePair<TKey, TValue>>();
 			foreach (var kvp in dict) enumerated.Add(kvp);
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
-				data.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				enumerated.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				sKeyValuePairEqualityComparer);
+				data.OrderBy(x => x.Key, KeyComparer),
+				enumerated.OrderBy(x => x.Key, KeyComparer),
+				KeyValuePairEqualityComparer);
 		}
 
 		/// <summary>
@@ -70,16 +85,16 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>;
+			var dict = GetDictionary() as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// add data to the dictionary
-			KeyValuePair<IReadOnlyList<byte>, TValue>? first = null;
-			KeyValuePair<IReadOnlyList<byte>, TValue>? last = null;
+			KeyValuePair<TKey, TValue>? first = null;
+			KeyValuePair<TKey, TValue>? last = null;
 			foreach (var kvp in data)
 			{
 				if (first == null) first = kvp;
 				last = kvp;
-				dict.Add(new KeyValuePair<IReadOnlyList<byte>, TValue>(kvp.Key, kvp.Value));
+				dict.Add(new KeyValuePair<TKey, TValue>(kvp.Key, kvp.Value));
 			}
 
 			// try to add the first and the last element once again
@@ -87,14 +102,14 @@ namespace GriffinPlus.Lib.Collections
 			if (last != null) Assert.Throws<ArgumentException>(() => dict.Add(last.Value));
 
 			// enumerate the key/value pairs in the dictionary
-			var enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
+			var enumerated = new List<KeyValuePair<TKey, TValue>>();
 			foreach (var kvp in dict) enumerated.Add(kvp);
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
-				data.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				enumerated.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				sKeyValuePairEqualityComparer);
+				data.OrderBy(x => x.Key, KeyComparer),
+				enumerated.OrderBy(x => x.Key, KeyComparer),
+				KeyValuePairEqualityComparer);
 		}
 
 		/// <summary>
@@ -103,8 +118,8 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void ICollectionT_Add_KeyNull()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>;
-			var exception = Assert.Throws<ArgumentNullException>(() => dict.Add(new KeyValuePair<IReadOnlyList<byte>, TValue>(null, default)));
+			var dict = GetDictionary() as ICollection<KeyValuePair<TKey, TValue>>;
+			var exception = Assert.Throws<ArgumentNullException>(() => dict.Add(new KeyValuePair<TKey, TValue>(default, default)));
 			Assert.Equal("key", exception.ParamName); // the 'key' is actually not the name of the method parameter
 		}
 
@@ -122,7 +137,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>;
+			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// clear the dictionary
 			dict.Clear();
@@ -147,12 +162,12 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>;
+			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// test whether keys of test data are reported to be in the dictionary
 			foreach (var kvp in data)
 			{
-				Assert.True(dict.Contains(new KeyValuePair<IReadOnlyList<byte>, TValue>(kvp.Key, kvp.Value)));
+				Assert.True(dict.Contains(new KeyValuePair<TKey, TValue>(kvp.Key, kvp.Value)));
 			}
 		}
 
@@ -167,12 +182,12 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>;
+			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// test whether some other key is reported to be not in the dictionary
 			Assert.False(
 				dict.Contains(
-					new KeyValuePair<IReadOnlyList<byte>, TValue>(
+					new KeyValuePair<TKey, TValue>(
 						KeyNotInTestData,
 						data.First().Value)));
 		}
@@ -188,25 +203,29 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>;
+			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// test whether some other key is reported to be not in the dictionary
 			Assert.False(
 				dict.Contains(
-					new KeyValuePair<IReadOnlyList<byte>, TValue>(
+					new KeyValuePair<TKey, TValue>(
 						data.First().Key,
 						ValueNotInTestData)));
 		}
 
 		/// <summary>
 		/// Tests whether the <see cref="ICollection{T}.Contains"/> method fails, if the key of the passed key/value pair is <c>null</c>.
+		/// Only for reference types.
 		/// </summary>
 		[Fact]
 		public void ICollectionT_Contains_KeyNull()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>;
-			var exception = Assert.Throws<ArgumentNullException>(() => dict.Contains(new KeyValuePair<IReadOnlyList<byte>, TValue>(null, default)));
-			Assert.Equal("key", exception.ParamName); // the 'key' is actually not the name of the method parameter
+			if (!typeof(TKey).IsValueType)
+			{
+				var dict = GetDictionary() as ICollection<KeyValuePair<TKey, TValue>>;
+				var exception = Assert.Throws<ArgumentNullException>(() => dict.Contains(new KeyValuePair<TKey, TValue>(default, default)));
+				Assert.Equal("key", exception.ParamName); // the 'key' is actually not the name of the method parameter
+			}
 		}
 
 		#endregion
@@ -224,17 +243,17 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>;
+			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// copy the dictionary into an array
-			var destination = new KeyValuePair<IReadOnlyList<byte>, TValue>[count + index];
+			var destination = new KeyValuePair<TKey, TValue>[count + index];
 			dict.CopyTo(destination, index);
 
 			// compare collection elements with the expected data set
 			Assert.Equal(
-				data.OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				destination.Skip(index).OrderBy(x => x.Key, ReadOnlyListComparer<byte>.Instance),
-				sKeyValuePairEqualityComparer);
+				data.OrderBy(x => x.Key, KeyComparer),
+				destination.Skip(index).OrderBy(x => x.Key, KeyComparer),
+				KeyValuePairEqualityComparer);
 		}
 
 		/// <summary>
@@ -243,7 +262,8 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void ICollectionT_CopyTo_ArrayNull()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>;
+			var dict = GetDictionary() as ICollection<KeyValuePair<TKey, TValue>>;
+			// ReSharper disable once AssignNullToNotNullAttribute
 			Assert.Throws<ArgumentNullException>(() => dict.CopyTo(null, 0));
 		}
 
@@ -257,8 +277,8 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollectionT_CopyTo_IndexOutOfRange(int count, int index)
 		{
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>;
-			var destination = new KeyValuePair<IReadOnlyList<byte>, TValue>[count];
+			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
+			var destination = new KeyValuePair<TKey, TValue>[count];
 			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => dict.CopyTo(destination, index));
 			Assert.Equal("index", exception.ParamName);
 		}
@@ -274,8 +294,8 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollectionT_CopyTo_ArrayTooSmall(int count, int arraySize, int index)
 		{
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>;
-			var destination = new KeyValuePair<IReadOnlyList<byte>, TValue>[arraySize];
+			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
+			var destination = new KeyValuePair<TKey, TValue>[arraySize];
 			Assert.Throws<ArgumentException>(() => dict.CopyTo(destination, index));
 		}
 
@@ -293,7 +313,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>;
+			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// remove elements in random order until the dictionary is empty
 			var random = new Random();
@@ -323,10 +343,10 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>;
+			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// try to remove an element that does not exist
-			var kvp = new KeyValuePair<IReadOnlyList<byte>, TValue>(KeyNotInTestData, data.First().Value);
+			var kvp = new KeyValuePair<TKey, TValue>(KeyNotInTestData, data.First().Value);
 			Assert.False(dict.Remove(kvp));
 		}
 
@@ -341,22 +361,26 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// get test data and create a new dictionary with it
 			var data = GetTestData(count);
-			var dict = new ByteSequenceKeyedDictionary<TValue>(data) as ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>;
+			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// try to remove an element that does not exist
-			var kvp = new KeyValuePair<IReadOnlyList<byte>, TValue>(data.First().Key, ValueNotInTestData);
+			var kvp = new KeyValuePair<TKey, TValue>(data.First().Key, ValueNotInTestData);
 			Assert.False(dict.Remove(kvp));
 		}
 
 		/// <summary>
 		/// Tests whether the <see cref="ICollection{T}.Remove"/> method fails, if the key of the passed key/value pair is <c>null</c>.
+		/// Only for reference types.
 		/// </summary>
 		[Fact]
 		public void ICollectionT_Remove_KeyNull()
 		{
-			var dict = new ByteSequenceKeyedDictionary<TValue>() as ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>;
-			var exception = Assert.Throws<ArgumentNullException>(() => dict.Remove(new KeyValuePair<IReadOnlyList<byte>, TValue>(null, default)));
-			Assert.Equal("key", exception.ParamName); // the 'key' is actually not the name of the method parameter
+			if (!typeof(TKey).IsValueType)
+			{
+				var dict = GetDictionary() as ICollection<KeyValuePair<TKey, TValue>>;
+				var exception = Assert.Throws<ArgumentNullException>(() => dict.Remove(new KeyValuePair<TKey, TValue>(default, default)));
+				Assert.Equal("key", exception.ParamName); // the 'key' is actually not the name of the method parameter
+			}
 		}
 
 		#endregion

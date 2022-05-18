@@ -49,10 +49,8 @@ namespace GriffinPlus.Lib.Collections
 	/// A generic dictionary using a list (or an array) of bytes as key.
 	/// </summary>
 	/// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
-	public sealed partial class ByteSequenceKeyedDictionary<TValue> :
-		IDictionary<IReadOnlyList<byte>, TValue>,
-		IDictionary,
-		IReadOnlyDictionary<IReadOnlyList<byte>, TValue>
+	public sealed partial class ByteSequenceKeyedDictionary<TValue> : IGenericDictionary<IReadOnlyList<byte>, TValue>
+
 	{
 		private struct Entry
 		{
