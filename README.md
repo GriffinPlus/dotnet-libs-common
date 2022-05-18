@@ -63,6 +63,7 @@ Extension methods for common types
 This namespace provides common functionality and contains the following classes:
 
 - `ByteSequenceKeyedDictionary<TValue>`: A generic dictionary that uses a byte sequence as key (with span support).
+- `TypeKeyedDictionary<TValue>`: A generic dictionary that is optimized for `System.Type` as key.
 - `Deque<T>`: A double-ended queue that supports adding/removing items at both ends efficiently.
 - `FixedItemReadOnlyList<T>`: A read-only list that provides a certain object a specific number of times.
 
