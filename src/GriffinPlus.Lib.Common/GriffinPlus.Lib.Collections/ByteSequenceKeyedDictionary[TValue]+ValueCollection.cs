@@ -236,9 +236,9 @@ namespace GriffinPlus.Lib.Collections
 				if (array.Length - index < mDictionary.Count)
 					throw new ArgumentException("The destination array is too small.");
 
-				if (array is TValue[] values)
+				if (array.GetType().GetElementType() == typeof(TValue))
 				{
-					CopyTo(values, index);
+					CopyTo((TValue[])array, index);
 				}
 				else
 				{
