@@ -61,7 +61,7 @@ namespace GriffinPlus.Lib
 		private static int GetHexValue(char hex)
 		{
 			int val = hex;
-			if (hex >= '0' && hex <= '9' || hex >= 'a' && hex <= 'f' || hex >= 'A' && hex <= 'F')
+			if ((hex >= '0' && hex <= '9') || (hex >= 'a' && hex <= 'f') || (hex >= 'A' && hex <= 'F'))
 			{
 				return val - (val < 58 ? 48 : val < 97 ? 55 : 87);
 			}

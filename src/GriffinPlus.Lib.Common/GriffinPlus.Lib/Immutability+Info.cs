@@ -50,6 +50,7 @@ namespace GriffinPlus.Lib
 			/// May be <c>false</c> although the type is in fact immutable (false-negative),
 			/// if the immutability analysis was not 100% sure that the type is immutable.
 			/// </summary>
+			// ReSharper disable once MemberHidesStaticFromOuterClass
 			public bool IsImmutable { get; }
 
 			/// <summary>
@@ -58,6 +59,7 @@ namespace GriffinPlus.Lib
 			/// A <c>true</c> guarantees that all types inheriting from the type are immutable as well.
 			/// A <c>false</c> means that the type MAY have derived types that are not immutable.
 			/// </summary>
+			// ReSharper disable once MemberHidesStaticFromOuterClass
 			public bool HasImmutableDerivationsOnly { get; internal set; }
 
 			/// <summary>

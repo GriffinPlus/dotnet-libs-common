@@ -16,7 +16,7 @@ namespace GriffinPlus.Lib
 	/// </summary>
 	public class BitMask
 	{
-		private static readonly uint[] sEmptyBitField = new uint[0];
+		private static readonly uint[] sEmptyBitField = Array.Empty<uint>();
 		private                 uint[] mBitField;
 
 		/// <summary>

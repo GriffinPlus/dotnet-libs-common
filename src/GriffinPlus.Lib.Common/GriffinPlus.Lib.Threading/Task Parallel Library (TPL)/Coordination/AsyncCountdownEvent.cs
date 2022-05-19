@@ -151,7 +151,7 @@ namespace GriffinPlus.Lib.Threading
 				{
 					mManualResetEvent.Set();
 				}
-				else if (oldCount < 0 && mCount > 0 || oldCount > 0 && mCount < 0)
+				else if ((oldCount < 0 && mCount > 0) || (oldCount > 0 && mCount < 0))
 				{
 					mManualResetEvent.Set();
 					mManualResetEvent.Reset();

@@ -32,7 +32,7 @@ namespace GriffinPlus.Lib.Threading
 		/// <summary>
 		/// A set of synchronization contexts that are known to be serializing.
 		/// </summary>
-		private static Type[] sSerializingContextTypes = new Type[0];
+		private static Type[] sSerializingContextTypes = Type.EmptyTypes;
 
 		/// <summary>
 		/// Synchronizes a access to data structures.

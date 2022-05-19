@@ -46,7 +46,7 @@ namespace GriffinPlus.Lib
 			get
 			{
 				// test passing null references
-				byte[] data = new byte[0];
+				byte[] data = Array.Empty<byte>();
 				yield return new object[] { null, null, true };
 				yield return new object[] { null, data, false };
 				yield return new object[] { data, null, false };
@@ -155,6 +155,7 @@ namespace GriffinPlus.Lib
 		public void GetHashCode_Span_ArgumentNull()
 		{
 			byte[] array = null;
+			// ReSharper disable once ExpressionIsAlwaysNull
 			var exception = Assert.Throws<ArgumentNullException>(() => ByteArrayEqualityComparer.GetHashCode(array.AsSpan()));
 			Assert.Equal("data", exception.ParamName);
 		}
@@ -190,6 +191,7 @@ namespace GriffinPlus.Lib
 		{
 			byte[] array = null;
 			IEqualityComparer<byte[]> comparer = new ByteArrayEqualityComparer();
+			// ReSharper disable once AssignNullToNotNullAttribute
 			var exception = Assert.Throws<ArgumentNullException>(() => comparer.GetHashCode(array));
 			Assert.Equal("obj", exception.ParamName);
 		}

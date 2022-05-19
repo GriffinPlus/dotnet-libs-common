@@ -388,6 +388,7 @@ namespace GriffinPlus.Lib.Collections
 		public void CopyTo_ArrayIsNull(TestItem item, int count)
 		{
 			var list = new FixedItemReadOnlyList<TestItem>(item, count);
+			// ReSharper disable once AssignNullToNotNullAttribute
 			Assert.Equal("array", Assert.Throws<ArgumentNullException>(() => list.CopyTo(null, 0)).ParamName);
 		}
 
@@ -434,6 +435,7 @@ namespace GriffinPlus.Lib.Collections
 		public void CopyTo_ICollection_ArrayIsNull(TestItem item, int count)
 		{
 			ICollection list = new FixedItemReadOnlyList<TestItem>(item, count);
+			// ReSharper disable once AssignNullToNotNullAttribute
 			Assert.Equal("array", Assert.Throws<ArgumentNullException>(() => list.CopyTo(null, 0)).ParamName);
 		}
 

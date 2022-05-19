@@ -51,7 +51,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void ConstructorWithZeroMaxCountAndCollection_Throws()
 		{
-			Assert.Throws<ArgumentOutOfRangeException>(() => new AsyncProducerConsumerQueue<int>(new int[0], 0));
+			Assert.Throws<ArgumentOutOfRangeException>(() => new AsyncProducerConsumerQueue<int>(Array.Empty<int>(), 0));
 		}
 
 		[Fact]

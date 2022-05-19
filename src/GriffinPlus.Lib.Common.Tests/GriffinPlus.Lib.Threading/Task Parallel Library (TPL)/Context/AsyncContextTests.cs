@@ -51,6 +51,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			bool resumed = false;
 			AsyncContext.Run(
+				// ReSharper disable once AsyncVoidLambda
 				(Action)(async () =>
 					        {
 						        await Task.Yield();

@@ -91,7 +91,7 @@ namespace GriffinPlus.Lib
 		/// </returns>
 		public override bool Equals(object obj)
 		{
-			return ReferenceEquals(this, obj) || obj is DecomposedType other && Equals(other);
+			return ReferenceEquals(this, obj) || (obj is DecomposedType other && Equals(other));
 		}
 
 		/// <summary>

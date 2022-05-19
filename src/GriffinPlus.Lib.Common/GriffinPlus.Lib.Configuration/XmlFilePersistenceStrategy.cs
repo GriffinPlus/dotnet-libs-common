@@ -149,6 +149,7 @@ namespace GriffinPlus.Lib.Configuration
 
 				// add configurations that do not exist, yet
 				// (items are not mapped, since items are typed and the file does not contain any type information)
+				Debug.Assert(configurationElement != null, nameof(configurationElement) + " != null");
 				foreach (XmlElement element in configurationElement.SelectNodes("Configuration[@name]"))
 				{
 					string name = element.Attributes["name"].Value;
@@ -222,6 +223,8 @@ namespace GriffinPlus.Lib.Configuration
 				// an hash value is stored using nested 'Item' elements
 				Type elementType = type.GetElementType();
 				XmlNodeList nodeList = element.SelectNodes("Item");
+				Debug.Assert(elementType != null, nameof(elementType) + " != null");
+				Debug.Assert(nodeList != null, nameof(nodeList) + " != null");
 				Array array = Array.CreateInstance(elementType, nodeList.Count);
 				int i = 0;
 				foreach (XmlElement itemElement in nodeList)
@@ -325,6 +328,7 @@ namespace GriffinPlus.Lib.Configuration
 			// create 'Configuration' element
 			if (!(parent.SelectSingleNode($"Configuration[@name='{configuration.Name}']") is XmlElement configurationElement))
 			{
+				Debug.Assert(parent.OwnerDocument != null, "parent.OwnerDocument != null");
 				configurationElement = parent.OwnerDocument.CreateElement("Configuration");
 				XmlAttribute configurationNameAttribute = parent.OwnerDocument.CreateAttribute("name");
 				configurationNameAttribute.InnerText = configuration.Name;
@@ -364,6 +368,7 @@ namespace GriffinPlus.Lib.Configuration
 							string line = commentLine.Trim();
 							if (line.Length > 0)
 							{
+								Debug.Assert(configurationElement.OwnerDocument != null, "configurationElement.OwnerDocument != null");
 								XmlComment commentNode = configurationElement.OwnerDocument.CreateComment(line);
 								configurationElement.InsertBefore(commentNode, itemElement);
 							}
@@ -407,6 +412,7 @@ namespace GriffinPlus.Lib.Configuration
 				XmlElement arrayElement = SetItem(parent, itemName, null);
 
 				// remove all old xml elements representing an hash element
+				Debug.Assert(arrayElement != null, nameof(arrayElement) + " != null");
 				foreach (XmlNode node in arrayElement.SelectNodes("Item"))
 				{
 					arrayElement.RemoveChild(node);

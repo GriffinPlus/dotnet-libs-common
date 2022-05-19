@@ -331,6 +331,7 @@ namespace GriffinPlus.Lib.Threading
 			var result = new T[count];
 			for (int i = 0; i < count; i++)
 			{
+				// ReSharper disable once PossibleNullReferenceException
 				result[i] = item.Value;
 				var nextItem = item.NextItem;
 				item.Value = default;
@@ -380,6 +381,7 @@ namespace GriffinPlus.Lib.Threading
 			var result = new T[count];
 			for (int i = count; i > 0; i--)
 			{
+				// ReSharper disable once PossibleNullReferenceException
 				result[i - 1] = item.Value;
 				var nextItem = item.NextItem;
 				item.Value = default;

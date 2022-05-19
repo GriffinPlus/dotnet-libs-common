@@ -21,7 +21,7 @@ namespace GriffinPlus.Lib.Conversion
 			ObjectToStringConversion = Converter<T>.DefaultObjectToStringConversion;
 			StringToObjectConversion = (s, provider) => (T)Enum.Parse(typeof(T), s);
 		}
-		
+
 		/// <summary>
 		/// Gets the type of the value the current converter is working with.
 		/// </summary>
