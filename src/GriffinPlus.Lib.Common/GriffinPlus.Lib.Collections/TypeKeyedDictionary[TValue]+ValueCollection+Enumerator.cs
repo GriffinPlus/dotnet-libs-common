@@ -36,9 +36,6 @@ using System.Collections.Generic;
 namespace GriffinPlus.Lib.Collections
 {
 
-	/// <summary>
-	/// A generic dictionary using a byte array as key.
-	/// </summary>
 	partial class TypeKeyedDictionary<TValue>
 	{
 		partial class ValueCollection
@@ -57,7 +54,7 @@ namespace GriffinPlus.Lib.Collections
 				/// <summary>
 				/// Initializes a new instance of the <see cref="TypeKeyedDictionary{TValue}.ValueCollection.Enumerator"/> class.
 				/// </summary>
-				/// <param name="dictionary"></param>
+				/// <param name="dictionary">Dictionary the enumerator belongs to.</param>
 				internal Enumerator(TypeKeyedDictionary<TValue> dictionary)
 				{
 					mDictionary = dictionary;

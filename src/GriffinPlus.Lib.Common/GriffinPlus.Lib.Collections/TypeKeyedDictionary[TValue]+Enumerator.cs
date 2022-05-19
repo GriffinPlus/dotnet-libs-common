@@ -34,9 +34,6 @@ using System.Collections.Generic;
 namespace GriffinPlus.Lib.Collections
 {
 
-	/// <summary>
-	/// A generic dictionary using <see cref="System.Type"/> as key.
-	/// </summary>
 	partial class TypeKeyedDictionary<TValue>
 	{
 		/// <summary>

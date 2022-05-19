@@ -54,7 +54,7 @@ namespace GriffinPlus.Lib.Collections
 				/// <summary>
 				/// Initializes a new instance of the <see cref="TypeKeyedDictionary{TValue}.KeyCollection.Enumerator"/> class.
 				/// </summary>
-				/// <param name="dictionary"></param>
+				/// <param name="dictionary">Dictionary the enumerator belongs to.</param>
 				internal Enumerator(TypeKeyedDictionary<TValue> dictionary)
 				{
 					mDictionary = dictionary;
