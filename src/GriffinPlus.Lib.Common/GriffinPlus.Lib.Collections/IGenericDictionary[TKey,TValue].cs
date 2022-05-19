@@ -23,6 +23,19 @@ namespace GriffinPlus.Lib.Collections
 		IReadOnlyDictionary<TKey, TValue>
 	{
 		/// <summary>
+		/// Determines whether the dictionary contains the specified value.
+		/// </summary>
+		/// <param name="value">
+		/// The value to locate in the dictionary.
+		/// The value can be <c>null</c> for reference types.
+		/// </param>
+		/// <returns>
+		/// <c>true</c> if the dictionary contains an element with the specified value;
+		/// otherwise <c>false</c>.
+		/// </returns>
+		bool ContainsValue(TValue value);
+
+		/// <summary>
 		/// Tries to add the specified key and value to dictionary.
 		/// </summary>
 		/// <param name="key">The key of the element to add.</param>
