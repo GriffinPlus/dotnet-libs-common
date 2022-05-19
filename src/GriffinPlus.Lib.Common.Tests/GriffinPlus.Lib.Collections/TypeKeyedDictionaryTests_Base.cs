@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace GriffinPlus.Lib.Collections
 {
@@ -68,7 +69,17 @@ namespace GriffinPlus.Lib.Collections
 		{
 			return AppDomain.CurrentDomain.GetAssemblies()
 				.Where(a => !a.IsDynamic)
-				.SelectMany(a => a.GetTypes())
+				.SelectMany(a =>
+				{
+					try
+					{
+						return a.GetTypes();
+					}
+					catch (ReflectionTypeLoadException ex)
+					{
+						return ex.Types;
+					}
+				})
 				.Where(x => x != KeyNotInTestData)
 				.ToArray();
 		}
