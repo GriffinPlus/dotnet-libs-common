@@ -9,9 +9,6 @@ using System.Linq;
 
 using Xunit;
 
-// ReSharper disable RedundantAssignment
-// ReSharper disable AssignNullToNotNullAttribute
-
 #pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
 
 namespace GriffinPlus.Lib.Collections
@@ -20,7 +17,7 @@ namespace GriffinPlus.Lib.Collections
 	/// <summary>
 	/// Unit tests targeting the <see cref="ByteSequenceKeyedDictionary{TValue}"/> class.
 	/// </summary>
-	public abstract class ByteSequenceKeyedDictionaryTests_Base<TValue> : GenericDictionaryTests_Base<IReadOnlyList<byte>, TValue>
+	public abstract partial class ByteSequenceKeyedDictionaryTests_Base<TValue> : GenericDictionaryTests_Base<IReadOnlyList<byte>, TValue>
 	{
 		/// <summary>
 		/// Gets a comparer for comparing keys.
@@ -465,6 +462,53 @@ namespace GriffinPlus.Lib.Collections
 			var dict = new ByteSequenceKeyedDictionary<TValue>();
 			var exception = Assert.Throws<ArgumentNullException>(() => dict.ContainsKey(new ReadOnlySpan<byte>(null)));
 			Assert.Equal("key", exception.ParamName);
+		}
+
+		#endregion
+
+		#region ByteSequenceKeyedDictionary<TValue>.GetEnumerator() - incl. all enumerator functionality
+
+		[Theory]
+		[MemberData(nameof(TestDataSetSizes))]
+		public void GetEnumerator(int count)
+		{
+			// get test data and create a new dictionary with it
+			var data = GetTestData(count);
+			var dict = new ByteSequenceKeyedDictionary<TValue>(data);
+
+			// get an enumerator
+			var enumerator = dict.GetEnumerator();
+
+			// the enumerator should point to the position before the first valid element,
+			// but the 'Current' property should not throw an exception
+			var _ = enumerator.Current;
+
+			// enumerate the key/value pairs in the dictionary
+			var enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
+			while (enumerator.MoveNext())
+			{
+				Assert.IsType<KeyValuePair<IReadOnlyList<byte>, TValue>>(enumerator.Current);
+				var current = enumerator.Current;
+				enumerated.Add(current);
+			}
+
+			// compare collection elements with the expected values
+			Assert.Equal(
+				data.OrderBy(x => x.Key, KeyComparer),
+				enumerated.OrderBy(x => x.Key, KeyComparer),
+				KeyValuePairEqualityComparer);
+
+			// the enumerator should point to the position after the last valid element now,
+			// but the 'Current' property should not throw an exception
+			// ReSharper disable once RedundantAssignment
+			_ = enumerator.Current;
+
+			// modify the collection, the enumerator should recognize this
+			dict[KeyNotInTestData] = ValueNotInTestData;
+			Assert.Throws<InvalidOperationException>(() => enumerator.MoveNext());
+
+			// dispose the enumerator
+			enumerator.Dispose();
 		}
 
 		#endregion

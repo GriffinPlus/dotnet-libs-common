@@ -14,6 +14,51 @@ namespace GriffinPlus.Lib.Collections
 
 	public abstract partial class GenericDictionaryTests_Base<TKey, TValue>
 	{
+		#region IGenericDictionary<TKey,TValue>.ContainsValue(TValue)
+
+		/// <summary>
+		/// Tests the <see cref="IGenericDictionary{TKey,TValue}.ContainsValue(TValue)"/> method.
+		/// The value of the element is in the dictionary.
+		/// </summary>
+		/// <param name="count">Number of elements to populate the dictionary with before running the test.</param>
+		[Theory]
+		[MemberData(nameof(TestDataSetSizes))]
+		public void ContainsValue(int count)
+		{
+			// get test data and create a new dictionary with it,
+			// replace one element with a null reference, if TValue is a reference type to check that too
+			// (last element is better than the first one as it requires to iterate over all elements => better code coverage)
+			var data = GetTestData(count);
+			if (data.Count > 1 && !typeof(TValue).IsValueType) data[data.Last().Key] = default;
+			var dict = GetDictionary(data);
+
+			// test whether keys of test data are reported to be in the dictionary
+			foreach (var kvp in data)
+			{
+				Assert.True(dict.ContainsValue(kvp.Value));
+			}
+		}
+
+		/// <summary>
+		/// Tests the <see cref="IGenericDictionary{TKey,TValue}.ContainsValue"/> method.
+		/// The value of the element is not in the dictionary.
+		/// </summary>
+		/// <param name="count">Number of elements to populate the dictionary with before running the test.</param>
+		[Theory]
+		[MemberData(nameof(TestDataSetSizes))]
+		public void ContainsValue_ValueNotFound(int count)
+		{
+			// get test data and create a new dictionary with it,
+			var data = GetTestData(count);
+			var dict = GetDictionary(data);
+
+			// test whether some other value is reported to be not in the dictionary
+			// (just take the default value of the value type, the test data does not contain the default value)
+			Assert.False(dict.ContainsValue(ValueNotInTestData));
+		}
+
+		#endregion
+
 		#region IGenericDictionary<TKey,TValue>.TryAdd(TKey, TValue)
 
 		/// <summary>
