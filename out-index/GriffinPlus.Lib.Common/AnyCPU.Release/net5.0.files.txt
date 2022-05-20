@@ -2,4 +2,3 @@
 .\GriffinPlus.Lib.Common.dll
 .\GriffinPlus.Lib.Common.pdb
 .\GriffinPlus.Lib.Common.xml
-.\ref\GriffinPlus.Lib.Common.dll
