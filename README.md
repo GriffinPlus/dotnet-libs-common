@@ -25,6 +25,7 @@ This namespace provides common functionality and contains the following classes:
   - `KeyValuePairEqualityComparer<TKey,TValue>`: An equality comparer for `KeyValuePair<TKey,TValue>` delegating comparison to specific comparers for key and value.
   - `ReadOnlyListEqualityComparer<T>`: An equality comparer for collections implementing the `IReadOnlyList<T>` interface.
 - `BitMask`: A bit mask with variable length that supports all relevant comparisons and logical operations.
+- `EndiannessHelper`: Utility class that assists with swapping the byte order in value types to convert little endian to big endian and vice versa.
 - `Immutability`: Utility class that assists with determining whether a type is immutable. It analyses types on its own, but supports overriding by annotating types with the `[Immutable]` attribute. Alternatively types can be declared immutable using `AddImmutableType<T>()`.
 - `ObjectPool<T>`: A simple thread-safe implementation of an object pool that allows re-using objects.
 - `RegexHelpers`: Helper methods providing common functionality when pattern matching is required.
