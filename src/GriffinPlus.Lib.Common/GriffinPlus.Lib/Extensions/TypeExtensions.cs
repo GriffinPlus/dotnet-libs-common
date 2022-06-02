@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace GriffinPlus.Lib
 {
@@ -16,6 +18,8 @@ namespace GriffinPlus.Lib
 	/// </summary>
 	public static class TypeExtensions
 	{
+		private static readonly Regex sExtractGenericArgumentTypeRegex = new Regex("^([^`]+)`\\d+$", RegexOptions.Compiled);
+
 		/// <summary>
 		/// Gets all public properties of the specified type.
 		/// </summary>
@@ -132,6 +136,60 @@ namespace GriffinPlus.Lib
 		{
 			if (@this == null) throw new ArgumentNullException(nameof(@this));
 			return TypeDecomposer.DecomposeType(@this);
+		}
+
+		/// <summary>
+		/// Formats the type as C# programmers know it.
+		/// The type is formatted with namespace and type name, but without its declaring assembly.
+		/// Constructed generic types and generic type definitions are supported.
+		/// </summary>
+		/// <returns>The formatted type.</returns>
+		public static string ToCSharpFormattedString(this Type @this)
+		{
+			void AppendName(StringBuilder sb, Type t)
+			{
+				var typeInfo = t.GetTypeInfo();
+				if (typeInfo.IsGenericParameter)
+				{
+					sb.Append(typeInfo.Name);
+				}
+				else if (typeInfo.IsGenericType)
+				{
+					sb.Append(typeInfo.Namespace);
+					sb.Append('.');
+					var match = sExtractGenericArgumentTypeRegex.Match(typeInfo.Name);
+					sb.Append(match.Groups[1].Value);
+					sb.Append('<');
+					if (typeInfo.IsConstructedGenericType)
+					{
+						for (int i = 0; i < typeInfo.GenericTypeArguments.Length; i++)
+						{
+							if (i > 0) sb.Append(',');
+							AppendName(sb, typeInfo.GenericTypeArguments[i]);
+						}
+					}
+					else
+					{
+						for (int i = 0; i < typeInfo.GenericTypeParameters.Length; i++)
+						{
+							if (i > 0) sb.Append(',');
+							AppendName(sb, typeInfo.GenericTypeParameters[i]);
+						}
+					}
+
+					sb.Append('>');
+				}
+				else
+				{
+					sb.Append(typeInfo.Namespace);
+					sb.Append('.');
+					sb.Append(typeInfo.Name);
+				}
+			}
+
+			var builder = new StringBuilder();
+			AppendName(builder, @this);
+			return builder.ToString();
 		}
 	}
 
