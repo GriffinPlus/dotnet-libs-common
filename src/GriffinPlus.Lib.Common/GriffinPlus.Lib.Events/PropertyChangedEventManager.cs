@@ -240,8 +240,8 @@ namespace GriffinPlus.Lib.Events
 
 		/// <summary>
 		/// Fires the <see cref="INotifyPropertyChanged.PropertyChanged"/> event invoking all event handlers that
-		/// are attached to it (event handlers that are associated with a synchronization context are executed in
-		/// the thread the synchronization context belongs to).
+		/// are attached to it. Event handlers that are associated with a synchronization context are executed in
+		/// the thread the synchronization context belongs to.
 		/// </summary>
 		/// <param name="obj">
 		/// Object providing the event (is passed as the 'sender' object to the event handler as well).
@@ -282,6 +282,60 @@ namespace GriffinPlus.Lib.Events
 					else item.Handler(obj, e);
 				}
 			}
+		}
+
+		/// <summary>
+		/// Fires the <see cref="INotifyPropertyChanged.PropertyChanged"/> event invoking all event handlers that
+		/// are attached to it. Event handlers that are associated with a synchronization context are executed in
+		/// the thread the synchronization context belongs to. Keeps an object alive until all handlers have run
+		/// (useful when working with weak references).
+		/// </summary>
+		/// <param name="obj">
+		/// Object providing the event (is passed as the 'sender' object to the event handler as well).
+		/// </param>
+		/// <param name="propertyName">Name of the property that has changed.</param>
+		/// <param name="objectToKeepAlive">Some object to keep alive until all handlers have run.</param>
+		public static void FireEvent<T>(object obj, string propertyName, T objectToKeepAlive) where T: class
+		{
+			Item[] items;
+
+			lock (sSync)
+			{
+				if (!sItemsByObject.TryGetValue(obj, out items))
+					return;
+			}
+
+			var e = new PropertyChangedEventArgs(propertyName);
+			foreach (var item in items)
+			{
+				if (item.SynchronizationContext != null)
+				{
+					// synchronization context was specified at registration
+					// => invoke the handler directly, if the current context is the same as the context at registration and scheduling is not enforced;
+					//    otherwise schedule the handler using the context specified at registration
+					if (!item.ScheduleAlways && ReferenceEquals(SynchronizationContext.Current, item.SynchronizationContext))
+					{
+						item.Handler(obj, e);
+					}
+					else
+					{
+						item.SynchronizationContext.Post(x =>
+						{
+							((Item)x).Handler(obj, e);
+							GC.KeepAlive(objectToKeepAlive);
+						}, item);
+					}
+				}
+				else
+				{
+					// synchronization context was not specified at registration
+					// => schedule handler in worker thread or invoke it directly
+					if (item.ScheduleAlways) Task.Run(() => item.Handler(obj, e));
+					else item.Handler(obj, e);
+				}
+			}
+
+			GC.KeepAlive(objectToKeepAlive);
 		}
 
 		/// <summary>
