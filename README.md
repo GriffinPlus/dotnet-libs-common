@@ -59,14 +59,19 @@ Extension methods for common types
 |                   | `IsSubclassOfRawGeneric`: Checks whether a type is an instance of a certain generic type definition.
 |                   | `Decompose`: Decomposes a type to generic type definitions and non-generic types.
 
+#### Namespace: GriffinPlus.Lib.Caching
+
+This namespace provides some utilities when it comes to caching objects. `IObjectCache<T>` declares the interface of an object cache that is able to swap objects out of memory to save space and reload them on demand. The library only contains a dummy implementation (`DummyObjectCache`) allowing the cache to be used without any real backing store. Real world implementations usually use some serialization mechanism to stream objects to disk to restore them later on. The cache can also be used in conjunctions with collections of objects that can be swapped out (see `GriffinPlus.Lib.Collections.ObjectCacheCollection<T>`).
+
 #### Namespace: GriffinPlus.Lib.Collections
 
-This namespace provides common functionality and contains the following classes:
+This namespace provides common collections and contains the following classes:
 
 - `ByteSequenceKeyedDictionary<TValue>`: A generic dictionary that uses a byte sequence as key (with span support).
 - `Deque<T>`: A double-ended queue that supports adding/removing items at both ends efficiently.
 - `FixedItemReadOnlyList<T>`: A read-only list that provides a certain object a specific number of times.
 - `IdentityKeyedDictionary<TKey,TValue>`: A generic dictionary that uses an object's reference as key (for reference types only).
+- `ObjectCacheCollection<T>`: A collection that uses an `IObjectCache` to swap objects out of memory to save space and reload them on demand.
 - `TypeKeyedDictionary<TValue>`: A generic dictionary that is optimized for `System.Type` as key.
 
 #### Namespace: GriffinPlus.Lib.Configuration
