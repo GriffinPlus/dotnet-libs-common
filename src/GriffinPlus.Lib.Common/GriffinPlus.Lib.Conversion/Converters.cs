@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 
 // ReSharper disable ConvertClosureToMethodGroup
+// ReSharper disable InconsistentlySynchronizedField
 
 namespace GriffinPlus.Lib.Conversion
 {
@@ -199,9 +200,15 @@ namespace GriffinPlus.Lib.Conversion
 				{
 					// type is an enum, register a new converter for it
 					// (enums are supported out of the box)
-					Type converterType = typeof(Converter_Enum<>).MakeGenericType(type);
-					converter = (IConverter)Activator.CreateInstance(converterType);
-					RegisterGlobalConverter(converter);
+					lock (sSync)
+					{
+						if (!sConverters.TryGetValue(type, out converter))
+						{
+							Type converterType = typeof(Converter_Enum<>).MakeGenericType(type);
+							converter = (IConverter)Activator.CreateInstance(converterType);
+							RegisterGlobalConverter(converter);
+						}
+					}
 				}
 			}
 
