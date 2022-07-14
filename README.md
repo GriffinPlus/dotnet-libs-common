@@ -33,31 +33,32 @@ This namespace provides common functionality and contains the following classes:
 
 Extension methods for common types
 
-| Type              | Methods
-| :---------------- | ----------------------------------------------------------------------------------------------------------- |
-| `System.Byte`     | `Equals`: Equality comparison with tolerance.
-| `System.Byte[]`   | `Equals`: Equality comparison
-|                   | `ToHexString`: Conversion to a hexadecimal string.
-|                   | `ToRfc4122Guid`: Conversion to a RFC 4122 compliant GUID.
-|                   | `Swap2`, `Swap4`: Helpers to swap bytes in array.
-| `System.DateTime` | `Truncate`: Reduces the precision of a date/time.
-| `System.Double`   | `Equals`: Equality comparison with tolerance.
-| `System.Enum`     | `ToSeparateFlags`: Converts flags in a flag enumeration to an array of separate enumeration values.
-| `System.Guid`     | `ToUuidByteArray`: Conversion to a byte array containing a RFC 4122 compliant GUID.
-| `System.Int16`    | `Equals`: Equality comparison with tolerance.
-| `System.Int32`    | `Equals`: Equality comparison with tolerance.
-| `System.Int64`    | `Equals`: Equality comparison with tolerance.
-| `System.Single`   | `Equals`: Equality comparison with tolerance.
-| `System.UInt16`   | `Equals`: Equality comparison with tolerance.
-| `System.UInt32`   | `Equals`: Equality comparison with tolerance.
-| `System.UInt64`   | `Equals`: Equality comparison with tolerance.
-| `System.SByte`    | `Equals`: Equality comparison with tolerance.
-| `System.String`   | `HexToByteArray`: Parses the hexadecimal encoded byte array. 
-| `System.Type`     | `GetPublicMethods`: Gets public methods of a type (supports extended interfaces).
-|                   | `GetPublicProperties` : Gets public properties of a type (supports extended interfaces).
-|                   | `IsImmutable` : Checks whether a type is immutable.
-|                   | `IsSubclassOfRawGeneric`: Checks whether a type is an instance of a certain generic type definition.
-|                   | `Decompose`: Decomposes a type to generic type definitions and non-generic types.
+| Type               | Methods
+| :----------------- | ----------------------------------------------------------------------------------------------------------- |
+| `System.Byte`      | `Equals`: Equality comparison with tolerance.
+| `System.Byte[]`    | `Equals`: Equality comparison
+|                    | `ToHexString`: Conversion to a hexadecimal string.
+|                    | `ToRfc4122Guid`: Conversion to a RFC 4122 compliant GUID.
+|                    | `Swap2`, `Swap4`: Helpers to swap bytes in array.
+| `System.DateTime`  | `Truncate`: Reduces the precision of a date/time.
+| `System.Double`    | `Equals`: Equality comparison with tolerance.
+| `System.Enum`      | `ToSeparateFlags`: Converts flags in a flag enumeration to an array of separate enumeration values.
+| `System.Exception` | `GetAllMessages`: Collects messages of inner exceptions and aggregate exceptions.
+| `System.Guid`      | `ToUuidByteArray`: Conversion to a byte array containing a RFC 4122 compliant GUID.
+| `System.Int16`     | `Equals`: Equality comparison with tolerance.
+| `System.Int32`     | `Equals`: Equality comparison with tolerance.
+| `System.Int64`     | `Equals`: Equality comparison with tolerance.
+| `System.Single`    | `Equals`: Equality comparison with tolerance.
+| `System.UInt16`    | `Equals`: Equality comparison with tolerance.
+| `System.UInt32`    | `Equals`: Equality comparison with tolerance.
+| `System.UInt64`    | `Equals`: Equality comparison with tolerance.
+| `System.SByte`     | `Equals`: Equality comparison with tolerance.
+| `System.String`    | `HexToByteArray`: Parses the hexadecimal encoded byte array. 
+| `System.Type`      | `GetPublicMethods`: Gets public methods of a type (supports extended interfaces).
+|                    | `GetPublicProperties` : Gets public properties of a type (supports extended interfaces).
+|                    | `IsImmutable` : Checks whether a type is immutable.
+|                    | `IsSubclassOfRawGeneric`: Checks whether a type is an instance of a certain generic type definition.
+|                    | `Decompose`: Decomposes a type to generic type definitions and non-generic types.
 
 #### Namespace: GriffinPlus.Lib.Caching
 
