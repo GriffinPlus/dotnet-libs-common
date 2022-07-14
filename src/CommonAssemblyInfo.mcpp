@@ -2,7 +2,7 @@
 
 [assembly: AssemblyCompany("Griffin+")];
 [assembly: AssemblyProduct("Griffin+ Common Libraries")];
-[assembly: AssemblyCopyright("Copyright (c) 2021 Sascha Falk and Contributors")];
+[assembly: AssemblyCopyright("Copyright (c) 2022 Sascha Falk and Contributors")];
 [assembly: AssemblyVersionAttribute("0.0.0.0")];
 [assembly: AssemblyFileVersionAttribute("0.0.0.0")];
 [assembly: AssemblyInformationalVersionAttribute("")];
