@@ -105,6 +105,12 @@ The `Converters` class provides converters for converting objects of the followi
 
 Custom converters can be used by implementing the `IConverter` interface and registering the converter using the `Converters.RegisterGlobalConverter()` method.
 
+#### Namespace: GriffinPlus.Lib.Cryptography
+
+This namespace provides everything concerning cryptography operations and contains the following classes:
+
+- `SecurePasswordHasher`: Utility class for hashing and verifying passwords (supports PBKDF2 (RFC2898), SHA-1, SHA-256, SHA-384 and SHA-512).
+
 #### Namespace: GriffinPlus.Lib.Events
 
 This namespace contains classes concerning event handling. The event manager classes ease working with events that should be fired in the context of the thread registering an event handler. The `EventManager<EventArgs>` class supports events of the type `System.EventHandler<EventArgs>`, while the `PropertyChangedEventManager` covers firing the `INotifyPropertyChanged.PropertyChanged` event (comes in handy when working with WPF view models). The `WeakEventManager<EventArgs>` class works just as the `EventManager<EventArgs>` class, but holds weak references to registered event recipients. This comes with some administrative overhead, but avoids keeping objects alive that are otherwise not referenced any more. This is very useful when implementing static events.
