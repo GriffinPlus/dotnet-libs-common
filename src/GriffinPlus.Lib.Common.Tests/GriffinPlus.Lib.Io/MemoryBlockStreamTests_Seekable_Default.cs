@@ -16,9 +16,7 @@ namespace GriffinPlus.Lib.Io
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MemoryBlockStreamTests_Seekable_Default"/> class.
 		/// </summary>
-		public MemoryBlockStreamTests_Seekable_Default() : base(false, false)
-		{
-		}
+		public MemoryBlockStreamTests_Seekable_Default() : base(false, false) { }
 
 		/// <summary>
 		/// Gets the expected size of a memory block in the stream.

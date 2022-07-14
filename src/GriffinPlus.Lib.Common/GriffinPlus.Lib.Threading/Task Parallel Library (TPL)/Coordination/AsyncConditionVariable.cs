@@ -83,9 +83,7 @@ namespace GriffinPlus.Lib.Threading
 		/// </summary>
 		/// <param name="asyncLock">The lock associated with this condition variable.</param>
 		public AsyncConditionVariable(AsyncLock asyncLock)
-			: this(asyncLock, null)
-		{
-		}
+			: this(asyncLock, null) { }
 
 		/// <summary>
 		/// Gets a semi-unique identifier for this asynchronous condition variable.

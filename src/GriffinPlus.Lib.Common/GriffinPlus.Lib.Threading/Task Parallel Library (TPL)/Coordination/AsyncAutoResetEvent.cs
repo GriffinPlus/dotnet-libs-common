@@ -85,17 +85,13 @@ namespace GriffinPlus.Lib.Threading
 		/// <c>false</c>, if the auto-reset event is not set initially.
 		/// </param>
 		public AsyncAutoResetEvent(bool set)
-			: this(set, null)
-		{
-		}
+			: this(set, null) { }
 
 		/// <summary>
 		/// Creates an async-compatible auto-reset event that is initially unset.
 		/// </summary>
 		public AsyncAutoResetEvent()
-			: this(false, null)
-		{
-		}
+			: this(false, null) { }
 
 		/// <summary>
 		/// Gets a semi-unique identifier for this asynchronous auto-reset event.

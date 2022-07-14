@@ -109,9 +109,7 @@ namespace GriffinPlus.Lib.Threading
 		/// Creates a new async-compatible reader/writer lock.
 		/// </summary>
 		public AsyncReaderWriterLock()
-			: this(null, null)
-		{
-		}
+			: this(null, null) { }
 
 		/// <summary>
 		/// Gets a semi-unique identifier for this asynchronous lock.
@@ -353,9 +351,7 @@ namespace GriffinPlus.Lib.Threading
 			/// </summary>
 			/// <param name="asyncReaderWriterLock">The lock to release. May not be <c>null</c>.</param>
 			public ReaderKey(AsyncReaderWriterLock asyncReaderWriterLock)
-				: base(asyncReaderWriterLock)
-			{
-			}
+				: base(asyncReaderWriterLock) { }
 
 			protected override void Dispose(AsyncReaderWriterLock context)
 			{
@@ -373,9 +369,7 @@ namespace GriffinPlus.Lib.Threading
 			/// </summary>
 			/// <param name="asyncReaderWriterLock">The lock to release. May not be <c>null</c>.</param>
 			public WriterKey(AsyncReaderWriterLock asyncReaderWriterLock)
-				: base(asyncReaderWriterLock)
-			{
-			}
+				: base(asyncReaderWriterLock) { }
 
 			protected override void Dispose(AsyncReaderWriterLock context)
 			{

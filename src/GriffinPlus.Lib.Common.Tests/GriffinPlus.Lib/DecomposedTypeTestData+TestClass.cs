@@ -12,13 +12,9 @@ namespace GriffinPlus.Lib
 	{
 		public class TestClass
 		{
-			public class NestedTestClass
-			{
-			}
+			public class NestedTestClass { }
 
-			public class NestedGenericTestClass<T>
-			{
-			}
+			public class NestedGenericTestClass<T> { }
 		}
 	}
 

@@ -295,7 +295,7 @@ namespace GriffinPlus.Lib.Events
 		/// </param>
 		/// <param name="propertyName">Name of the property that has changed.</param>
 		/// <param name="objectToKeepAlive">Some object to keep alive until all handlers have run.</param>
-		public static void FireEvent<T>(object obj, string propertyName, T objectToKeepAlive) where T: class
+		public static void FireEvent<T>(object obj, string propertyName, T objectToKeepAlive) where T : class
 		{
 			Item[] items;
 
@@ -319,11 +319,13 @@ namespace GriffinPlus.Lib.Events
 					}
 					else
 					{
-						item.SynchronizationContext.Post(x =>
-						{
-							((Item)x).Handler(obj, e);
-							GC.KeepAlive(objectToKeepAlive);
-						}, item);
+						item.SynchronizationContext.Post(
+							x =>
+							{
+								((Item)x).Handler(obj, e);
+								GC.KeepAlive(objectToKeepAlive);
+							},
+							item);
 					}
 				}
 				else

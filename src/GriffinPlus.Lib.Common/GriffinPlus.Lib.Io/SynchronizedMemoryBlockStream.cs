@@ -29,9 +29,7 @@ namespace GriffinPlus.Lib.Io
 		/// The block size defaults to 80 kByte.
 		/// The stream is seekable and grows as data is written.
 		/// </summary>
-		public SynchronizedMemoryBlockStream() : this(MemoryBlockStream.DefaultBlockSize, null, false)
-		{
-		}
+		public SynchronizedMemoryBlockStream() : this(MemoryBlockStream.DefaultBlockSize, null, false) { }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SynchronizedMemoryBlockStream"/> class.
@@ -41,9 +39,7 @@ namespace GriffinPlus.Lib.Io
 		/// </summary>
 		/// <param name="pool">Array pool to use for allocating buffers.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="pool"/> is <c>null</c>.</exception>
-		public SynchronizedMemoryBlockStream(ArrayPool<byte> pool) : this(MemoryBlockStream.DefaultBlockSize, pool, false)
-		{
-		}
+		public SynchronizedMemoryBlockStream(ArrayPool<byte> pool) : this(MemoryBlockStream.DefaultBlockSize, pool, false) { }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SynchronizedMemoryBlockStream"/> class with a specific block size.
@@ -52,9 +48,7 @@ namespace GriffinPlus.Lib.Io
 		/// </summary>
 		/// <param name="blockSize">Size of a block in the stream.</param>
 		/// <exception cref="ArgumentException">The specified block size is less than or equal to 0.</exception>
-		public SynchronizedMemoryBlockStream(int blockSize) : this(blockSize, null, false)
-		{
-		}
+		public SynchronizedMemoryBlockStream(int blockSize) : this(blockSize, null, false) { }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SynchronizedMemoryBlockStream"/> class with a specific block size.

@@ -66,9 +66,7 @@ namespace GriffinPlus.Lib.Collections
 				/// <summary>
 				/// Disposes the enumerator.
 				/// </summary>
-				public void Dispose()
-				{
-				}
+				public void Dispose() { }
 
 				/// <summary>
 				/// Advances the enumerator to the next element of the collection.

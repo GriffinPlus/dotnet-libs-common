@@ -21,9 +21,7 @@ namespace GriffinPlus.Lib
 		/// Initializes a new instance of the <see cref="KeyValuePairEqualityComparer{TKey,TValue}"/> class using default equality comparers
 		/// for keys and values.
 		/// </summary>
-		public KeyValuePairEqualityComparer() : this(null, null)
-		{
-		}
+		public KeyValuePairEqualityComparer() : this(null, null) { }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="KeyValuePairEqualityComparer{TKey,TValue}"/> class with specific equality comparers

@@ -22,9 +22,7 @@ namespace GriffinPlus.Lib.Io
 		/// </summary>
 		/// <param name="synchronized"><c>true</c> if the stream is synchronized; otherwise <c>false</c>.</param>
 		/// <param name="usePool"><c>true</c> if the stream uses buffer pooling; otherwise <c>false</c>.</param>
-		protected MemoryBlockStreamTestsBase_NotSeekable(bool synchronized, bool usePool) : base(synchronized, usePool)
-		{
-		}
+		protected MemoryBlockStreamTestsBase_NotSeekable(bool synchronized, bool usePool) : base(synchronized, usePool) { }
 
 		/// <summary>
 		/// Gets a value indicating whether the stream can seek.

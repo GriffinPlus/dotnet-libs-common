@@ -77,9 +77,7 @@ namespace GriffinPlus.Lib.Threading
 		/// Creates an async-compatible manual-reset event that is initially unset.
 		/// </summary>
 		public AsyncManualResetEvent()
-			: this(false)
-		{
-		}
+			: this(false) { }
 
 		/// <summary>
 		/// Gets a semi-unique identifier for this asynchronous manual-reset event.

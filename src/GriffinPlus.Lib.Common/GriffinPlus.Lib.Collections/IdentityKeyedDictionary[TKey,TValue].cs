@@ -93,9 +93,7 @@ namespace GriffinPlus.Lib.Collections
 		/// Initializes a new instance of the <see cref="IdentityKeyedDictionary{TKey,TValue}"/> class that is empty
 		/// and has the default initial capacity.
 		/// </summary>
-		public IdentityKeyedDictionary() : this(0)
-		{
-		}
+		public IdentityKeyedDictionary() : this(0) { }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="IdentityKeyedDictionary{TKey,TValue}"/> class that is empty and

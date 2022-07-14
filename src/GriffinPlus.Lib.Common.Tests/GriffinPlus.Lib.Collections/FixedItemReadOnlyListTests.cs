@@ -22,9 +22,7 @@ namespace GriffinPlus.Lib.Collections
 	{
 		#region Test Data
 
-		public class TestItem
-		{
-		}
+		public class TestItem { }
 
 		/// <summary>
 		/// Test data for tests expecting a certain number of items in the collection.

@@ -17,17 +17,13 @@ namespace GriffinPlus.Lib.Configuration
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ConfigurationException"/> class.
 		/// </summary>
-		public ConfigurationException()
-		{
-		}
+		public ConfigurationException() { }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ConfigurationException"/> class.
 		/// </summary>
 		/// <param name="message">Message describing the reason why the exception is thrown.</param>
-		public ConfigurationException(string message) : base(message)
-		{
-		}
+		public ConfigurationException(string message) : base(message) { }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ConfigurationException"/> class.
@@ -35,18 +31,14 @@ namespace GriffinPlus.Lib.Configuration
 		/// <param name="format">String that is used to format the final message describing the reason why the exception is thrown.</param>
 		/// <param name="args">Arguments used to format the final exception message.</param>
 		public ConfigurationException(string format, params object[] args) :
-			base(string.Format(format, args))
-		{
-		}
+			base(string.Format(format, args)) { }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ConfigurationException"/> class.
 		/// </summary>
 		/// <param name="message">Message describing the reason why the exception is thrown.</param>
 		/// <param name="ex">Some other exception that caused the exception to be thrown.</param>
-		public ConfigurationException(string message, Exception ex) : base(message, ex)
-		{
-		}
+		public ConfigurationException(string message, Exception ex) : base(message, ex) { }
 	}
 
 }

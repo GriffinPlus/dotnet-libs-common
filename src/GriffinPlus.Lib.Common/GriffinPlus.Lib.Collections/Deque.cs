@@ -95,9 +95,7 @@ namespace GriffinPlus.Lib.Collections
 		/// Initializes a new instance of the <see cref="Deque{T}"/> class.
 		/// </summary>
 		public Deque()
-			: this(DefaultCapacity)
-		{
-		}
+			: this(DefaultCapacity) { }
 
 		#region Implementation of IList<T>
 

@@ -24,9 +24,7 @@ namespace GriffinPlus.Lib
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ReadOnlyListEqualityComparer{T}"/> class using the default comparer of <typeparamref name="T"/>.
 		/// </summary>
-		public ReadOnlyListEqualityComparer() : this(null)
-		{
-		}
+		public ReadOnlyListEqualityComparer() : this(null) { }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ReadOnlyListEqualityComparer{T}"/> class using the specified element comparer.

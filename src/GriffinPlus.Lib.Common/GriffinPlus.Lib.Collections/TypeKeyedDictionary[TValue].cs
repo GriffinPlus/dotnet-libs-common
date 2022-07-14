@@ -92,9 +92,7 @@ namespace GriffinPlus.Lib.Collections
 		/// Initializes a new instance of the <see cref="TypeKeyedDictionary{TValue}"/> class that is empty
 		/// and has the default initial capacity.
 		/// </summary>
-		public TypeKeyedDictionary() : this(0)
-		{
-		}
+		public TypeKeyedDictionary() : this(0) { }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TypeKeyedDictionary{TValue}"/> class that is empty and

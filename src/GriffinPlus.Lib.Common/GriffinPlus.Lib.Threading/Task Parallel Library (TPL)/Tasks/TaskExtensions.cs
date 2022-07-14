@@ -127,9 +127,7 @@ namespace GriffinPlus.Lib.Threading
 			{
 				task.Wait();
 			}
-			catch (AggregateException)
-			{
-			}
+			catch (AggregateException) { }
 		}
 
 		/// <summary>

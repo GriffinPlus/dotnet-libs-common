@@ -94,9 +94,7 @@ namespace GriffinPlus.Lib.Collections
 		/// Initializes a new instance of the <see cref="ByteSequenceKeyedDictionary{TValue}"/> class that is empty
 		/// and has the default initial capacity.
 		/// </summary>
-		public ByteSequenceKeyedDictionary() : this(0)
-		{
-		}
+		public ByteSequenceKeyedDictionary() : this(0) { }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ByteSequenceKeyedDictionary{TValue}"/> class that is empty and

@@ -19,9 +19,7 @@ namespace GriffinPlus.Lib.Io
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MemoryBlockStreamTests_Seekable_CustomBlockSize_Heap"/> class.
 		/// </summary>
-		public MemoryBlockStreamTests_Seekable_CustomBlockSize_Heap() : base(false, false)
-		{
-		}
+		public MemoryBlockStreamTests_Seekable_CustomBlockSize_Heap() : base(false, false) { }
 
 		/// <summary>
 		/// Gets the expected size of a memory block in the stream.

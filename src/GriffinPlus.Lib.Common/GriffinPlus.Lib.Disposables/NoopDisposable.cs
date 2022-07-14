@@ -37,16 +37,12 @@ namespace GriffinPlus.Lib.Disposables
 	/// </summary>
 	public sealed class NoopDisposable : IDisposable
 	{
-		private NoopDisposable()
-		{
-		}
+		private NoopDisposable() { }
 
 		/// <summary>
 		/// Does nothing.
 		/// </summary>
-		public void Dispose()
-		{
-		}
+		public void Dispose() { }
 
 		/// <summary>
 		/// Gets the instance of <see cref="NoopDisposable"/>.

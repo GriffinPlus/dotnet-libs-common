@@ -121,9 +121,7 @@ namespace GriffinPlus.Lib.Threading
 		/// Creates a new async-compatible mutual exclusion lock.
 		/// </summary>
 		public AsyncLock()
-			: this(null)
-		{
-		}
+			: this(null) { }
 
 		/// <summary>
 		/// Creates a new async-compatible mutual exclusion lock using the specified wait queue.
@@ -240,9 +238,7 @@ namespace GriffinPlus.Lib.Threading
 			/// </summary>
 			/// <param name="asyncLock">The lock to release. May not be <c>null</c>.</param>
 			public Key(AsyncLock asyncLock)
-				: base(asyncLock)
-			{
-			}
+				: base(asyncLock) { }
 
 			protected override void Dispose(AsyncLock context)
 			{

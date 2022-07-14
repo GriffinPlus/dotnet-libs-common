@@ -66,9 +66,7 @@ namespace GriffinPlus.Lib.Threading
 		/// Initializes a new instance of the <see cref="AsyncContextThread"/> class, creating a child thread waiting for commands.
 		/// </summary>
 		public AsyncContextThread()
-			: this(CreateAsyncContext())
-		{
-		}
+			: this(CreateAsyncContext()) { }
 
 		/// <summary>
 		/// Creates a new <see cref="AsyncContext"/> and increments its operation count.

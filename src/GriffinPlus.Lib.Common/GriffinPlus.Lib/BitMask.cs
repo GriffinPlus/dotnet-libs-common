@@ -47,9 +47,7 @@ namespace GriffinPlus.Lib
 		/// <summary>
 		/// Initializes a new instance of the <see cref="BitMask"/> class (for internal use only).
 		/// </summary>
-		private BitMask()
-		{
-		}
+		private BitMask() { }
 
 		/// <summary>
 		/// Gets a bit mask of zero length with '0' padding.

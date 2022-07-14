@@ -98,9 +98,7 @@ namespace GriffinPlus.Lib.Collections
 			/// <summary>
 			/// Disposes the enumerator.
 			/// </summary>
-			public void Dispose()
-			{
-			}
+			public void Dispose() { }
 
 			/// <summary>
 			/// Gets the current value of the enumerator.

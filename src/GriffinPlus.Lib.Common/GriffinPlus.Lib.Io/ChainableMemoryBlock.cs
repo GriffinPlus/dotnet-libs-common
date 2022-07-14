@@ -44,9 +44,7 @@ namespace GriffinPlus.Lib.Io
 		/// The buffer is allocated on the heap.
 		/// </summary>
 		/// <param name="capacity">Capacity of the memory block to create.</param>
-		public ChainableMemoryBlock(int capacity) : this(capacity, null, false)
-		{
-		}
+		public ChainableMemoryBlock(int capacity) : this(capacity, null, false) { }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ChainableMemoryBlock"/> class with the specified capacity.

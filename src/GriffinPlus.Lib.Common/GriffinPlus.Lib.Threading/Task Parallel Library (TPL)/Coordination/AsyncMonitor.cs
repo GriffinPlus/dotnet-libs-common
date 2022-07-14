@@ -73,9 +73,7 @@ namespace GriffinPlus.Lib.Threading
 		/// Creates a new monitor.
 		/// </summary>
 		public AsyncMonitor()
-			: this(null, null)
-		{
-		}
+			: this(null, null) { }
 
 		/// <summary>
 		/// Gets a semi-unique identifier for this monitor.

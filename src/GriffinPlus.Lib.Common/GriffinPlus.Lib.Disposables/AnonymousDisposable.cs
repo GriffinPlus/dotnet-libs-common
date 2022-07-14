@@ -53,9 +53,7 @@ namespace GriffinPlus.Lib.Disposables
 		/// If this is <c>null</c>, then this instance does nothing when it is disposed.
 		/// </param>
 		public AnonymousDisposable(Action dispose)
-			: base(dispose)
-		{
-		}
+			: base(dispose) { }
 
 		/// <inheritdoc/>
 		protected override void Dispose(Action context)

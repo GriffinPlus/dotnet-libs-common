@@ -91,9 +91,7 @@ namespace GriffinPlus.Lib.Threading
 		/// This must be greater than or equal to zero.
 		/// </param>
 		public AsyncSemaphore(long initialCount)
-			: this(initialCount, null)
-		{
-		}
+			: this(initialCount, null) { }
 
 		/// <summary>
 		/// Gets a semi-unique identifier for this asynchronous semaphore.

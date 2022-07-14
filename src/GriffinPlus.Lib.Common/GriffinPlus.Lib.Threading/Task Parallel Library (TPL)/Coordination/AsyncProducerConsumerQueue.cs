@@ -108,9 +108,7 @@ namespace GriffinPlus.Lib.Threading
 		/// This may be <c>null</c> to start with an empty collection.
 		/// </param>
 		public AsyncProducerConsumerQueue(IEnumerable<T> collection)
-			: this(collection, int.MaxValue)
-		{
-		}
+			: this(collection, int.MaxValue) { }
 
 		/// <summary>
 		/// Creates a new async-compatible producer/consumer queue with a maximum element count.
@@ -120,17 +118,13 @@ namespace GriffinPlus.Lib.Threading
 		/// This must be greater than zero.
 		/// </param>
 		public AsyncProducerConsumerQueue(int maxCount)
-			: this(null, maxCount)
-		{
-		}
+			: this(null, maxCount) { }
 
 		/// <summary>
 		/// Creates a new async-compatible producer/consumer queue.
 		/// </summary>
 		public AsyncProducerConsumerQueue()
-			: this(null, int.MaxValue)
-		{
-		}
+			: this(null, int.MaxValue) { }
 
 		/// <summary>
 		/// Get a value indicating whether the queue is empty.

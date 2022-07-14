@@ -44,18 +44,14 @@ namespace GriffinPlus.Lib.Disposables
 		/// </summary>
 		/// <param name="disposables">The disposables to dispose.</param>
 		public CollectionDisposable(params IDisposable[] disposables)
-			: this((IEnumerable<IDisposable>)disposables)
-		{
-		}
+			: this((IEnumerable<IDisposable>)disposables) { }
 
 		/// <summary>
 		/// Creates a disposable that disposes a collection of disposables.
 		/// </summary>
 		/// <param name="disposables">The disposables to dispose.</param>
 		public CollectionDisposable(IEnumerable<IDisposable> disposables)
-			: base(ImmutableQueue.CreateRange(disposables))
-		{
-		}
+			: base(ImmutableQueue.CreateRange(disposables)) { }
 
 		/// <inheritdoc/>
 		protected override void Dispose(ImmutableQueue<IDisposable> context)
