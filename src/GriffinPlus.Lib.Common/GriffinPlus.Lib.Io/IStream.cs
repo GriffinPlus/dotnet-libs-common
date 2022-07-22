@@ -16,11 +16,11 @@ namespace GriffinPlus.Lib.Io
 	/// plus span support on target frameworks where <see cref="Stream"/> does not support spans on its own.
 	/// </summary>
 	public interface IStream :
-			IDisposable
-#if NETSTANDARD2_1 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0
+		IDisposable
+#if NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0
 		,
 		IAsyncDisposable
-#elif NETSTANDARD2_0 || NETCOREAPP2_1 || NET461
+#elif NETSTANDARD2_0 || NET461
 		// This method is not supported by the Stream class.
 #else
 #error Unhandled target framework.
@@ -173,7 +173,7 @@ namespace GriffinPlus.Lib.Io
 		/// <exception cref="IOException">An I/O error occurred.</exception>
 		Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken);
 
-#if NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0
+#if NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0
 		/// <summary>
 		/// Asynchronously reads the bytes from the current stream and writes them to another stream,
 		/// using a specified cancellation token.

@@ -100,7 +100,7 @@ namespace GriffinPlus.Lib.Io
 			}
 		}
 
-#if NETSTANDARD2_1 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0
+#if NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0
 		/// <summary>
 		/// Asynchronously disposes the stream releasing the underlying memory block chain
 		/// (returns rented buffers to their array pool, if necessary).
@@ -117,7 +117,7 @@ namespace GriffinPlus.Lib.Io
 				mLock.Release();
 			}
 		}
-#elif NETSTANDARD2_0 || NETCOREAPP2_1 || NET461
+#elif NETSTANDARD2_0 || NET461
 		// This method is not supported by the Stream class.
 #else
 #error Unhandled target framework.
@@ -436,7 +436,7 @@ namespace GriffinPlus.Lib.Io
 		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		public
 #if NETSTANDARD2_0 || NET461
-#elif NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0
+#elif NETSTANDARD2_1 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0 || NET6_0
 			override
 #else
 #error Unhandled target framework.
@@ -476,7 +476,7 @@ namespace GriffinPlus.Lib.Io
 		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		public
 #if NETSTANDARD2_0 || NET461
-#elif NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0
+#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0
 			override
 #else
 #error Unhandled target framework.
@@ -614,7 +614,7 @@ namespace GriffinPlus.Lib.Io
 		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		public
 #if NETSTANDARD2_0 || NET461
-#elif NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0
+#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0
 			override
 #else
 #error Unhandled target framework.
@@ -648,7 +648,7 @@ namespace GriffinPlus.Lib.Io
 		/// <returns>A task that represents the asynchronous write operation.</returns>
 		public
 #if NETSTANDARD2_0 || NET461
-#elif NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0
+#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0
 			override
 #else
 #error Unhandled target framework.
@@ -765,7 +765,7 @@ namespace GriffinPlus.Lib.Io
 		public
 #if NETSTANDARD2_0 || NET461
 			new
-#elif NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0
+#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0
 			override
 #else
 #error Unhandled target framework.

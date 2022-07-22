@@ -76,8 +76,15 @@ namespace GriffinPlus.Lib.Cryptography
 			if (iterations < 1) throw new ArgumentException("Iterations must be greater than zero.", nameof(iterations));
 
 			// create salt
+#if NET6_0
+			byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
+#elif NETSTANDARD2_0 || NETSTANDARD2_1 || NET461 || NETCOREAPP3_1 || NET5_0
 			byte[] salt;
-			new RNGCryptoServiceProvider().GetBytes(salt = new byte[SaltSize]);
+			using (var random = RandomNumberGenerator.Create())
+				random.GetBytes(salt = new byte[SaltSize]);
+#else
+#error Unhandled target framework.
+#endif
 
 			// create hash
 			byte[] hash;

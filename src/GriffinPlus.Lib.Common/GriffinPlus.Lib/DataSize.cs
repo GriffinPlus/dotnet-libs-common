@@ -1000,7 +1000,6 @@ namespace GriffinPlus.Lib
 				sign,
 				scaledSize,
 				rule.ShortUnit);
-
 		}
 
 		#endregion
