@@ -75,6 +75,8 @@ This namespace provides common collections and contains the following classes:
 - `FixedItemReadOnlyList<T>`: A read-only list that provides a certain object a specific number of times.
 - `IdentityKeyedDictionary<TKey,TValue>`: A generic dictionary that uses an object's reference as key (for reference types only).
 - `ObjectCacheCollection<T>`: A collection that uses an `IObjectCache` to swap objects out of memory to save space and reload them on demand.
+- `PartialList<T>`: A read-only list wrapping a consecutive subset of items in a collection implementing the `System.Collections.Generic.IList<T>` interface.
+- `PartialList`: A read-only list wrapping a consecutive subset of items in a collection implementing the `System.Collections.IList` interface.
 - `TypeKeyedDictionary<TValue>`: A generic dictionary that is optimized for `System.Type` as key.
 
 #### Namespace: GriffinPlus.Lib.Configuration

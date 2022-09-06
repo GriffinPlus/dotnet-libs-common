@@ -1,0 +1,557 @@
+﻿///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// This file is part of the Griffin+ common library suite (https://github.com/griffinplus/dotnet-libs-common)
+// The source code is licensed under the MIT license.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+using Xunit;
+
+namespace GriffinPlus.Lib.Collections
+{
+
+	/// <summary>
+	/// Unit tests targeting the <see cref="PartialList"/> class.
+	/// </summary>
+	public class PartialListTests
+	{
+		#region Test Data
+
+		public class TestItem { }
+
+		/// <summary>
+		/// Test data for tests expecting a certain number of items in the collection.
+		/// </summary>
+		public static IEnumerable<object[]> TestData
+		{
+			get
+			{
+				// source list contains no items
+				var items0 = new TestItem[] { };
+				yield return new object[] { items0, 0, 0 };
+
+				// source list contains one items
+				var items1 = new[] { new TestItem() };
+				yield return new object[] { items1, 0, 1 };
+				yield return new object[] { items1, 1, 0 };
+
+				// source list contains two items
+				var items2 = new[] { new TestItem(), new TestItem() };
+				yield return new object[] { items2, 0, 1 };
+				yield return new object[] { items2, 0, 2 };
+				yield return new object[] { items2, 1, 0 };
+				yield return new object[] { items2, 1, 1 };
+				yield return new object[] { items2, 2, 0 };
+
+				// source list contains three items
+				var items3 = new[] { new TestItem(), new TestItem(), new TestItem() };
+				yield return new object[] { items3, 0, 1 };
+				yield return new object[] { items3, 0, 2 };
+				yield return new object[] { items3, 0, 3 };
+				yield return new object[] { items3, 1, 0 };
+				yield return new object[] { items3, 1, 1 };
+				yield return new object[] { items3, 1, 2 };
+				yield return new object[] { items3, 2, 0 };
+				yield return new object[] { items3, 2, 1 };
+				yield return new object[] { items3, 3, 0 };
+			}
+		}
+
+		#endregion
+
+		#region Construction
+
+		/// <summary>
+		/// Tests whether the <see cref="PartialList"/> constructor succeeds with valid arguments.
+		/// </summary>
+		/// <param name="items">The list to set the partial list upon.</param>
+		/// <param name="offset">Offset of in <paramref name="items"/> the partial list should start at.</param>
+		/// <param name="count">Number of items the partial list should contain.</param>
+		[Theory]
+		[MemberData(nameof(TestData))]
+		public void Create_Subset(TestItem[] items, int offset, int count)
+		{
+			var list = new PartialList(items, offset, count);
+			Assert.Equal((IList)items.Skip(offset).Take(count).ToArray(), list); // uses the enumerator to compare the lists
+		}
+
+		/// <summary>
+		/// Tests whether the <see cref="PartialList"/> convenience constructor for creating read-only lists succeeds.
+		/// </summary>
+		[Fact]
+		public void Create_Complete()
+		{
+			var items = new[] { new TestItem(), new TestItem(), new TestItem() };
+			var list = new PartialList(items);
+			Assert.Equal((IList)items, list); // uses the enumerator to compare the lists
+		}
+
+		/// <summary>
+		/// Tests whether the <see cref="PartialList"/> constructor fails if the number of items is negative.
+		/// </summary>
+		[Fact]
+		public void Create_ListIsNull()
+		{
+			var exception = Assert.Throws<ArgumentNullException>(() => new PartialList(null, 0, 0));
+			Assert.Equal("list", exception.ParamName);
+		}
+
+		/// <summary>
+		/// Tests whether the <see cref="PartialList"/> constructor fails if the offset in the original list is negative.
+		/// </summary>
+		[Fact]
+		public void Create_OffsetIsNegative()
+		{
+			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new PartialList(new[] { new TestItem() }, -1, 0));
+			Assert.Equal("offset", exception.ParamName);
+		}
+
+		/// <summary>
+		/// Tests whether the <see cref="PartialList"/> constructor fails if the number of items is negative.
+		/// </summary>
+		[Fact]
+		public void Create_CountIsNegative()
+		{
+			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new PartialList(new[] { new TestItem() }, 0, -1));
+			Assert.Equal("count", exception.ParamName);
+		}
+
+		/// <summary>
+		/// Tests whether the <see cref="PartialList"/> constructor fails if the specified range is out of bounds.
+		/// </summary>
+		[Fact]
+		public void Create_RangeIsOutOfBounds()
+		{
+			var items = new[] { new TestItem() };
+			Assert.Null(Assert.Throws<ArgumentException>(() => new PartialList(items, 0, 2)).ParamName);
+			Assert.Null(Assert.Throws<ArgumentException>(() => new PartialList(items, 1, 1)).ParamName);
+		}
+
+		#endregion
+
+		#region Count
+
+		/// <summary>
+		/// Tests getting the <see cref="PartialList.Count"/> property.
+		/// </summary>
+		/// <param name="items">The list to set the partial list upon.</param>
+		/// <param name="offset">Offset of in <paramref name="items"/> the partial list should start at.</param>
+		/// <param name="count">Number of items the partial list should contain.</param>
+		[Theory]
+		[MemberData(nameof(TestData))]
+		public void Count_Get(TestItem[] items, int offset, int count)
+		{
+			var list = new PartialList(items, offset, count);
+			Assert.Equal(count, list.Count);
+		}
+
+		#endregion
+
+		#region IsFixedSize
+
+		/// <summary>
+		/// Tests the explicit implementation of the <see cref="IList.IsFixedSize"/> property.
+		/// </summary>
+		[Fact]
+		public void IsFixedSize_IList_Get()
+		{
+			var items = new[] { new TestItem() };
+			// ReSharper disable once CollectionNeverQueried.Local
+			IList list = new PartialList(items, 0, 1);
+			Assert.True(list.IsFixedSize);
+		}
+
+		#endregion
+
+		#region IsReadOnly
+
+		/// <summary>
+		/// Tests the explicit implementation of the <see cref="IList.IsReadOnly"/> property.
+		/// </summary>
+		[Fact]
+		public void IsReadOnly_IList_Get()
+		{
+			var items = new[] { new TestItem() };
+			// ReSharper disable once CollectionNeverQueried.Local
+			IList list = new PartialList(items, 0, 1);
+			Assert.True(list.IsReadOnly);
+		}
+
+		#endregion
+
+		#region IsSynchronized
+
+		/// <summary>
+		/// Tests the explicit implementation of the <see cref="ICollection.IsSynchronized"/> property.
+		/// </summary>
+		[Fact]
+		public void IsSynchronized_ICollection_Get()
+		{
+			var items = new[] { new TestItem() };
+			// ReSharper disable once CollectionNeverQueried.Local
+			ICollection list = new PartialList(items, 0, 1);
+			Assert.False(list.IsSynchronized);
+		}
+
+		#endregion
+
+		#region SyncRoot
+
+		/// <summary>
+		/// Tests the explicit implementation of the <see cref="ICollection.SyncRoot"/> property.
+		/// </summary>
+		[Fact]
+		public void SyncRoot_ICollection_Get()
+		{
+			var items = new[] { new TestItem() };
+			// ReSharper disable once CollectionNeverQueried.Local
+			ICollection list = new PartialList(items, 0, 1);
+			Assert.Same(list, list.SyncRoot);
+		}
+
+		#endregion
+
+		#region this[]
+
+		/// <summary>
+		/// Tests getting the <see cref="PartialList.this"/> property.
+		/// </summary>
+		/// <param name="items">The list to set the partial list upon.</param>
+		/// <param name="offset">Offset of in <paramref name="items"/> the partial list should start at.</param>
+		/// <param name="count">Number of items the partial list should contain.</param>
+		[Theory]
+		[MemberData(nameof(TestData))]
+		public void Indexer_Get(TestItem[] items, int offset, int count)
+		{
+			var list = new PartialList(items, offset, count);
+
+			// all items reachable via the the indexer should be the same as the item passed during construction
+			for (int i = offset; i < offset + count; i++)
+			{
+				Assert.Same(items[i], list[i - offset]);
+			}
+
+			// getting item outside the expected bounds should fail
+			Assert.Equal("index", Assert.Throws<ArgumentOutOfRangeException>(() => list[-1]).ParamName);
+			Assert.Equal("index", Assert.Throws<ArgumentOutOfRangeException>(() => list[count]).ParamName);
+		}
+
+		/// <summary>
+		/// Tests the explicit implementation of the getter of the <see cref="IList.this"/> property.
+		/// </summary>
+		/// <param name="items">The list to set the partial list upon.</param>
+		/// <param name="offset">Offset of in <paramref name="items"/> the partial list should start at.</param>
+		/// <param name="count">Number of items the partial list should contain.</param>
+		[Theory]
+		[MemberData(nameof(TestData))]
+		public void Indexer_IList_Get(TestItem[] items, int offset, int count)
+		{
+			IList list = new PartialList(items, offset, count);
+
+			// all items reachable via the the indexer should be the same as the item passed during construction
+			for (int i = offset; i < offset + count; i++)
+			{
+				Assert.Same(items[i], list[i - offset]);
+			}
+
+			// getting item outside the expected bounds should fail
+			Assert.Equal("index", Assert.Throws<ArgumentOutOfRangeException>(() => list[-1]).ParamName);
+			Assert.Equal("index", Assert.Throws<ArgumentOutOfRangeException>(() => list[count]).ParamName);
+		}
+
+		/// <summary>
+		/// Tests the explicit implementation of the setter of the <see cref="IList.this"/> property.
+		/// The setter should throw a <see cref="NotSupportedException"/>.
+		/// </summary>
+		[Fact]
+		public void Indexer_IList_Set()
+		{
+			var items = new[] { new TestItem() };
+			// ReSharper disable once CollectionNeverQueried.Local
+			IList list = new PartialList(items);
+			Assert.Throws<NotSupportedException>(() => list[0] = new TestItem());
+		}
+
+		#endregion
+
+		#region Add()
+
+		/// <summary>
+		/// Tests the explicit implementation of the <see cref="IList.Add"/> method.
+		/// </summary>
+		[Fact]
+		public void Add_IList()
+		{
+			var items = new[] { new TestItem() };
+			// ReSharper disable once CollectionNeverQueried.Local
+			IList list = new PartialList(items);
+			Assert.Throws<NotSupportedException>(() => list.Add(new TestItem()));
+		}
+
+		#endregion
+
+		#region Clear()
+
+		/// <summary>
+		/// Tests the explicit implementation of the <see cref="IList.Clear"/> method.
+		/// </summary>
+		[Fact]
+		public void Clear_IList()
+		{
+			var items = new[] { new TestItem() };
+			// ReSharper disable once CollectionNeverQueried.Local
+			IList list = new PartialList(items);
+			Assert.Throws<NotSupportedException>(() => list.Clear());
+		}
+
+		#endregion
+
+		#region Contains()
+
+		/// <summary>
+		/// Tests the <see cref="PartialList.Contains"/> method.
+		/// </summary>
+		/// <param name="items">The list to set the partial list upon.</param>
+		/// <param name="offset">Offset of in <paramref name="items"/> the partial list should start at.</param>
+		/// <param name="count">Number of items the partial list should contain.</param>
+		[Theory]
+		[MemberData(nameof(TestData))]
+		public void Contains(TestItem[] items, int offset, int count)
+		{
+#pragma warning disable xUnit2017 // Do not use Contains() to check if a value exists in a collection
+
+			var list = new PartialList(items, offset, count);
+
+			// check whether all items in the subset are in the partial list
+			for (int i = offset; i < offset + count; i++)
+			{
+				Assert.True(list.Contains(items[i]));
+			}
+
+			// check whether a new item is not in the partial list
+			Assert.False(list.Contains(new TestItem())); // type of item is valid, but item is not in the list
+			Assert.False(list.Contains(new object()));   // type of item is invalid
+
+#pragma warning restore xUnit2017 // Do not use Contains() to check if a value exists in a collection
+		}
+
+		#endregion
+
+		#region CopyTo()
+
+		/// <summary>
+		/// Tests the <see cref="PartialList.CopyTo"/> method.
+		/// </summary>
+		/// <param name="items">The list to set the partial list upon.</param>
+		/// <param name="offset">Offset of in <paramref name="items"/> the partial list should start at.</param>
+		/// <param name="count">Number of items the partial list should contain.</param>
+		[Theory]
+		[MemberData(nameof(TestData))]
+		public void CopyTo(TestItem[] items, int offset, int count)
+		{
+			var list = new PartialList(items, offset, count);
+			var array = new TestItem[count];
+			list.CopyTo(array, 0);
+			Assert.Equal(items.Skip(offset).Take(count), array);
+		}
+
+		/// <summary>
+		/// Tests the <see cref="PartialList.CopyTo"/> method.
+		/// The method should throw an exception if the specified destination array is <c>null</c>.
+		/// </summary>
+		/// <param name="items">The list to set the partial list upon.</param>
+		/// <param name="offset">Offset of in <paramref name="items"/> the partial list should start at.</param>
+		/// <param name="count">Number of items the partial list should contain.</param>
+		[Theory]
+		[MemberData(nameof(TestData))]
+		public void CopyTo_ArrayIsNull(TestItem[] items, int offset, int count)
+		{
+			var list = new PartialList(items, offset, count);
+			// ReSharper disable once AssignNullToNotNullAttribute
+			Assert.Equal("array", Assert.Throws<ArgumentNullException>(() => list.CopyTo(null, 0)).ParamName);
+		}
+
+		/// <summary>
+		/// Tests the <see cref="PartialList.CopyTo"/> method.
+		/// The method should throw an exception if the specified start index is out of bounds.
+		/// </summary>
+		/// <param name="items">The list to set the partial list upon.</param>
+		/// <param name="offset">Offset of in <paramref name="items"/> the partial list should start at.</param>
+		/// <param name="count">Number of items the partial list should contain.</param>
+		[Theory]
+		[MemberData(nameof(TestData))]
+		public void CopyTo_IndexIsOutOfBounds(TestItem[] items, int offset, int count)
+		{
+			var list = new PartialList(items, offset, count);
+			var array = new TestItem[count];
+			Assert.Equal("arrayIndex", Assert.Throws<ArgumentOutOfRangeException>(() => list.CopyTo(array, -1)).ParamName);
+			Assert.Equal("arrayIndex", Assert.Throws<ArgumentOutOfRangeException>(() => list.CopyTo(array, array.Length + 1)).ParamName);
+			if (count > 1) Assert.Null(Assert.Throws<ArgumentException>(() => list.CopyTo(array, 1)).ParamName);
+		}
+
+		/// <summary>
+		/// Tests the <see cref="PartialList.CopyTo"/> method.
+		/// The method should throw an exception if the specified array is multi-dimensional.
+		/// </summary>
+		[Fact]
+		public void CopyTo_ArrayIsMultiDimensional()
+		{
+			var items = new[] { new TestItem(), new TestItem() };
+			var list = new PartialList(items);
+			var array = new TestItem[1, 1];
+			Assert.Equal("array", Assert.Throws<ArgumentException>(() => list.CopyTo(array, 0)).ParamName);
+		}
+
+		/// <summary>
+		/// Tests the <see cref="PartialList.CopyTo"/> method.
+		/// The method should throw an exception if the specified array is of an incompatible type.
+		/// </summary>
+		[Fact]
+		public void CopyTo_ArrayIsOfIncompatibleType()
+		{
+			var items = new[] { new TestItem() };
+			var list = new PartialList(items);
+			var array = new int[1];
+			Assert.Equal("array", Assert.Throws<ArgumentException>(() => list.CopyTo(array, 0)).ParamName);
+		}
+
+		#endregion
+
+		#region GetEnumerator()
+
+		/// <summary>
+		/// Tests the <see cref="PartialList.GetEnumerator"/> method.
+		/// </summary>
+		/// <param name="items">The list to set the partial list upon.</param>
+		/// <param name="offset">Offset of in <paramref name="items"/> the partial list should start at.</param>
+		/// <param name="count">Number of items the partial list should contain.</param>
+		[Theory]
+		[MemberData(nameof(TestData))]
+		public void GetEnumerator(TestItem[] items, int offset, int count)
+		{
+			var list = new PartialList(items, offset, count);
+			var enumerated = new List<TestItem>();
+			var enumerator = list.GetEnumerator();
+			while (enumerator.MoveNext()) enumerated.Add((TestItem)enumerator.Current);
+			Assert.Equal(count, enumerated.Count);
+			Assert.Equal(items.Skip(offset).Take(count), enumerated);
+		}
+
+		#endregion
+
+		#region IndexOf()
+
+		/// <summary>
+		/// Tests the <see cref="PartialList.IndexOf"/> method.
+		/// </summary>
+		/// <param name="items">The list to set the partial list upon.</param>
+		/// <param name="offset">Offset of in <paramref name="items"/> the partial list should start at.</param>
+		/// <param name="count">Number of items the partial list should contain.</param>
+		[Theory]
+		[MemberData(nameof(TestData))]
+		public void IndexOf(TestItem[] items, int offset, int count)
+		{
+			var list = new PartialList(items, offset, count);
+
+			// check whether the list contains items in the specified subset
+			for (int i = offset; i < offset + count; i++)
+			{
+				Assert.Equal(i - offset, list.IndexOf(items[i]));
+			}
+
+			// check whether the list does not contain a new item
+			Assert.Equal(-1, list.IndexOf(new TestItem())); // type of the item is valid, but item is not in the list
+			Assert.Equal(-1, list.IndexOf(new object()));   // type of item is invalid
+		}
+
+		#endregion
+
+		#region Insert()
+
+		/// <summary>
+		/// Tests the explicit implementation of the <see cref="IList.Insert"/> method.
+		/// </summary>
+		[Fact]
+		public void Insert_IList()
+		{
+			var items = new[] { new TestItem() };
+			// ReSharper disable once CollectionNeverQueried.Local
+			IList list = new PartialList(items);
+			Assert.Throws<NotSupportedException>(() => list.Insert(0, new TestItem()));
+		}
+
+		#endregion
+
+		#region Remove()
+
+		/// <summary>
+		/// Tests the explicit implementation of the <see cref="IList.Remove"/> method.
+		/// </summary>
+		[Fact]
+		public void Remove_IList()
+		{
+			var items = new[] { new TestItem() };
+			// ReSharper disable once CollectionNeverQueried.Local
+			IList list = new PartialList(items);
+			Assert.Throws<NotSupportedException>(() => list.Remove(items[0]));
+		}
+
+		#endregion
+
+		#region RemoveAt()
+
+		/// <summary>
+		/// Tests the explicit implementation of the <see cref="IList.RemoveAt"/> method.
+		/// </summary>
+		[Fact]
+		public void RemoveAt_IList()
+		{
+			var items = new[] { new TestItem() };
+			// ReSharper disable once CollectionNeverQueried.Local
+			IList list = new PartialList(items);
+			Assert.Throws<NotSupportedException>(() => list.RemoveAt(0));
+		}
+
+		#endregion
+
+		#region ToArray()
+
+		/// <summary>
+		/// Tests the <see cref="PartialList.ToArray"/> method.
+		/// </summary>
+		/// <param name="items">The list to set the partial list upon.</param>
+		/// <param name="offset">Offset of in <paramref name="items"/> the partial list should start at.</param>
+		/// <param name="count">Number of items the partial list should contain.</param>
+		[Theory]
+		[MemberData(nameof(TestData))]
+		public void ToArray(TestItem[] items, int offset, int count)
+		{
+			var list = new PartialList(items, offset, count);
+			var array = list.ToArray();
+			Assert.Equal(count, array.Length);
+			Assert.Equal(items.Skip(offset).Take(count), array);
+		}
+
+		#endregion
+
+		#region Debug View
+
+		/// <summary>
+		/// Tests the debug view of the <see cref="PartialList"/> class.
+		/// </summary>
+		[Fact]
+		public void DebugView()
+		{
+			var items = new[] { new TestItem(), new TestItem(), new TestItem() };
+			var list = new PartialList(items);
+			var view = new PartialList.DebugView(list);
+			Assert.Equal(items.Cast<object>(), view.Items);
+		}
+
+		#endregion
+	}
+
+}
