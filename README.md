@@ -119,6 +119,18 @@ This namespace provides everything concerning cryptography operations and contai
 
 This namespace contains classes concerning event handling. The event manager classes ease working with events that should be fired in the context of the thread registering an event handler. The `EventManager<EventArgs>` class supports events of the type `System.EventHandler<EventArgs>`, while the `PropertyChangedEventManager` covers firing the `INotifyPropertyChanged.PropertyChanged` event (comes in handy when working with WPF view models). The `WeakEventManager<EventArgs>` class works just as the `EventManager<EventArgs>` class, but holds weak references to registered event recipients. This comes with some administrative overhead, but avoids keeping objects alive that are otherwise not referenced any more. This is very useful when implementing static events.
 
+#### Namespace: GriffinPlus.Lib.Imaging
+
+This namespace provides everything that deals with images and related things like colors and bitmap palettes. All classes have been tailored to integrate with the *Windows Presentation Foundation* without binding to it. This allows to use images in cross-platform capable libraries. The namespace contains the following classes:
+
+- `BitmapPalette`: A color palette that can be used in conjunction with the `NativeBitmap` to create a paletted bitmap.
+- `BitmapPalettes`: A predefined set of common color palettes.
+- `Color`: A color (supports the sRGB and scRGB color format, no support for ICC profiles).
+- `Colors`: A predefined set of common colors.
+- `NativeBitmap`: An image backed by a native buffer (supports explicit disposal easing memory management).
+- `PixelFormat`: The format of a pixel in a `NativeBitmap`.
+- `PixelFormats`: The set of supported pixel formats.
+
 #### Namespace: GriffinPlus.Lib.Io
 
 This namespace provides everything concerning generic i/o operations and contains the following classes:
