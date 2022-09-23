@@ -16,12 +16,11 @@ namespace GriffinPlus.Lib.Io
 	/// plus span support on target frameworks where <see cref="Stream"/> does not support spans on its own.
 	/// </summary>
 	public interface IStream :
+#if NETSTANDARD2_0 || NET461
 		IDisposable
-#if NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0
-		,
+#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0
+		IDisposable,
 		IAsyncDisposable
-#elif NETSTANDARD2_0 || NET461
-		// This method is not supported by the Stream class.
 #else
 #error Unhandled target framework.
 #endif
