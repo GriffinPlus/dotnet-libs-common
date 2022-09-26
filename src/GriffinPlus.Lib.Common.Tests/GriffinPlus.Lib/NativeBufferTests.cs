@@ -154,6 +154,32 @@ namespace GriffinPlus.Lib
 			}
 		}
 
+		[Theory]
+		[InlineData(3)]
+		[InlineData(5)]
+		[InlineData(6)]
+		[InlineData(7)]
+		[InlineData(9)]
+		[InlineData(10)]
+		[InlineData(11)]
+		[InlineData(12)]
+		[InlineData(13)]
+		[InlineData(14)]
+		[InlineData(15)]
+		public void CreateAligned_AlignmentNotPowerOfTwo(int alignment)
+		{
+			var exception = Assert.Throws<ArgumentException>(() => NativeBuffer.CreateAligned(1, alignment));
+			Assert.Equal("alignment", exception.ParamName);
+		}
+
+		[Fact]
+		public void CreateAligned_AlignmentGreaterThanPageSize()
+		{
+			int alignment = Environment.SystemPageSize << 1;
+			var exception = Assert.Throws<ArgumentException>(() => NativeBuffer.CreateAligned(1, alignment));
+			Assert.Equal("alignment", exception.ParamName);
+		}
+
 		#endregion
 
 		#region CreatePageAligned(long size)
