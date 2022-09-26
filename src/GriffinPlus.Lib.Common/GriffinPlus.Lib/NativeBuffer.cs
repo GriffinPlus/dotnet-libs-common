@@ -4,6 +4,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // ReSharper disable IdentifierTypo
@@ -234,6 +236,10 @@ namespace GriffinPlus.Lib
 				SetHandle(Address);
 				if (IsInvalid) throw new OutOfMemoryException();
 				GC.AddMemoryPressure(ActualSize);
+
+				// clear the allocated buffer
+				ClearBuffer(Address, ActualSize);
+
 				return;
 			}
 #elif NETSTANDARD2_0 || NETSTANDARD2_1 || NET461 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0
@@ -243,15 +249,16 @@ namespace GriffinPlus.Lib
 
 			// fall back to using Marshal.AllocHGlobal() and allocate a buffer that is a bit larger
 			// than requested and adjust the alignment appropriately as required
-			ActualSize = (size + alignment - 1) & ~(alignment - 1);
+			ActualSize = size + alignment - 1;
 			var bufferAddress = Marshal.AllocHGlobal(new IntPtr(ActualSize));
-			// ReSharper disable UselessBinaryOperation
-			Address = new IntPtr(alignment * ((bufferAddress.ToInt64() + alignment - 1) / alignment));
-			// ReSharper restore UselessBinaryOperation
+			Address = new IntPtr((bufferAddress.ToInt64() + alignment - 1) & ~(alignment - 1));
 			mFreeCallback = buffer => Marshal.FreeHGlobal(buffer.handle);
 			SetHandle(bufferAddress);
 			if (IsInvalid) throw new OutOfMemoryException();
 			GC.AddMemoryPressure(ActualSize);
+
+			// clear the allocated buffer
+			ClearBuffer(bufferAddress, ActualSize);
 		}
 
 		/// <summary>
@@ -356,6 +363,27 @@ namespace GriffinPlus.Lib
 				throw new NotSupportedException("The buffer is too big to be represented as a Span<byte>.");
 
 			return new Span<byte>(Address.ToPointer(), (int)Size);
+		}
+
+		/// <summary>
+		/// Clears the specified buffer.
+		/// </summary>
+		/// <param name="buffer">Address of the buffer to clear.</param>
+		/// <param name="size">Size of the buffer to clear.</param>
+		private static void ClearBuffer(IntPtr buffer, long size)
+		{
+			// clear the allocated buffer
+			// (split clearing the memory block into chunks as the API supports 32-bit sized blocks only)
+			byte* pBufferToClear = (byte*)buffer.ToPointer();
+			byte* pBufferToClearEnd = pBufferToClear + size;
+			while (pBufferToClear != pBufferToClearEnd)
+			{
+				// memory should always be pointer-aligned for Unsafe.InitBlock()
+				Debug.Assert(((long)pBufferToClear & (IntPtr.Size - 1)) == 0);
+				uint bytesToClear = (uint)Math.Min(pBufferToClearEnd - pBufferToClear, uint.MaxValue);
+				Unsafe.InitBlock(pBufferToClear, 0, bytesToClear);
+				pBufferToClear += bytesToClear;
+			}
 		}
 	}
 
