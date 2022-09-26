@@ -429,7 +429,7 @@ namespace GriffinPlus.Lib.Imaging
 						Assert.Equal(stride, copy.BufferStride);
 						Assert.Equal(expectedBufferSize, copy.BufferSize);
 						Assert.NotEqual(IntPtr.Zero, copy.BufferStart);
-						Assert.Equal(0, copy.BufferStart.ToInt64() & (~0u >> (32 - alignment)));
+						Assert.Equal(0, copy.BufferStart.ToInt64() & (alignment - 1));
 
 						// ensure the copied bitmap contains the reference data as well
 						// (compare byte-wise, but skip non-significant bytes)
@@ -542,7 +542,7 @@ namespace GriffinPlus.Lib.Imaging
 						Assert.Equal(stride, copy.BufferStride);
 						Assert.Equal(expectedBufferSize, copy.BufferSize);
 						Assert.NotEqual(IntPtr.Zero, copy.BufferStart);
-						Assert.Equal(0, copy.BufferStart.ToInt64() & (~0u >> (32 - alignment)));
+						Assert.Equal(0, copy.BufferStart.ToInt64() & (alignment - 1));
 
 						// ensure the copied bitmap contains the reference data as well
 						// (compare byte-wise, but skip non-significant bytes)
@@ -618,7 +618,7 @@ namespace GriffinPlus.Lib.Imaging
 				// the buffer should be aligned as expected
 				byte* pBufferStart = (byte*)bitmap.BufferStart;
 				Assert.True(pBufferStart != null);
-				Assert.Equal(0, (long)pBufferStart & (~0u >> (32 - alignment)));
+				Assert.Equal(0, (long)pBufferStart & (alignment - 1));
 
 				// the buffer should have been cleared
 				byte* pBuffer = pBufferStart;
@@ -721,7 +721,7 @@ namespace GriffinPlus.Lib.Imaging
 					// (buffer1 should have the same layout as the created bitmap)
 					byte* pBufferStart = (byte*)bitmap.BufferStart;
 					Assert.True(pBufferStart != null);
-					Assert.Equal(0, (long)pBufferStart & (~0u >> (32 - alignment1)));
+					Assert.Equal(0, (long)pBufferStart & (alignment1 - 1));
 
 					// ensure that the bitmap contains the reference data as well
 					// (compare byte-wise, but skip non-significant bytes)
