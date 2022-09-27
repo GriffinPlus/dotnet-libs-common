@@ -230,7 +230,7 @@ namespace GriffinPlus.Lib
 			if (alignment > 1)
 			{
 				// use the platform dependent aligned allocation API, e.g. aligned_alloc or _aligned_malloc
-				ActualSize = (size + alignment - 1) & ~(alignment - 1);
+				ActualSize = size;
 				Address = new IntPtr(NativeMemory.AlignedAlloc((nuint)ActualSize, (nuint)alignment));
 				mFreeCallback = buffer => NativeMemory.AlignedFree(buffer.handle.ToPointer());
 				SetHandle(Address);
