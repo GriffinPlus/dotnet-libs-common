@@ -213,13 +213,13 @@ namespace GriffinPlus.Lib
 					// that some waste is negligible
 					// => using VirtualAlloc() is the most performant way to get entire memory pages
 					ActualSize = allocSize;
-					Address = VirtualAlloc(
+					UnsafeAddress = VirtualAlloc(
 						IntPtr.Zero,
 						new UIntPtr((ulong)ActualSize),
 						AllocationType.RESERVE | AllocationType.COMMIT,
 						MemoryProtection.READWRITE);
 					mFreeCallback = buffer => VirtualFree(buffer.handle, UIntPtr.Zero, MemoryFreeType.RELEASE);
-					SetHandle(Address);
+					SetHandle(UnsafeAddress);
 					if (IsInvalid) throw new OutOfMemoryException();
 					GC.AddMemoryPressure(ActualSize);
 					return;
@@ -231,14 +231,14 @@ namespace GriffinPlus.Lib
 			{
 				// use the platform dependent aligned allocation API, e.g. aligned_alloc or _aligned_malloc
 				ActualSize = size;
-				Address = new IntPtr(NativeMemory.AlignedAlloc((nuint)ActualSize, (nuint)alignment));
+				UnsafeAddress = new IntPtr(NativeMemory.AlignedAlloc((nuint)ActualSize, (nuint)alignment));
 				mFreeCallback = buffer => NativeMemory.AlignedFree(buffer.handle.ToPointer());
-				SetHandle(Address);
+				SetHandle(UnsafeAddress);
 				if (IsInvalid) throw new OutOfMemoryException();
 				GC.AddMemoryPressure(ActualSize);
 
 				// clear the allocated buffer
-				ClearBuffer(Address, ActualSize);
+				ClearBuffer(UnsafeAddress, ActualSize);
 
 				return;
 			}
@@ -251,7 +251,7 @@ namespace GriffinPlus.Lib
 			// than requested and adjust the alignment appropriately as required
 			ActualSize = size + alignment - 1;
 			var bufferAddress = Marshal.AllocHGlobal(new IntPtr(ActualSize));
-			Address = new IntPtr((bufferAddress.ToInt64() + alignment - 1) & ~(alignment - 1));
+			UnsafeAddress = new IntPtr((bufferAddress.ToInt64() + alignment - 1) & ~(alignment - 1));
 			mFreeCallback = buffer => Marshal.FreeHGlobal(buffer.handle);
 			SetHandle(bufferAddress);
 			if (IsInvalid) throw new OutOfMemoryException();
@@ -311,9 +311,14 @@ namespace GriffinPlus.Lib
 
 		/// <summary>
 		/// Gets the address of the buffer.
+		/// The <see cref="NativeBuffer"/> must be kept alive until the underlying buffer is not used any more,
+		/// otherwise access violations can occur due to the buffer getting collected prematurely. This can be
+		/// done by putting a <see cref="GC.KeepAlive"/> at the end of the code using the native buffer.
+		/// It is much safer to use <see cref="GetAccessor"/> to obtain an accessor object that keeps the buffer
+		/// alive until it is disposed.
 		/// </summary>
 		/// <returns>Address of the buffer.</returns>
-		public IntPtr Address { get; private set; }
+		public IntPtr UnsafeAddress { get; private set; }
 
 		/// <summary>
 		/// Gets the size of the buffer.
@@ -321,16 +326,29 @@ namespace GriffinPlus.Lib
 		public long Size { get; private set; }
 
 		/// <summary>
-		/// Gets the actual address of the wrapped native buffer. It may be less than <see cref="Address"/>
+		/// Gets the actual address of the wrapped native buffer. It may be less than <see cref="UnsafeAddress"/>
 		/// due to adjustments that were done to guarantee a requested alignment.
+		/// The <see cref="NativeBuffer"/> must be kept alive until the underlying buffer is not used any more,
+		/// otherwise access violations can occur due to the buffer getting collected prematurely. This can be
+		/// done by putting a <see cref="GC.KeepAlive"/> at the end of the code using the native buffer.
 		/// </summary>
-		public IntPtr ActualAddress => IsInvalid ? IntPtr.Zero : handle;
+		public IntPtr UnsafeActualAddress => IsInvalid ? IntPtr.Zero : handle;
 
 		/// <summary>
 		/// The actual size of the native buffer. It may be greater than <see cref="Size"/>
 		/// due to adjustments that were done to guarantee a requested alignment.
 		/// </summary>
 		public long ActualSize { get; private set; }
+
+		/// <summary>
+		/// Gets an accessor that can be used to safely access the buffer.
+		/// The accessor should be used in conjunction with a 'using' statement to work as expected.
+		/// </summary>
+		/// <returns>An <see cref="NativeBufferAccessor"/> providing access to the buffer.</returns>
+		public NativeBufferAccessor GetAccessor()
+		{
+			return new NativeBufferAccessor(this);
+		}
 
 		/// <summary>
 		/// Frees the native buffer.
@@ -343,7 +361,7 @@ namespace GriffinPlus.Lib
 			if (OwnsBuffer && ActualSize > 0) GC.RemoveMemoryPressure(ActualSize);
 			OwnsBuffer = false;
 			ActualSize = 0;
-			Address = IntPtr.Zero;
+			UnsafeAddress = IntPtr.Zero;
 			Size = 0;
 			return true;
 		}
@@ -362,7 +380,7 @@ namespace GriffinPlus.Lib
 			if (Size > int.MaxValue)
 				throw new NotSupportedException("The buffer is too big to be represented as a Span<byte>.");
 
-			return new Span<byte>(Address.ToPointer(), (int)Size);
+			return new Span<byte>(UnsafeAddress.ToPointer(), (int)Size);
 		}
 
 		/// <summary>

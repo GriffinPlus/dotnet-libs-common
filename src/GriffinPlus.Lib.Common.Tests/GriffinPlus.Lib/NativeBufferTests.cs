@@ -45,24 +45,32 @@ namespace GriffinPlus.Lib
 
 			// the published address of the buffer should not be null and the size should reflect
 			// the requested buffer size
-			Assert.NotEqual(IntPtr.Zero, buffer.Address);
+			Assert.NotEqual(IntPtr.Zero, buffer.UnsafeAddress);
 			Assert.Equal(size, buffer.Size);
 
+			// an accessor working on top of the buffer should return the same address and size
+			var accessor = buffer.GetAccessor();
+			Assert.Equal(buffer.UnsafeAddress, accessor.Address);
+			Assert.Equal(size, accessor.Size);
+
 			// the actual address and the actual size of the native buffer can be different due to alignment adjustments
-			Assert.NotEqual(IntPtr.Zero, buffer.ActualAddress);
+			Assert.NotEqual(IntPtr.Zero, buffer.UnsafeActualAddress);
 			Assert.True(buffer.ActualSize >= size);
 
-			// dispose the instance
+			// dispose the accessor and the buffer instance 
+			accessor.Dispose();
 			buffer.Dispose();
 
 			// the handle should be invalid now
 			Assert.True(buffer.IsInvalid);
 
 			// the addresses of the buffer should be null and the size should be 0 now
-			Assert.Equal(IntPtr.Zero, buffer.Address);
+			Assert.Equal(IntPtr.Zero, buffer.UnsafeAddress);
 			Assert.Equal(0, buffer.Size);
-			Assert.Equal(IntPtr.Zero, buffer.ActualAddress);
+			Assert.Equal(IntPtr.Zero, buffer.UnsafeActualAddress);
 			Assert.Equal(0, buffer.ActualSize);
+			Assert.Equal(IntPtr.Zero, accessor.Address);
+			Assert.Equal(0, accessor.Size);
 		}
 
 		[Fact]
@@ -115,25 +123,33 @@ namespace GriffinPlus.Lib
 
 			// the published address of the buffer should not be null and the size should reflect
 			// the requested buffer size, the alignment should meet the requirements
-			Assert.NotEqual(IntPtr.Zero, buffer.Address);
+			Assert.NotEqual(IntPtr.Zero, buffer.UnsafeAddress);
 			Assert.Equal(size, buffer.Size);
-			Assert.Equal(0, buffer.Address.ToInt64() & (alignment - 1));
+			Assert.Equal(0, buffer.UnsafeAddress.ToInt64() & (alignment - 1));
+
+			// an accessor working on top of the buffer should return the same address and size
+			var accessor = buffer.GetAccessor();
+			Assert.Equal(buffer.UnsafeAddress, accessor.Address);
+			Assert.Equal(size, accessor.Size);
 
 			// the actual address and the actual size of the native buffer can be different due to alignment adjustments
-			Assert.NotEqual(IntPtr.Zero, buffer.ActualAddress);
+			Assert.NotEqual(IntPtr.Zero, buffer.UnsafeActualAddress);
 			Assert.True(buffer.ActualSize >= size);
 
-			// dispose the instance
+			// dispose the accessor and the buffer instance 
+			accessor.Dispose();
 			buffer.Dispose();
 
 			// the handle should be invalid now
 			Assert.True(buffer.IsInvalid);
 
 			// the addresses of the buffer should be null and the size should be 0 now
-			Assert.Equal(IntPtr.Zero, buffer.Address);
+			Assert.Equal(IntPtr.Zero, buffer.UnsafeAddress);
 			Assert.Equal(0, buffer.Size);
-			Assert.Equal(IntPtr.Zero, buffer.ActualAddress);
+			Assert.Equal(IntPtr.Zero, buffer.UnsafeActualAddress);
 			Assert.Equal(0, buffer.ActualSize);
+			Assert.Equal(IntPtr.Zero, accessor.Address);
+			Assert.Equal(0, accessor.Size);
 		}
 
 		[Fact]
@@ -221,25 +237,33 @@ namespace GriffinPlus.Lib
 
 			// the published address of the buffer should not be null and the size should reflect
 			// the requested buffer size, the alignment should meet the requirements
-			Assert.NotEqual(IntPtr.Zero, buffer.Address);
+			Assert.NotEqual(IntPtr.Zero, buffer.UnsafeAddress);
 			Assert.Equal(size, buffer.Size);
-			Assert.Equal(0, buffer.Address.ToInt64() & (Environment.SystemPageSize - 1));
+			Assert.Equal(0, buffer.UnsafeAddress.ToInt64() & (Environment.SystemPageSize - 1));
+
+			// an accessor working on top of the buffer should return the same address and size
+			var accessor = buffer.GetAccessor();
+			Assert.Equal(buffer.UnsafeAddress, accessor.Address);
+			Assert.Equal(size, accessor.Size);
 
 			// the actual address and the actual size of the native buffer can be different due to alignment adjustments
-			Assert.NotEqual(IntPtr.Zero, buffer.ActualAddress);
+			Assert.NotEqual(IntPtr.Zero, buffer.UnsafeActualAddress);
 			Assert.True(buffer.ActualSize >= size);
 
-			// dispose the instance
+			// dispose the accessor and the buffer instance 
+			accessor.Dispose();
 			buffer.Dispose();
 
 			// the handle should be invalid now
 			Assert.True(buffer.IsInvalid);
 
 			// the addresses of the buffer should be null and the size should be 0 now
-			Assert.Equal(IntPtr.Zero, buffer.Address);
+			Assert.Equal(IntPtr.Zero, buffer.UnsafeAddress);
 			Assert.Equal(0, buffer.Size);
-			Assert.Equal(IntPtr.Zero, buffer.ActualAddress);
+			Assert.Equal(IntPtr.Zero, buffer.UnsafeActualAddress);
 			Assert.Equal(0, buffer.ActualSize);
+			Assert.Equal(IntPtr.Zero, accessor.Address);
+			Assert.Equal(0, accessor.Size);
 		}
 
 		[Fact]
@@ -303,12 +327,18 @@ namespace GriffinPlus.Lib
 			Assert.Equal(ownsBuffer, buffer.OwnsBuffer);
 
 			// the published address and the size of the buffer should be as specified
-			Assert.NotEqual(address, buffer.Address);
+			Assert.NotEqual(address, buffer.UnsafeAddress);
 			Assert.Equal(size, buffer.Size);
-			Assert.Equal(address, buffer.ActualAddress);
+			Assert.Equal(address, buffer.UnsafeActualAddress);
 			Assert.Equal(size, buffer.ActualSize);
 
-			// dispose the instance
+			// an accessor working on top of the buffer should return the same address and size
+			var accessor = buffer.GetAccessor();
+			Assert.Equal(buffer.UnsafeAddress, accessor.Address);
+			Assert.Equal(size, accessor.Size);
+
+			// dispose the accessor and the buffer instance 
+			accessor.Dispose();
 			buffer.Dispose();
 
 			// the handle should be invalid now
@@ -318,10 +348,12 @@ namespace GriffinPlus.Lib
 			Assert.True(freed);
 
 			// the addresses of the buffer should be null and the size should be 0 now
-			Assert.Equal(IntPtr.Zero, buffer.Address);
+			Assert.Equal(IntPtr.Zero, buffer.UnsafeAddress);
 			Assert.Equal(0, buffer.Size);
-			Assert.Equal(IntPtr.Zero, buffer.ActualAddress);
+			Assert.Equal(IntPtr.Zero, buffer.UnsafeActualAddress);
 			Assert.Equal(0, buffer.ActualSize);
+			Assert.Equal(IntPtr.Zero, accessor.Address);
+			Assert.Equal(0, accessor.Size);
 		}
 
 		[Fact]

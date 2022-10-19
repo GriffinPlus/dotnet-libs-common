@@ -47,8 +47,8 @@ namespace GriffinPlus.Lib.Imaging
 			mBufferStride = GetBufferStride(mPixelWidth, mPixelFormat);
 			mBufferSize = checked(mBufferStride * mPixelHeight);
 			mBuffer = NativeBuffer.CreatePageAligned(mBufferSize);
-			mBufferStart = mBuffer.Address;
-			source.CopyPixels(mBuffer.Address, mBufferSize, mBufferStride, 0, 0, mPixelWidth, mPixelHeight);
+			mBufferStart = mBuffer.UnsafeAddress;
+			source.CopyPixels(mBuffer.UnsafeAddress, mBufferSize, mBufferStride, 0, 0, mPixelWidth, mPixelHeight);
 		}
 
 		/// <summary>
@@ -77,8 +77,8 @@ namespace GriffinPlus.Lib.Imaging
 			mBufferStride = GetBufferStride(mPixelWidth, mPixelFormat);
 			mBufferSize = checked(mBufferStride * mPixelHeight);
 			mBuffer = NativeBuffer.CreatePageAligned(mBufferSize);
-			mBufferStart = mBuffer.Address;
-			source.CopyPixels(mBuffer.Address, mBufferSize, mBufferStride, 0, 0, mPixelWidth, mPixelHeight);
+			mBufferStart = mBuffer.UnsafeAddress;
+			source.CopyPixels(mBuffer.UnsafeAddress, mBufferSize, mBufferStride, 0, 0, mPixelWidth, mPixelHeight);
 		}
 
 		/// <summary>
@@ -113,7 +113,7 @@ namespace GriffinPlus.Lib.Imaging
 			mBufferStride = GetBufferStride(mPixelWidth, mPixelFormat);
 			mBufferSize = checked(mBufferStride * mPixelHeight);
 			mBuffer = NativeBuffer.CreatePageAligned(mBufferSize);
-			mBufferStart = mBuffer.Address;
+			mBufferStart = mBuffer.UnsafeAddress;
 		}
 
 		/// <summary>
@@ -159,7 +159,7 @@ namespace GriffinPlus.Lib.Imaging
 			if (validSourceBufferSize > source.Length) throw new ArgumentException("The size of the source buffer does not correspond to the specified size and pixel format of the image.", nameof(source));
 			validSourceBufferSize = Math.Min(validSourceBufferSize, Math.Min(mBufferSize, source.Length));
 			mBuffer = NativeBuffer.CreatePageAligned(mBufferSize);
-			mBufferStart = mBuffer.Address;
+			mBufferStart = mBuffer.UnsafeAddress;
 
 			// copy buffer
 			fixed (byte* pSourceArray = &source[0])
