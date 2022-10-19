@@ -12,7 +12,7 @@ namespace GriffinPlus.Lib
 {
 
 	/// <summary>
-	/// Unit tests targeting the <see cref="NativeBuffer"/> class.
+	/// Unit tests targeting the <see cref="NativeBuffer"/> and the <see cref="NativeBufferAccessor"/> class.
 	/// </summary>
 	public class NativeBufferTests
 	{
@@ -389,6 +389,50 @@ namespace GriffinPlus.Lib
 		{
 			var exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPointer(new IntPtr(1), 1, true, null));
 			Assert.Equal("freeCallback", exception.ParamName);
+		}
+
+		#endregion
+
+		#region AsSpan()
+
+		/// <summary>
+		/// Tests the <see cref="NativeBuffer.AsSpan"/> method.
+		/// </summary>
+		/// <param name="size">Size of the buffer to test with.</param>
+		[Theory]
+		[InlineData(0)]
+		[InlineData(1)]
+		public unsafe void AsSpan(long size)
+		{
+			using (var buffer = NativeBuffer.Create(size))
+			{
+				var span = buffer.AsSpan();
+
+				fixed (byte* p = span)
+				{
+					Assert.Equal(size == 0 ? IntPtr.Zero : buffer.UnsafeAddress, new IntPtr(p));
+					Assert.Equal(size, span.Length);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Tests the <see cref="NativeBuffer.AsSpan"/> method.
+		/// The method should throw an exception, if the buffer is too big to be handled by a span.
+		/// </summary>
+		[Fact]
+		public void AsSpan_BufferTooBig()
+		{
+			// initialize a fake buffer to check whether the buffer size is checked properly
+			// (no problem as the buffer is neither read nor written)
+			using (var buffer = NativeBuffer.FromPointer(
+				       new IntPtr(0x12345678),
+				       (long)int.MaxValue + 1,
+				       false,
+				       _ => { }))
+			{
+				Assert.Throws<NotSupportedException>(() => buffer.AsSpan());
+			}
 		}
 
 		#endregion
