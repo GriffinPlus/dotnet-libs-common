@@ -13,7 +13,7 @@ namespace GriffinPlus.Lib.Imaging
 {
 
 	/// <summary>
-	/// Unit tests targeting the <see cref="NativeBitmap"/> class.
+	/// Unit tests targeting the <see cref="NativeBitmap"/> and the <see cref="NativeBitmapAccessor"/> class.
 	/// </summary>
 	public unsafe class NativeBitmapTests
 	{
@@ -407,7 +407,7 @@ namespace GriffinPlus.Lib.Imaging
 					Assert.Same(palette, original.Palette);
 					Assert.Equal(originalStride, original.BufferStride);
 					Assert.Equal(originalBufferSize, original.BufferSize);
-					Assert.Equal((IntPtr)pOriginalBuffer, original.BufferStart);
+					Assert.Equal((IntPtr)pOriginalBuffer, original.UnsafeBufferStart);
 
 					// create a copy of the bitmap
 					using (var copy = new NativeBitmap(original)) // <- constructor to test
@@ -428,13 +428,13 @@ namespace GriffinPlus.Lib.Imaging
 						Assert.Same(palette, copy.Palette);
 						Assert.Equal(stride, copy.BufferStride);
 						Assert.Equal(expectedBufferSize, copy.BufferSize);
-						Assert.NotEqual(IntPtr.Zero, copy.BufferStart);
-						Assert.Equal(0, copy.BufferStart.ToInt64() & (alignment - 1));
+						Assert.NotEqual(IntPtr.Zero, copy.UnsafeBufferStart);
+						Assert.Equal(0, copy.UnsafeBufferStart.ToInt64() & (alignment - 1));
 
 						// ensure the copied bitmap contains the reference data as well
 						// (compare byte-wise, but skip non-significant bytes)
 						byte* pOriginalRowStart = pOriginalBuffer;
-						byte* pCopyRowStart = (byte*)copy.BufferStart;
+						byte* pCopyRowStart = (byte*)copy.UnsafeBufferStart;
 						for (int y = 0; y < height; y++)
 						{
 							var pOriginal = pOriginalRowStart;
@@ -517,7 +517,7 @@ namespace GriffinPlus.Lib.Imaging
 					Assert.Same(palette, original.Palette);
 					Assert.Equal(originalStride, original.BufferStride);
 					Assert.Equal(originalBufferSize, original.BufferSize);
-					Assert.Equal((IntPtr)pOriginalBuffer, original.BufferStart);
+					Assert.Equal((IntPtr)pOriginalBuffer, original.UnsafeBufferStart);
 
 					// create a copy of the bitmap
 					// (the resulting bitmap should be a simple copy with changed resolution)
@@ -541,13 +541,13 @@ namespace GriffinPlus.Lib.Imaging
 						Assert.Same(palette, copy.Palette);
 						Assert.Equal(stride, copy.BufferStride);
 						Assert.Equal(expectedBufferSize, copy.BufferSize);
-						Assert.NotEqual(IntPtr.Zero, copy.BufferStart);
-						Assert.Equal(0, copy.BufferStart.ToInt64() & (alignment - 1));
+						Assert.NotEqual(IntPtr.Zero, copy.UnsafeBufferStart);
+						Assert.Equal(0, copy.UnsafeBufferStart.ToInt64() & (alignment - 1));
 
 						// ensure the copied bitmap contains the reference data as well
 						// (compare byte-wise, but skip non-significant bytes)
 						byte* pOriginalRowStart = pOriginalBuffer;
-						byte* pCopyRowStart = (byte*)copy.BufferStart;
+						byte* pCopyRowStart = (byte*)copy.UnsafeBufferStart;
 						for (int y = 0; y < height; y++)
 						{
 							var pOriginal = pOriginalRowStart;
@@ -616,7 +616,7 @@ namespace GriffinPlus.Lib.Imaging
 				Assert.Equal(expectedBufferSize, bitmap.BufferSize);
 
 				// the buffer should be aligned as expected
-				byte* pBufferStart = (byte*)bitmap.BufferStart;
+				byte* pBufferStart = (byte*)bitmap.UnsafeBufferStart;
 				Assert.True(pBufferStart != null);
 				Assert.Equal(0, (long)pBufferStart & (alignment - 1));
 
@@ -719,7 +719,7 @@ namespace GriffinPlus.Lib.Imaging
 
 					// the buffer should be aligned as expected
 					// (buffer1 should have the same layout as the created bitmap)
-					byte* pBufferStart = (byte*)bitmap.BufferStart;
+					byte* pBufferStart = (byte*)bitmap.UnsafeBufferStart;
 					Assert.True(pBufferStart != null);
 					Assert.Equal(0, (long)pBufferStart & (alignment1 - 1));
 
@@ -728,7 +728,7 @@ namespace GriffinPlus.Lib.Imaging
 					fixed (byte* pOriginalBuffer = &buffer[0])
 					{
 						byte* pOriginalRowStart = pOriginalBuffer;
-						byte* pCopyRowStart = (byte*)bitmap.BufferStart;
+						byte* pCopyRowStart = (byte*)bitmap.UnsafeBufferStart;
 						for (int y = 0; y < height; y++)
 						{
 							var pOriginal = pOriginalRowStart;
@@ -856,7 +856,7 @@ namespace GriffinPlus.Lib.Imaging
 					Assert.Same(palette, bitmap.Palette);
 					Assert.Equal(stride, bitmap.BufferStride);
 					Assert.Equal(bufferSize, bitmap.BufferSize);
-					Assert.Equal((IntPtr)pBuffer, bitmap.BufferStart);
+					Assert.Equal((IntPtr)pBuffer, bitmap.UnsafeBufferStart);
 				}
 			}
 		}
@@ -941,6 +941,7 @@ namespace GriffinPlus.Lib.Imaging
 
 		/// <summary>
 		/// Tests getting the <see cref="NativeBitmap.PixelWidth"/> property.
+		/// The property should throw an <see cref="ObjectDisposedException"/>, if the bitmap has been disposed before.
 		/// </summary>
 		[Fact]
 		public void PixelWidth_Get_ObjectDisposed()
@@ -980,6 +981,7 @@ namespace GriffinPlus.Lib.Imaging
 
 		/// <summary>
 		/// Tests getting the <see cref="NativeBitmap.PixelHeight"/> property.
+		/// The property should throw an <see cref="ObjectDisposedException"/>, if the bitmap has been disposed before.
 		/// </summary>
 		[Fact]
 		public void PixelHeight_Get_ObjectDisposed()
@@ -1019,6 +1021,7 @@ namespace GriffinPlus.Lib.Imaging
 
 		/// <summary>
 		/// Tests getting the <see cref="NativeBitmap.DpiX"/> property.
+		/// The property should throw an <see cref="ObjectDisposedException"/>, if the bitmap has been disposed before.
 		/// </summary>
 		[Fact]
 		public void DpiX_Get_ObjectDisposed()
@@ -1058,6 +1061,7 @@ namespace GriffinPlus.Lib.Imaging
 
 		/// <summary>
 		/// Tests getting the <see cref="NativeBitmap.DpiY"/> property.
+		/// The property should throw an <see cref="ObjectDisposedException"/>, if the bitmap has been disposed before.
 		/// </summary>
 		[Fact]
 		public void DpiY_Get_ObjectDisposed()
@@ -1097,6 +1101,7 @@ namespace GriffinPlus.Lib.Imaging
 
 		/// <summary>
 		/// Tests getting the <see cref="NativeBitmap.Format"/> property.
+		/// The property should throw an <see cref="ObjectDisposedException"/>, if the bitmap has been disposed before.
 		/// </summary>
 		[Fact]
 		public void Format_Get_ObjectDisposed()
@@ -1136,6 +1141,7 @@ namespace GriffinPlus.Lib.Imaging
 
 		/// <summary>
 		/// Tests getting the <see cref="NativeBitmap.Palette"/> property.
+		/// The property should throw an <see cref="ObjectDisposedException"/>, if the bitmap has been disposed before.
 		/// </summary>
 		[Fact]
 		public void Palette_Get_ObjectDisposed()
@@ -1153,10 +1159,10 @@ namespace GriffinPlus.Lib.Imaging
 
 		#endregion
 
-		#region IntPtr BufferStart { get; }
+		#region IntPtr UnsafeBufferStart { get; }
 
 		/// <summary>
-		/// Tests getting the <see cref="NativeBitmap.BufferStart"/> property.
+		/// Tests getting the <see cref="NativeBitmap.UnsafeBufferStart"/> property.
 		/// </summary>
 		[Fact]
 		public void BufferStart_Get()
@@ -1169,12 +1175,13 @@ namespace GriffinPlus.Lib.Imaging
 			BitmapPalette palette = BitmapPalettes.WebPalette;
 			using (var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette))
 			{
-				Assert.NotEqual(IntPtr.Zero, bitmap.BufferStart);
+				Assert.NotEqual(IntPtr.Zero, bitmap.UnsafeBufferStart);
 			}
 		}
 
 		/// <summary>
-		/// Tests getting the <see cref="NativeBitmap.BufferStart"/> property.
+		/// Tests getting the <see cref="NativeBitmap.UnsafeBufferStart"/> property.
+		/// The property should throw an <see cref="ObjectDisposedException"/>, if the bitmap has been disposed before.
 		/// </summary>
 		[Fact]
 		public void BufferStart_Get_ObjectDisposed()
@@ -1187,7 +1194,7 @@ namespace GriffinPlus.Lib.Imaging
 			BitmapPalette palette = BitmapPalettes.WebPalette;
 			var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette);
 			bitmap.Dispose();
-			Assert.Throws<ObjectDisposedException>(() => bitmap.BufferStart);
+			Assert.Throws<ObjectDisposedException>(() => bitmap.UnsafeBufferStart);
 		}
 
 		#endregion
@@ -1215,6 +1222,7 @@ namespace GriffinPlus.Lib.Imaging
 
 		/// <summary>
 		/// Tests getting the <see cref="NativeBitmap.BufferStride"/> property.
+		/// The property should throw an <see cref="ObjectDisposedException"/>, if the bitmap has been disposed before.
 		/// </summary>
 		[Fact]
 		public void BufferStride_Get_ObjectDisposed()
@@ -1257,6 +1265,7 @@ namespace GriffinPlus.Lib.Imaging
 
 		/// <summary>
 		/// Tests getting the <see cref="NativeBitmap.BufferSize"/> property.
+		/// The property should throw an <see cref="ObjectDisposedException"/>, if the bitmap has been disposed before.
 		/// </summary>
 		[Fact]
 		public void BufferSize_Get_ObjectDisposed()
@@ -1270,6 +1279,55 @@ namespace GriffinPlus.Lib.Imaging
 			var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette);
 			bitmap.Dispose();
 			Assert.Throws<ObjectDisposedException>(() => bitmap.BufferSize);
+		}
+
+		#endregion
+
+		#region NativeBitmapAccessor GetAccessor()
+
+		/// <summary>
+		/// Tests the <see cref="NativeBitmap.GetAccessor"/> method.
+		/// </summary>
+		[Fact]
+		public void GetAccessor()
+		{
+			const int width = 100;
+			const int height = 200;
+			const double dpiX = 300.0;
+			const double dpiY = 400.0;
+			PixelFormat format = PixelFormats.Indexed8;
+			BitmapPalette palette = BitmapPalettes.WebPalette;
+			using (var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette))
+			using (var accessor = bitmap.GetAccessor())
+			{
+				Assert.Equal(bitmap.PixelWidth, accessor.PixelWidth);
+				Assert.Equal(bitmap.PixelHeight, accessor.PixelHeight);
+				Assert.Equal(bitmap.DpiX, accessor.DpiX);
+				Assert.Equal(bitmap.DpiY, accessor.DpiY);
+				Assert.Equal(bitmap.Format, accessor.Format);
+				Assert.Equal(bitmap.Palette, accessor.Palette);
+				Assert.Equal(bitmap.UnsafeBufferStart, accessor.BufferStart);
+				Assert.Equal(bitmap.BufferStride, accessor.BufferStride);
+				Assert.Equal(bitmap.BufferSize, accessor.BufferSize);
+			}
+		}
+
+		/// <summary>
+		/// Tests the <see cref="NativeBitmap.GetAccessor"/> method.
+		/// The method should throw an <see cref="ObjectDisposedException"/>, if the bitmap has been disposed before.
+		/// </summary>
+		[Fact]
+		public void GetAccessor_ObjectDisposed()
+		{
+			const int width = 100;
+			const int height = 200;
+			const double dpiX = 300.0;
+			const double dpiY = 400.0;
+			PixelFormat format = PixelFormats.Indexed8;
+			BitmapPalette palette = BitmapPalettes.WebPalette;
+			var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette);
+			bitmap.Dispose();
+			Assert.Throws<ObjectDisposedException>(() => bitmap.GetAccessor());
 		}
 
 		#endregion
@@ -1336,7 +1394,7 @@ namespace GriffinPlus.Lib.Imaging
 					Assert.Same(palette, bitmap.Palette);
 					Assert.Equal(stride, bitmap.BufferStride);
 					Assert.Equal(bitmapBufferSize, bitmap.BufferSize);
-					Assert.Equal((IntPtr)pBuffer, bitmap.BufferStart);
+					Assert.Equal((IntPtr)pBuffer, bitmap.UnsafeBufferStart);
 
 					long destinationBufferElementSize = Marshal.SizeOf(bufferType);
 
@@ -2181,7 +2239,7 @@ namespace GriffinPlus.Lib.Imaging
 					Assert.Same(palette, bitmap.Palette);
 					Assert.Equal(stride, bitmap.BufferStride);
 					Assert.Equal(bitmapBufferSize, bitmap.BufferSize);
-					Assert.Equal((IntPtr)pBuffer, bitmap.BufferStart);
+					Assert.Equal((IntPtr)pBuffer, bitmap.UnsafeBufferStart);
 
 					#region Actual Test
 
