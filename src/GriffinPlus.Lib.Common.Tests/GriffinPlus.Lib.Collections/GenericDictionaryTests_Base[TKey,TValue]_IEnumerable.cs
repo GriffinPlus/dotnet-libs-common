@@ -26,11 +26,11 @@ namespace GriffinPlus.Lib.Collections
 		public void IEnumerable_GetEnumerator(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 
 			// get an enumerator
-			var enumerator = ((IEnumerable)dict).GetEnumerator();
+			IEnumerator enumerator = ((IEnumerable)dict).GetEnumerator();
 
 			// the enumerator should point to the position before the first valid element,
 			// but the 'Current' property should not throw an exception

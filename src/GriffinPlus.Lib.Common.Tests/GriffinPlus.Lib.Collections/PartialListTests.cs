@@ -414,7 +414,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			var items = new[] { new TestItem() };
 			var list = new PartialList(items);
-			var array = new int[1];
+			int[] array = new int[1];
 			Assert.Equal("array", Assert.Throws<ArgumentException>(() => list.CopyTo(array, 0)).ParamName);
 		}
 
@@ -434,7 +434,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			var list = new PartialList(items, offset, count);
 			var enumerated = new List<TestItem>();
-			var enumerator = list.GetEnumerator();
+			IEnumerator enumerator = list.GetEnumerator();
 			while (enumerator.MoveNext()) enumerated.Add((TestItem)enumerator.Current);
 			Assert.Equal(count, enumerated.Count);
 			Assert.Equal(items.Skip(offset).Take(count), enumerated);
@@ -530,7 +530,7 @@ namespace GriffinPlus.Lib.Collections
 		public void ToArray(TestItem[] items, int offset, int count)
 		{
 			var list = new PartialList(items, offset, count);
-			var array = list.ToArray();
+			object[] array = list.ToArray();
 			Assert.Equal(count, array.Length);
 			Assert.Equal(items.Skip(offset).Take(count), array);
 		}

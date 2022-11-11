@@ -788,20 +788,20 @@ namespace GriffinPlus.Lib
 		{
 			if (formatProvider == null) formatProvider = CultureInfo.CurrentCulture;
 
-			DataSizeUnit unit = DataSizeUnit.AutoBase10;
-			DataSizeUnitStyle unitStyle = DataSizeUnitStyle.Short;
+			var unit = DataSizeUnit.AutoBase10;
+			var unitStyle = DataSizeUnitStyle.Short;
 			if (!string.IsNullOrEmpty(format))
 			{
-				var remaining = format.AsSpan();
+				ReadOnlySpan<char> remaining = format.AsSpan();
 				int modifierIndex = remaining.IndexOf(',');
 				if (modifierIndex >= 0)
 				{
-					var unitSpecifier = remaining.Slice(0, modifierIndex).Trim();
+					ReadOnlySpan<char> unitSpecifier = remaining.Slice(0, modifierIndex).Trim();
 					remaining = remaining.Slice(modifierIndex + 1);
 					unit = ParseDataSizeUnit(format, unitSpecifier);
 
 					// determine whether to use long or short units
-					var unitStyleSpecifier = remaining.Trim();
+					ReadOnlySpan<char> unitStyleSpecifier = remaining.Trim();
 					if (unitStyleSpecifier.CompareTo("long".AsSpan(), StringComparison.OrdinalIgnoreCase) == 0)
 					{
 						unitStyle = DataSizeUnitStyle.Long;
@@ -819,7 +819,7 @@ namespace GriffinPlus.Lib
 				}
 				else
 				{
-					var unitSpecifier = remaining.Trim();
+					ReadOnlySpan<char> unitSpecifier = remaining.Trim();
 					unit = ParseDataSizeUnit(format, unitSpecifier);
 				}
 			}

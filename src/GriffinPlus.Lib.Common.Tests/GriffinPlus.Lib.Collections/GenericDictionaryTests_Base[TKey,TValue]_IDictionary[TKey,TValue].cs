@@ -26,11 +26,11 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionaryT_Indexer_Get_List(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 
 			// test whether keys of test data are reported to be in the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				Assert.Equal(kvp.Value, dict[kvp.Key]);
 			}
@@ -46,7 +46,7 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionaryT_Indexer_Get_List_KeyNotFound(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 
 			// test whether some other key is reported to be not in the dictionary
@@ -79,18 +79,18 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionaryT_Indexer_Set_List_NewItem(int count)
 		{
 			// get test data and create an empty dictionary
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 
 			// add data to the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				dict[kvp.Key] = kvp.Value;
 			}
 
 			// enumerate the key/value pairs in the dictionary
 			var enumerated = new List<KeyValuePair<TKey, TValue>>();
-			foreach (var kvp in dict) enumerated.Add(kvp);
+			foreach (KeyValuePair<TKey, TValue> kvp in dict) enumerated.Add(kvp);
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
@@ -109,23 +109,23 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionaryT_Indexer_Set_List_OverwriteItem(int count)
 		{
 			// get test data and create an empty dictionary
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 
 			// add data to the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				dict[kvp.Key] = kvp.Value;
 			}
 
 			// overwrite an item
-			var key = data.First().Key;
+			TKey key = data.First().Key;
 			data[key] = ValueNotInTestData;
 			dict[key] = ValueNotInTestData;
 
 			// enumerate the key/value pairs in the dictionary
 			var enumerated = new List<KeyValuePair<TKey, TValue>>();
-			foreach (var kvp in dict) enumerated.Add(kvp);
+			foreach (KeyValuePair<TKey, TValue> kvp in dict) enumerated.Add(kvp);
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
@@ -164,11 +164,11 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionaryT_Keys(int count)
 		{
 			// get test data and create a new dictionary with it
-			var expected = GetTestData(count);
+			IDictionary<TKey, TValue> expected = GetTestData(count);
 			var dict = GetDictionary(expected) as IDictionary<TKey, TValue>;
 
 			// enumerate the keys in the dictionary
-			var enumerated = dict.Keys.ToList();
+			List<TKey> enumerated = dict.Keys.ToList();
 
 			// compare collection elements with the expected values
 			Assert.Equal(
@@ -191,11 +191,11 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionaryT_Values(int count)
 		{
 			// get test data and create a new dictionary with it
-			var expected = GetTestData(count);
+			IDictionary<TKey, TValue> expected = GetTestData(count);
 			var dict = GetDictionary(expected) as IDictionary<TKey, TValue>;
 
 			// enumerate the values in the dictionary
-			var enumerated = dict.Values.ToList();
+			List<TValue> enumerated = dict.Values.ToList();
 
 			// compare collection elements with the expected values
 			Assert.Equal(
@@ -217,18 +217,18 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionaryT_Add_List(int count)
 		{
 			// get test data and create an empty dictionary
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary() as IDictionary<TKey, TValue>;
 
 			// add data to the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				dict.Add(kvp.Key, kvp.Value);
 			}
 
 			// enumerate the key/value pairs in the dictionary
 			var enumerated = new List<KeyValuePair<TKey, TValue>>();
-			foreach (var kvp in dict) enumerated.Add(kvp);
+			foreach (KeyValuePair<TKey, TValue> kvp in dict) enumerated.Add(kvp);
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
@@ -247,13 +247,13 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionaryT_Add_List_DuplicateKey(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary() as IDictionary<TKey, TValue>;
 
 			// add data to the dictionary
 			KeyValuePair<TKey, TValue>? first = null;
 			KeyValuePair<TKey, TValue>? last = null;
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				if (first == null) first = kvp;
 				last = kvp;
@@ -266,7 +266,7 @@ namespace GriffinPlus.Lib.Collections
 
 			// enumerate the key/value pairs in the dictionary
 			var enumerated = new List<KeyValuePair<TKey, TValue>>();
-			foreach (var kvp in dict) enumerated.Add(kvp);
+			foreach (KeyValuePair<TKey, TValue> kvp in dict) enumerated.Add(kvp);
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
@@ -305,11 +305,11 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionaryT_ContainsKey_List(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 
 			// test whether keys of test data are reported to be in the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				Assert.True(dict.ContainsKey(kvp.Key));
 			}
@@ -325,7 +325,7 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionaryT_ContainsKey_List_KeyNotFound(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 
 			// test whether some other key is reported to be not in the dictionary
@@ -362,12 +362,12 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionaryT_Remove_List(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 
 			// remove elements in random order until the dictionary is empty
 			var random = new Random();
-			var remainingData = data.ToList();
+			List<KeyValuePair<TKey, TValue>> remainingData = data.ToList();
 			while (remainingData.Count > 0)
 			{
 				int index = random.Next(0, remainingData.Count - 1);
@@ -391,7 +391,7 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionaryT_Remove_List_NotFound(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 
 			// try to remove an element that does not exist
@@ -428,13 +428,13 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionaryT_TryGetValue_List(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 
 			// test whether keys of test data are reported to be in the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
-				Assert.True(dict.TryGetValue(kvp.Key, out var value));
+				Assert.True(dict.TryGetValue(kvp.Key, out TValue value));
 				Assert.Equal(kvp.Value, value);
 			}
 		}
@@ -449,7 +449,7 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionaryT_TryGetValue_List_KeyNotFound(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 
 			// test whether some other key is reported to be not in the dictionary
@@ -488,18 +488,18 @@ namespace GriffinPlus.Lib.Collections
 		public void AddAfterRemove_List(int count)
 		{
 			// get test data and create an empty dictionary
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary() as IDictionary<TKey, TValue>;
 
 			// add data to the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				dict.Add(kvp.Key, kvp.Value);
 			}
 
 			// compare collection elements with the expected key/value pairs
 			var enumerated = new List<KeyValuePair<TKey, TValue>>();
-			foreach (var kvp in dict) enumerated.Add(kvp);
+			foreach (KeyValuePair<TKey, TValue> kvp in dict) enumerated.Add(kvp);
 			Assert.Equal(
 				data.OrderBy(x => x.Key, KeyComparer),
 				enumerated.OrderBy(x => x.Key, KeyComparer),
@@ -507,7 +507,7 @@ namespace GriffinPlus.Lib.Collections
 
 			// remove elements in random order until the dictionary is empty
 			var random = new Random();
-			var remainingData = data.ToList();
+			List<KeyValuePair<TKey, TValue>> remainingData = data.ToList();
 			while (remainingData.Count > 0)
 			{
 				int index = random.Next(0, remainingData.Count - 1);
@@ -521,14 +521,14 @@ namespace GriffinPlus.Lib.Collections
 			Assert.Empty(dict);
 
 			// add data to the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				dict.Add(kvp.Key, kvp.Value);
 			}
 
 			// the dictionary should now contain the expected key/value pairs
 			enumerated = new List<KeyValuePair<TKey, TValue>>();
-			foreach (var kvp in dict) enumerated.Add(kvp);
+			foreach (KeyValuePair<TKey, TValue> kvp in dict) enumerated.Add(kvp);
 			Assert.Equal(
 				data.OrderBy(x => x.Key, KeyComparer),
 				enumerated.OrderBy(x => x.Key, KeyComparer),

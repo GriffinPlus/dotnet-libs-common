@@ -235,7 +235,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			for (int index = 0; index != Count; ++index)
 			{
-				var sourceItem = mList[mInitialOffset + index];
+				object sourceItem = mList[mInitialOffset + index];
 				if (Equals(item, sourceItem))
 				{
 					return index;

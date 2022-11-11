@@ -27,7 +27,7 @@ namespace GriffinPlus.Lib
 		[MemberData(nameof(DecomposedTypeTestData.TestData), MemberType = typeof(DecomposedTypeTestData))]
 		public void DecomposeType(Type type, DecomposedType expected)
 		{
-			var decomposition = TypeDecomposer.DecomposeType(type);
+			DecomposedType decomposition = TypeDecomposer.DecomposeType(type);
 			Assert.Equal(expected, decomposition);
 		}
 
@@ -38,8 +38,8 @@ namespace GriffinPlus.Lib
 		[Fact]
 		public void DecomposeType_SameDecompositionForSameType()
 		{
-			var decomposition1 = TypeDecomposer.DecomposeType(typeof(DecomposedTypeTestData.TestClass));
-			var decomposition2 = TypeDecomposer.DecomposeType(typeof(DecomposedTypeTestData.TestClass));
+			DecomposedType decomposition1 = TypeDecomposer.DecomposeType(typeof(DecomposedTypeTestData.TestClass));
+			DecomposedType decomposition2 = TypeDecomposer.DecomposeType(typeof(DecomposedTypeTestData.TestClass));
 			Assert.Same(decomposition1, decomposition2);
 		}
 

@@ -31,15 +31,15 @@ namespace GriffinPlus.Lib
 			if (type == null) throw new ArgumentNullException(nameof(type));
 
 			// check whether the cache contains the decomposition already
-			if (sCache.TryGetValue(type, out var decomposedType))
+			if (sCache.TryGetValue(type, out DecomposedType decomposedType))
 				return decomposedType;
 
 			if (type.IsGenericType && !type.IsGenericTypeDefinition)
 			{
 				// the type is a generic type
 				// => decompose it
-				var genericTypeDefinition = type.GetGenericTypeDefinition();
-				var genericArguments = type.GetGenericArguments().Select(DecomposeType).ToList();
+				Type genericTypeDefinition = type.GetGenericTypeDefinition();
+				List<DecomposedType> genericArguments = type.GetGenericArguments().Select(DecomposeType).ToList();
 				decomposedType = new DecomposedType(type, genericTypeDefinition, genericArguments);
 			}
 			else

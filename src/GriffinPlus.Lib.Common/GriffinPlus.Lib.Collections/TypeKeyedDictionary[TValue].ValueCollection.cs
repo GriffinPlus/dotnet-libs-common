@@ -35,26 +35,23 @@ using System.Diagnostics;
 namespace GriffinPlus.Lib.Collections
 {
 
-	/// <summary>
-	/// A generic dictionary using a byte array as key.
-	/// </summary>
-	partial class ByteSequenceKeyedDictionary<TValue>
+	partial class TypeKeyedDictionary<TValue>
 	{
 		/// <summary>
-		/// A collection of values in a <see cref="ByteSequenceKeyedDictionary{TValue}"/>.
+		/// A collection of values in a <see cref="TypeKeyedDictionary{TValue}"/>.
 		/// </summary>
 		[DebuggerDisplay("Count = {" + nameof(Count) + "}")]
 		[Serializable]
 		public sealed partial class ValueCollection : ICollection<TValue>, ICollection, IReadOnlyCollection<TValue>
 		{
-			private readonly ByteSequenceKeyedDictionary<TValue> mDictionary;
+			private readonly TypeKeyedDictionary<TValue> mDictionary;
 
 			/// <summary>
-			/// Initializes a new instance of the <see cref="ByteSequenceKeyedDictionary{TValue}"/>.
+			/// Initializes a new instance of the <see cref="TypeKeyedDictionary{TValue}"/>.
 			/// </summary>
-			/// <param name="dictionary">The <see cref="ByteSequenceKeyedDictionary{TValue}"/> the collection belongs to.</param>
+			/// <param name="dictionary">The <see cref="TypeKeyedDictionary{TValue}"/> the collection belongs to.</param>
 			/// <exception cref="ArgumentNullException"><paramref name="dictionary"/> is <c>null</c>.</exception>
-			public ValueCollection(ByteSequenceKeyedDictionary<TValue> dictionary)
+			public ValueCollection(TypeKeyedDictionary<TValue> dictionary)
 			{
 				mDictionary = dictionary ?? throw new ArgumentNullException(nameof(dictionary));
 			}
@@ -99,7 +96,7 @@ namespace GriffinPlus.Lib.Collections
 					throw new ArgumentException("The destination array is too small.");
 
 				int count = mDictionary.mCount;
-				var entries = mDictionary.mEntries;
+				Entry[] entries = mDictionary.mEntries;
 				for (int i = 0; i < count; i++)
 				{
 					if (entries[i].Next >= -1) array[index++] = entries[i].Value;
@@ -245,7 +242,7 @@ namespace GriffinPlus.Lib.Collections
 					if (array is object[] objects)
 					{
 						int count = mDictionary.mCount;
-						var entries = mDictionary.mEntries;
+						Entry[] entries = mDictionary.mEntries;
 						for (int i = 0; i < count; i++)
 						{
 							if (entries[i].Next >= -1) objects[index++] = entries[i].Value;

@@ -225,7 +225,7 @@ namespace GriffinPlus.Lib.Configuration
 				XmlNodeList nodeList = element.SelectNodes("Item");
 				Debug.Assert(elementType != null, nameof(elementType) + " != null");
 				Debug.Assert(nodeList != null, nameof(nodeList) + " != null");
-				Array array = Array.CreateInstance(elementType, nodeList.Count);
+				var array = Array.CreateInstance(elementType, nodeList.Count);
 				int i = 0;
 				foreach (XmlElement itemElement in nodeList)
 				{
@@ -277,7 +277,7 @@ namespace GriffinPlus.Lib.Configuration
 				throw new ConfigurationException("The configuration is a child configuration (try to save the root configuration instead).");
 
 			// load existing configuration file
-			XmlDocument doc = new XmlDocument();
+			var doc = new XmlDocument();
 			try
 			{
 				if (File.Exists(mConfigurationFilePath))
@@ -408,7 +408,7 @@ namespace GriffinPlus.Lib.Configuration
 			{
 				// an hash value is stored using nested 'Item' elements
 				Type elementType = type.GetElementType();
-				Array array = value as Array;
+				var array = value as Array;
 				XmlElement arrayElement = SetItem(parent, itemName, null);
 
 				// remove all old xml elements representing an hash element

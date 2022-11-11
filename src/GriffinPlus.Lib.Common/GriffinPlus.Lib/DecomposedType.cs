@@ -104,7 +104,7 @@ namespace GriffinPlus.Lib
 			{
 				int hashCode = ComposedType.GetHashCode();
 				hashCode = (hashCode * 397) ^ Type.GetHashCode();
-				foreach (var decomposedType in GenericTypeArguments)
+				foreach (DecomposedType decomposedType in GenericTypeArguments)
 				{
 					hashCode = (hashCode * 397) ^ decomposedType.GetHashCode();
 				}

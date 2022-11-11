@@ -83,7 +83,7 @@ namespace GriffinPlus.Lib.Collections
 
 					while ((uint)mIndex < (uint)mDictionary.mCount)
 					{
-						ref var entry = ref mDictionary.mEntries[mIndex++];
+						ref Entry entry = ref mDictionary.mEntries[mIndex++];
 						if (entry.Next >= -1)
 						{
 							mCurrentKey = entry.Key;

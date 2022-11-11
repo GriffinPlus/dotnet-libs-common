@@ -5,6 +5,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
@@ -59,7 +60,7 @@ namespace GriffinPlus.Lib.Threading
 		public override void Send(SendOrPostCallback callback, object state)
 		{
 			if (callback == null) throw new ArgumentNullException(nameof(callback));
-			var task = Queue.Enqueue(() => callback(state));
+			Task task = Queue.Enqueue(() => callback(state));
 			task.WaitAndUnwrapException();
 		}
 

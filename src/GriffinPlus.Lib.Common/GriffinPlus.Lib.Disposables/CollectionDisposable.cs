@@ -56,7 +56,7 @@ namespace GriffinPlus.Lib.Disposables
 		/// <inheritdoc/>
 		protected override void Dispose(ImmutableQueue<IDisposable> context)
 		{
-			foreach (var disposable in context)
+			foreach (IDisposable disposable in context)
 			{
 				disposable.Dispose();
 			}

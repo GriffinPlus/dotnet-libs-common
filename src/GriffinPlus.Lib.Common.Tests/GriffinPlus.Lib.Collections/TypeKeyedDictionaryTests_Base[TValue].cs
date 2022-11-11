@@ -132,7 +132,7 @@ namespace GriffinPlus.Lib.Collections
 		public void Create_WithDictionary(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<Type, TValue> data = GetTestData(count);
 			var dict = new TypeKeyedDictionary<TValue>(data);
 
 			// check the dictionary itself
@@ -251,7 +251,7 @@ namespace GriffinPlus.Lib.Collections
 		[MemberData(nameof(TestDataSetSizes))]
 		public void Capacity_Get(int count)
 		{
-			var data = GetTestData(count);
+			IDictionary<Type, TValue> data = GetTestData(count);
 			var dict = new TypeKeyedDictionary<TValue>(data);
 			int expectedCapacity = count > 0 ? HashHelpers.GetPrime(count) : 0;
 			Assert.Equal(expectedCapacity, dict.Capacity); // the capacity should always be prime
@@ -266,22 +266,22 @@ namespace GriffinPlus.Lib.Collections
 		public void GetEnumerator(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<Type, TValue> data = GetTestData(count);
 			var dict = new TypeKeyedDictionary<TValue>(data);
 
 			// get an enumerator
-			var enumerator = dict.GetEnumerator();
+			TypeKeyedDictionary<TValue>.Enumerator enumerator = dict.GetEnumerator();
 
 			// the enumerator should point to the position before the first valid element,
 			// but the 'Current' property should not throw an exception
-			var _ = enumerator.Current;
+			KeyValuePair<Type, TValue> _ = enumerator.Current;
 
 			// enumerate the key/value pairs in the dictionary
 			var enumerated = new List<KeyValuePair<Type, TValue>>();
 			while (enumerator.MoveNext())
 			{
 				Assert.IsType<KeyValuePair<Type, TValue>>(enumerator.Current);
-				var current = enumerator.Current;
+				KeyValuePair<Type, TValue> current = enumerator.Current;
 				enumerated.Add(current);
 			}
 

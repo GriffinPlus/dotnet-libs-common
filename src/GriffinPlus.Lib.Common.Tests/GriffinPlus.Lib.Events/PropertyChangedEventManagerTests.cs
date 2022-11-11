@@ -316,9 +316,9 @@ namespace GriffinPlus.Lib.Events
 			PropertyChangedEventManager.RegisterEventHandler(this, recipient2.Handler, null, scheduleAlways);
 
 			// get event callers
-			var callers = PropertyChangedEventManager.GetEventCallers(this);
+			PropertyChangedEventHandler callers = PropertyChangedEventManager.GetEventCallers(this);
 			Assert.NotNull(callers);
-			var delegates = callers.GetInvocationList().Cast<PropertyChangedEventHandler>().ToArray();
+			PropertyChangedEventHandler[] delegates = callers.GetInvocationList().Cast<PropertyChangedEventHandler>().ToArray();
 			Assert.Equal(2, delegates.Length);
 
 			// call handlers
@@ -430,9 +430,9 @@ namespace GriffinPlus.Lib.Events
 			}
 
 			// get delegates invoking the event handlers
-			var callers = PropertyChangedEventManager.GetEventCallers(this);
+			PropertyChangedEventHandler callers = PropertyChangedEventManager.GetEventCallers(this);
 			Assert.NotNull(callers);
-			var delegates = callers.GetInvocationList().Cast<PropertyChangedEventHandler>().ToArray();
+			PropertyChangedEventHandler[] delegates = callers.GetInvocationList().Cast<PropertyChangedEventHandler>().ToArray();
 			Assert.Equal(2, delegates.Length);
 
 			// reset event handler data
@@ -502,7 +502,7 @@ namespace GriffinPlus.Lib.Events
 
 			// register an event handler to a dummy event provider object
 			// (must not be done in the same method to allow the object to be collected in the next step)
-			var weakReferenceProvider = new Func<WeakReference>(
+			WeakReference weakReferenceProvider = new Func<WeakReference>(
 				() =>
 				{
 					object provider = new object();

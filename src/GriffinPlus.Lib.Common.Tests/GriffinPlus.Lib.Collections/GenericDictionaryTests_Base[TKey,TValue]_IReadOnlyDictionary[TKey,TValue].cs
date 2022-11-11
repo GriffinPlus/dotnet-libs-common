@@ -26,11 +26,11 @@ namespace GriffinPlus.Lib.Collections
 		public void IReadOnlyDictionaryT_Indexer_Get_List(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IReadOnlyDictionary<TKey, TValue>;
 
 			// test whether keys of test data are reported to be in the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				Assert.Equal(kvp.Value, dict[kvp.Key]);
 			}
@@ -46,7 +46,7 @@ namespace GriffinPlus.Lib.Collections
 		public void IReadOnlyDictionaryT_Indexer_Get_List_KeyNotFound(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IReadOnlyDictionary<TKey, TValue>;
 
 			// test whether some other key is reported to be not in the dictionary
@@ -78,11 +78,11 @@ namespace GriffinPlus.Lib.Collections
 		public void IReadOnlyDictionaryT_Keys(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IReadOnlyDictionary<TKey, TValue>;
 
 			// enumerate the keys in the dictionary
-			var enumerated = dict.Keys.ToList();
+			List<TKey> enumerated = dict.Keys.ToList();
 
 			// compare collection elements with the expected values
 			Assert.Equal(
@@ -105,11 +105,11 @@ namespace GriffinPlus.Lib.Collections
 		public void IReadOnlyDictionaryT_Values(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IReadOnlyDictionary<TKey, TValue>;
 
 			// enumerate the values in the dictionary
-			var enumerated = dict.Values.ToList();
+			List<TValue> enumerated = dict.Values.ToList();
 
 			// compare collection elements with the expected values
 			Assert.Equal(
@@ -132,11 +132,11 @@ namespace GriffinPlus.Lib.Collections
 		public void IReadOnlyDictionaryT_ContainsKey_List(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IReadOnlyDictionary<TKey, TValue>;
 
 			// test whether keys of test data are reported to be in the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				Assert.True(dict.ContainsKey(kvp.Key));
 			}
@@ -152,7 +152,7 @@ namespace GriffinPlus.Lib.Collections
 		public void IReadOnlyDictionaryT_ContainsKey_List_KeyNotFound(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IReadOnlyDictionary<TKey, TValue>;
 
 			// test whether some other key is reported to be not in the dictionary
@@ -185,13 +185,13 @@ namespace GriffinPlus.Lib.Collections
 		public void IReadOnlyDictionaryT_TryGetValue_List(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IReadOnlyDictionary<TKey, TValue>;
 
 			// test whether keys of test data are reported to be in the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
-				Assert.True(dict.TryGetValue(kvp.Key, out var value));
+				Assert.True(dict.TryGetValue(kvp.Key, out TValue value));
 				Assert.Equal(kvp.Value, value);
 			}
 		}
@@ -206,7 +206,7 @@ namespace GriffinPlus.Lib.Collections
 		public void IReadOnlyDictionaryT_TryGetValue_List_KeyNotFound(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IReadOnlyDictionary<TKey, TValue>;
 
 			// test whether some other key is reported to be not in the dictionary

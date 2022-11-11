@@ -94,7 +94,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task AsyncLazy_Start_CallsFunc()
 		{
-			var tcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
+			TaskCompletionSource<object> tcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 
 			Task<int> Func()
 			{
@@ -127,7 +127,7 @@ namespace GriffinPlus.Lib.Threading
 		public async Task AsyncLazy_MultipleAwaiters_OnlyInvokeFuncOnce()
 		{
 			int invokeCount = 0;
-			var tcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
+			TaskCompletionSource<object> tcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 
 			async Task<int> Func()
 			{
@@ -138,8 +138,8 @@ namespace GriffinPlus.Lib.Threading
 
 			var lazy = new AsyncLazy<int>(Func);
 
-			var task1 = Task.Run(async () => await lazy);
-			var task2 = Task.Run(async () => await lazy);
+			Task<int> task1 = Task.Run(async () => await lazy);
+			Task<int> task2 = Task.Run(async () => await lazy);
 
 			Assert.False(task1.IsCompleted);
 			Assert.False(task2.IsCompleted);

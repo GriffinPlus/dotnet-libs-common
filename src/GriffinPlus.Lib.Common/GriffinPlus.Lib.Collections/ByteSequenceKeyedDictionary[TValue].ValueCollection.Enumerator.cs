@@ -36,26 +36,29 @@ using System.Collections.Generic;
 namespace GriffinPlus.Lib.Collections
 {
 
-	partial class IdentityKeyedDictionary<TKey, TValue>
+	/// <summary>
+	/// A generic dictionary using a byte array as key.
+	/// </summary>
+	partial class ByteSequenceKeyedDictionary<TValue>
 	{
 		partial class ValueCollection
 		{
 			/// <summary>
-			/// An enumerator for the <see cref="IdentityKeyedDictionary{TKey,TValue}.ValueCollection"/> class.
+			/// An enumerator for the <see cref="ByteSequenceKeyedDictionary{TValue}.ValueCollection"/> class.
 			/// </summary>
 			[Serializable]
 			public struct Enumerator : IEnumerator<TValue>
 			{
-				private IdentityKeyedDictionary<TKey, TValue> mDictionary;
-				private int                                   mIndex;
-				private int                                   mVersion;
-				private TValue                                mCurrentValue;
+				private ByteSequenceKeyedDictionary<TValue> mDictionary;
+				private int                                 mIndex;
+				private int                                 mVersion;
+				private TValue                              mCurrentValue;
 
 				/// <summary>
-				/// Initializes a new instance of the <see cref="IdentityKeyedDictionary{TKey,TValue}.ValueCollection.Enumerator"/> class.
+				/// Initializes a new instance of the <see cref="ByteSequenceKeyedDictionary{TValue}.ValueCollection.Enumerator"/> class.
 				/// </summary>
-				/// <param name="dictionary">Dictionary the enumerator belongs to.</param>
-				internal Enumerator(IdentityKeyedDictionary<TKey, TValue> dictionary)
+				/// <param name="dictionary"></param>
+				internal Enumerator(ByteSequenceKeyedDictionary<TValue> dictionary)
 				{
 					mDictionary = dictionary;
 					mVersion = dictionary.mVersion;
@@ -83,7 +86,7 @@ namespace GriffinPlus.Lib.Collections
 
 					while ((uint)mIndex < (uint)mDictionary.mCount)
 					{
-						ref var entry = ref mDictionary.mEntries[mIndex++];
+						ref Entry entry = ref mDictionary.mEntries[mIndex++];
 						if (entry.Next >= -1)
 						{
 							mCurrentValue = entry.Value;

@@ -55,11 +55,11 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionary_Indexer_Get(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary;
 
 			// test whether keys of test data are reported to be in the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				Assert.Equal(kvp.Value, dict[kvp.Key]);
 			}
@@ -75,7 +75,7 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionary_Indexer_Get_KeyNotFound(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary;
 
 			// test whether some other key is reported to be not in the dictionary
@@ -104,11 +104,11 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionary_Indexer_Set_NewItem(int count)
 		{
 			// get test data and create an empty dictionary
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary;
 
 			// add data to the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				dict[kvp.Key] = kvp.Value;
 			}
@@ -141,11 +141,11 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionary_Indexer_Set_OverwriteItem(int count)
 		{
 			// get test data and create an empty dictionary
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary() as IDictionary;
 
 			// add data to the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				dict[kvp.Key] = kvp.Value;
 			}
@@ -205,9 +205,9 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void IDictionary_Indexer_Set_InvalidValueType()
 		{
-			var data = GetTestData(1);
+			IDictionary<TKey, TValue> data = GetTestData(1);
 			var dict = GetDictionary() as IDictionary; // do not add test data...
-			var key = data.First().Key;
+			TKey key = data.First().Key;
 			object value = 0;
 			if (typeof(TValue) == typeof(int)) value = 0u;
 			var exception = Assert.Throws<ArgumentException>(() => dict[key] = value);
@@ -222,9 +222,9 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void IDictionary_Indexer_Set_ValueNull()
 		{
-			var data = GetTestData(1);
+			IDictionary<TKey, TValue> data = GetTestData(1);
 			var dict = GetDictionary() as IDictionary; // do not add test data...
-			var key = data.First().Key;
+			TKey key = data.First().Key;
 			if (typeof(TValue).IsValueType)
 			{
 				// TValue is a value type, null value is not allowed
@@ -253,7 +253,7 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionary_Keys(int count)
 		{
 			// get test data and create a new dictionary with it
-			var expected = GetTestData(count);
+			IDictionary<TKey, TValue> expected = GetTestData(count);
 			var dict = GetDictionary(expected) as IDictionary;
 
 			// enumerate the keys in the dictionary
@@ -285,7 +285,7 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionary_Values(int count)
 		{
 			// get test data and create a new dictionary with it
-			var expected = GetTestData(count);
+			IDictionary<TKey, TValue> expected = GetTestData(count);
 			var dict = GetDictionary(expected) as IDictionary;
 
 			// enumerate the keys in the dictionary
@@ -316,11 +316,11 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionary_Add(int count)
 		{
 			// get test data and create an empty dictionary
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary() as IDictionary;
 
 			// add data to the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				dict.Add(kvp.Key, kvp.Value);
 			}
@@ -352,13 +352,13 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionary_Add_DuplicateKey(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary() as IDictionary;
 
 			// add data to the dictionary
 			KeyValuePair<TKey, TValue>? first = null;
 			KeyValuePair<TKey, TValue>? last = null;
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				if (first == null) first = kvp;
 				last = kvp;
@@ -412,7 +412,7 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void IDictionary_Add_InvalidValueType()
 		{
-			var data = GetTestData(1);
+			IDictionary<TKey, TValue> data = GetTestData(1);
 			var dict = GetDictionary() as IDictionary; // do not add test data...
 			TKey key = data.First().Key;
 			object value = 0;
@@ -429,7 +429,7 @@ namespace GriffinPlus.Lib.Collections
 		[Fact]
 		public void IDictionary_Add_ValueNull()
 		{
-			var data = GetTestData(1);
+			IDictionary<TKey, TValue> data = GetTestData(1);
 			var dict = GetDictionary() as IDictionary; // do not add test data...
 			TKey key = data.First().Key;
 			if (typeof(TValue).IsValueType)
@@ -459,7 +459,7 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionary_Clear(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary;
 
 			// clear the dictionary
@@ -484,11 +484,11 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionary_Contains(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary;
 
 			// test whether keys of test data are reported to be in the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				Assert.True(dict.Contains(kvp.Key));
 			}
@@ -504,7 +504,7 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionary_Contains_KeyNotFound(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary;
 
 			// test whether some other key is reported to be not in the dictionary
@@ -521,7 +521,7 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionary_Contains_IncompatibleKey(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary;
 
 			// test whether some incompatible key is reported to be not in the dictionary
@@ -555,11 +555,11 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionary_GetEnumerator(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary;
 
 			// get an enumerator
-			var enumerator = dict.GetEnumerator();
+			IDictionaryEnumerator enumerator = dict.GetEnumerator();
 
 			// the enumerator should point to the position before the first valid element
 			Assert.Throws<InvalidOperationException>(() => enumerator.Entry);
@@ -643,12 +643,12 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionary_Remove(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary;
 
 			// remove elements in random order until the dictionary is empty
 			var random = new Random();
-			var remainingData = data.ToList();
+			List<KeyValuePair<TKey, TValue>> remainingData = data.ToList();
 			while (remainingData.Count > 0)
 			{
 				int index = random.Next(0, remainingData.Count - 1);
@@ -672,7 +672,7 @@ namespace GriffinPlus.Lib.Collections
 		public void IDictionary_Remove_KeyNotFound(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary;
 
 			// try to remove an element that does not exist

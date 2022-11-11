@@ -29,7 +29,7 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue)]
 		public void FromBytes(long bytes)
 		{
-			var size = DataSize.FromBytes(bytes);
+			DataSize size = DataSize.FromBytes(bytes);
 			Assert.Equal(bytes, size.TotalBytes);
 		}
 
@@ -42,7 +42,7 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue / 1000L)]
 		public void FromKilobytes(long kilobytes)
 		{
-			var size = DataSize.FromKilobytes(kilobytes);
+			DataSize size = DataSize.FromKilobytes(kilobytes);
 			Assert.Equal(1000L * kilobytes, size.TotalBytes);
 		}
 
@@ -64,7 +64,7 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue / 1000000L)]
 		public void FromMegabytes(long megabytes)
 		{
-			var size = DataSize.FromMegabytes(megabytes);
+			DataSize size = DataSize.FromMegabytes(megabytes);
 			Assert.Equal(1000000L * megabytes, size.TotalBytes);
 		}
 
@@ -86,7 +86,7 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue / 1000000000L)]
 		public void FromGigabytes(long gigabytes)
 		{
-			var size = DataSize.FromGigabytes(gigabytes);
+			DataSize size = DataSize.FromGigabytes(gigabytes);
 			Assert.Equal(1000000000L * gigabytes, size.TotalBytes);
 		}
 
@@ -108,7 +108,7 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue / 1000000000000L)]
 		public void FromTerabytes(long terabytes)
 		{
-			var size = DataSize.FromTerabytes(terabytes);
+			DataSize size = DataSize.FromTerabytes(terabytes);
 			Assert.Equal(1000000000000L * terabytes, size.TotalBytes);
 		}
 
@@ -130,7 +130,7 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue / 1000000000000000L)]
 		public void FromPetabytes(long petabytes)
 		{
-			var size = DataSize.FromPetabytes(petabytes);
+			DataSize size = DataSize.FromPetabytes(petabytes);
 			Assert.Equal(1000000000000000L * petabytes, size.TotalBytes);
 		}
 
@@ -152,7 +152,7 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue / 1000000000000000000L)]
 		public void FromExabytes(long exabytes)
 		{
-			var size = DataSize.FromExabytes(exabytes);
+			DataSize size = DataSize.FromExabytes(exabytes);
 			Assert.Equal(1000000000000000000L * exabytes, size.TotalBytes);
 		}
 
@@ -174,7 +174,7 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue / (1L << 10))]
 		public void FromKibibytes(long kibibytes)
 		{
-			var size = DataSize.FromKibibytes(kibibytes);
+			DataSize size = DataSize.FromKibibytes(kibibytes);
 			Assert.Equal((1L << 10) * kibibytes, size.TotalBytes);
 		}
 
@@ -196,7 +196,7 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue / (1L << 20))]
 		public void FromMebibytes(long mebibytes)
 		{
-			var size = DataSize.FromMebibytes(mebibytes);
+			DataSize size = DataSize.FromMebibytes(mebibytes);
 			Assert.Equal((1L << 20) * mebibytes, size.TotalBytes);
 		}
 
@@ -218,7 +218,7 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue / (1L << 30))]
 		public void FromGibibytes(long gibibytes)
 		{
-			var size = DataSize.FromGibibytes(gibibytes);
+			DataSize size = DataSize.FromGibibytes(gibibytes);
 			Assert.Equal((1L << 30) * gibibytes, size.TotalBytes);
 		}
 
@@ -240,7 +240,7 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue / (1L << 40))]
 		public void FromTebibytes(long tebibytes)
 		{
-			var size = DataSize.FromTebibytes(tebibytes);
+			DataSize size = DataSize.FromTebibytes(tebibytes);
 			Assert.Equal((1L << 40) * tebibytes, size.TotalBytes);
 		}
 
@@ -262,7 +262,7 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue / (1L << 50))]
 		public void FromPebibytes(long pebibytes)
 		{
-			var size = DataSize.FromPebibytes(pebibytes);
+			DataSize size = DataSize.FromPebibytes(pebibytes);
 			Assert.Equal((1L << 50) * pebibytes, size.TotalBytes);
 		}
 
@@ -284,7 +284,7 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue / (1L << 60))]
 		public void FromExbibytes(long exbibytes)
 		{
-			var size = DataSize.FromExbibytes(exbibytes);
+			DataSize size = DataSize.FromExbibytes(exbibytes);
 			Assert.Equal((1L << 60) * exbibytes, size.TotalBytes);
 		}
 
@@ -310,9 +310,9 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue, -1L)]
 		public void OperatorAdd(long x, long y)
 		{
-			var sizeX = DataSize.FromBytes(x);
-			var sizeY = DataSize.FromBytes(y);
-			var result = sizeX + sizeY;
+			DataSize sizeX = DataSize.FromBytes(x);
+			DataSize sizeY = DataSize.FromBytes(y);
+			DataSize result = sizeX + sizeY;
 			Assert.Equal(x + y, result.TotalBytes);
 		}
 
@@ -321,8 +321,8 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue, 1L)]
 		public void OperatorAdd_ResultIsOutOfRange(long x, long y)
 		{
-			var sizeX = DataSize.FromBytes(x);
-			var sizeY = DataSize.FromBytes(y);
+			DataSize sizeX = DataSize.FromBytes(x);
+			DataSize sizeY = DataSize.FromBytes(y);
 			Assert.Throws<ArgumentException>(() => sizeX + sizeY);
 		}
 
@@ -335,9 +335,9 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue, 1L)]
 		public void OperatorSubtract(long x, long y)
 		{
-			var sizeX = DataSize.FromBytes(x);
-			var sizeY = DataSize.FromBytes(y);
-			var result = sizeX - sizeY;
+			DataSize sizeX = DataSize.FromBytes(x);
+			DataSize sizeY = DataSize.FromBytes(y);
+			DataSize result = sizeX - sizeY;
 			Assert.Equal(x - y, result.TotalBytes);
 		}
 
@@ -346,8 +346,8 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue, -1L)]
 		public void OperatorSubtract_ResultIsOutOfRange(long x, long y)
 		{
-			var sizeX = DataSize.FromBytes(x);
-			var sizeY = DataSize.FromBytes(y);
+			DataSize sizeX = DataSize.FromBytes(x);
+			DataSize sizeY = DataSize.FromBytes(y);
 			Assert.Throws<ArgumentException>(() => sizeX - sizeY);
 		}
 
@@ -364,8 +364,8 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue, 1L)]
 		public void OperatorMultiply_DataSizeWithFactor(long x, long factor)
 		{
-			var sizeX = DataSize.FromBytes(x);
-			var result = sizeX * factor;
+			DataSize sizeX = DataSize.FromBytes(x);
+			DataSize result = sizeX * factor;
 			Assert.Equal(x * factor, result.TotalBytes);
 		}
 
@@ -374,7 +374,7 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue / 2 + 1, 2L)]
 		public void OperatorMultiply_DataSizeWithFactor_ResultIsOutOfRange(long x, long factor)
 		{
-			var sizeX = DataSize.FromBytes(x);
+			DataSize sizeX = DataSize.FromBytes(x);
 			Assert.Throws<ArgumentException>(() => sizeX * factor);
 		}
 
@@ -391,8 +391,8 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue, 1L)]
 		public void OperatorMultiply_FactorWithDataSize(long x, long factor)
 		{
-			var sizeX = DataSize.FromBytes(x);
-			var result = factor * sizeX;
+			DataSize sizeX = DataSize.FromBytes(x);
+			DataSize result = factor * sizeX;
 			Assert.Equal(x * factor, result.TotalBytes);
 		}
 
@@ -401,7 +401,7 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue / 2 + 1, 2L)]
 		public void OperatorMultiply_FactorWithDataSize_ResultIsOutOfRange(long x, long factor)
 		{
-			var sizeX = DataSize.FromBytes(x);
+			DataSize sizeX = DataSize.FromBytes(x);
 			Assert.Throws<ArgumentException>(() => factor * sizeX);
 		}
 
@@ -420,8 +420,8 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue, 1L)]
 		public void OperatorDivide_DataSizeWithFactor(long x, long divisor)
 		{
-			var sizeX = DataSize.FromBytes(x);
-			var result = sizeX / divisor;
+			DataSize sizeX = DataSize.FromBytes(x);
+			DataSize result = sizeX / divisor;
 			Assert.Equal(x / divisor, result.TotalBytes);
 		}
 
@@ -451,9 +451,9 @@ namespace GriffinPlus.Lib
 		[MemberData(nameof(ComparisonTestData))]
 		public void OperatorLessThan(long x, long y, int comparisonResult)
 		{
-			var sizeX = DataSize.FromBytes(x);
-			var sizeY = DataSize.FromBytes(y);
-			var result = sizeX < sizeY;
+			DataSize sizeX = DataSize.FromBytes(x);
+			DataSize sizeY = DataSize.FromBytes(y);
+			bool result = sizeX < sizeY;
 			Assert.Equal(comparisonResult < 0, result);
 		}
 
@@ -465,9 +465,9 @@ namespace GriffinPlus.Lib
 		[MemberData(nameof(ComparisonTestData))]
 		public void OperatorLessThanOrEqual(long x, long y, int comparisonResult)
 		{
-			var sizeX = DataSize.FromBytes(x);
-			var sizeY = DataSize.FromBytes(y);
-			var result = sizeX <= sizeY;
+			DataSize sizeX = DataSize.FromBytes(x);
+			DataSize sizeY = DataSize.FromBytes(y);
+			bool result = sizeX <= sizeY;
 			Assert.Equal(comparisonResult <= 0, result);
 		}
 
@@ -479,9 +479,9 @@ namespace GriffinPlus.Lib
 		[MemberData(nameof(ComparisonTestData))]
 		public void OperatorGreaterThanOrEqual(long x, long y, int comparisonResult)
 		{
-			var sizeX = DataSize.FromBytes(x);
-			var sizeY = DataSize.FromBytes(y);
-			var result = sizeX >= sizeY;
+			DataSize sizeX = DataSize.FromBytes(x);
+			DataSize sizeY = DataSize.FromBytes(y);
+			bool result = sizeX >= sizeY;
 			Assert.Equal(comparisonResult >= 0, result);
 		}
 
@@ -493,9 +493,9 @@ namespace GriffinPlus.Lib
 		[MemberData(nameof(ComparisonTestData))]
 		public void OperatorGreaterThan(long x, long y, int comparisonResult)
 		{
-			var sizeX = DataSize.FromBytes(x);
-			var sizeY = DataSize.FromBytes(y);
-			var result = sizeX > sizeY;
+			DataSize sizeX = DataSize.FromBytes(x);
+			DataSize sizeY = DataSize.FromBytes(y);
+			bool result = sizeX > sizeY;
 			Assert.Equal(comparisonResult > 0, result);
 		}
 
@@ -507,9 +507,9 @@ namespace GriffinPlus.Lib
 		[MemberData(nameof(ComparisonTestData))]
 		public void OperatorEquality(long x, long y, int comparisonResult)
 		{
-			var sizeX = DataSize.FromBytes(x);
-			var sizeY = DataSize.FromBytes(y);
-			var result = sizeX == sizeY;
+			DataSize sizeX = DataSize.FromBytes(x);
+			DataSize sizeY = DataSize.FromBytes(y);
+			bool result = sizeX == sizeY;
 			Assert.Equal(comparisonResult == 0, result);
 		}
 
@@ -521,9 +521,9 @@ namespace GriffinPlus.Lib
 		[MemberData(nameof(ComparisonTestData))]
 		public void OperatorInequality(long x, long y, int comparisonResult)
 		{
-			var sizeX = DataSize.FromBytes(x);
-			var sizeY = DataSize.FromBytes(y);
-			var result = sizeX != sizeY;
+			DataSize sizeX = DataSize.FromBytes(x);
+			DataSize sizeY = DataSize.FromBytes(y);
+			bool result = sizeX != sizeY;
 			Assert.Equal(comparisonResult != 0, result);
 		}
 
@@ -535,9 +535,9 @@ namespace GriffinPlus.Lib
 		[MemberData(nameof(ComparisonTestData))]
 		public void CompareTo(long x, long y, int comparisonResult)
 		{
-			var sizeX = DataSize.FromBytes(x);
-			var sizeY = DataSize.FromBytes(y);
-			var result = sizeX.CompareTo(sizeY);
+			DataSize sizeX = DataSize.FromBytes(x);
+			DataSize sizeY = DataSize.FromBytes(y);
+			int result = sizeX.CompareTo(sizeY);
 			Assert.Equal(comparisonResult, result);
 		}
 
@@ -549,9 +549,9 @@ namespace GriffinPlus.Lib
 		[MemberData(nameof(ComparisonTestData))]
 		public void Equals_DataSize(long x, long y, int comparisonResult)
 		{
-			var sizeX = DataSize.FromBytes(x);
-			var sizeY = DataSize.FromBytes(y);
-			var result = sizeX.Equals(sizeY);
+			DataSize sizeX = DataSize.FromBytes(x);
+			DataSize sizeY = DataSize.FromBytes(y);
+			bool result = sizeX.Equals(sizeY);
 			Assert.Equal(comparisonResult == 0, result);
 		}
 
@@ -563,9 +563,9 @@ namespace GriffinPlus.Lib
 		[MemberData(nameof(ComparisonTestData))]
 		public void Equals_Object(long x, long y, int comparisonResult)
 		{
-			var sizeX = DataSize.FromBytes(x);
-			var sizeY = DataSize.FromBytes(y);
-			var result = sizeX.Equals((object)sizeY);
+			DataSize sizeX = DataSize.FromBytes(x);
+			DataSize sizeY = DataSize.FromBytes(y);
+			bool result = sizeX.Equals((object)sizeY);
 			Assert.Equal(comparisonResult == 0, result);
 		}
 
@@ -578,8 +578,8 @@ namespace GriffinPlus.Lib
 		[InlineData(long.MaxValue)]
 		public void GetHashCode_(long x)
 		{
-			var sizeX = DataSize.FromBytes(x);
-			var result = sizeX.GetHashCode();
+			DataSize sizeX = DataSize.FromBytes(x);
+			int result = sizeX.GetHashCode();
 			Assert.Equal(x.GetHashCode(), result);
 		}
 
@@ -2762,8 +2762,8 @@ namespace GriffinPlus.Lib
 			{
 				foreach (object[] data in FormattingTestData)
 				{
-					DataSizeUnit unit = (DataSizeUnit)data[2];
-					DataSizeUnitStyle style = (DataSizeUnitStyle)data[3];
+					var unit = (DataSizeUnit)data[2];
+					var style = (DataSizeUnitStyle)data[3];
 					if (unit == DataSizeUnit.AutoBase10 && style == DataSizeUnitStyle.Short)
 					{
 						yield return new[]
@@ -2784,12 +2784,12 @@ namespace GriffinPlus.Lib
 			long        sizeInBytes,
 			string      expected)
 		{
-			var oldCulture = CultureInfo.CurrentCulture;
+			CultureInfo oldCulture = CultureInfo.CurrentCulture;
 			try
 			{
 				CultureInfo.CurrentCulture = cultureInfo;
-				var size = DataSize.FromBytes(sizeInBytes);
-				var result = size.ToString();
+				DataSize size = DataSize.FromBytes(sizeInBytes);
+				string result = size.ToString();
 				Assert.Equal(expected, result);
 			}
 			finally
@@ -2812,8 +2812,8 @@ namespace GriffinPlus.Lib
 			string            format,
 			string            expected)
 		{
-			var size = DataSize.FromBytes(sizeInBytes);
-			var result = size.ToString(format, cultureInfo);
+			DataSize size = DataSize.FromBytes(sizeInBytes);
+			string result = size.ToString(format, cultureInfo);
 			Assert.Equal(expected, result);
 		}
 
@@ -2822,7 +2822,7 @@ namespace GriffinPlus.Lib
 		[InlineData("B,X")] // invalid unit style
 		public void ToString_WithFormat_FormatNotSupported(string format)
 		{
-			var size = DataSize.FromBytes(0);
+			DataSize size = DataSize.FromBytes(0);
 			Assert.Throws<FormatException>(() => size.ToString(format, CultureInfo.InvariantCulture));
 		}
 
@@ -2840,12 +2840,12 @@ namespace GriffinPlus.Lib
 			string            format,
 			string            expected)
 		{
-			var oldCulture = CultureInfo.CurrentCulture;
+			CultureInfo oldCulture = CultureInfo.CurrentCulture;
 			try
 			{
 				CultureInfo.CurrentCulture = cultureInfo;
-				var size = DataSize.FromBytes(sizeInBytes);
-				var result = size.Format(unit, unitStyle);
+				DataSize size = DataSize.FromBytes(sizeInBytes);
+				string result = size.Format(unit, unitStyle);
 				Assert.Equal(expected, result);
 			}
 			finally
@@ -2868,8 +2868,8 @@ namespace GriffinPlus.Lib
 			string            format,
 			string            expected)
 		{
-			var size = DataSize.FromBytes(sizeInBytes);
-			var result = size.Format(cultureInfo, unit, unitStyle);
+			DataSize size = DataSize.FromBytes(sizeInBytes);
+			string result = size.Format(cultureInfo, unit, unitStyle);
 			Assert.Equal(expected, result);
 		}
 

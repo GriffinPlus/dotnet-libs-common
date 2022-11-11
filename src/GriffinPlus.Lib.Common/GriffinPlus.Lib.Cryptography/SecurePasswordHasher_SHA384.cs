@@ -93,19 +93,19 @@ namespace GriffinPlus.Lib.Cryptography
 			using (var sha384 = System.Security.Cryptography.SHA384.Create())
 			{
 				sha384.TransformBlock(salt, 0, salt.Length, salt, 0);
-				var encodedPassword = Encoding.UTF8.GetBytes(password);
+				byte[] encodedPassword = Encoding.UTF8.GetBytes(password);
 				for (int i = 0; i < iterations; i++) sha384.TransformBlock(encodedPassword, 0, encodedPassword.Length, encodedPassword, 0);
 				sha384.TransformFinalBlock(encodedPassword, 0, 0);
 				hash = sha384.Hash;
 			}
 
 			// combine salt and hash
-			var hashBytes = new byte[SaltSize + HashSize];
+			byte[] hashBytes = new byte[SaltSize + HashSize];
 			Array.Copy(salt, 0, hashBytes, 0, SaltSize);
 			Array.Copy(hash, 0, hashBytes, SaltSize, HashSize);
 
 			// convert to base64
-			var base64Hash = Convert.ToBase64String(hashBytes);
+			string base64Hash = Convert.ToBase64String(hashBytes);
 
 			// format hash with extra information
 			return $"${AlgorithmNameDefinition}${iterations}${base64Hash}";
@@ -124,18 +124,18 @@ namespace GriffinPlus.Lib.Cryptography
 		public override bool Verify(string password, string hashedPassword)
 		{
 			// extract fields from hashed password
-			var match = sHashRegex.Match(hashedPassword);
+			Match match = sHashRegex.Match(hashedPassword);
 			if (!match.Success) throw new NotSupportedException("The hash type is not supported.");
-			var iterations = int.Parse(match.Groups["iterations"].Value);
-			var base64Hash = match.Groups["hash"].Value;
+			int iterations = int.Parse(match.Groups["iterations"].Value);
+			string base64Hash = match.Groups["hash"].Value;
 
 			// get hash bytes
-			var hashBytes = Convert.FromBase64String(base64Hash);
+			byte[] hashBytes = Convert.FromBase64String(base64Hash);
 			if (hashBytes.Length != SaltSize + HashSize)
 				throw new FormatException($"The specified hash is not a valid salted SHA384 hash. It must be {SaltSize + HashSize} bytes long.");
 
 			// get salt
-			var salt = new byte[SaltSize];
+			byte[] salt = new byte[SaltSize];
 			Array.Copy(hashBytes, 0, salt, 0, SaltSize);
 
 			// create hash
@@ -143,14 +143,14 @@ namespace GriffinPlus.Lib.Cryptography
 			using (var sha384 = System.Security.Cryptography.SHA384.Create())
 			{
 				sha384.TransformBlock(salt, 0, salt.Length, salt, 0);
-				var encodedPassword = Encoding.UTF8.GetBytes(password);
+				byte[] encodedPassword = Encoding.UTF8.GetBytes(password);
 				for (int i = 0; i < iterations; i++) sha384.TransformBlock(encodedPassword, 0, encodedPassword.Length, encodedPassword, 0);
 				sha384.TransformFinalBlock(encodedPassword, 0, 0);
 				hash = sha384.Hash;
 			}
 
 			// get result
-			for (var i = 0; i < HashSize; i++)
+			for (int i = 0; i < HashSize; i++)
 			{
 				if (hashBytes[i + SaltSize] != hash[i])
 				{

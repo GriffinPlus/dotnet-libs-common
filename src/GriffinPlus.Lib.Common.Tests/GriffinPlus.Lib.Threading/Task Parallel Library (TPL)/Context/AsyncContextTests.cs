@@ -217,7 +217,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			using (var thread = new AsyncContextThread())
 			{
-				var synchronizationContext = await thread.Factory.Run(() => SynchronizationContext.Current);
+				SynchronizationContext synchronizationContext = await thread.Factory.Run(() => SynchronizationContext.Current);
 				int value = 0;
 				synchronizationContext.Send(_ => { value = 13; }, null);
 				Assert.Equal(13, value);
@@ -248,7 +248,7 @@ namespace GriffinPlus.Lib.Threading
 			context.Factory.Run(() => { value = 1; });
 			context.Execute();
 
-			var task = context.Factory.Run(() => { value = 2; });
+			Task task = context.Factory.Run(() => { value = 2; });
 
 			task.ContinueWith(_ => throw new Exception("Should not run"), TaskScheduler.Default);
 			Assert.Equal(1, value);
@@ -257,8 +257,8 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void SynchronizationContext_IsEqualToCopyOfItself()
 		{
-			var synchronizationContext1 = AsyncContext.Run(() => SynchronizationContext.Current);
-			var synchronizationContext2 = synchronizationContext1.CreateCopy();
+			SynchronizationContext synchronizationContext1 = AsyncContext.Run(() => SynchronizationContext.Current);
+			SynchronizationContext synchronizationContext2 = synchronizationContext1.CreateCopy();
 			Assert.Equal(synchronizationContext1.GetHashCode(), synchronizationContext2.GetHashCode());
 			Assert.True(synchronizationContext1.Equals(synchronizationContext2));
 			Assert.False(synchronizationContext1.Equals(new SynchronizationContext()));

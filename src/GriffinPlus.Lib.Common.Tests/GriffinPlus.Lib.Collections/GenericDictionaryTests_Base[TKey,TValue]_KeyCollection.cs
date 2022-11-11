@@ -25,7 +25,7 @@ namespace GriffinPlus.Lib.Collections
 		[MemberData(nameof(TestDataSetSizes))]
 		public void KeyCollection_ICollection_Count_Get(int count)
 		{
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 			var collection = (ICollection)dict.Keys;
 			Assert.Equal(data.Count, collection.Count);
@@ -84,7 +84,7 @@ namespace GriffinPlus.Lib.Collections
 		public void KeyCollection_ICollection_CopyTo_TypedArray(int count, int index)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 			var collection = (ICollection)dict.Keys;
 
@@ -111,7 +111,7 @@ namespace GriffinPlus.Lib.Collections
 		public void KeyCollection_ICollection_CopyTo_ObjectArray(int count, int index)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 			var collection = (ICollection)dict.Keys;
 
@@ -198,7 +198,7 @@ namespace GriffinPlus.Lib.Collections
 		[MemberData(nameof(CopyTo_TestData_IndexOutOfBounds))]
 		public void KeyCollection_ICollection_CopyTo_IndexOutOfRange(int count, int index)
 		{
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 			var collection = (ICollection)dict.Keys;
 			var destination = new TKey[count];
@@ -217,7 +217,7 @@ namespace GriffinPlus.Lib.Collections
 		[MemberData(nameof(CopyTo_TestData_ArrayTooSmall))]
 		public void KeyCollection_ICollection_CopyTo_ArrayTooSmall(int count, int arraySize, int index)
 		{
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 			var collection = (ICollection)dict.Keys;
 			var destination = new TKey[arraySize];
@@ -237,7 +237,7 @@ namespace GriffinPlus.Lib.Collections
 		[MemberData(nameof(TestDataSetSizes))]
 		public void KeyCollection_ICollectionT_Count_Get(int count)
 		{
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 			ICollection<TKey> collection = dict.Keys;
 			Assert.Equal(data.Count, collection.Count);
@@ -304,12 +304,12 @@ namespace GriffinPlus.Lib.Collections
 		public void KeyCollection_ICollectionT_Contains(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 			ICollection<TKey> collection = dict.Keys;
 
 			// test whether keys of test data are reported to be in the collection
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				bool contains = collection.Contains(kvp.Key);
 				Assert.True(contains);
@@ -326,7 +326,7 @@ namespace GriffinPlus.Lib.Collections
 		public void KeyCollection_ICollectionT_Contains_KeyNotFound(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 			ICollection<TKey> collection = dict.Keys;
 
@@ -365,7 +365,7 @@ namespace GriffinPlus.Lib.Collections
 		public void KeyCollection_ICollectionT_CopyTo(int count, int index)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 			ICollection<TKey> collection = dict.Keys;
 
@@ -404,7 +404,7 @@ namespace GriffinPlus.Lib.Collections
 		[MemberData(nameof(CopyTo_TestData_IndexOutOfBounds))]
 		public void KeyCollection_ICollectionT_CopyTo_IndexOutOfRange(int count, int index)
 		{
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 			ICollection<TKey> collection = dict.Keys;
 			var destination = new TKey[count];
@@ -424,7 +424,7 @@ namespace GriffinPlus.Lib.Collections
 		[MemberData(nameof(CopyTo_TestData_ArrayTooSmall))]
 		public void KeyCollection_ICollectionT_CopyTo_ArrayTooSmall(int count, int arraySize, int index)
 		{
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 			ICollection<TKey> collection = dict.Keys;
 			var destination = new TKey[arraySize];
@@ -460,13 +460,13 @@ namespace GriffinPlus.Lib.Collections
 		public void KeyCollection_IEnumerable_GetEnumerator(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 			ICollection<TKey> collection = dict.Keys;
 
 			// get an enumerator
 			var enumerable = (IEnumerable)collection;
-			var enumerator = enumerable.GetEnumerator();
+			IEnumerator enumerator = enumerable.GetEnumerator();
 
 			// the enumerator should point to the position before the first valid element,
 			// but the 'Current' property should not throw an exception
@@ -517,16 +517,16 @@ namespace GriffinPlus.Lib.Collections
 		public void KeyCollection_IEnumerableT_GetEnumerator(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 			ICollection<TKey> collection = dict.Keys;
 
 			// get an enumerator
-			var enumerator = collection.GetEnumerator();
+			IEnumerator<TKey> enumerator = collection.GetEnumerator();
 
 			// the enumerator should point to the position before the first valid element,
 			// but the 'Current' property should not throw an exception
-			var _ = enumerator.Current;
+			TKey _ = enumerator.Current;
 
 			// enumerate the keys in the collection
 			var enumerated = new List<TKey>();

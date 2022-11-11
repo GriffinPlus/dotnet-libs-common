@@ -3,6 +3,8 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+using System.Text.RegularExpressions;
+
 using Xunit;
 
 namespace GriffinPlus.Lib
@@ -65,8 +67,8 @@ namespace GriffinPlus.Lib
 		[InlineData("The fox jumps over the lazy dog", "*the *azy dog*", true)]
 		public void RegexFromWildcardString(string text, string pattern, bool isMatch)
 		{
-			var regex = RegexHelpers.FromWildcardExpression(pattern);
-			var match = regex.Match(text);
+			Regex regex = RegexHelpers.FromWildcardExpression(pattern);
+			Match match = regex.Match(text);
 			Assert.Equal(isMatch, match.Success);
 		}
 	}

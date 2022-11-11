@@ -25,22 +25,22 @@ namespace GriffinPlus.Lib.Collections
 		public void IEnumerableT_GetEnumerator(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 
 			// get an enumerator
-			var enumerator = dict.GetEnumerator();
+			IEnumerator<KeyValuePair<TKey, TValue>> enumerator = dict.GetEnumerator();
 
 			// the enumerator should point to the position before the first valid element,
 			// but the 'Current' property should not throw an exception
-			var _ = enumerator.Current;
+			KeyValuePair<TKey, TValue> _ = enumerator.Current;
 
 			// enumerate the key/value pairs in the dictionary
 			var enumerated = new List<KeyValuePair<TKey, TValue>>();
 			while (enumerator.MoveNext())
 			{
 				Assert.IsType<KeyValuePair<TKey, TValue>>(enumerator.Current);
-				var current = enumerator.Current;
+				KeyValuePair<TKey, TValue> current = enumerator.Current;
 				enumerated.Add(current);
 			}
 
@@ -61,7 +61,7 @@ namespace GriffinPlus.Lib.Collections
 			while (enumerator.MoveNext())
 			{
 				Assert.IsType<KeyValuePair<TKey, TValue>>(enumerator.Current);
-				var current = enumerator.Current;
+				KeyValuePair<TKey, TValue> current = enumerator.Current;
 				enumerated.Add(current);
 			}
 

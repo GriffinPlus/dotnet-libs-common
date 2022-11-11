@@ -28,6 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Threading
 {
@@ -77,7 +78,7 @@ namespace GriffinPlus.Lib.Threading
 				}
 				else
 				{
-					var task = Context.mTaskFactory.Run(() => d(state));
+					Task task = Context.mTaskFactory.Run(() => d(state));
 					task.WaitAndUnwrapException();
 				}
 			}

@@ -78,7 +78,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			if (collection == null) throw new ArgumentNullException(nameof(collection));
 
-			var source = CollectionHelpers.ReifyCollection(collection);
+			IReadOnlyCollection<T> source = CollectionHelpers.ReifyCollection(collection);
 			int count = source.Count;
 			if (count > 0)
 			{
@@ -180,7 +180,7 @@ namespace GriffinPlus.Lib.Collections
 			var comparer = EqualityComparer<T>.Default;
 
 			int index = 0;
-			foreach (var sourceItem in this)
+			foreach (T sourceItem in this)
 			{
 				if (comparer.Equals(item, sourceItem))
 					return index;
@@ -215,7 +215,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			var comparer = EqualityComparer<T>.Default;
 
-			foreach (var entry in this)
+			foreach (T entry in this)
 			{
 				if (comparer.Equals(item, entry))
 					return true;
@@ -681,7 +681,7 @@ namespace GriffinPlus.Lib.Collections
 		/// <returns>The former last element.</returns>
 		private T DoRemoveFromBack()
 		{
-			var ret = mBuffer[DequeIndexToBufferIndex(Count - 1)];
+			T ret = mBuffer[DequeIndexToBufferIndex(Count - 1)];
 			--Count;
 			return ret;
 		}
@@ -742,7 +742,7 @@ namespace GriffinPlus.Lib.Collections
 
 			// Copy new items into place
 			int i = index;
-			foreach (var item in collection)
+			foreach (T item in collection)
 			{
 				mBuffer[DequeIndexToBufferIndex(i)] = item;
 				++i;
@@ -852,7 +852,7 @@ namespace GriffinPlus.Lib.Collections
 		public void InsertRange(int index, IEnumerable<T> collection)
 		{
 			CheckNewIndexArgument(Count, index);
-			var source = CollectionHelpers.ReifyCollection(collection);
+			IReadOnlyCollection<T> source = CollectionHelpers.ReifyCollection(collection);
 			int collectionCount = source.Count;
 
 			// Overflow-safe check for "Count + collectionCount > Capacity"

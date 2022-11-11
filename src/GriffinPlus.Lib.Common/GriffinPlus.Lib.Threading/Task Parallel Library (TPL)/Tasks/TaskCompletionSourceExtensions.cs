@@ -90,7 +90,7 @@ namespace GriffinPlus.Lib.Threading
 				}
 				catch (OperationCanceledException exception)
 				{
-					var token = exception.CancellationToken;
+					CancellationToken token = exception.CancellationToken;
 					return token.IsCancellationRequested ? @this.TrySetCanceled(token) : @this.TrySetCanceled();
 				}
 			}
@@ -136,7 +136,7 @@ namespace GriffinPlus.Lib.Threading
 				}
 				catch (OperationCanceledException exception)
 				{
-					var token = exception.CancellationToken;
+					CancellationToken token = exception.CancellationToken;
 					return token.IsCancellationRequested ? @this.TrySetCanceled(token) : @this.TrySetCanceled();
 				}
 			}

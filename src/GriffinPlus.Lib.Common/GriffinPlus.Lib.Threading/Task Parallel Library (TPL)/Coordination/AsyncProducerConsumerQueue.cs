@@ -303,7 +303,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			while (true)
 			{
-				var result = TryDoDequeueAsync(cancellationToken, true).WaitAndUnwrapException();
+				Tuple<bool, T> result = TryDoDequeueAsync(cancellationToken, true).WaitAndUnwrapException();
 				if (!result.Item1)
 					yield break;
 
@@ -344,7 +344,7 @@ namespace GriffinPlus.Lib.Threading
 				if (mCompleted && Empty)
 					return Tuple.Create(false, default(T));
 
-				var item = mQueue.Dequeue();
+				T item = mQueue.Dequeue();
 				mCompletedOrNotFull.Notify();
 				return Tuple.Create(true, item);
 			}
@@ -362,7 +362,7 @@ namespace GriffinPlus.Lib.Threading
 		/// <exception cref="InvalidOperationException">The producer/consumer queue has been marked complete for adding and is empty.</exception>
 		private async Task<T> DoDequeueAsync(CancellationToken cancellationToken, bool sync)
 		{
-			var result = await TryDoDequeueAsync(cancellationToken, sync).ConfigureAwait(false);
+			Tuple<bool, T> result = await TryDoDequeueAsync(cancellationToken, sync).ConfigureAwait(false);
 			if (result.Item1)
 				return result.Item2;
 			throw new InvalidOperationException("Dequeue failed; the producer/consumer queue has completed adding and is empty.");

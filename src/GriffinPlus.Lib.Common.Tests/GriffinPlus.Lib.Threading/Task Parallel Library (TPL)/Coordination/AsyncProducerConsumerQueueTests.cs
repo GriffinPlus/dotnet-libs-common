@@ -108,7 +108,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var queue = new AsyncProducerConsumerQueue<int>();
 
-			var task = queue.DequeueAsync();
+			Task<int> task = queue.DequeueAsync();
 
 			await AsyncAssert.DoesNotCompleteAsync(task);
 		}
@@ -117,7 +117,7 @@ namespace GriffinPlus.Lib.Threading
 		public async Task DequeueAsync_Empty_ItemAdded_Completes()
 		{
 			var queue = new AsyncProducerConsumerQueue<int>();
-			var task = queue.DequeueAsync();
+			Task<int> task = queue.DequeueAsync();
 
 			await queue.EnqueueAsync(13);
 			int result = await task;
@@ -130,7 +130,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var queue = new AsyncProducerConsumerQueue<int>();
 			var cts = new CancellationTokenSource();
-			var task = queue.DequeueAsync(cts.Token);
+			Task<int> task = queue.DequeueAsync(cts.Token);
 
 			cts.Cancel();
 
@@ -142,7 +142,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var queue = new AsyncProducerConsumerQueue<int>(new[] { 13 }, 1);
 
-			var task = queue.EnqueueAsync(7);
+			Task task = queue.EnqueueAsync(7);
 
 			await AsyncAssert.DoesNotCompleteAsync(task);
 		}
@@ -151,7 +151,7 @@ namespace GriffinPlus.Lib.Threading
 		public async Task EnqueueAsync_SpaceAvailable_Completes()
 		{
 			var queue = new AsyncProducerConsumerQueue<int>(new[] { 13 }, 1);
-			var task = queue.EnqueueAsync(7);
+			Task task = queue.EnqueueAsync(7);
 
 			await queue.DequeueAsync();
 
@@ -163,7 +163,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var queue = new AsyncProducerConsumerQueue<int>(new[] { 13 }, 1);
 			var cts = new CancellationTokenSource();
-			var task = queue.EnqueueAsync(7, cts.Token);
+			Task task = queue.EnqueueAsync(7, cts.Token);
 
 			cts.Cancel();
 
@@ -184,7 +184,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var queue = new AsyncProducerConsumerQueue<int>();
 
-			var task = queue.OutputAvailableAsync();
+			Task<bool> task = queue.OutputAvailableAsync();
 
 			await AsyncAssert.DoesNotCompleteAsync(task);
 		}
@@ -226,7 +226,7 @@ namespace GriffinPlus.Lib.Threading
 			var queue = new AsyncProducerConsumerQueue<int>();
 
 			// producer
-			var unused = Task.Run(
+			Task unused = Task.Run(
 				() =>
 				{
 					queue.Enqueue(3);

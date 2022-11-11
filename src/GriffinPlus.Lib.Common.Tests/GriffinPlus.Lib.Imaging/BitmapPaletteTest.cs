@@ -48,8 +48,8 @@ namespace GriffinPlus.Lib.Imaging
 		{
 			get
 			{
-				foreach (var palette1 in TestData_Palettes.Select(x => x[0]))
-				foreach (var palette2 in TestData_Palettes.Select(x => x[0]))
+				foreach (object palette1 in TestData_Palettes.Select(x => x[0]))
+				foreach (object palette2 in TestData_Palettes.Select(x => x[0]))
 				{
 					yield return new[]
 					{
@@ -69,12 +69,12 @@ namespace GriffinPlus.Lib.Imaging
 		{
 			get
 			{
-				foreach (var data in TestData_Equals_NonNullOnly)
+				foreach (object[] data in TestData_Equals_NonNullOnly)
 				{
 					yield return data;
 				}
 
-				var palette = BitmapPalettes.Gray256;
+				BitmapPalette palette = BitmapPalettes.Gray256;
 				yield return new object[] { palette, null, false };
 				yield return new object[] { null, palette, false };
 				yield return new object[] { null, null, true };
@@ -89,12 +89,12 @@ namespace GriffinPlus.Lib.Imaging
 		{
 			get
 			{
-				foreach (var data in TestData_Equals_NonNullOnly)
+				foreach (object[] data in TestData_Equals_NonNullOnly)
 				{
 					yield return data;
 				}
 
-				var palette = BitmapPalettes.Gray256;
+				BitmapPalette palette = BitmapPalettes.Gray256;
 				yield return new object[] { palette, null, false };
 			}
 		}
@@ -110,7 +110,7 @@ namespace GriffinPlus.Lib.Imaging
 		public void BitmapPalette_WithColorList()
 		{
 			// for simplicity, take the color list of a predefined palette 
-			var expected = BitmapPalettes.Gray256;
+			BitmapPalette expected = BitmapPalettes.Gray256;
 			IList<Color> colors = expected.Colors.ToList();
 			var palette = new BitmapPalette(colors);
 			Assert.Equal(colors, palette.Colors);
@@ -134,7 +134,7 @@ namespace GriffinPlus.Lib.Imaging
 		[Fact]
 		public void BitmapPalette_WithColorList_ListIsEmpty()
 		{
-			var list = Enumerable.Repeat(Color.FromUInt32(0), 0).ToList();
+			List<Color> list = Enumerable.Repeat(Color.FromUInt32(0), 0).ToList();
 			var exception = Assert.Throws<ArgumentException>(() => new BitmapPalette(list));
 			Assert.Equal("colors", exception.ParamName);
 		}
@@ -146,7 +146,7 @@ namespace GriffinPlus.Lib.Imaging
 		[Fact]
 		public void BitmapPalette_WithColorList_ListIsTooLarge()
 		{
-			var list = Enumerable.Repeat(Color.FromUInt32(0), 257).ToList();
+			List<Color> list = Enumerable.Repeat(Color.FromUInt32(0), 257).ToList();
 			var exception = Assert.Throws<ArgumentException>(() => new BitmapPalette(list));
 			Assert.Equal("colors", exception.ParamName);
 		}

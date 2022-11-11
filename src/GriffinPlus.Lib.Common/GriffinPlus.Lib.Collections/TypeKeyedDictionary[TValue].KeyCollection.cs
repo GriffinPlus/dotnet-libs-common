@@ -35,23 +35,23 @@ using System.Diagnostics;
 namespace GriffinPlus.Lib.Collections
 {
 
-	partial class IdentityKeyedDictionary<TKey, TValue>
+	partial class TypeKeyedDictionary<TValue>
 	{
 		/// <summary>
-		/// A collection of values in a <see cref="IdentityKeyedDictionary{TKey,TValue}"/>.
+		/// A collection of keys in a <see cref="TypeKeyedDictionary{TValue}"/>.
 		/// </summary>
 		[DebuggerDisplay("Count = {" + nameof(Count) + "}")]
 		[Serializable]
-		public sealed partial class ValueCollection : ICollection<TValue>, ICollection, IReadOnlyCollection<TValue>
+		public sealed partial class KeyCollection : ICollection<Type>, ICollection, IReadOnlyCollection<Type>
 		{
-			private readonly IdentityKeyedDictionary<TKey, TValue> mDictionary;
+			private readonly TypeKeyedDictionary<TValue> mDictionary;
 
 			/// <summary>
-			/// Initializes a new instance of the <see cref="IdentityKeyedDictionary{TKey,TValue}"/>.
+			/// Initializes a new instance of the <see cref="TypeKeyedDictionary{TValue}"/>.
 			/// </summary>
-			/// <param name="dictionary">The <see cref="IdentityKeyedDictionary{TKey,TValue}"/> the collection belongs to.</param>
+			/// <param name="dictionary">The <see cref="TypeKeyedDictionary{TValue}"/> the collection belongs to.</param>
 			/// <exception cref="ArgumentNullException"><paramref name="dictionary"/> is <c>null</c>.</exception>
-			public ValueCollection(IdentityKeyedDictionary<TKey, TValue> dictionary)
+			public KeyCollection(TypeKeyedDictionary<TValue> dictionary)
 			{
 				mDictionary = dictionary ?? throw new ArgumentNullException(nameof(dictionary));
 			}
@@ -84,7 +84,7 @@ namespace GriffinPlus.Lib.Collections
 			/// The number of elements in the source collection is greater than the available space from <paramref name="index"/>
 			/// to the end of the destination array.
 			/// </exception>
-			public void CopyTo(TValue[] array, int index)
+			public void CopyTo(Type[] array, int index)
 			{
 				if (array == null)
 					throw new ArgumentNullException(nameof(array));
@@ -96,10 +96,10 @@ namespace GriffinPlus.Lib.Collections
 					throw new ArgumentException("The destination array is too small.");
 
 				int count = mDictionary.mCount;
-				var entries = mDictionary.mEntries;
+				Entry[] entries = mDictionary.mEntries;
 				for (int i = 0; i < count; i++)
 				{
-					if (entries[i].Next >= -1) array[index++] = entries[i].Value;
+					if (entries[i].Next >= -1) array[index++] = entries[i].Key;
 				}
 			}
 
@@ -109,7 +109,7 @@ namespace GriffinPlus.Lib.Collections
 			/// Returns an enumerator that iterates through the collection.
 			/// </summary>
 			/// <returns>An enumerator that can be used to iterate through the collection.</returns>
-			IEnumerator<TValue> IEnumerable<TValue>.GetEnumerator()
+			IEnumerator<Type> IEnumerable<Type>.GetEnumerator()
 			{
 				return new Enumerator(mDictionary);
 			}
@@ -135,14 +135,14 @@ namespace GriffinPlus.Lib.Collections
 			/// Gets a value indicating whether the collection is read-only.
 			/// </summary>
 			/// <value>Always <c>true</c>.</value>
-			bool ICollection<TValue>.IsReadOnly => true;
+			bool ICollection<Type>.IsReadOnly => true;
 
 			/// <summary>
 			/// Adds an item to the collection (not supported).
 			/// </summary>
 			/// <param name="item">The item to add to the collection.</param>
 			/// <exception cref="NotSupportedException">The collection is read-only.</exception>
-			void ICollection<TValue>.Add(TValue item)
+			void ICollection<Type>.Add(Type item)
 			{
 				throw new NotSupportedException("The collection is read-only.");
 			}
@@ -156,7 +156,7 @@ namespace GriffinPlus.Lib.Collections
 			/// This method also returns false if item is not found in the original collection.
 			/// </returns>
 			/// <exception cref="NotSupportedException">The collection is read-only.</exception>
-			bool ICollection<TValue>.Remove(TValue item)
+			bool ICollection<Type>.Remove(Type item)
 			{
 				throw new NotSupportedException("The collection is read-only.");
 			}
@@ -165,7 +165,7 @@ namespace GriffinPlus.Lib.Collections
 			/// Removes all items from the collection (not supported).
 			/// </summary>
 			/// <exception cref="NotSupportedException">The collection is read-only.</exception>
-			void ICollection<TValue>.Clear()
+			void ICollection<Type>.Clear()
 			{
 				throw new NotSupportedException("The collection is read-only.");
 			}
@@ -177,9 +177,10 @@ namespace GriffinPlus.Lib.Collections
 			/// <returns>
 			/// <c>true</c> if item is found in the collection; otherwise <c>false</c>.
 			/// </returns>
-			bool ICollection<TValue>.Contains(TValue item)
+			bool ICollection<Type>.Contains(Type item)
 			{
-				return mDictionary.ContainsValue(item);
+				if (item == null) return false;
+				return mDictionary.ContainsKey(item);
 			}
 
 			#endregion
@@ -233,19 +234,19 @@ namespace GriffinPlus.Lib.Collections
 				if (array.Length - index < mDictionary.Count)
 					throw new ArgumentException("The destination array is too small.");
 
-				if (array.GetType().GetElementType() == typeof(TValue))
+				if (array is Type[] values)
 				{
-					CopyTo((TValue[])array, index);
+					CopyTo(values, index);
 				}
 				else
 				{
 					if (array is object[] objects)
 					{
 						int count = mDictionary.mCount;
-						var entries = mDictionary.mEntries;
+						Entry[] entries = mDictionary.mEntries;
 						for (int i = 0; i < count; i++)
 						{
-							if (entries[i].Next >= -1) objects[index++] = entries[i].Value;
+							if (entries[i].Next >= -1) objects[index++] = entries[i].Key;
 						}
 
 						return;

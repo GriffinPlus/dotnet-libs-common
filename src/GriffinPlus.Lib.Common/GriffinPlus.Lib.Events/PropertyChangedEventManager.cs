@@ -128,7 +128,7 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				if (sItemsByObject.TryGetValue(obj, out var items))
+				if (sItemsByObject.TryGetValue(obj, out Item[] items))
 				{
 					newItems = new Item[items.Length + 1];
 					Array.Copy(items, newItems, items.Length);
@@ -175,12 +175,12 @@ namespace GriffinPlus.Lib.Events
 		{
 			lock (sSync)
 			{
-				if (!sItemsByObject.TryGetValue(obj, out var items))
+				if (!sItemsByObject.TryGetValue(obj, out Item[] items))
 					return -1; // specified event handler was not registered
 
 				for (int i = 0; i < items.Length; i++)
 				{
-					var registeredHandler = items[i].Handler;
+					PropertyChangedEventHandler registeredHandler = items[i].Handler;
 					if (registeredHandler == handler)
 					{
 						var newItems = new Item[items.Length - 1];
@@ -258,7 +258,7 @@ namespace GriffinPlus.Lib.Events
 			}
 
 			var e = new PropertyChangedEventArgs(propertyName);
-			foreach (var item in items)
+			foreach (Item item in items)
 			{
 				if (item.SynchronizationContext != null)
 				{
@@ -306,7 +306,7 @@ namespace GriffinPlus.Lib.Events
 			}
 
 			var e = new PropertyChangedEventArgs(propertyName);
-			foreach (var item in items)
+			foreach (Item item in items)
 			{
 				if (item.SynchronizationContext != null)
 				{
@@ -359,7 +359,7 @@ namespace GriffinPlus.Lib.Events
 
 			PropertyChangedEventHandler handlers = null;
 
-			foreach (var item in items)
+			foreach (Item item in items)
 			{
 				if (item.SynchronizationContext != null)
 				{
@@ -380,7 +380,7 @@ namespace GriffinPlus.Lib.Events
 				}
 				else
 				{
-					var itemCopy = item;
+					Item itemCopy = item;
 					handlers += (sender, e) =>
 					{
 						// synchronization context was not specified at registration

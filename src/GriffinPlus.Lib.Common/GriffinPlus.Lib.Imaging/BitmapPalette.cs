@@ -125,7 +125,7 @@ namespace GriffinPlus.Lib.Imaging
 			unchecked
 			{
 				int hashCode = 0;
-				foreach (var color in mColors)
+				foreach (Color color in mColors)
 				{
 					hashCode = (hashCode * 397) ^ color.GetHashCode();
 				}

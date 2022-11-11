@@ -101,7 +101,7 @@ namespace GriffinPlus.Lib
 			if (type == null)
 				throw new ArgumentNullException(nameof(type));
 
-			if (!sCache.TryGetValue(type, out var info))
+			if (!sCache.TryGetValue(type, out Info info))
 			{
 				lock (sSync)
 				{
@@ -145,7 +145,7 @@ namespace GriffinPlus.Lib
 			if (type == null)
 				throw new ArgumentNullException(nameof(type));
 
-			if (!sCache.TryGetValue(type, out var info))
+			if (!sCache.TryGetValue(type, out Info info))
 			{
 				lock (sSync)
 				{
@@ -298,7 +298,7 @@ namespace GriffinPlus.Lib
 		private static bool IsImmutable(IDictionary<Type, Info> cache, Type type)
 		{
 			Debug.Assert(Monitor.IsEntered(sSync));
-			if (!cache.TryGetValue(type, out var info))
+			if (!cache.TryGetValue(type, out Info info))
 			{
 				info = AnalyzeAndAddToCache(cache, type);
 			}
@@ -340,7 +340,7 @@ namespace GriffinPlus.Lib
 				// the type is visible outside its assembly
 				// => if it does not have public, protected or protected internal constructors,
 				//    there cannot be derived types defined in some other assembly
-				var constructors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+				ConstructorInfo[] constructors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 				if (!constructors.Any(x => x.IsPublic || x.IsFamily || x.IsFamilyOrAssembly))
 					return true;
 
@@ -350,7 +350,7 @@ namespace GriffinPlus.Lib
 
 			// the type is visible inside its assembly only
 			// => check derived types in the same assembly for immutability
-			foreach (var derivedType in type.Assembly.GetTypes().Where(x => x.BaseType == type))
+			foreach (Type derivedType in type.Assembly.GetTypes().Where(x => x.BaseType == type))
 			{
 				// abort if the derived type is mutable
 				if (!AreTypeAndDerivedTypesImmutable(cache, derivedType))

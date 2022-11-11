@@ -46,7 +46,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var semaphore = new AsyncSemaphore(0);
 			Assert.Equal(0, semaphore.CurrentCount);
-			var task = semaphore.WaitAsync();
+			Task task = semaphore.WaitAsync();
 			Assert.Equal(0, semaphore.CurrentCount);
 			await AsyncAssert.DoesNotCompleteAsync(task);
 		}
@@ -56,10 +56,10 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var semaphore = new AsyncSemaphore(1);
 			Assert.Equal(1, semaphore.CurrentCount);
-			var task1 = semaphore.WaitAsync();
+			Task task1 = semaphore.WaitAsync();
 			Assert.Equal(0, semaphore.CurrentCount);
 			Assert.True(task1.IsCompleted);
-			var task2 = semaphore.WaitAsync();
+			Task task2 = semaphore.WaitAsync();
 			Assert.Equal(0, semaphore.CurrentCount);
 			await AsyncAssert.DoesNotCompleteAsync(task2);
 		}
@@ -71,7 +71,7 @@ namespace GriffinPlus.Lib.Threading
 			Assert.Equal(1, semaphore.CurrentCount);
 			var token = new CancellationToken(true);
 
-			var task = semaphore.WaitAsync(token);
+			Task task = semaphore.WaitAsync(token);
 
 			Assert.Equal(0, semaphore.CurrentCount);
 			Assert.True(task.IsCompleted);
@@ -86,7 +86,7 @@ namespace GriffinPlus.Lib.Threading
 			Assert.Equal(0, semaphore.CurrentCount);
 			var token = new CancellationToken(true);
 
-			var task = semaphore.WaitAsync(token);
+			Task task = semaphore.WaitAsync(token);
 
 			Assert.Equal(0, semaphore.CurrentCount);
 			Assert.True(task.IsCompleted);
@@ -100,7 +100,7 @@ namespace GriffinPlus.Lib.Threading
 			var semaphore = new AsyncSemaphore(0);
 			Assert.Equal(0, semaphore.CurrentCount);
 			var cts = new CancellationTokenSource();
-			var task = semaphore.WaitAsync(cts.Token);
+			Task task = semaphore.WaitAsync(cts.Token);
 			Assert.Equal(0, semaphore.CurrentCount);
 			Assert.False(task.IsCompleted);
 
@@ -121,7 +121,7 @@ namespace GriffinPlus.Lib.Threading
 			Assert.Equal(0, semaphore.CurrentCount);
 			semaphore.Release();
 			Assert.Equal(1, semaphore.CurrentCount);
-			var task = semaphore.WaitAsync();
+			Task task = semaphore.WaitAsync();
 			Assert.Equal(0, semaphore.CurrentCount);
 			Assert.True(task.IsCompleted);
 		}
@@ -131,7 +131,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var semaphore = new AsyncSemaphore(0);
 			Assert.Equal(0, semaphore.CurrentCount);
-			var task = semaphore.WaitAsync();
+			Task task = semaphore.WaitAsync();
 			Assert.Equal(0, semaphore.CurrentCount);
 			Assert.False(task.IsCompleted);
 			semaphore.Release();

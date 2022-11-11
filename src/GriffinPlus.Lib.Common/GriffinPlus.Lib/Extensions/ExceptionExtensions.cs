@@ -21,7 +21,7 @@ namespace GriffinPlus.Lib
 		/// <returns>All exception messages.</returns>
 		public static string[] GetAllMessages(this Exception self)
 		{
-			List<string> messages = new List<string>();
+			var messages = new List<string>();
 
 			if (self is AggregateException aggregateException)
 			{

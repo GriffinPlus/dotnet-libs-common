@@ -83,7 +83,7 @@ namespace GriffinPlus.Lib.Io
 		[MemberData(nameof(CreateTestData_Full))]
 		public void Create_Full(int capacity, bool poolBuffer, bool clearBuffer)
 		{
-			var arrayPool = poolBuffer ? new ArrayPoolMock() : null;
+			ArrayPoolMock arrayPool = poolBuffer ? new ArrayPoolMock() : null;
 			var block = new ChainableMemoryBlock(capacity, arrayPool, clearBuffer);
 			Assert.False(block.IsPooled);
 			Assert.Same(arrayPool, block.BufferPool);
@@ -104,7 +104,7 @@ namespace GriffinPlus.Lib.Io
 		[MemberData(nameof(CreateTestData_Capacity))]
 		public void GetPooled_Capacity(int capacity)
 		{
-			var block = ChainableMemoryBlock.GetPooled(capacity);
+			ChainableMemoryBlock block = ChainableMemoryBlock.GetPooled(capacity);
 			Assert.True(block.IsPooled);
 			Assert.Null(block.BufferPool);
 			Assert.Equal(capacity, block.Capacity);
@@ -131,8 +131,8 @@ namespace GriffinPlus.Lib.Io
 		[MemberData(nameof(CreateTestData_Full))]
 		public void GetPooled_Full(int capacity, bool poolBuffer, bool clearBuffer)
 		{
-			var arrayPool = poolBuffer ? new ArrayPoolMock() : null;
-			var block = ChainableMemoryBlock.GetPooled(capacity, arrayPool, clearBuffer);
+			ArrayPoolMock arrayPool = poolBuffer ? new ArrayPoolMock() : null;
+			ChainableMemoryBlock block = ChainableMemoryBlock.GetPooled(capacity, arrayPool, clearBuffer);
 			Assert.True(block.IsPooled);
 			Assert.Same(arrayPool, block.BufferPool);
 			if (poolBuffer) Assert.True(block.Capacity >= capacity);
@@ -271,7 +271,7 @@ namespace GriffinPlus.Lib.Io
 			}
 
 			// get the first block of the chain
-			var block = blocks[startIndex].GetStartOfChain();
+			ChainableMemoryBlock block = blocks[startIndex].GetStartOfChain();
 			Assert.Same(blocks[0], block);
 		}
 
@@ -303,7 +303,7 @@ namespace GriffinPlus.Lib.Io
 			long expectedAccumulatedLength = 10 * (startIndex + 1);
 
 			// get the first block of the chain and the accumulated length of all blocks on the way
-			var block = blocks[startIndex].GetStartOfChain(out long accumulatedLength);
+			ChainableMemoryBlock block = blocks[startIndex].GetStartOfChain(out long accumulatedLength);
 			Assert.Same(blocks[0], block);
 			Assert.Equal(expectedAccumulatedLength, accumulatedLength);
 		}
@@ -333,7 +333,7 @@ namespace GriffinPlus.Lib.Io
 			}
 
 			// get the last block of the chain
-			var block = blocks[startIndex].GetEndOfChain();
+			ChainableMemoryBlock block = blocks[startIndex].GetEndOfChain();
 			Assert.Same(blocks[chainLength - 1], block);
 		}
 
@@ -365,7 +365,7 @@ namespace GriffinPlus.Lib.Io
 			long expectedAccumulatedLength = 10 * (chainLength - startIndex);
 
 			// get the first block of the chain and the accumulated length of all blocks on the way
-			var block = blocks[startIndex].GetEndOfChain(out long accumulatedLength);
+			ChainableMemoryBlock block = blocks[startIndex].GetEndOfChain(out long accumulatedLength);
 			Assert.Same(blocks[chainLength - 1], block);
 			Assert.Equal(expectedAccumulatedLength, accumulatedLength);
 		}

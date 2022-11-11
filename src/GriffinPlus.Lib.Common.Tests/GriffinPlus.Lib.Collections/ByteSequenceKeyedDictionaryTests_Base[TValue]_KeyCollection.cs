@@ -25,16 +25,16 @@ namespace GriffinPlus.Lib.Collections
 		public void KeyCollection_GetEnumerator(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>(data);
 			ByteSequenceKeyedDictionary<TValue>.KeyCollection collection = dict.Keys;
 
 			// get an enumerator
-			var enumerator = collection.GetEnumerator();
+			ByteSequenceKeyedDictionary<TValue>.KeyCollection.Enumerator enumerator = collection.GetEnumerator();
 
 			// the enumerator should point to the position before the first valid element,
 			// but the 'Current' property should not throw an exception
-			var _ = enumerator.Current;
+			IReadOnlyList<byte> _ = enumerator.Current;
 
 			// enumerate the keys in the collection
 			var enumerated = new List<IReadOnlyList<byte>>();

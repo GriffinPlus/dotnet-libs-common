@@ -24,7 +24,7 @@ namespace GriffinPlus.Lib.Collections
 		[MemberData(nameof(TestDataSetSizes))]
 		public void ICollectionT_Count_Get(int count)
 		{
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 			Assert.Equal(data.Count, dict.Count);
 		}
@@ -56,18 +56,18 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollectionT_Add(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary() as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// add data to the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				dict.Add(new KeyValuePair<TKey, TValue>(kvp.Key, kvp.Value));
 			}
 
 			// enumerate the key/value pairs in the dictionary
 			var enumerated = new List<KeyValuePair<TKey, TValue>>();
-			foreach (var kvp in dict) enumerated.Add(kvp);
+			foreach (KeyValuePair<TKey, TValue> kvp in dict) enumerated.Add(kvp);
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
@@ -84,13 +84,13 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollectionT_Add_DuplicateKey(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary() as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// add data to the dictionary
 			KeyValuePair<TKey, TValue>? first = null;
 			KeyValuePair<TKey, TValue>? last = null;
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				if (first == null) first = kvp;
 				last = kvp;
@@ -103,7 +103,7 @@ namespace GriffinPlus.Lib.Collections
 
 			// enumerate the key/value pairs in the dictionary
 			var enumerated = new List<KeyValuePair<TKey, TValue>>();
-			foreach (var kvp in dict) enumerated.Add(kvp);
+			foreach (KeyValuePair<TKey, TValue> kvp in dict) enumerated.Add(kvp);
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
@@ -136,7 +136,7 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollectionT_Clear(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// clear the dictionary
@@ -161,11 +161,11 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollectionT_Contains(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// test whether keys of test data are reported to be in the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
 				Assert.True(dict.Contains(new KeyValuePair<TKey, TValue>(kvp.Key, kvp.Value)));
 			}
@@ -181,7 +181,7 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollectionT_Contains_KeyNotFound(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// test whether some other key is reported to be not in the dictionary
@@ -202,7 +202,7 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollectionT_Contains_ValueMismatch(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// test whether some other key is reported to be not in the dictionary
@@ -242,7 +242,7 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollectionT_CopyTo(int count, int index)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// copy the dictionary into an array
@@ -276,7 +276,7 @@ namespace GriffinPlus.Lib.Collections
 		[MemberData(nameof(CopyTo_TestData_IndexOutOfBounds))]
 		public void ICollectionT_CopyTo_IndexOutOfRange(int count, int index)
 		{
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 			var destination = new KeyValuePair<TKey, TValue>[count];
 			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => dict.CopyTo(destination, index));
@@ -293,7 +293,7 @@ namespace GriffinPlus.Lib.Collections
 		[MemberData(nameof(CopyTo_TestData_ArrayTooSmall))]
 		public void ICollectionT_CopyTo_ArrayTooSmall(int count, int arraySize, int index)
 		{
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 			var destination = new KeyValuePair<TKey, TValue>[arraySize];
 			Assert.Throws<ArgumentException>(() => dict.CopyTo(destination, index));
@@ -312,12 +312,12 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollectionT_Remove(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// remove elements in random order until the dictionary is empty
 			var random = new Random();
-			var remainingData = data.ToList();
+			List<KeyValuePair<TKey, TValue>> remainingData = data.ToList();
 			while (remainingData.Count > 0)
 			{
 				int index = random.Next(0, remainingData.Count - 1);
@@ -342,7 +342,7 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollectionT_Remove_KeyNotFound(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// try to remove an element that does not exist
@@ -360,7 +360,7 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollectionT_Remove_ValueMismatch(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as ICollection<KeyValuePair<TKey, TValue>>;
 
 			// try to remove an element that does not exist

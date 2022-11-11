@@ -92,12 +92,12 @@ namespace GriffinPlus.Lib.Cryptography
 			}
 
 			// combine salt and hash
-			var hashBytes = new byte[SaltSize + HashSize];
+			byte[] hashBytes = new byte[SaltSize + HashSize];
 			Array.Copy(salt, 0, hashBytes, 0, SaltSize);
 			Array.Copy(hash, 0, hashBytes, SaltSize, HashSize);
 
 			// convert to base64
-			var base64Hash = Convert.ToBase64String(hashBytes);
+			string base64Hash = Convert.ToBase64String(hashBytes);
 
 			// format hash with extra information
 			return $"${AlgorithmNameDefinition}${iterations}${base64Hash}";
@@ -116,16 +116,16 @@ namespace GriffinPlus.Lib.Cryptography
 		public override bool Verify(string password, string hashedPassword)
 		{
 			// extract fields from hashed password
-			var match = sHashRegex.Match(hashedPassword);
+			Match match = sHashRegex.Match(hashedPassword);
 			if (!match.Success) throw new NotSupportedException("The hash type is not supported.");
-			var iterations = int.Parse(match.Groups["iterations"].Value);
-			var base64Hash = match.Groups["hash"].Value;
+			int iterations = int.Parse(match.Groups["iterations"].Value);
+			string base64Hash = match.Groups["hash"].Value;
 
 			// get hash bytes
-			var hashBytes = Convert.FromBase64String(base64Hash);
+			byte[] hashBytes = Convert.FromBase64String(base64Hash);
 
 			// get salt
-			var salt = new byte[SaltSize];
+			byte[] salt = new byte[SaltSize];
 			Array.Copy(hashBytes, 0, salt, 0, SaltSize);
 
 			// create hash with given salt
@@ -136,7 +136,7 @@ namespace GriffinPlus.Lib.Cryptography
 			}
 
 			// get result
-			for (var i = 0; i < HashSize; i++)
+			for (int i = 0; i < HashSize; i++)
 			{
 				if (hashBytes[i + SaltSize] != hash[i])
 				{

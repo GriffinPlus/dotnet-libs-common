@@ -34,7 +34,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>A <see cref="Color"/> instance with the specified values.</returns>
 		internal static Color FromUInt32(uint argb)
 		{
-			Color color = new Color
+			var color = new Color
 			{
 				mSRgbColor =
 				{
@@ -66,7 +66,7 @@ namespace GriffinPlus.Lib.Imaging
 			float g,
 			float b)
 		{
-			Color color = new Color();
+			var color = new Color();
 			color.mScRgbColor.R = r;
 			color.mScRgbColor.G = g;
 			color.mScRgbColor.B = b;
@@ -95,7 +95,7 @@ namespace GriffinPlus.Lib.Imaging
 			byte g,
 			byte b)
 		{
-			Color color = new Color
+			var color = new Color
 			{
 				mScRgbColor =
 				{
@@ -172,7 +172,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>The formatted color.</returns>
 		internal string ConvertToString(string format, IFormatProvider provider)
 		{
-			StringBuilder stringBuilder = new StringBuilder();
+			var stringBuilder = new StringBuilder();
 
 			if (format == null)
 			{
@@ -470,7 +470,7 @@ namespace GriffinPlus.Lib.Imaging
 			// Get the NumberFormatInfo out of the provider, if possible
 			// If the IFormatProvider doesn't not contain a NumberFormatInfo, then
 			// this method returns the current culture's NumberFormatInfo.
-			NumberFormatInfo numberFormat = NumberFormatInfo.GetInstance(provider);
+			var numberFormat = NumberFormatInfo.GetInstance(provider);
 
 			// use ';' if the decimal separator is the same as the list separator
 			if (numberFormat.NumberDecimalSeparator.Length > 0 && numericSeparator == numberFormat.NumberDecimalSeparator[0])

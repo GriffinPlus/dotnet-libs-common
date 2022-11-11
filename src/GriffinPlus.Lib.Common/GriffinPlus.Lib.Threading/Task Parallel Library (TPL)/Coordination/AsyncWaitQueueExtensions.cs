@@ -51,11 +51,11 @@ namespace GriffinPlus.Lib.Threading
 			if (token.IsCancellationRequested)
 				return Task.FromCanceled<T>(token);
 
-			var task = @this.Enqueue();
+			Task<T> task = @this.Enqueue();
 			if (!token.CanBeCanceled)
 				return task;
 
-			var registration = token.Register(
+			CancellationTokenRegistration registration = token.Register(
 				() =>
 				{
 					lock (mutex) @this.TryCancel(task, token);

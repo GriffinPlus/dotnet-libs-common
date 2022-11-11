@@ -126,7 +126,7 @@ namespace GriffinPlus.Lib.Cryptography
 			Match match = sCommonHashRegex.Match(hashedPassword);
 			if (!match.Success) throw new NotSupportedException("The hash type is not supported.");
 			string hashName = match.Groups["algorithm"].Value.ToLower();
-			if (!sHashers.TryGetValue(hashName, out var hasher)) throw new NotSupportedException("The hash type is not supported.");
+			if (!sHashers.TryGetValue(hashName, out SecurePasswordHasher hasher)) throw new NotSupportedException("The hash type is not supported.");
 			return hasher.Verify(password, hashedPassword);
 		}
 	}

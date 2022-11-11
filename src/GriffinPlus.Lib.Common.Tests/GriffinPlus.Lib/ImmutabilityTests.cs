@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 using Xunit;
 
@@ -165,7 +166,7 @@ namespace GriffinPlus.Lib
 			string reason)
 		{
 			// invoke IsImmutable<T>()
-			var method = typeof(Immutability)
+			MethodInfo method = typeof(Immutability)
 				.GetMethods()
 				.First(x => x.Name == nameof(Immutability.IsImmutable) && x.IsGenericMethod)
 				.MakeGenericMethod(type);
@@ -173,7 +174,7 @@ namespace GriffinPlus.Lib
 			Assert.Equal(isImmutable, actualIsImmutable);
 
 			// check cached information about the type
-			var info = Immutability.EvaluatedTypeInfos.FirstOrDefault(x => x.Type == type);
+			Immutability.Info info = Immutability.EvaluatedTypeInfos.FirstOrDefault(x => x.Type == type);
 			Assert.NotNull(info);
 			Assert.Equal(isImmutable, info.IsImmutable);
 			Assert.Equal(hasImmutableDerivationsOnly, info.HasImmutableDerivationsOnly);
@@ -205,7 +206,7 @@ namespace GriffinPlus.Lib
 			Assert.Equal(isImmutable, actualIsImmutable);
 
 			// check cached information about the type
-			var info = Immutability.EvaluatedTypeInfos.FirstOrDefault(x => x.Type == type);
+			Immutability.Info info = Immutability.EvaluatedTypeInfos.FirstOrDefault(x => x.Type == type);
 			Assert.NotNull(info);
 			Assert.Equal(isImmutable, info.IsImmutable);
 			Assert.Equal(hasImmutableDerivationsOnly, info.HasImmutableDerivationsOnly);
@@ -238,7 +239,7 @@ namespace GriffinPlus.Lib
 			string reason)
 		{
 			// invoke IsImmutable<T>()
-			var method = typeof(Immutability)
+			MethodInfo method = typeof(Immutability)
 				.GetMethods()
 				.First(x => x.Name == nameof(Immutability.HasImmutableDerivationsOnly) && x.IsGenericMethod)
 				.MakeGenericMethod(type);
@@ -246,7 +247,7 @@ namespace GriffinPlus.Lib
 			Assert.Equal(hasImmutableDerivationsOnly, actualHasImmutableDerivationsOnly);
 
 			// check cached information about the type
-			var info = Immutability.EvaluatedTypeInfos.FirstOrDefault(x => x.Type == type);
+			Immutability.Info info = Immutability.EvaluatedTypeInfos.FirstOrDefault(x => x.Type == type);
 			Assert.NotNull(info);
 			Assert.Equal(isImmutable, info.IsImmutable);
 			Assert.Equal(hasImmutableDerivationsOnly, info.HasImmutableDerivationsOnly);
@@ -278,7 +279,7 @@ namespace GriffinPlus.Lib
 			Assert.Equal(hasImmutableDerivationsOnly, actualHasImmutableDerivationsOnly);
 
 			// check cached information about the type
-			var info = Immutability.EvaluatedTypeInfos.FirstOrDefault(x => x.Type == type);
+			Immutability.Info info = Immutability.EvaluatedTypeInfos.FirstOrDefault(x => x.Type == type);
 			Assert.NotNull(info);
 			Assert.Equal(isImmutable, info.IsImmutable);
 			Assert.Equal(hasImmutableDerivationsOnly, info.HasImmutableDerivationsOnly);
@@ -319,11 +320,11 @@ namespace GriffinPlus.Lib
 			const string reason = "type was declared immutable (by method)";
 
 			// at start, no information about the type should be in the cache
-			var info = Immutability.EvaluatedTypeInfos.FirstOrDefault(x => x.Type == type);
+			Immutability.Info info = Immutability.EvaluatedTypeInfos.FirstOrDefault(x => x.Type == type);
 			Assert.Null(info);
 
 			// invoke AddImmutableType<T>() to register the type as immutable
-			var method = typeof(Immutability)
+			MethodInfo method = typeof(Immutability)
 				.GetMethods()
 				.First(x => x.Name == nameof(Immutability.AddImmutableType) && x.IsGenericMethod)
 				.MakeGenericMethod(type);
@@ -370,7 +371,7 @@ namespace GriffinPlus.Lib
 			const string reason = "type was declared immutable (by method)";
 
 			// at start, no information about the type should be in the cache
-			var info = Immutability.EvaluatedTypeInfos.FirstOrDefault(x => x.Type == type);
+			Immutability.Info info = Immutability.EvaluatedTypeInfos.FirstOrDefault(x => x.Type == type);
 			Assert.Null(info);
 
 			// invoke AddImmutableType(...) to register the type as immutable

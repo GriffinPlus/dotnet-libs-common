@@ -270,7 +270,7 @@ namespace GriffinPlus.Lib.Io
 				long lengthOfLastBlock = length - capacity;
 				while (true)
 				{
-					var newBlock = ChainableMemoryBlock.GetPooled(mBlockSize, mArrayPool, true); // initializes the buffer with zeros
+					ChainableMemoryBlock newBlock = ChainableMemoryBlock.GetPooled(mBlockSize, mArrayPool, true); // initializes the buffer with zeros
 					if (mFirstBlock == null)
 					{
 						// no block in the chain, yet
@@ -324,7 +324,7 @@ namespace GriffinPlus.Lib.Io
 					// => release memory blocks that are not needed any more
 					long remaining = length;
 					long lastBlockStartIndex = 0;
-					var block = mFirstBlock;
+					ChainableMemoryBlock block = mFirstBlock;
 					while (true)
 					{
 						remaining -= Math.Min(remaining, block.Length);
@@ -747,7 +747,7 @@ namespace GriffinPlus.Lib.Io
 			{
 				int index = PrepareReadingBlock(remaining, out int bytesToCopy);
 				var source = new Span<byte>(mCurrentBlock.Buffer, index, bytesToCopy);
-				var destination = buffer.Slice(offset, buffer.Length - offset);
+				Span<byte> destination = buffer.Slice(offset, buffer.Length - offset);
 				source.CopyTo(destination);
 				offset += bytesToCopy;
 				remaining -= bytesToCopy;
@@ -781,7 +781,7 @@ namespace GriffinPlus.Lib.Io
 					// if releasing read blocks is enabled, seeking is not supported
 					// => we've read the first block in the chain
 					Debug.Assert(mFirstBlock == mCurrentBlock);
-					var nextBlock = mCurrentBlock.Next;
+					ChainableMemoryBlock nextBlock = mCurrentBlock.Next;
 					mFirstBlockOffset += mCurrentBlock.Length;
 					mCurrentBlock.Next = null;
 					mCurrentBlock.Release();
@@ -1023,7 +1023,7 @@ namespace GriffinPlus.Lib.Io
 				while (true)
 				{
 					// allocate a new block
-					var block = ChainableMemoryBlock.GetPooled(mBlockSize, mArrayPool);
+					ChainableMemoryBlock block = ChainableMemoryBlock.GetPooled(mBlockSize, mArrayPool);
 					if (firstBlock == null) firstBlock = block;
 					if (previousBlock != null) previousBlock.Next = block;
 
@@ -1100,7 +1100,7 @@ namespace GriffinPlus.Lib.Io
 				while (true)
 				{
 					// allocate a new block
-					var block = ChainableMemoryBlock.GetPooled(mBlockSize, mArrayPool);
+					ChainableMemoryBlock block = ChainableMemoryBlock.GetPooled(mBlockSize, mArrayPool);
 					if (firstBlock == null) firstBlock = block;
 					if (previousBlock != null) previousBlock.Next = block;
 
@@ -1188,7 +1188,7 @@ namespace GriffinPlus.Lib.Io
 				// copy as many bytes as requested and possible
 				int index = PrepareWritingBlock(out int bytesToEndOfBlock);
 				int bytesToCopy = Math.Min(bytesToEndOfBlock, bytesRemaining);
-				var source = buffer.Slice(offset, bytesToCopy);
+				ReadOnlySpan<byte> source = buffer.Slice(offset, bytesToCopy);
 				var destination = new Span<byte>(mCurrentBlock.Buffer, index, bytesToCopy);
 				source.CopyTo(destination);
 				bytesRemaining -= bytesToCopy;
@@ -1259,7 +1259,7 @@ namespace GriffinPlus.Lib.Io
 		{
 			bool isFirstBuffer = mFirstBlock == null;
 
-			var block = ChainableMemoryBlock.GetPooled(mBlockSize, mArrayPool, false);
+			ChainableMemoryBlock block = ChainableMemoryBlock.GetPooled(mBlockSize, mArrayPool, false);
 
 			if (mFirstBlock == null)
 			{
@@ -1476,7 +1476,7 @@ namespace GriffinPlus.Lib.Io
 				mLastBlock.Next = buffer;
 
 				// adjust length
-				var block = buffer;
+				ChainableMemoryBlock block = buffer;
 				while (block != null)
 				{
 					mLength += block.Length;
@@ -1498,7 +1498,7 @@ namespace GriffinPlus.Lib.Io
 				Debug.Assert(mCurrentBlockStartIndex == mFirstBlockOffset + mCurrentBlock.IndexOfFirstByteInBlock);
 
 				// adjust length of the buffer
-				var block = mFirstBlock;
+				ChainableMemoryBlock block = mFirstBlock;
 				while (block != null)
 				{
 					mLength += block.Length;
@@ -1587,7 +1587,7 @@ namespace GriffinPlus.Lib.Io
 
 			// determine length of the buffer
 			mLength = 0;
-			var block = mFirstBlock;
+			ChainableMemoryBlock block = mFirstBlock;
 			while (block != null)
 			{
 				mLength += block.Length;
@@ -1653,7 +1653,7 @@ namespace GriffinPlus.Lib.Io
 			if (mDisposed)
 				throw new ObjectDisposedException(nameof(MemoryBlockStream));
 
-			var buffer = mFirstBlock;
+			ChainableMemoryBlock buffer = mFirstBlock;
 			mFirstBlock = null;
 			mCurrentBlock = null;
 			mLastBlock = null;
@@ -1779,7 +1779,7 @@ namespace GriffinPlus.Lib.Io
 					mLastBlock.Next = buffer;
 
 					// adjust length
-					var block = buffer;
+					ChainableMemoryBlock block = buffer;
 					while (block != null)
 					{
 						mLength += block.Length;
@@ -1817,12 +1817,12 @@ namespace GriffinPlus.Lib.Io
 					}
 
 					// the specified buffers contain data that should be inserted at the current position of the stream
-					var endOfChainToInsert = buffer.GetEndOfChain(out long chainToInsertLength);
+					ChainableMemoryBlock endOfChainToInsert = buffer.GetEndOfChain(out long chainToInsertLength);
 					if (indexOfPositionInCurrentBlock == 0)
 					{
 						// stream position is at the first byte in the current block
 						// => the specified chain of blocks can be inserted before the current block, no copying needed
-						var block = mCurrentBlock;
+						ChainableMemoryBlock block = mCurrentBlock;
 						if (mCurrentBlock.Previous != null)
 							mCurrentBlock.Previous.Next = buffer;
 						else
@@ -1873,7 +1873,7 @@ namespace GriffinPlus.Lib.Io
 								// new data should overwrite existing data and there is enough new data to overwrite existing data in the current block
 								// => no need to move existing data to the end of the inserted blocks, just cut the current block
 								mCurrentBlock.Length -= bytesToEndOfCurrentBlock;
-								var block = mCurrentBlock.Next;
+								ChainableMemoryBlock block = mCurrentBlock.Next;
 								mCurrentBlock.Next = buffer;
 
 								// the old current block now follows the last inserted block
@@ -1903,7 +1903,7 @@ namespace GriffinPlus.Lib.Io
 							{
 								// there is too less data to overwrite existing data from the current position to the end of the block
 								// => the current block still contains data to keep...
-								var block = buffer;
+								ChainableMemoryBlock block = buffer;
 								int offset = indexOfPositionInCurrentBlock;
 								while (block != null)
 								{
@@ -1915,7 +1915,7 @@ namespace GriffinPlus.Lib.Io
 										block.Length);
 
 									offset += block.Length;
-									var next = block.Next;
+									ChainableMemoryBlock next = block.Next;
 									block.Next = null;
 									Debug.Assert(block.Previous == null);
 									Debug.Assert(block.Next == null);
@@ -1933,7 +1933,7 @@ namespace GriffinPlus.Lib.Io
 						}
 						else
 						{
-							var adjustedEndOfChainToInsert = endOfChainToInsert; // can be enlarged to contain moved data
+							ChainableMemoryBlock adjustedEndOfChainToInsert = endOfChainToInsert; // can be enlarged to contain moved data
 							int lengthOfEndOfChainToInsert = endOfChainToInsert.Length;
 							if (bytesToEndOfCurrentBlock > 0)
 							{
@@ -1947,7 +1947,7 @@ namespace GriffinPlus.Lib.Io
 									int remainingBytesToAllocate = bytesToEndOfCurrentBlock - unusedSpace;
 									while (remainingBytesToAllocate > 0)
 									{
-										var block = ChainableMemoryBlock.GetPooled(mBlockSize, mArrayPool);
+										ChainableMemoryBlock block = ChainableMemoryBlock.GetPooled(mBlockSize, mArrayPool);
 										adjustedEndOfChainToInsert.Next = block;
 										adjustedEndOfChainToInsert = block;
 										remainingBytesToAllocate -= block.Capacity;
@@ -1955,7 +1955,7 @@ namespace GriffinPlus.Lib.Io
 								}
 
 								// copy data to move into the block(s)
-								var blockReceivingMovedData = endOfChainToInsert;
+								ChainableMemoryBlock blockReceivingMovedData = endOfChainToInsert;
 								int remainingBytesToCopy = bytesToEndOfCurrentBlock;
 								int offset = indexOfPositionInCurrentBlock;
 								while (blockReceivingMovedData != null)
@@ -2021,7 +2021,7 @@ namespace GriffinPlus.Lib.Io
 				Debug.Assert(mCurrentBlockStartIndex == mFirstBlockOffset + mCurrentBlock.IndexOfFirstByteInBlock);
 
 				// adjust length of the buffer
-				var block = mFirstBlock;
+				ChainableMemoryBlock block = mFirstBlock;
 				while (block != null)
 				{
 					mLength += block.Length;
@@ -2053,8 +2053,8 @@ namespace GriffinPlus.Lib.Io
 			while (block != null && remainingBytesToRemove > 0)
 			{
 				int bytesToRemove = (int)Math.Min(block.Length, remainingBytesToRemove);
-				var next = block.Next;
-				var previous = block.Previous;
+				ChainableMemoryBlock next = block.Next;
+				ChainableMemoryBlock previous = block.Previous;
 				if (bytesToRemove == block.Length)
 				{
 					// the block does not contain any data afterwards

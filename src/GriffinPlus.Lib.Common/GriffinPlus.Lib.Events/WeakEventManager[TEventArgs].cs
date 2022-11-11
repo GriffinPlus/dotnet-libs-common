@@ -153,13 +153,13 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				if (!sItemsByObject.TryGetValue(obj, out var itemsByName))
+				if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName))
 				{
 					itemsByName = new Dictionary<string, Item[]>(1);
 					sItemsByObject.Add(obj, itemsByName);
 				}
 
-				if (itemsByName.TryGetValue(eventName, out var items))
+				if (itemsByName.TryGetValue(eventName, out Item[] items))
 				{
 					newItems = new Item[items.Length + 1];
 					Array.Copy(items, newItems, items.Length);
@@ -207,7 +207,7 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				if (!sItemsByObject.TryGetValue(obj, out var itemsByName) || !itemsByName.TryGetValue(eventName, out var items))
+				if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName) || !itemsByName.TryGetValue(eventName, out Item[] items))
 					return -1; // specified event handler was not registered
 
 				// remove specified handler from the handler list and tidy up handlers of collected objects as well
@@ -215,8 +215,8 @@ namespace GriffinPlus.Lib.Events
 				bool removed = false;
 				for (int i = 0; i < items.Length; i++)
 				{
-					var item = items[i];
-					var matchResult = item.IsHandler(handler);
+					Item item = items[i];
+					ItemMatchResult matchResult = item.IsHandler(handler);
 					if (matchResult == ItemMatchResult.Match)
 					{
 						removed = true;
@@ -261,7 +261,7 @@ namespace GriffinPlus.Lib.Events
 				if (eventName != null)
 				{
 					// abort, if there is no event handler attached to the specified event
-					if (!sItemsByObject.TryGetValue(obj, out var itemsByName) || !itemsByName.TryGetValue(eventName, out _))
+					if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName) || !itemsByName.TryGetValue(eventName, out _))
 						return false;
 
 					// remove all handlers attached to the specified event
@@ -285,7 +285,7 @@ namespace GriffinPlus.Lib.Events
 		{
 			lock (sSync)
 			{
-				if (!sItemsByObject.TryGetValue(obj, out var itemsByName) || !itemsByName.TryGetValue(eventName, out var items))
+				if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName) || !itemsByName.TryGetValue(eventName, out Item[] items))
 					return false;
 
 				bool valid = true;
@@ -335,13 +335,13 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				if (!sItemsByObject.TryGetValue(obj, out var itemsByName) || !itemsByName.TryGetValue(eventName, out var items))
+				if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName) || !itemsByName.TryGetValue(eventName, out Item[] items))
 					return false;
 
 				bool valid = true;
 				for (int i = 0; i < items.Length; i++)
 				{
-					var match = items[i].IsHandler(handler);
+					ItemMatchResult match = items[i].IsHandler(handler);
 					if (match == ItemMatchResult.Match) registered = true;
 					if (match == ItemMatchResult.Collected) valid = false;
 				}
@@ -397,7 +397,7 @@ namespace GriffinPlus.Lib.Events
 				return;
 
 			// fire event
-			foreach (var item in items)
+			foreach (Item item in items)
 			{
 				if (item.SynchronizationContext != null)
 				{
@@ -444,7 +444,7 @@ namespace GriffinPlus.Lib.Events
 
 			if (items != null)
 			{
-				foreach (var item in items)
+				foreach (Item item in items)
 				{
 					if (item.SynchronizationContext != null)
 					{
@@ -467,7 +467,7 @@ namespace GriffinPlus.Lib.Events
 					{
 						// synchronization context was not specified at registration
 						// => schedule handler in worker thread or invoke it directly
-						var itemCopy = item;
+						Item itemCopy = item;
 						handlers += (sender, e) =>
 						{
 							if (itemCopy.ScheduleAlways) Task.Run(() => itemCopy.Fire(sender, e));
@@ -488,14 +488,14 @@ namespace GriffinPlus.Lib.Events
 		/// <returns>The cleaned up handler items; null, if no handlers are left.</returns>
 		private static Item[] CleanupAndGetHandlers(object obj, string eventName)
 		{
-			if (!sItemsByObject.TryGetValue(obj, out var itemsByName)) return null;
-			if (!itemsByName.TryGetValue(eventName, out var items)) return null;
+			if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName)) return null;
+			if (!itemsByName.TryGetValue(eventName, out Item[] items)) return null;
 
 			// check whether the handlers are still valid
 			List<int> itemsToRemove = null;
 			for (int i = 0; i < items.Length; i++)
 			{
-				var item = items[i];
+				Item item = items[i];
 				if (!item.IsValid)
 				{
 					if (itemsToRemove == null) itemsToRemove = new List<int>();

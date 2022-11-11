@@ -120,13 +120,13 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				if (!sItemsByObject.TryGetValue(obj, out var itemsByName))
+				if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName))
 				{
 					itemsByName = new Dictionary<string, Item[]>(1);
 					sItemsByObject.Add(obj, itemsByName);
 				}
 
-				if (itemsByName.TryGetValue(eventName, out var items))
+				if (itemsByName.TryGetValue(eventName, out Item[] items))
 				{
 					newItems = new Item[items.Length + 1];
 					Array.Copy(items, newItems, items.Length);
@@ -174,12 +174,12 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				if (!sItemsByObject.TryGetValue(obj, out var itemsByName) || !itemsByName.TryGetValue(eventName, out var items))
+				if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName) || !itemsByName.TryGetValue(eventName, out Item[] items))
 					return -1; // specified event handler was not registered
 
 				for (int i = 0; i < items.Length; i++)
 				{
-					var registeredHandler = items[i].Handler;
+					EventHandler<TEventArgs> registeredHandler = items[i].Handler;
 					if (registeredHandler == handler)
 					{
 						var newItems = new Item[items.Length - 1];
@@ -222,7 +222,7 @@ namespace GriffinPlus.Lib.Events
 				if (eventName != null)
 				{
 					// abort, if there is no event handler attached to the specified event
-					if (!sItemsByObject.TryGetValue(obj, out var itemsByName) || !itemsByName.TryGetValue(eventName, out _))
+					if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName) || !itemsByName.TryGetValue(eventName, out _))
 						return false;
 
 					// remove all handlers attached to the specified event
@@ -246,7 +246,7 @@ namespace GriffinPlus.Lib.Events
 		{
 			lock (sSync)
 			{
-				if (!sItemsByObject.TryGetValue(obj, out var itemsByName) || !itemsByName.TryGetValue(eventName, out _))
+				if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName) || !itemsByName.TryGetValue(eventName, out _))
 					return false;
 
 				return true;
@@ -264,7 +264,7 @@ namespace GriffinPlus.Lib.Events
 		{
 			lock (sSync)
 			{
-				if (!sItemsByObject.TryGetValue(obj, out var itemsByName) || !itemsByName.TryGetValue(eventName, out var items))
+				if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName) || !itemsByName.TryGetValue(eventName, out Item[] items))
 					return false;
 
 				for (int i = 0; i < items.Length; i++)
@@ -295,11 +295,11 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				if (!sItemsByObject.TryGetValue(obj, out var itemsByName)) return;
+				if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName)) return;
 				if (!itemsByName.TryGetValue(eventName, out items)) return;
 			}
 
-			foreach (var item in items)
+			foreach (Item item in items)
 			{
 				if (item.SynchronizationContext != null)
 				{
@@ -339,13 +339,13 @@ namespace GriffinPlus.Lib.Events
 
 			lock (sSync)
 			{
-				if (!sItemsByObject.TryGetValue(obj, out var itemsByName)) return null;
+				if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName)) return null;
 				if (!itemsByName.TryGetValue(eventName, out items)) return null;
 			}
 
 			EventHandler<TEventArgs> handlers = null;
 
-			foreach (var item in items)
+			foreach (Item item in items)
 			{
 				if (item.SynchronizationContext != null)
 				{
@@ -366,7 +366,7 @@ namespace GriffinPlus.Lib.Events
 				}
 				else
 				{
-					var itemCopy = item;
+					Item itemCopy = item;
 					handlers += (sender, e) =>
 					{
 						// synchronization context was not specified at registration

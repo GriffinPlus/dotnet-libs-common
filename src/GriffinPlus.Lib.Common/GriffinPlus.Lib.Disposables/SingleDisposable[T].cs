@@ -97,7 +97,7 @@ namespace GriffinPlus.Lib.Disposables
 		/// </remarks>
 		public void Dispose()
 		{
-			var context = mContext.TryGetAndUnset();
+			BoundActionField<T>.IBoundAction context = mContext.TryGetAndUnset();
 			if (context == null)
 			{
 				mDisposingEvent.Wait();

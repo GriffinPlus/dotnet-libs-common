@@ -36,31 +36,31 @@ using System.Collections.Generic;
 namespace GriffinPlus.Lib.Collections
 {
 
-	partial class TypeKeyedDictionary<TValue>
+	partial class ByteSequenceKeyedDictionary<TValue>
 	{
-		partial class ValueCollection
+		partial class KeyCollection
 		{
 			/// <summary>
-			/// An enumerator for the <see cref="TypeKeyedDictionary{TValue}.ValueCollection"/> class.
+			/// An enumerator for the <see cref="ByteSequenceKeyedDictionary{TValue}.KeyCollection"/> class.
 			/// </summary>
 			[Serializable]
-			public struct Enumerator : IEnumerator<TValue>
+			public struct Enumerator : IEnumerator<IReadOnlyList<byte>>
 			{
-				private TypeKeyedDictionary<TValue> mDictionary;
-				private int                         mIndex;
-				private int                         mVersion;
-				private TValue                      mCurrentValue;
+				private ByteSequenceKeyedDictionary<TValue> mDictionary;
+				private int                                 mIndex;
+				private int                                 mVersion;
+				private byte[]                              mCurrentKey;
 
 				/// <summary>
-				/// Initializes a new instance of the <see cref="TypeKeyedDictionary{TValue}.ValueCollection.Enumerator"/> class.
+				/// Initializes a new instance of the <see cref="ByteSequenceKeyedDictionary{TValue}.KeyCollection.Enumerator"/> class.
 				/// </summary>
-				/// <param name="dictionary">Dictionary the enumerator belongs to.</param>
-				internal Enumerator(TypeKeyedDictionary<TValue> dictionary)
+				/// <param name="dictionary"></param>
+				internal Enumerator(ByteSequenceKeyedDictionary<TValue> dictionary)
 				{
 					mDictionary = dictionary;
 					mVersion = dictionary.mVersion;
 					mIndex = 0;
-					mCurrentValue = default;
+					mCurrentKey = default;
 				}
 
 				/// <summary>
@@ -83,29 +83,29 @@ namespace GriffinPlus.Lib.Collections
 
 					while ((uint)mIndex < (uint)mDictionary.mCount)
 					{
-						ref var entry = ref mDictionary.mEntries[mIndex++];
+						ref Entry entry = ref mDictionary.mEntries[mIndex++];
 						if (entry.Next >= -1)
 						{
-							mCurrentValue = entry.Value;
+							mCurrentKey = entry.Key;
 							return true;
 						}
 					}
 
 					mIndex = mDictionary.mCount + 1;
-					mCurrentValue = default;
+					mCurrentKey = default;
 					return false;
 				}
 
 				/// <summary>
 				/// Gets the current value of the enumerator.
 				/// </summary>
-				public TValue Current => mCurrentValue;
+				public IReadOnlyList<byte> Current => mCurrentKey;
 
 				/// <summary>
 				/// Gets the element in the collection at the current position of the enumerator.
 				/// </summary>
 				/// <value>The element in the collection at the current position of the enumerator.</value>
-				object IEnumerator.Current => mCurrentValue;
+				object IEnumerator.Current => mCurrentKey;
 
 				/// <summary>
 				/// Sets the enumerator to its initial position, which is before the first element in the collection.
@@ -117,7 +117,7 @@ namespace GriffinPlus.Lib.Collections
 						throw new InvalidOperationException("The collection was modified after the enumerator was created.");
 
 					mIndex = 0;
-					mCurrentValue = default;
+					mCurrentKey = default;
 				}
 			}
 		}

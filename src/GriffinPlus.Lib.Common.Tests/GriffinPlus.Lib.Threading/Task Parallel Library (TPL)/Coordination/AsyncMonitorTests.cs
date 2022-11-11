@@ -27,6 +27,7 @@
 //     SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -45,7 +46,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var monitor = new AsyncMonitor();
 
-			var task = monitor.EnterAsync();
+			AwaitableDisposable<IDisposable> task = monitor.EnterAsync();
 			await task;
 		}
 
@@ -53,10 +54,10 @@ namespace GriffinPlus.Lib.Threading
 		public async Task Locked_PreventsLockUntilUnlocked()
 		{
 			var monitor = new AsyncMonitor();
-			var task1HasLock = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
-			var task1Continue = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
+			TaskCompletionSource<object> task1HasLock = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
+			TaskCompletionSource<object> task1Continue = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 
-			var unused = Task.Run(
+			Task unused = Task.Run(
 				async () =>
 				{
 					using (await monitor.EnterAsync())
@@ -67,7 +68,7 @@ namespace GriffinPlus.Lib.Threading
 				});
 			await task1HasLock.Task;
 
-			var lockTask = monitor.EnterAsync().AsTask();
+			Task<IDisposable> lockTask = monitor.EnterAsync().AsTask();
 			Assert.False(lockTask.IsCompleted);
 			task1Continue.SetResult(null);
 			await lockTask;
@@ -78,26 +79,26 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var monitor = new AsyncMonitor();
 			int completed = 0;
-			var task1Ready = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
-			var task2Ready = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
-			var task1 = Task.Run(
+			TaskCompletionSource<object> task1Ready = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
+			TaskCompletionSource<object> task2Ready = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
+			Task task1 = Task.Run(
 				async () =>
 				{
 					using (await monitor.EnterAsync())
 					{
-						var waitTask1 = monitor.WaitAsync();
+						Task waitTask1 = monitor.WaitAsync();
 						task1Ready.SetResult(null);
 						await waitTask1;
 						Interlocked.Increment(ref completed);
 					}
 				});
 			await task1Ready.Task;
-			var task2 = Task.Run(
+			Task task2 = Task.Run(
 				async () =>
 				{
 					using (await monitor.EnterAsync())
 					{
-						var waitTask2 = monitor.WaitAsync();
+						Task waitTask2 = monitor.WaitAsync();
 						task2Ready.SetResult(null);
 						await waitTask2;
 						Interlocked.Increment(ref completed);
@@ -121,10 +122,10 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var monitor = new AsyncMonitor();
 			int completed = 0;
-			var task1Ready = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
-			var task2Ready = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
+			TaskCompletionSource<object> task1Ready = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
+			TaskCompletionSource<object> task2Ready = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 			Task waitTask1;
-			var task1 = Task.Run(
+			Task task1 = Task.Run(
 				async () =>
 				{
 					using (await monitor.EnterAsync())
@@ -137,7 +138,7 @@ namespace GriffinPlus.Lib.Threading
 				});
 			await task1Ready.Task;
 			Task waitTask2;
-			var task2 = Task.Run(
+			Task task2 = Task.Run(
 				async () =>
 				{
 					using (await monitor.EnterAsync())
@@ -150,7 +151,7 @@ namespace GriffinPlus.Lib.Threading
 				});
 			await task2Ready.Task;
 
-			var lockTask3 = monitor.EnterAsync();
+			AwaitableDisposable<IDisposable> lockTask3 = monitor.EnterAsync();
 			using (await lockTask3)
 			{
 				monitor.PulseAll();

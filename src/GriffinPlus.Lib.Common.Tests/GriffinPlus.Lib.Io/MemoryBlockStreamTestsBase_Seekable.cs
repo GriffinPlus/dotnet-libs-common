@@ -58,14 +58,14 @@ namespace GriffinPlus.Lib.Io
 		public void SetLength(int oldLength, int newLength, int initialPosition)
 		{
 			// create a new stream
-			using (var stream = CreateStreamToTest())
+			using (MemoryBlockStream stream = CreateStreamToTest())
 			{
 				// populate the stream with some initial data, if necessary
 				var expectedData = new List<byte>();
 				if (oldLength > 0)
 				{
 					// generate some test data and attach it to the stream
-					var chain = GetRandomTestDataChain(oldLength, StreamMemoryBlockSize, out expectedData);
+					ChainableMemoryBlock chain = GetRandomTestDataChain(oldLength, StreamMemoryBlockSize, out expectedData);
 					stream.AttachBuffer(chain);
 				}
 
@@ -89,7 +89,7 @@ namespace GriffinPlus.Lib.Io
 				else expectedData.AddRange(Enumerable.Repeat((byte)0, newLength - oldLength));
 
 				// detach the underlying buffer and check its state
-				using (var firstBlock = stream.DetachBuffer())
+				using (ChainableMemoryBlock firstBlock = stream.DetachBuffer())
 				{
 					if (newLength > 0)
 					{
@@ -118,7 +118,7 @@ namespace GriffinPlus.Lib.Io
 				var origins = new[] { SeekOrigin.Begin, SeekOrigin.Current, SeekOrigin.End };
 
 				// empty string, don't change position
-				foreach (var origin in origins) yield return new object[] { 0, 0, origin, 0, 0 };
+				foreach (SeekOrigin origin in origins) yield return new object[] { 0, 0, origin, 0, 0 };
 
 				// stream with a single block (1 byte and 10 bytes) and a huge stream with multiple blocks
 				// (check border positions)
@@ -164,10 +164,10 @@ namespace GriffinPlus.Lib.Io
 			int        expectedPosition)
 		{
 			// create a new stream
-			using (var stream = CreateStreamToTest())
+			using (MemoryBlockStream stream = CreateStreamToTest())
 			{
 				// generate some test data and attach it to the stream
-				var chain = GetRandomTestDataChain(initialLength, StreamMemoryBlockSize, out var expectedData);
+				ChainableMemoryBlock chain = GetRandomTestDataChain(initialLength, StreamMemoryBlockSize, out List<byte> expectedData);
 				stream.AttachBuffer(chain);
 
 				// change position (already involves seeking)
@@ -350,17 +350,17 @@ namespace GriffinPlus.Lib.Io
 			int  blockToInsertCount,
 			int  blockToInsertSize)
 		{
-			using (var stream = CreateStreamToTest(streamBlockSize))
+			using (MemoryBlockStream stream = CreateStreamToTest(streamBlockSize))
 			{
 				// generate some test data and attach it to the stream
-				var chain = GetRandomTestDataChain(initialLength, streamBlockSize, out var initialStreamData);
+				ChainableMemoryBlock chain = GetRandomTestDataChain(initialLength, streamBlockSize, out List<byte> initialStreamData);
 				stream.AttachBuffer(chain);
 
 				// set position of the stream to inject the blocks into
 				stream.Position = position;
 
 				// inject a chain of blocks into the existing chain of blocks backing the stream
-				var chainToInsert = GetRandomTestDataChain(blockToInsertCount * blockToInsertSize, blockToInsertSize, out var dataToInsert);
+				ChainableMemoryBlock chainToInsert = GetRandomTestDataChain(blockToInsertCount * blockToInsertSize, blockToInsertSize, out List<byte> dataToInsert);
 				stream.InjectBufferAtCurrentPosition(
 					chainToInsert,
 					overwrite,
@@ -384,7 +384,7 @@ namespace GriffinPlus.Lib.Io
 				expectedData.AddRange(dataToInsert);
 				expectedData.AddRange(initialStreamData.Skip(position));
 				if (overwrite) expectedData.RemoveRange(position + dataToInsert.Count, Math.Min(dataToInsert.Count, expectedData.Count - position - dataToInsert.Count));
-				using (var detachedBuffer = stream.DetachBuffer())
+				using (ChainableMemoryBlock detachedBuffer = stream.DetachBuffer())
 				{
 					byte[] data = detachedBuffer.GetChainData();
 					Assert.Equal(expectedData.Count, data.Length);
@@ -509,17 +509,17 @@ namespace GriffinPlus.Lib.Io
 			int  blockToInsertCount,
 			int  blockToInsertSize)
 		{
-			using (var stream = CreateStreamToTest(streamBlockSize))
+			using (MemoryBlockStream stream = CreateStreamToTest(streamBlockSize))
 			{
 				// generate some test data and attach it to the stream
-				var chain = GetRandomTestDataChain(initialLength, streamBlockSize, out var initialStreamData);
+				ChainableMemoryBlock chain = GetRandomTestDataChain(initialLength, streamBlockSize, out List<byte> initialStreamData);
 				await stream.AttachBufferAsync(chain).ConfigureAwait(false);
 
 				// set position of the stream to inject the blocks into
 				stream.Position = position;
 
 				// inject a chain of blocks into the existing chain of blocks backing the stream
-				var chainToInsert = GetRandomTestDataChain(blockToInsertCount * blockToInsertSize, blockToInsertSize, out var dataToInsert);
+				ChainableMemoryBlock chainToInsert = GetRandomTestDataChain(blockToInsertCount * blockToInsertSize, blockToInsertSize, out List<byte> dataToInsert);
 				await stream.InjectBufferAtCurrentPositionAsync(
 						chainToInsert,
 						overwrite,
@@ -545,7 +545,7 @@ namespace GriffinPlus.Lib.Io
 				expectedData.AddRange(dataToInsert);
 				expectedData.AddRange(initialStreamData.Skip(position));
 				if (overwrite) expectedData.RemoveRange(position + dataToInsert.Count, Math.Min(dataToInsert.Count, expectedData.Count - position - dataToInsert.Count));
-				using (var detachedBuffer = await stream.DetachBufferAsync(CancellationToken.None).ConfigureAwait(false))
+				using (ChainableMemoryBlock detachedBuffer = await stream.DetachBufferAsync(CancellationToken.None).ConfigureAwait(false))
 				{
 					byte[] data = detachedBuffer.GetChainData();
 					Assert.Equal(expectedData.Count, data.Length);

@@ -37,16 +37,16 @@ namespace GriffinPlus.Lib
 				queue.Enqueue(type);
 				while (queue.Count > 0)
 				{
-					var subType = queue.Dequeue();
-					foreach (var subInterface in subType.GetInterfaces())
+					Type subType = queue.Dequeue();
+					foreach (Type subInterface in subType.GetInterfaces())
 					{
 						if (considered.Contains(subInterface)) continue;
 						considered.Add(subInterface);
 						queue.Enqueue(subInterface);
 					}
 
-					var typeProperties = subType.GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
-					var newPropertyInfos = typeProperties.Where(x => !propertyInfos.Contains(x));
+					PropertyInfo[] typeProperties = subType.GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
+					IEnumerable<PropertyInfo> newPropertyInfos = typeProperties.Where(x => !propertyInfos.Contains(x));
 					propertyInfos.InsertRange(0, newPropertyInfos);
 				}
 
@@ -73,16 +73,16 @@ namespace GriffinPlus.Lib
 				queue.Enqueue(type);
 				while (queue.Count > 0)
 				{
-					var subType = queue.Dequeue();
-					foreach (var subInterface in subType.GetInterfaces())
+					Type subType = queue.Dequeue();
+					foreach (Type subInterface in subType.GetInterfaces())
 					{
 						if (considered.Contains(subInterface)) continue;
 						considered.Add(subInterface);
 						queue.Enqueue(subInterface);
 					}
 
-					var typeMethods = subType.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
-					var newMethodInfos = typeMethods.Where(x => !methodInfos.Contains(x));
+					MethodInfo[] typeMethods = subType.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
+					IEnumerable<MethodInfo> newMethodInfos = typeMethods.Where(x => !methodInfos.Contains(x));
 					methodInfos.InsertRange(0, newMethodInfos);
 				}
 
@@ -118,7 +118,7 @@ namespace GriffinPlus.Lib
 		{
 			while (typeToCheck != null && typeToCheck != typeof(object))
 			{
-				var currentType = typeToCheck.IsGenericType ? typeToCheck.GetGenericTypeDefinition() : typeToCheck;
+				Type currentType = typeToCheck.IsGenericType ? typeToCheck.GetGenericTypeDefinition() : typeToCheck;
 				if (genericType == currentType) return true;
 				typeToCheck = typeToCheck.BaseType;
 			}
@@ -148,7 +148,7 @@ namespace GriffinPlus.Lib
 		{
 			void AppendName(StringBuilder sb, Type t)
 			{
-				var typeInfo = t.GetTypeInfo();
+				TypeInfo typeInfo = t.GetTypeInfo();
 				if (typeInfo.IsGenericParameter)
 				{
 					sb.Append(typeInfo.Name);
@@ -157,7 +157,7 @@ namespace GriffinPlus.Lib
 				{
 					sb.Append(typeInfo.Namespace);
 					sb.Append('.');
-					var match = sExtractGenericArgumentTypeRegex.Match(typeInfo.Name);
+					Match match = sExtractGenericArgumentTypeRegex.Match(typeInfo.Name);
 					sb.Append(match.Groups[1].Value);
 					sb.Append('<');
 					if (typeInfo.IsConstructedGenericType)

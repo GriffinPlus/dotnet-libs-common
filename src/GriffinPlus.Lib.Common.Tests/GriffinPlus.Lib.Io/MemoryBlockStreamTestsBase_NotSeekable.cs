@@ -37,7 +37,7 @@ namespace GriffinPlus.Lib.Io
 		[Fact]
 		public void SetLength()
 		{
-			var stream = CreateStreamToTest();
+			MemoryBlockStream stream = CreateStreamToTest();
 			Assert.Throws<NotSupportedException>(() => stream.SetLength(0));
 		}
 
@@ -51,7 +51,7 @@ namespace GriffinPlus.Lib.Io
 		[Fact]
 		public void Seek()
 		{
-			var stream = CreateStreamToTest();
+			MemoryBlockStream stream = CreateStreamToTest();
 			Assert.Throws<NotSupportedException>(() => stream.Seek(0, SeekOrigin.Begin));
 		}
 

@@ -343,7 +343,7 @@ namespace GriffinPlus.Lib.Collections
 
 			for (int index = 0; index != Count; ++index)
 			{
-				var sourceItem = mList[mInitialOffset + index];
+				T sourceItem = mList[mInitialOffset + index];
 				if (comparer.Equals(item, sourceItem))
 				{
 					return index;
@@ -441,7 +441,7 @@ namespace GriffinPlus.Lib.Collections
 		/// <returns>All items contained in the list.</returns>
 		public T[] ToArray()
 		{
-			T[] array = new T[Count];
+			var array = new T[Count];
 			for (int i = 0; i != array.Length; i++)
 			{
 				array[i] = mList[mInitialOffset + i];

@@ -86,7 +86,7 @@ namespace GriffinPlus.Lib.Io
 		public void CreateNewStream()
 		{
 			// create a new stream
-			var stream = CreateStreamToTest();
+			MemoryBlockStream stream = CreateStreamToTest();
 
 			// check capabilities of the stream
 			Assert.True(stream.CanRead);
@@ -102,7 +102,7 @@ namespace GriffinPlus.Lib.Io
 			Assert.Throws<InvalidOperationException>(() => stream.WriteTimeout);
 
 			// detach internal buffer and check that there is no buffer, yet
-			var buffer = stream.DetachBuffer();
+			ChainableMemoryBlock buffer = stream.DetachBuffer();
 			Assert.Null(buffer);
 		}
 
@@ -117,7 +117,7 @@ namespace GriffinPlus.Lib.Io
 		[Fact]
 		public void Flush()
 		{
-			var stream = CreateStreamToTest();
+			MemoryBlockStream stream = CreateStreamToTest();
 			stream.Flush();
 		}
 
@@ -132,7 +132,7 @@ namespace GriffinPlus.Lib.Io
 		[Fact]
 		public async Task FlushAsync()
 		{
-			var stream = CreateStreamToTest();
+			MemoryBlockStream stream = CreateStreamToTest();
 			await stream.FlushAsync(CancellationToken.None).ConfigureAwait(false);
 		}
 
@@ -546,10 +546,10 @@ namespace GriffinPlus.Lib.Io
 		public void CopyTo(int count)
 		{
 			// create a new stream
-			using (var stream = CreateStreamToTest())
+			using (MemoryBlockStream stream = CreateStreamToTest())
 			{
 				// generate some test data
-				using (var chain = GetRandomTestDataChain(count, StreamMemoryBlockSize, out var list))
+				using (ChainableMemoryBlock chain = GetRandomTestDataChain(count, StreamMemoryBlockSize, out List<byte> list))
 				{
 					byte[] data = list.ToArray();
 
@@ -588,10 +588,10 @@ namespace GriffinPlus.Lib.Io
 		public async Task CopyToAsync(int count)
 		{
 			// create a new stream
-			using (var stream = CreateStreamToTest())
+			using (MemoryBlockStream stream = CreateStreamToTest())
 			{
 				// generate some test data
-				using (var chain = GetRandomTestDataChain(count, StreamMemoryBlockSize, out var list))
+				using (ChainableMemoryBlock chain = GetRandomTestDataChain(count, StreamMemoryBlockSize, out List<byte> list))
 				{
 					byte[] data = list.ToArray();
 
@@ -630,10 +630,10 @@ namespace GriffinPlus.Lib.Io
 		public void AttachBuffer()
 		{
 			// create a new stream
-			using (var stream = CreateStreamToTest())
+			using (MemoryBlockStream stream = CreateStreamToTest())
 			{
 				// generate some test data and attach the buffer to the stream
-				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				ChainableMemoryBlock chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out List<byte> data);
 				stream.AttachBuffer(chain);
 
 				// the stream's properties should reflect the new buffer
@@ -653,10 +653,10 @@ namespace GriffinPlus.Lib.Io
 		public async Task AttachBufferAsync()
 		{
 			// create a new stream
-			using (var stream = CreateStreamToTest())
+			using (MemoryBlockStream stream = CreateStreamToTest())
 			{
 				// generate some test data and attach the buffer to the stream
-				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				ChainableMemoryBlock chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out List<byte> data);
 				await stream.AttachBufferAsync(chain, CancellationToken.None).ConfigureAwait(false);
 
 				// the stream's properties should reflect the new buffer
@@ -676,10 +676,10 @@ namespace GriffinPlus.Lib.Io
 		public void DetachBuffer()
 		{
 			// create a new stream
-			using (var stream = CreateStreamToTest())
+			using (MemoryBlockStream stream = CreateStreamToTest())
 			{
 				// generate some test data and pass ownership to the stream
-				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				ChainableMemoryBlock chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out List<byte> data);
 				stream.AttachBuffer(chain);
 
 				// the stream's properties should reflect the new buffer
@@ -687,7 +687,7 @@ namespace GriffinPlus.Lib.Io
 				Assert.Equal(data.Count, stream.Length);
 
 				// detach the buffer, should be the same as attached
-				using (var firstBlock = stream.DetachBuffer())
+				using (ChainableMemoryBlock firstBlock = stream.DetachBuffer())
 				{
 					Assert.Same(chain, firstBlock);
 
@@ -713,10 +713,10 @@ namespace GriffinPlus.Lib.Io
 		public async Task DetachBufferAsync()
 		{
 			// create a new stream
-			using (var stream = CreateStreamToTest())
+			using (MemoryBlockStream stream = CreateStreamToTest())
 			{
 				// generate some test data and pass ownership to the stream
-				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				ChainableMemoryBlock chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out List<byte> data);
 				await stream.AttachBufferAsync(chain).ConfigureAwait(false);
 
 				// the stream's properties should reflect the new buffer
@@ -724,7 +724,7 @@ namespace GriffinPlus.Lib.Io
 				Assert.Equal(data.Count, stream.Length);
 
 				// detach the buffer, should be the same as attached
-				using (var firstBlock = await stream.DetachBufferAsync(CancellationToken.None).ConfigureAwait(false))
+				using (ChainableMemoryBlock firstBlock = await stream.DetachBufferAsync(CancellationToken.None).ConfigureAwait(false))
 				{
 					Assert.Same(chain, firstBlock);
 
@@ -751,10 +751,10 @@ namespace GriffinPlus.Lib.Io
 		public void AppendBuffer_EmptyStream()
 		{
 			// create a new stream
-			using (var stream = CreateStreamToTest())
+			using (MemoryBlockStream stream = CreateStreamToTest())
 			{
 				// generate some test data
-				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				ChainableMemoryBlock chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out List<byte> data);
 
 				// append the second buffer
 				stream.AppendBuffer(chain);
@@ -762,7 +762,7 @@ namespace GriffinPlus.Lib.Io
 				// the stream should contain data from both buffers
 				Assert.Equal(0, stream.Position);
 				Assert.Equal(data.Count, stream.Length);
-				using (var detachedBuffer = stream.DetachBuffer())
+				using (ChainableMemoryBlock detachedBuffer = stream.DetachBuffer())
 				{
 					Assert.Equal(data, detachedBuffer.GetChainData());
 				}
@@ -777,11 +777,11 @@ namespace GriffinPlus.Lib.Io
 		public void AppendBuffer_NonEmptyStream()
 		{
 			// create a new stream
-			using (var stream = CreateStreamToTest())
+			using (MemoryBlockStream stream = CreateStreamToTest())
 			{
 				// generate some test data
-				var chain1 = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data1);
-				var chain2 = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data2);
+				ChainableMemoryBlock chain1 = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out List<byte> data1);
+				ChainableMemoryBlock chain2 = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out List<byte> data2);
 
 				// attach the first buffer to the stream
 				stream.AttachBuffer(chain1);
@@ -792,7 +792,7 @@ namespace GriffinPlus.Lib.Io
 				// the stream should contain data from both buffers
 				Assert.Equal(0, stream.Position);
 				Assert.Equal(data1.Count + data2.Count, stream.Length);
-				using (var detachedBuffer = stream.DetachBuffer())
+				using (ChainableMemoryBlock detachedBuffer = stream.DetachBuffer())
 				{
 					Assert.Equal(data1.Concat(data2), detachedBuffer.GetChainData());
 				}
@@ -811,10 +811,10 @@ namespace GriffinPlus.Lib.Io
 		public async Task AppendBufferAsync_EmptyStream()
 		{
 			// create a new stream
-			using (var stream = CreateStreamToTest())
+			using (MemoryBlockStream stream = CreateStreamToTest())
 			{
 				// generate some test data
-				var chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data);
+				ChainableMemoryBlock chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out List<byte> data);
 
 				// append the second buffer
 				await stream.AppendBufferAsync(chain, CancellationToken.None);
@@ -822,7 +822,7 @@ namespace GriffinPlus.Lib.Io
 				// the stream should contain data from both buffers
 				Assert.Equal(0, stream.Position);
 				Assert.Equal(data.Count, stream.Length);
-				using (var detachedBuffer = await stream.DetachBufferAsync().ConfigureAwait(false))
+				using (ChainableMemoryBlock detachedBuffer = await stream.DetachBufferAsync().ConfigureAwait(false))
 				{
 					Assert.Equal(data, detachedBuffer.GetChainData());
 				}
@@ -837,11 +837,11 @@ namespace GriffinPlus.Lib.Io
 		public async Task AppendBufferAsync_NonEmptyStream()
 		{
 			// create a new stream
-			using (var stream = CreateStreamToTest())
+			using (MemoryBlockStream stream = CreateStreamToTest())
 			{
 				// generate some test data
-				var chain1 = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data1);
-				var chain2 = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out var data2);
+				ChainableMemoryBlock chain1 = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out List<byte> data1);
+				ChainableMemoryBlock chain2 = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out List<byte> data2);
 
 				// attach the first buffer to the stream
 				await stream.AttachBufferAsync(chain1, CancellationToken.None).ConfigureAwait(false);
@@ -852,7 +852,7 @@ namespace GriffinPlus.Lib.Io
 				// the stream should contain data from both buffers
 				Assert.Equal(0, stream.Position);
 				Assert.Equal(data1.Count + data2.Count, stream.Length);
-				using (var detachedBuffer = await stream.DetachBufferAsync().ConfigureAwait(false))
+				using (ChainableMemoryBlock detachedBuffer = await stream.DetachBufferAsync().ConfigureAwait(false))
 				{
 					Assert.Equal(data1.Concat(data2), detachedBuffer.GetChainData());
 				}
@@ -877,10 +877,10 @@ namespace GriffinPlus.Lib.Io
 		private void TestRead(int initialLength, bool randomChunks, ReadOperation operation)
 		{
 			// create a new stream
-			using (var stream = CreateStreamToTest())
+			using (MemoryBlockStream stream = CreateStreamToTest())
 			{
 				// generate some test data and attach it to the stream
-				var chain = GetRandomTestDataChain(initialLength, StreamMemoryBlockSize, out var expectedData);
+				ChainableMemoryBlock chain = GetRandomTestDataChain(initialLength, StreamMemoryBlockSize, out List<byte> expectedData);
 				stream.AttachBuffer(chain);
 
 				var readData = new List<byte>(expectedData.Count);
@@ -941,10 +941,10 @@ namespace GriffinPlus.Lib.Io
 		private async Task TestReadAsync(int initialLength, bool randomChunks, Func<MemoryBlockStream, byte[], int, Task<int>> operation)
 		{
 			// create a new stream
-			using (var stream = CreateStreamToTest())
+			using (MemoryBlockStream stream = CreateStreamToTest())
 			{
 				// generate some test data and attach it to the stream
-				var chain = GetRandomTestDataChain(initialLength, StreamMemoryBlockSize, out var expectedData);
+				ChainableMemoryBlock chain = GetRandomTestDataChain(initialLength, StreamMemoryBlockSize, out List<byte> expectedData);
 				await stream.AttachBufferAsync(chain).ConfigureAwait(false);
 
 				var readData = new List<byte>(expectedData.Count);
@@ -1001,10 +1001,10 @@ namespace GriffinPlus.Lib.Io
 		private void TestWrite(int count, Action<MemoryBlockStream, byte[]> operation)
 		{
 			// create a new stream
-			using (var stream = CreateStreamToTest())
+			using (MemoryBlockStream stream = CreateStreamToTest())
 			{
 				// generate some test data
-				using (GetRandomTestDataChain(count, StreamMemoryBlockSize, out var list))
+				using (GetRandomTestDataChain(count, StreamMemoryBlockSize, out List<byte> list))
 				{
 					byte[] data = list.ToArray();
 
@@ -1014,7 +1014,7 @@ namespace GriffinPlus.Lib.Io
 					// the stream should contain the written data now
 					Assert.Equal(data.Length, stream.Position);
 					Assert.Equal(data.Length, stream.Length);
-					using (var detachedBuffer = stream.DetachBuffer())
+					using (ChainableMemoryBlock detachedBuffer = stream.DetachBuffer())
 					{
 						if (count > 0) Assert.Equal(data, detachedBuffer.GetChainData());
 						else Assert.Null(detachedBuffer);
@@ -1031,10 +1031,10 @@ namespace GriffinPlus.Lib.Io
 		private async Task TestWriteAsync(int count, Func<MemoryBlockStream, byte[], Task> operation)
 		{
 			// create a new stream
-			using (var stream = CreateStreamToTest())
+			using (MemoryBlockStream stream = CreateStreamToTest())
 			{
 				// generate some test data
-				using (GetRandomTestDataChain(count, StreamMemoryBlockSize, out var list))
+				using (GetRandomTestDataChain(count, StreamMemoryBlockSize, out List<byte> list))
 				{
 					byte[] data = list.ToArray();
 
@@ -1044,7 +1044,7 @@ namespace GriffinPlus.Lib.Io
 					// the stream should contain the written data now
 					Assert.Equal(data.Length, stream.Position);
 					Assert.Equal(data.Length, stream.Length);
-					using (var detachedBuffer = await stream.DetachBufferAsync().ConfigureAwait(false))
+					using (ChainableMemoryBlock detachedBuffer = await stream.DetachBufferAsync().ConfigureAwait(false))
 					{
 						if (count > 0) Assert.Equal(data, detachedBuffer.GetChainData());
 						else Assert.Null(detachedBuffer);

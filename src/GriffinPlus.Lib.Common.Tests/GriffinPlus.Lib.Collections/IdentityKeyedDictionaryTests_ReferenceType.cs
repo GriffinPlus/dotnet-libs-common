@@ -33,7 +33,7 @@ namespace GriffinPlus.Lib.Collections
 		protected override IDictionary<string, string> GetTestData(int count)
 		{
 			var dict = new Dictionary<string, string>(EqualityComparer<string>.Default);
-			Random random = new Random(0);
+			var random = new Random(0);
 			while (dict.Count < count)
 			{
 				string key = $"{random.Next():X8}";

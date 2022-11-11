@@ -28,6 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
@@ -160,8 +161,8 @@ namespace GriffinPlus.Lib.Threading
 				mSynchronizationContext,
 				() =>
 				{
-					var tasks = mQueue.GetConsumingEnumerable();
-					foreach (var task in tasks)
+					IEnumerable<Tuple<Task, bool>> tasks = mQueue.GetConsumingEnumerable();
+					foreach (Tuple<Task, bool> task in tasks)
 					{
 						mTaskScheduler.DoTryExecuteTask(task.Item1);
 
@@ -186,7 +187,7 @@ namespace GriffinPlus.Lib.Threading
 
 			using (var context = new AsyncContext())
 			{
-				var task = context.mTaskFactory.Run(action);
+				Task task = context.mTaskFactory.Run(action);
 				context.Execute();
 				task.WaitAndUnwrapException();
 			}
@@ -205,7 +206,7 @@ namespace GriffinPlus.Lib.Threading
 
 			using (var context = new AsyncContext())
 			{
-				var task = context.mTaskFactory.Run(action);
+				Task<TResult> task = context.mTaskFactory.Run(action);
 				context.Execute();
 				return task.WaitAndUnwrapException();
 			}
@@ -224,7 +225,7 @@ namespace GriffinPlus.Lib.Threading
 			using (var context = new AsyncContext())
 			{
 				context.OperationStarted();
-				var task = context.mTaskFactory.Run(action)
+				Task task = context.mTaskFactory.Run(action)
 					.ContinueWith(
 						t =>
 						{
@@ -255,7 +256,7 @@ namespace GriffinPlus.Lib.Threading
 			using (var context = new AsyncContext())
 			{
 				context.OperationStarted();
-				var task = context.mTaskFactory.Run(action)
+				Task<TResult> task = context.mTaskFactory.Run(action)
 					.ContinueWith(
 						t =>
 						{

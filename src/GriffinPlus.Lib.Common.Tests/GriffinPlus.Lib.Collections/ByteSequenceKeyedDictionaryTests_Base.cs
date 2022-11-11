@@ -72,7 +72,7 @@ namespace GriffinPlus.Lib.Collections
 		public void Create_WithDictionary(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>(data);
 
 			// check the dictionary itself
@@ -191,7 +191,7 @@ namespace GriffinPlus.Lib.Collections
 		[MemberData(nameof(TestDataSetSizes))]
 		public void Capacity_Get(int count)
 		{
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>(data);
 			int expectedCapacity = count > 0 ? HashHelpers.GetPrime(count) : 0;
 			Assert.Equal(expectedCapacity, dict.Capacity); // the capacity should always be prime
@@ -211,11 +211,11 @@ namespace GriffinPlus.Lib.Collections
 		public void Indexer_Get_Span(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>(data);
 
 			// test whether keys of test data are reported to be in the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in data)
 			{
 				Assert.Equal(kvp.Value, dict[new ReadOnlySpan<byte>((byte[])kvp.Key)]);
 			}
@@ -231,7 +231,7 @@ namespace GriffinPlus.Lib.Collections
 		public void Indexer_Get_Span_KeyNotFound(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>(data);
 
 			// test whether some other key is reported to be not in the dictionary
@@ -260,18 +260,18 @@ namespace GriffinPlus.Lib.Collections
 		public void Indexer_Set_Span_NewItem(int count)
 		{
 			// get test data and create an empty dictionary
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>();
 
 			// add data to the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in data)
 			{
 				dict[new ReadOnlySpan<byte>((byte[])kvp.Key)] = kvp.Value;
 			}
 
 			// enumerate the key/value pairs in the dictionary
 			var enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
-			foreach (var kvp in dict) enumerated.Add(kvp);
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in dict) enumerated.Add(kvp);
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
@@ -290,11 +290,11 @@ namespace GriffinPlus.Lib.Collections
 		public void Indexer_Set_Span_OverwriteItem(int count)
 		{
 			// get test data and create an empty dictionary
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>();
 
 			// add data to the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in data)
 			{
 				dict[new ReadOnlySpan<byte>((byte[])kvp.Key)] = kvp.Value;
 			}
@@ -306,7 +306,7 @@ namespace GriffinPlus.Lib.Collections
 
 			// enumerate the key/value pairs in the dictionary
 			var enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
-			foreach (var kvp in dict) enumerated.Add(kvp);
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in dict) enumerated.Add(kvp);
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
@@ -340,18 +340,18 @@ namespace GriffinPlus.Lib.Collections
 		public void Add_Span(int count)
 		{
 			// get test data and create an empty dictionary
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>();
 
 			// add data to the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in data)
 			{
 				dict.Add(new ReadOnlySpan<byte>((byte[])kvp.Key), kvp.Value);
 			}
 
 			// enumerate the key/value pairs in the dictionary
 			var enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
-			foreach (var kvp in dict) enumerated.Add(kvp);
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in dict) enumerated.Add(kvp);
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
@@ -370,13 +370,13 @@ namespace GriffinPlus.Lib.Collections
 		public void Add_Span_DuplicateKey(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>();
 
 			// add data to the dictionary
 			KeyValuePair<IReadOnlyList<byte>, TValue>? first = null;
 			KeyValuePair<IReadOnlyList<byte>, TValue>? last = null;
-			foreach (var kvp in data)
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in data)
 			{
 				if (first == null) first = kvp;
 				last = kvp;
@@ -389,7 +389,7 @@ namespace GriffinPlus.Lib.Collections
 
 			// enumerate the key/value pairs in the dictionary
 			var enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
-			foreach (var kvp in dict) enumerated.Add(kvp);
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in dict) enumerated.Add(kvp);
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
@@ -424,11 +424,11 @@ namespace GriffinPlus.Lib.Collections
 		public void ContainsKey_Span(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>(data);
 
 			// test whether keys of test data are reported to be in the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in data)
 			{
 				Assert.True(dict.ContainsKey(new ReadOnlySpan<byte>((byte[])kvp.Key)));
 			}
@@ -444,7 +444,7 @@ namespace GriffinPlus.Lib.Collections
 		public void ContainsKey_Span_KeyNotFound(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>(data);
 
 			// test whether some other key is reported to be not in the dictionary
@@ -473,22 +473,22 @@ namespace GriffinPlus.Lib.Collections
 		public void GetEnumerator(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>(data);
 
 			// get an enumerator
-			var enumerator = dict.GetEnumerator();
+			ByteSequenceKeyedDictionary<TValue>.Enumerator enumerator = dict.GetEnumerator();
 
 			// the enumerator should point to the position before the first valid element,
 			// but the 'Current' property should not throw an exception
-			var _ = enumerator.Current;
+			KeyValuePair<IReadOnlyList<byte>, TValue> _ = enumerator.Current;
 
 			// enumerate the key/value pairs in the dictionary
 			var enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
 			while (enumerator.MoveNext())
 			{
 				Assert.IsType<KeyValuePair<IReadOnlyList<byte>, TValue>>(enumerator.Current);
-				var current = enumerator.Current;
+				KeyValuePair<IReadOnlyList<byte>, TValue> current = enumerator.Current;
 				enumerated.Add(current);
 			}
 
@@ -525,12 +525,12 @@ namespace GriffinPlus.Lib.Collections
 		public void Remove_Span(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>(data);
 
 			// remove elements in random order until the dictionary is empty
 			var random = new Random();
-			var remainingData = data.ToList();
+			List<KeyValuePair<IReadOnlyList<byte>, TValue>> remainingData = data.ToList();
 			while (remainingData.Count > 0)
 			{
 				int index = random.Next(0, remainingData.Count - 1);
@@ -554,7 +554,7 @@ namespace GriffinPlus.Lib.Collections
 		public void Remove_Span_NotFound(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>(data);
 
 			// try to remove an element that does not exist
@@ -586,18 +586,18 @@ namespace GriffinPlus.Lib.Collections
 		public void TryAdd_Span(int count)
 		{
 			// get test data and create an empty dictionary
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>();
 
 			// add data to the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in data)
 			{
 				Assert.True(dict.TryAdd(new ReadOnlySpan<byte>((byte[])kvp.Key), kvp.Value));
 			}
 
 			// enumerate the key/value pairs in the dictionary
 			var enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
-			foreach (var kvp in dict) enumerated.Add(kvp);
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in dict) enumerated.Add(kvp);
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
@@ -616,13 +616,13 @@ namespace GriffinPlus.Lib.Collections
 		public void TryAdd_Span_DuplicateKey(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>();
 
 			// add data to the dictionary
 			KeyValuePair<IReadOnlyList<byte>, TValue>? first = null;
 			KeyValuePair<IReadOnlyList<byte>, TValue>? last = null;
-			foreach (var kvp in data)
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in data)
 			{
 				if (first == null) first = kvp;
 				last = kvp;
@@ -635,7 +635,7 @@ namespace GriffinPlus.Lib.Collections
 
 			// enumerate the key/value pairs in the dictionary
 			var enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
-			foreach (var kvp in dict) enumerated.Add(kvp);
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in dict) enumerated.Add(kvp);
 
 			// compare collection elements with the expected key/value pairs
 			Assert.Equal(
@@ -670,13 +670,13 @@ namespace GriffinPlus.Lib.Collections
 		public void TryGetValue_Span(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>(data);
 
 			// test whether keys of test data are reported to be in the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in data)
 			{
-				Assert.True(dict.TryGetValue(new ReadOnlySpan<byte>((byte[])kvp.Key), out var value));
+				Assert.True(dict.TryGetValue(new ReadOnlySpan<byte>((byte[])kvp.Key), out TValue value));
 				Assert.Equal(kvp.Value, value);
 			}
 		}
@@ -691,7 +691,7 @@ namespace GriffinPlus.Lib.Collections
 		public void TryGetValue_Span_KeyNotFound(int count)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>(data);
 
 			// test whether some other key is reported to be not in the dictionary
@@ -726,18 +726,18 @@ namespace GriffinPlus.Lib.Collections
 		public void AddAfterRemove_Span(int count)
 		{
 			// get test data and create an empty dictionary
-			var data = GetTestData(count);
+			IDictionary<IReadOnlyList<byte>, TValue> data = GetTestData(count);
 			var dict = new ByteSequenceKeyedDictionary<TValue>();
 
 			// add data to the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in data)
 			{
 				dict.Add(kvp.Key.ToArray().AsSpan(), kvp.Value);
 			}
 
 			// compare collection elements with the expected key/value pairs
 			var enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
-			foreach (var kvp in dict) enumerated.Add(kvp);
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in dict) enumerated.Add(kvp);
 			Assert.Equal(
 				data.OrderBy(x => x.Key, KeyComparer),
 				enumerated.OrderBy(x => x.Key, KeyComparer),
@@ -745,7 +745,7 @@ namespace GriffinPlus.Lib.Collections
 
 			// remove elements in random order until the dictionary is empty
 			var random = new Random();
-			var remainingData = data.ToList();
+			List<KeyValuePair<IReadOnlyList<byte>, TValue>> remainingData = data.ToList();
 			while (remainingData.Count > 0)
 			{
 				int index = random.Next(0, remainingData.Count - 1);
@@ -759,14 +759,14 @@ namespace GriffinPlus.Lib.Collections
 			Assert.Empty(dict);
 
 			// add data to the dictionary
-			foreach (var kvp in data)
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in data)
 			{
 				dict.Add(kvp.Key.ToArray().AsSpan(), kvp.Value);
 			}
 
 			// the dictionary should now contain the expected key/value pairs
 			enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
-			foreach (var kvp in dict) enumerated.Add(kvp);
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in dict) enumerated.Add(kvp);
 			Assert.Equal(
 				data.OrderBy(x => x.Key, KeyComparer),
 				enumerated.OrderBy(x => x.Key, KeyComparer),

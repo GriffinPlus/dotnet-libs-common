@@ -128,7 +128,7 @@ namespace GriffinPlus.Lib.Threading
 				Task task = mQueue.Enqueue(mMutex, cancellationToken);
 
 				// Attach to the signal or cancellation.
-				var ret = WaitAndRetakeLockAsync(task, mAsyncLock);
+				Task ret = WaitAndRetakeLockAsync(task, mAsyncLock);
 
 				// Release the lock while we are waiting.
 				mAsyncLock.ReleaseLock();

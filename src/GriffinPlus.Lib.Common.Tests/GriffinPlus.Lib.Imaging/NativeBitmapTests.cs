@@ -437,9 +437,9 @@ namespace GriffinPlus.Lib.Imaging
 						byte* pCopyRowStart = (byte*)copy.UnsafeBufferStart;
 						for (int y = 0; y < height; y++)
 						{
-							var pOriginal = pOriginalRowStart;
-							var pOriginalEnd = pOriginalRowStart + (width * format.BitsPerPixel + 7) / 8;
-							var pCopy = pCopyRowStart;
+							byte* pOriginal = pOriginalRowStart;
+							byte* pOriginalEnd = pOriginalRowStart + (width * format.BitsPerPixel + 7) / 8;
+							byte* pCopy = pCopyRowStart;
 							while (pOriginal != pOriginalEnd) Assert.Equal(*pOriginal++, *pCopy++);
 							pOriginalRowStart += originalStride;
 							pCopyRowStart += copy.BufferStride;
@@ -550,9 +550,9 @@ namespace GriffinPlus.Lib.Imaging
 						byte* pCopyRowStart = (byte*)copy.UnsafeBufferStart;
 						for (int y = 0; y < height; y++)
 						{
-							var pOriginal = pOriginalRowStart;
-							var pOriginalEnd = pOriginalRowStart + (width * format.BitsPerPixel + 7) / 8;
-							var pCopy = pCopyRowStart;
+							byte* pOriginal = pOriginalRowStart;
+							byte* pOriginalEnd = pOriginalRowStart + (width * format.BitsPerPixel + 7) / 8;
+							byte* pCopy = pCopyRowStart;
 							while (pOriginal != pOriginalEnd) Assert.Equal(*pOriginal++, *pCopy++);
 							pOriginalRowStart += originalStride;
 							pCopyRowStart += copy.BufferStride;
@@ -636,9 +636,9 @@ namespace GriffinPlus.Lib.Imaging
 		[InlineData(-1)]
 		public void NativeBitmap_NewBitmap_WidthTooSmall(int width)
 		{
-			var height = 100;
+			int height = 100;
 			double dpi = 100.0;
-			var format = PixelFormats.Gray8;
+			PixelFormat format = PixelFormats.Gray8;
 			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(width, height, dpi, dpi, format, null));
 			Assert.Equal("width", exception.ParamName);
 		}
@@ -652,9 +652,9 @@ namespace GriffinPlus.Lib.Imaging
 		[InlineData(-1)]
 		public void NativeBitmap_NewBitmap_HeightTooSmall(int height)
 		{
-			var width = 100;
+			int width = 100;
 			double dpi = 100.0;
-			var format = PixelFormats.Gray8;
+			PixelFormat format = PixelFormats.Gray8;
 			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(width, height, dpi, dpi, format, null));
 			Assert.Equal("height", exception.ParamName);
 		}
@@ -731,9 +731,9 @@ namespace GriffinPlus.Lib.Imaging
 						byte* pCopyRowStart = (byte*)bitmap.UnsafeBufferStart;
 						for (int y = 0; y < height; y++)
 						{
-							var pOriginal = pOriginalRowStart;
-							var pOriginalEnd = pOriginalRowStart + (width * format.BitsPerPixel + 7) / 8;
-							var pCopy = pCopyRowStart;
+							byte* pOriginal = pOriginalRowStart;
+							byte* pOriginalEnd = pOriginalRowStart + (width * format.BitsPerPixel + 7) / 8;
+							byte* pCopy = pCopyRowStart;
 							while (pOriginal != pOriginalEnd) Assert.Equal(*pOriginal++, *pCopy++);
 							pOriginalRowStart += stride;
 							pCopyRowStart += bitmap.BufferStride;
@@ -756,9 +756,9 @@ namespace GriffinPlus.Lib.Imaging
 		[InlineData(-1)]
 		public void NativeBitmap_FromByteArray_WidthTooSmall(int width)
 		{
-			var height = 100;
+			int height = 100;
 			double dpi = 100.0;
-			var format = PixelFormats.Gray8;
+			PixelFormat format = PixelFormats.Gray8;
 			byte[] buffer = new byte[1];
 			int stride = 1;
 			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, width, height, stride, dpi, dpi, format, null));
@@ -774,9 +774,9 @@ namespace GriffinPlus.Lib.Imaging
 		[InlineData(-1)]
 		public void NativeBitmap_FromByteArray_HeightTooSmall(int height)
 		{
-			var width = 100;
+			int width = 100;
 			double dpi = 100.0;
-			var format = PixelFormats.Gray8;
+			PixelFormat format = PixelFormats.Gray8;
 			byte[] buffer = new byte[1];
 			int stride = 1;
 			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, width, height, stride, dpi, dpi, format, null));
@@ -790,12 +790,12 @@ namespace GriffinPlus.Lib.Imaging
 		[Fact]
 		public void NativeBitmap_FromByteArray_SourceTooSmall()
 		{
-			var width = 100;
-			var height = 100;
+			int width = 100;
+			int height = 100;
 			double dpi = 100.0;
-			var format = PixelFormats.Gray8;
+			PixelFormat format = PixelFormats.Gray8;
 			CalculateBufferAlignmentAndStride(format, width, out _, out long stride);
-			var bufferSize = (height - 1) * stride + (width * format.BitsPerPixel + 7) / 8;
+			long bufferSize = (height - 1) * stride + (width * format.BitsPerPixel + 7) / 8;
 			byte[] buffer = new byte[bufferSize - 1]; // make the buffer 1 byte smaller than required to trigger the exception
 			var exception = Assert.Throws<ArgumentException>(() => new NativeBitmap(buffer, width, height, stride, dpi, dpi, format, null));
 			Assert.Equal("source", exception.ParamName);
@@ -870,10 +870,10 @@ namespace GriffinPlus.Lib.Imaging
 		[InlineData(-1)]
 		public void NativeBitmap_FromUnmanagedBuffer_WidthTooSmall(int width)
 		{
-			var height = 100;
+			int height = 100;
 			double dpi = 100.0;
-			var format = PixelFormats.Gray8;
-			IntPtr buffer = (IntPtr)0x1; // invalid buffer, but not used anyway
+			PixelFormat format = PixelFormats.Gray8;
+			var buffer = (IntPtr)0x1; // invalid buffer, but not used anyway
 			long bufferSize = 1;
 			int stride = 1;
 			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, bufferSize, width, height, stride, dpi, dpi, format, null));
@@ -889,10 +889,10 @@ namespace GriffinPlus.Lib.Imaging
 		[InlineData(-1)]
 		public void NativeBitmap_FromUnmanagedBuffer_HeightTooSmall(int height)
 		{
-			var width = 100;
+			int width = 100;
 			double dpi = 100.0;
-			var format = PixelFormats.Gray8;
-			IntPtr buffer = (IntPtr)0x1; // invalid buffer, but not used anyway
+			PixelFormat format = PixelFormats.Gray8;
+			var buffer = (IntPtr)0x1; // invalid buffer, but not used anyway
 			long bufferSize = 1;
 			int stride = 1;
 			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, bufferSize, width, height, stride, dpi, dpi, format, null));
@@ -906,11 +906,11 @@ namespace GriffinPlus.Lib.Imaging
 		[Fact]
 		public void NativeBitmap_FromUnmanagedBuffer_BufferTooSmall()
 		{
-			var width = 100;
-			var height = 100;
+			int width = 100;
+			int height = 100;
 			double dpi = 100.0;
-			var format = PixelFormats.Gray2; // 2 bits per pixel
-			IntPtr buffer = (IntPtr)0x1;     // invalid buffer, but not used anyway
+			PixelFormat format = PixelFormats.Gray2; // 2 bits per pixel
+			var buffer = (IntPtr)0x1;                // invalid buffer, but not used anyway
 			CalculateBufferAlignmentAndStride(format, width, out _, out long stride);
 			long minimumBufferSize = (height - 1) * stride + (width * format.BitsPerPixel + 7) / 8;
 			var exception = Assert.Throws<ArgumentException>(() => new NativeBitmap(buffer, minimumBufferSize - 1, width, height, stride, dpi, dpi, format, null));
@@ -1298,7 +1298,7 @@ namespace GriffinPlus.Lib.Imaging
 			PixelFormat format = PixelFormats.Indexed8;
 			BitmapPalette palette = BitmapPalettes.WebPalette;
 			using (var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette))
-			using (var accessor = bitmap.GetAccessor())
+			using (NativeBitmapAccessor accessor = bitmap.GetAccessor())
 			{
 				Assert.Equal(bitmap.PixelWidth, accessor.PixelWidth);
 				Assert.Equal(bitmap.PixelHeight, accessor.PixelHeight);
@@ -1406,7 +1406,7 @@ namespace GriffinPlus.Lib.Imaging
 						long destinationBufferSize = (bitmap.PixelHeight - 1) * destinationBufferStride + (bitmap.PixelWidth * bitmap.Format.BitsPerPixel + 7) / 8;
 						destinationBufferSize = (destinationBufferSize + destinationBufferElementSize - 1) & ~(destinationBufferElementSize - 1);
 						long destinationBufferLength = destinationBufferSize / destinationBufferElementSize + destinationBufferOffset;
-						Array destinationBuffer = Array.CreateInstance(bufferType, destinationBufferLength);
+						var destinationBuffer = Array.CreateInstance(bufferType, destinationBufferLength);
 
 						// let CopyPixel() copy the bitmap into the destination array
 						bitmap.CopyPixels(
@@ -1420,7 +1420,7 @@ namespace GriffinPlus.Lib.Imaging
 
 						// ensure the data in the array contains the bitmap data as well
 						// (compare byte-wise, but skip non-significant bytes)
-						var handle = GCHandle.Alloc(destinationBuffer, GCHandleType.Pinned);
+						GCHandle handle = GCHandle.Alloc(destinationBuffer, GCHandleType.Pinned);
 						try
 						{
 							byte* pDestinationBuffer = (byte*)Marshal.UnsafeAddrOfPinnedArrayElement(destinationBuffer, destinationBufferOffset);
@@ -1610,7 +1610,7 @@ namespace GriffinPlus.Lib.Imaging
 					// buffer is exactly large enough to receive the selected region
 					// => operation should succeed
 					{
-						Array destinationBuffer = Array.CreateInstance(bufferElementType, destinationBufferLength);
+						var destinationBuffer = Array.CreateInstance(bufferElementType, destinationBufferLength);
 						bitmap.CopyPixels(
 							destinationBuffer,
 							destinationOffset,
@@ -1624,7 +1624,7 @@ namespace GriffinPlus.Lib.Imaging
 					// buffer one element too small to receive the selected region
 					// => exception expected
 					{
-						Array destinationBuffer = Array.CreateInstance(bufferElementType, destinationBufferLength - 1);
+						var destinationBuffer = Array.CreateInstance(bufferElementType, destinationBufferLength - 1);
 						var exception = Assert.Throws<ArgumentException>(
 							() =>
 							{
@@ -2252,7 +2252,7 @@ namespace GriffinPlus.Lib.Imaging
 						// let CopyPixel() copy the bitmap into the destination buffer and
 						// ensure the data in the array contains the bitmap data as well
 						// (compare byte-wise, but skip non-significant bytes)
-						var handle = GCHandle.Alloc(destinationBuffer, GCHandleType.Pinned);
+						GCHandle handle = GCHandle.Alloc(destinationBuffer, GCHandleType.Pinned);
 						try
 						{
 							byte* pDestinationBufferAtOffset = (byte*)Marshal.UnsafeAddrOfPinnedArrayElement(destinationBuffer, destinationBufferOffset);

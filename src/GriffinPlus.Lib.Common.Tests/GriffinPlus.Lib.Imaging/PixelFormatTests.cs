@@ -54,7 +54,7 @@ namespace GriffinPlus.Lib.Imaging
 					PixelFormats.Cmyk32
 				};
 
-				foreach (var format in formats)
+				foreach (PixelFormat format in formats)
 				{
 					yield return new object[] { format };
 				}
@@ -98,8 +98,8 @@ namespace GriffinPlus.Lib.Imaging
 					PixelFormats.Cmyk32
 				};
 
-				foreach (var format1 in formats)
-				foreach (var format2 in formats)
+				foreach (PixelFormat format1 in formats)
+				foreach (PixelFormat format2 in formats)
 				{
 					yield return new object[]
 					{

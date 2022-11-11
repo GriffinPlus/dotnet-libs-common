@@ -16,7 +16,7 @@ namespace GriffinPlus.Lib
 		[Fact]
 		public void CheckZeros()
 		{
-			var mask = BitMask.Zeros;
+			BitMask mask = BitMask.Zeros;
 			Assert.Equal(0, mask.Size);
 			Assert.False(mask.PaddingValue);
 			Assert.Empty(mask.AsArray());
@@ -25,7 +25,7 @@ namespace GriffinPlus.Lib
 		[Fact]
 		public void CheckOnes()
 		{
-			var mask = BitMask.Ones;
+			BitMask mask = BitMask.Ones;
 			Assert.Equal(0, mask.Size);
 			Assert.True(mask.PaddingValue);
 			Assert.Empty(mask.AsArray());

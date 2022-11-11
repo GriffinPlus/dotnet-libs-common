@@ -53,7 +53,7 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			get
 			{
-				var itemPathsList = new[]
+				string[][] itemPathsList = new[]
 				{
 					new[] { "/Value" },                                              // single value in the root configuration
 					new[] { "/Child/Value" },                                        // single value in a child configuration
@@ -62,7 +62,7 @@ namespace GriffinPlus.Lib.Configuration
 					new[] { "/Value1", "/Value2", "/Child/Value1", "/Child/Value2" } // multiple values in the root configuration and a child configuration
 				};
 
-				foreach (var itemPaths in itemPathsList)
+				foreach (string[] itemPaths in itemPathsList)
 				{
 					// System.SByte
 					yield return new object[] { itemPaths, typeof(sbyte) };
@@ -142,7 +142,7 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			get
 			{
-				var itemPathsList = new[]
+				string[][] itemPathsList = new[]
 				{
 					new[] { "/Value" },                                              // single value in the root configuration
 					new[] { "/Child/Value" },                                        // single value in a child configuration
@@ -151,7 +151,7 @@ namespace GriffinPlus.Lib.Configuration
 					new[] { "/Value1", "/Value2", "/Child/Value1", "/Child/Value2" } // multiple values in the root configuration and a child configuration
 				};
 
-				foreach (var itemPaths in itemPathsList)
+				foreach (string[] itemPaths in itemPathsList)
 				{
 					// System.SByte
 					yield return new object[] { itemPaths, typeof(sbyte), sbyte.MinValue };
@@ -299,7 +299,7 @@ namespace GriffinPlus.Lib.Configuration
 					};
 
 					// System.DateTime
-					DateTime einsteinsBirthday = new DateTime(1879, 3, 14);
+					var einsteinsBirthday = new DateTime(1879, 3, 14);
 					yield return new object[] { itemPaths, typeof(DateTime), DateTime.MinValue };
 					yield return new object[] { itemPaths, typeof(DateTime), einsteinsBirthday };
 					yield return new object[] { itemPaths, typeof(DateTime), DateTime.MaxValue };
@@ -372,8 +372,8 @@ namespace GriffinPlus.Lib.Configuration
 		public void Create_FlatConfiguration_WithoutInheritance()
 		{
 			// create a new root configuration that does not inherit from another configuration
-			var name = "My Configuration";
-			var strategy = GetStrategy();
+			string name = "My Configuration";
+			ICascadedConfigurationPersistenceStrategy strategy = GetStrategy();
 			var configuration = new CascadedConfiguration(name, strategy);
 
 			// the configuration should return the specified name as expected
@@ -412,12 +412,12 @@ namespace GriffinPlus.Lib.Configuration
 		public void Create_FlatConfiguration_WithInheritance()
 		{
 			// create a new root configuration that does not inherit from another configuration
-			var baseConfigurationName = "My Configuration";
-			var baseConfigurationStrategy = GetStrategy();
+			string baseConfigurationName = "My Configuration";
+			ICascadedConfigurationPersistenceStrategy baseConfigurationStrategy = GetStrategy();
 			var baseConfiguration = new CascadedConfiguration(baseConfigurationName, baseConfigurationStrategy);
 
 			// create a new root configuration that inherits from the base configuration
-			var inheritingConfigurationStrategy = GetStrategy();
+			ICascadedConfigurationPersistenceStrategy inheritingConfigurationStrategy = GetStrategy();
 			var inheritingConfiguration = new CascadedConfiguration(baseConfiguration, inheritingConfigurationStrategy);
 
 			//
@@ -498,12 +498,12 @@ namespace GriffinPlus.Lib.Configuration
 			string[] pathTokens = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
 			// create a new root configuration that does not inherit from another configuration
-			var configurationName = "My Configuration";
-			var strategy = GetStrategy();
+			string configurationName = "My Configuration";
+			ICascadedConfigurationPersistenceStrategy strategy = GetStrategy();
 			var rootConfiguration = new CascadedConfiguration(configurationName, strategy);
 
 			// the child configuration should not exist, yet
-			var childConfiguration = rootConfiguration.GetChildConfiguration(path, false);
+			CascadedConfiguration childConfiguration = rootConfiguration.GetChildConfiguration(path, false);
 			Assert.Null(childConfiguration);
 
 			// create the child configuration
@@ -513,13 +513,13 @@ namespace GriffinPlus.Lib.Configuration
 
 			// determine the child configuration directly below the root configuration
 			// (may differ from the effective child configuration, if an intermediate configuration is created on the way)
-			var childOfConfiguration = childConfiguration;
+			CascadedConfiguration childOfConfiguration = childConfiguration;
 			for (int i = 1; i < pathTokens.Length; i++) childOfConfiguration = childOfConfiguration.Parent;
 
 			// determine the child configuration directly above the created configuration
-			var parentOfChildConfiguration = pathTokens.Length == 1
-				                                 ? rootConfiguration
-				                                 : rootConfiguration.GetChildConfiguration(path.Substring(0, path.LastIndexOf('/')), false);
+			CascadedConfiguration parentOfChildConfiguration = pathTokens.Length == 1
+				                                                   ? rootConfiguration
+				                                                   : rootConfiguration.GetChildConfiguration(path.Substring(0, path.LastIndexOf('/')), false);
 			Assert.NotNull(parentOfChildConfiguration);
 
 			//
@@ -600,12 +600,12 @@ namespace GriffinPlus.Lib.Configuration
 		public void GetChildConfiguration_NestedConfiguration_WithInheritance(params string[] paths)
 		{
 			// create a new root configuration that does not inherit from another configuration
-			var configurationName = "My Configuration";
-			var baseConfigurationStrategy = GetStrategy();
+			string configurationName = "My Configuration";
+			ICascadedConfigurationPersistenceStrategy baseConfigurationStrategy = GetStrategy();
 			var baseRootConfiguration = new CascadedConfiguration(configurationName, baseConfigurationStrategy);
 
 			// create a new root configuration that inherits from the base configuration
-			var inheritingConfigurationStrategy = GetStrategy();
+			ICascadedConfigurationPersistenceStrategy inheritingConfigurationStrategy = GetStrategy();
 			var inheritingRootConfiguration = new CascadedConfiguration(baseRootConfiguration, inheritingConfigurationStrategy);
 
 			// add child configurations
@@ -616,9 +616,9 @@ namespace GriffinPlus.Lib.Configuration
 				string[] pathTokens = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
 				// neither the base configuration nor the inheriting configuration should know the child configuration, yet
-				var baseChildConfiguration = baseRootConfiguration.GetChildConfiguration(path, false);
+				CascadedConfiguration baseChildConfiguration = baseRootConfiguration.GetChildConfiguration(path, false);
 				Assert.Null(baseChildConfiguration);
-				var inheritingChildConfiguration = inheritingRootConfiguration.GetChildConfiguration(path, false);
+				CascadedConfiguration inheritingChildConfiguration = inheritingRootConfiguration.GetChildConfiguration(path, false);
 				Assert.Null(inheritingChildConfiguration);
 
 				// create the child configuration in the inheriting configuration
@@ -633,8 +633,8 @@ namespace GriffinPlus.Lib.Configuration
 
 				// store the child configurations of the root configuration
 				string rootChildConfigurationPath = pathTokens[0];
-				var baseRootChildConfiguration = baseRootConfiguration.GetChildConfiguration(rootChildConfigurationPath, false);
-				var inheritingRootChildConfiguration = inheritingRootConfiguration.GetChildConfiguration(rootChildConfigurationPath, false);
+				CascadedConfiguration baseRootChildConfiguration = baseRootConfiguration.GetChildConfiguration(rootChildConfigurationPath, false);
+				CascadedConfiguration inheritingRootChildConfiguration = inheritingRootConfiguration.GetChildConfiguration(rootChildConfigurationPath, false);
 				if (!baseRootChildConfigurations.Contains(baseRootChildConfiguration)) baseRootChildConfigurations.Add(baseRootChildConfiguration);
 				if (!inheritingRootChildConfigurations.Contains(inheritingRootChildConfiguration)) inheritingRootChildConfigurations.Add(inheritingRootChildConfiguration);
 			}
@@ -646,27 +646,27 @@ namespace GriffinPlus.Lib.Configuration
 				string expectedChildConfigurationName = pathTokens.Last();
 
 				// get the configurations created in the previous step
-				var baseChildConfiguration = baseRootConfiguration.GetChildConfiguration(path, false);
-				var inheritingChildConfiguration = inheritingRootConfiguration.GetChildConfiguration(path, false);
+				CascadedConfiguration baseChildConfiguration = baseRootConfiguration.GetChildConfiguration(path, false);
+				CascadedConfiguration inheritingChildConfiguration = inheritingRootConfiguration.GetChildConfiguration(path, false);
 				Assert.NotNull(baseChildConfiguration);
 				Assert.NotNull(inheritingChildConfiguration);
 
 				// determine the child configuration directly below the root configuration
 				// (may differ from the effective child configuration, if an intermediate configuration is created on the way)
-				var childOfBaseRootConfiguration = baseChildConfiguration;
-				var childOfInheritingRootConfiguration = inheritingChildConfiguration;
+				CascadedConfiguration childOfBaseRootConfiguration = baseChildConfiguration;
+				CascadedConfiguration childOfInheritingRootConfiguration = inheritingChildConfiguration;
 				for (int i = 1; i < pathTokens.Length; i++) childOfBaseRootConfiguration = childOfBaseRootConfiguration.Parent;
 				for (int i = 1; i < pathTokens.Length; i++) childOfInheritingRootConfiguration = childOfInheritingRootConfiguration.Parent;
 
 				// determine the child configuration directly above the created configuration
 				string parentOfChildConfigurationPath = path.Substring(0, path.LastIndexOf('/'));
-				var parentOfBaseChildConfiguration = pathTokens.Length == 1 ? baseRootConfiguration : baseRootConfiguration.GetChildConfiguration(parentOfChildConfigurationPath, false);
-				var parentOfInheritingChildConfiguration = pathTokens.Length == 1 ? inheritingRootConfiguration : inheritingRootConfiguration.GetChildConfiguration(parentOfChildConfigurationPath, false);
+				CascadedConfiguration parentOfBaseChildConfiguration = pathTokens.Length == 1 ? baseRootConfiguration : baseRootConfiguration.GetChildConfiguration(parentOfChildConfigurationPath, false);
+				CascadedConfiguration parentOfInheritingChildConfiguration = pathTokens.Length == 1 ? inheritingRootConfiguration : inheritingRootConfiguration.GetChildConfiguration(parentOfChildConfigurationPath, false);
 				Assert.NotNull(parentOfBaseChildConfiguration);
 				Assert.NotNull(parentOfInheritingChildConfiguration);
 
 				// all configurations should share the same synchronization object
-				var syncObject = baseRootConfiguration.Sync;
+				object syncObject = baseRootConfiguration.Sync;
 				Assert.NotNull(syncObject);
 
 				//
@@ -814,7 +814,7 @@ namespace GriffinPlus.Lib.Configuration
 		public void GetChildConfiguration_PathNull(bool create)
 		{
 			// create a new root configuration that does not inherit from another configuration
-			var strategy = GetStrategy();
+			ICascadedConfigurationPersistenceStrategy strategy = GetStrategy();
 			var configuration = new CascadedConfiguration("My Configuration", strategy);
 
 			// check whether GetChildConfiguration() throws an exception if the specified path is null
@@ -836,7 +836,7 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			get
 			{
-				var childConfigurationPathsList = new[]
+				string[][] childConfigurationPathsList = new[]
 				{
 					Array.Empty<string>(),                                                               // no child configurations at all
 					new[] { "/Child" },                                                                  // one child configuration
@@ -844,7 +844,7 @@ namespace GriffinPlus.Lib.Configuration
 					new[] { "/Child1/Child21", "/Child1/Child22", "/Child2/Child21", "/Child2/Child22" } // mix of configurations
 				};
 
-				var itemPathsList = new[]
+				string[][] itemPathsList = new[]
 				{
 					Array.Empty<string>(),                                                                                 // no items at all
 					new[] { "/Value" },                                                                                    // one item
@@ -854,8 +854,8 @@ namespace GriffinPlus.Lib.Configuration
 				};
 
 				foreach (int inheritanceLevels in new[] { 1, 2 })
-				foreach (var childConfigurationPaths in childConfigurationPathsList)
-				foreach (var itemPaths in itemPathsList)
+				foreach (string[] childConfigurationPaths in childConfigurationPathsList)
+				foreach (string[] itemPaths in itemPathsList)
 				{
 					yield return new object[]
 					{
@@ -903,7 +903,7 @@ namespace GriffinPlus.Lib.Configuration
 			// create a new configuration with the specified number of inheritance levels
 			//
 
-			var configurationName = "My Configuration";
+			string configurationName = "My Configuration";
 			CascadedConfiguration configuration = null;
 			CascadedConfiguration inheritedConfiguration = null;
 			ICascadedConfigurationPersistenceStrategy strategy = null;
@@ -980,7 +980,7 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			get
 			{
-				var itemPathsList = new[]
+				string[][][] itemPathsList = new[]
 				{
 					// no items at all
 					new[]
@@ -1025,7 +1025,7 @@ namespace GriffinPlus.Lib.Configuration
 
 				foreach (int inheritanceLevels in new[] { 1, 2 })
 				foreach (bool recursively in new[] { false, true })
-				foreach (var itemPaths in itemPathsList)
+				foreach (string[][] itemPaths in itemPathsList)
 				{
 					yield return new object[]
 					{
@@ -1068,11 +1068,11 @@ namespace GriffinPlus.Lib.Configuration
 			string[] expectedItemPaths)
 		{
 			// create a new configuration with the specified number of inheritance levels
-			var configurationName = "My Configuration";
+			string configurationName = "My Configuration";
 			CascadedConfiguration configuration = null;
 			for (int inheritanceLevel = 0; inheritanceLevel < inheritanceLevels; inheritanceLevel++)
 			{
-				var strategy = GetStrategy();
+				ICascadedConfigurationPersistenceStrategy strategy = GetStrategy();
 				configuration = configuration != null
 					                ? new CascadedConfiguration(configuration, strategy)
 					                : new CascadedConfiguration(configurationName, strategy);
@@ -1087,8 +1087,8 @@ namespace GriffinPlus.Lib.Configuration
 			}
 
 			// get all items in the configuration
-			var items = configuration.GetAllItems(recursively);
-			var actualItemPaths = items.Select(x => x.Path);
+			ICascadedConfigurationItem[] items = configuration.GetAllItems(recursively);
+			IEnumerable<string> actualItemPaths = items.Select(x => x.Path);
 			Assert.Equal(expectedItemPaths.OrderBy(x => x), actualItemPaths.OrderBy(x => x));
 		}
 
@@ -1102,8 +1102,8 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			get
 			{
-				foreach (var inheritanceLevel in new[] { 1, 2 })
-				foreach (var data in ItemTestDataWithoutValue)
+				foreach (int inheritanceLevel in new[] { 1, 2 })
+				foreach (object[] data in ItemTestDataWithoutValue)
 				{
 					yield return new[]
 					{
@@ -1134,7 +1134,7 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			// get the configuration the item is in (without using the item's Configuration property)
 			string configurationPath = item.Path.Substring(0, item.Path.LastIndexOf('/'));
-			var itemConfiguration = configurationPath.Length > 0 ? rootConfiguration.GetChildConfiguration(configurationPath, false) : rootConfiguration;
+			CascadedConfiguration itemConfiguration = configurationPath.Length > 0 ? rootConfiguration.GetChildConfiguration(configurationPath, false) : rootConfiguration;
 
 			// shorten access to the persistence strategy
 			ICascadedConfigurationPersistenceStrategy strategy = rootConfiguration.PersistenceStrategy;
@@ -1166,7 +1166,7 @@ namespace GriffinPlus.Lib.Configuration
 			Type                  expectedItemValueType)
 		{
 			// check whether all items have been created appropriately
-			var items = CollectAllItemsInConfiguration(rootConfiguration).OrderBy(x => x.Path).ToArray();
+			ICascadedConfigurationItem[] items = CollectAllItemsInConfiguration(rootConfiguration).OrderBy(x => x.Path).ToArray();
 			Assert.Equal(itemPaths.OrderBy(x => x), items.Select(x => x.Path));
 			Assert.All(
 				items,
@@ -1230,7 +1230,7 @@ namespace GriffinPlus.Lib.Configuration
 			CascadedConfiguration rootConfiguration = CreateConfiguration(inheritanceLevels);
 
 			// create items regularly using SetItem()
-			Queue<ICascadedConfigurationItem> newItems = new Queue<ICascadedConfigurationItem>();
+			var newItems = new Queue<ICascadedConfigurationItem>();
 			foreach (string itemPath in itemPaths)
 			{
 				ICascadedConfigurationItem item = rootConfiguration.SetItem(itemPath, itemValueType);
@@ -1272,7 +1272,7 @@ namespace GriffinPlus.Lib.Configuration
 
 			// create items regularly using SetItem()
 			Type differentItemValueType = itemValueType == typeof(int) ? typeof(long) : typeof(int);
-			Queue<ICascadedConfigurationItem> newItems = new Queue<ICascadedConfigurationItem>();
+			var newItems = new Queue<ICascadedConfigurationItem>();
 			foreach (string itemPath in itemPaths)
 			{
 				ICascadedConfigurationItem item = rootConfiguration.SetItem(itemPath, differentItemValueType);
@@ -1352,7 +1352,7 @@ namespace GriffinPlus.Lib.Configuration
 			// create items using SetItem<T>()
 			foreach (string itemPath in itemPaths)
 			{
-				ICascadedConfigurationItem item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new object[] { itemPath });
+				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new object[] { itemPath });
 				SetItem_CheckCreatedItemCommon(rootConfiguration, item, itemValueType);
 			}
 
@@ -1390,10 +1390,10 @@ namespace GriffinPlus.Lib.Configuration
 				.MakeGenericMethod(itemValueType);
 
 			// create items regularly using SetItem<T>()
-			Queue<ICascadedConfigurationItem> newItems = new Queue<ICascadedConfigurationItem>();
+			var newItems = new Queue<ICascadedConfigurationItem>();
 			foreach (string itemPath in itemPaths)
 			{
-				ICascadedConfigurationItem item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new object[] { itemPath });
+				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new object[] { itemPath });
 				SetItem_CheckCreatedItemCommon(rootConfiguration, item, itemValueType);
 				newItems.Enqueue(item);
 			}
@@ -1404,7 +1404,7 @@ namespace GriffinPlus.Lib.Configuration
 			// check whether SetItem<T>() succeeds and returns the same items when calling once again
 			foreach (string itemPath in itemPaths)
 			{
-				ICascadedConfigurationItem item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new object[] { itemPath });
+				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new object[] { itemPath });
 				Assert.Same(newItems.Dequeue(), item);
 			}
 
@@ -1442,7 +1442,7 @@ namespace GriffinPlus.Lib.Configuration
 			SetItem_CheckCreatedItemsCommon(rootConfiguration, itemPaths, differentItemValueType);
 
 			// check whether SetItem<T>() fails, if the value type is different
-			var method = rootConfiguration
+			MethodInfo method = rootConfiguration
 				.GetType()
 				.GetMethods()
 				.Single(
@@ -1490,8 +1490,8 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			get
 			{
-				foreach (var inheritanceLevel in new[] { 1, 2 })
-				foreach (var data in ItemTestDataWithoutValue)
+				foreach (int inheritanceLevel in new[] { 1, 2 })
+				foreach (object[] data in ItemTestDataWithoutValue)
 				{
 					yield return new[]
 					{
@@ -1511,7 +1511,7 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			get
 			{
-				var itemPathList = new[]
+				string[] itemPathList = new[]
 				{
 					"/Value",      // single value in the root configuration
 					"/Child/Value" // single value in a child configuration
@@ -1554,7 +1554,7 @@ namespace GriffinPlus.Lib.Configuration
 			Assert.Null(item);
 
 			// ensure that no configurations/items have been created at all
-			var paths = CollectElementPaths(rootConfiguration);
+			List<string> paths = CollectElementPaths(rootConfiguration);
 			Assert.Empty(paths);
 		}
 
@@ -1643,11 +1643,11 @@ namespace GriffinPlus.Lib.Configuration
 				.MakeGenericMethod(typeof(string)); // the value type does not matter as the item does not exist...
 
 			// try to get item using GetItem<T>()
-			ICascadedConfigurationItem item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new object[] { itemPath });
+			var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new object[] { itemPath });
 			Assert.Null(item);
 
 			// ensure that no configurations/items have been created at all
-			var paths = CollectElementPaths(rootConfiguration);
+			List<string> paths = CollectElementPaths(rootConfiguration);
 			Assert.Empty(paths);
 		}
 
@@ -1694,7 +1694,7 @@ namespace GriffinPlus.Lib.Configuration
 			foreach (string itemPath in itemPaths)
 			{
 				// get the item using its path
-				ICascadedConfigurationItem item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new object[] { itemPath });
+				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new object[] { itemPath });
 
 				// the item should have the same state as produced by the SetItem() method
 				SetItem_CheckCreatedItemCommon(rootConfiguration, item, itemValueType);
@@ -1734,7 +1734,7 @@ namespace GriffinPlus.Lib.Configuration
 			SetItem_CheckCreatedItemsCommon(rootConfiguration, itemPaths, differentItemValueType);
 
 			// check whether GetItem<T>() fails, if the value type is different
-			var method = rootConfiguration
+			MethodInfo method = rootConfiguration
 				.GetType()
 				.GetMethods()
 				.Single(
@@ -1782,8 +1782,8 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			get
 			{
-				foreach (var inheritanceLevel in new[] { 1, 2 })
-				foreach (var data in ItemTestDataWithValue)
+				foreach (int inheritanceLevel in new[] { 1, 2 })
+				foreach (object[] data in ItemTestDataWithValue)
 				{
 					yield return new[]
 					{
@@ -1816,7 +1816,7 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			// get the configuration the item is in (without using the item's Configuration property)
 			string configurationPath = item.Path.Substring(0, item.Path.LastIndexOf('/'));
-			var itemConfiguration = configurationPath.Length > 0 ? rootConfiguration.GetChildConfiguration(configurationPath, false) : rootConfiguration;
+			CascadedConfiguration itemConfiguration = configurationPath.Length > 0 ? rootConfiguration.GetChildConfiguration(configurationPath, false) : rootConfiguration;
 
 			// shorten access to the persistence strategy
 			ICascadedConfigurationPersistenceStrategy strategy = rootConfiguration.PersistenceStrategy;
@@ -1849,7 +1849,7 @@ namespace GriffinPlus.Lib.Configuration
 			object                expectedItemValue)
 		{
 			// check whether all items have been created appropriately
-			var items = CollectAllItemsInConfiguration(rootConfiguration).OrderBy(x => x.Path).ToArray();
+			ICascadedConfigurationItem[] items = CollectAllItemsInConfiguration(rootConfiguration).OrderBy(x => x.Path).ToArray();
 			Assert.Equal(itemPaths.OrderBy(x => x), items.Select(x => x.Path));
 			Assert.All(
 				items,
@@ -2049,7 +2049,7 @@ namespace GriffinPlus.Lib.Configuration
 			// create items using SetValue<T>()
 			foreach (string itemPath in itemPaths)
 			{
-				ICascadedConfigurationItem item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new[] { itemPath, itemValue });
+				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new[] { itemPath, itemValue });
 				SetValue_CheckCreatedItemCommon(rootConfiguration, item, itemValueType, itemValue);
 			}
 
@@ -2106,7 +2106,7 @@ namespace GriffinPlus.Lib.Configuration
 			// check whether SetValue<T>() succeeds
 			foreach (string itemPath in itemPaths)
 			{
-				ICascadedConfigurationItem item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new[] { itemPath, itemValue });
+				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new[] { itemPath, itemValue });
 				SetValue_CheckCreatedItemCommon(rootConfiguration, item, itemValueType, itemValue);
 			}
 
@@ -2150,7 +2150,7 @@ namespace GriffinPlus.Lib.Configuration
 			SetItem_CheckCreatedItemsCommon(rootConfiguration, itemPaths, differentItemValueType);
 
 			// check whether SetValue<T>() fails, if the value type is different
-			var method = rootConfiguration
+			MethodInfo method = rootConfiguration
 				.GetType()
 				.GetMethods()
 				.Single(
@@ -2202,8 +2202,8 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			get
 			{
-				foreach (var inheritanceLevel in new[] { 1, 2 })
-				foreach (var data in ItemTestDataWithValue)
+				foreach (int inheritanceLevel in new[] { 1, 2 })
+				foreach (object[] data in ItemTestDataWithValue)
 				{
 					yield return new[]
 					{
@@ -2223,8 +2223,8 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			get
 			{
-				foreach (var inheritanceLevel in new[] { 1, 2 })
-				foreach (var data in ItemTestDataWithoutValue)
+				foreach (int inheritanceLevel in new[] { 1, 2 })
+				foreach (object[] data in ItemTestDataWithoutValue)
 				{
 					yield return new[]
 					{
@@ -2263,7 +2263,7 @@ namespace GriffinPlus.Lib.Configuration
 			CascadedConfiguration rootConfiguration = CreateConfiguration(inheritanceLevels);
 
 			// create items using SetValue()
-			Queue<ICascadedConfigurationItem> items = new Queue<ICascadedConfigurationItem>();
+			var items = new Queue<ICascadedConfigurationItem>();
 			foreach (string itemPath in itemPaths)
 			{
 				ICascadedConfigurationItem item = rootConfiguration.SetValue(itemPath, itemValueType, itemValue);
@@ -2285,10 +2285,10 @@ namespace GriffinPlus.Lib.Configuration
 			foreach (string itemPath in itemPaths)
 			{
 				// values are in the most derived configuration, so the value of 'inherit' should not matter
-				var expectedItemValue = items.Dequeue().Value;
-				var actualItemValue1 = method.Invoke(rootConfiguration, new object[] { itemPath, false });
+				object expectedItemValue = items.Dequeue().Value;
+				object actualItemValue1 = method.Invoke(rootConfiguration, new object[] { itemPath, false });
 				Assert.Equal(expectedItemValue, actualItemValue1);
-				var actualItemValue2 = method.Invoke(rootConfiguration, new object[] { itemPath, true });
+				object actualItemValue2 = method.Invoke(rootConfiguration, new object[] { itemPath, true });
 				Assert.Equal(expectedItemValue, actualItemValue2);
 			}
 		}
@@ -2313,7 +2313,7 @@ namespace GriffinPlus.Lib.Configuration
 			CascadedConfiguration inheritedConfiguration = derivedConfiguration.InheritedConfiguration;
 
 			// create items using SetValue() on the inherited configuration
-			Queue<object> items = new Queue<object>();
+			var items = new Queue<object>();
 			foreach (string itemPath in itemPaths)
 			{
 				ICascadedConfigurationItem item = inheritedConfiguration.SetValue(itemPath, itemValueType, itemValue);
@@ -2334,14 +2334,14 @@ namespace GriffinPlus.Lib.Configuration
 				.MakeGenericMethod(itemValueType);
 			foreach (string itemPath in itemPaths)
 			{
-				var expectedItemValue = items.Dequeue();
+				object expectedItemValue = items.Dequeue();
 
 				// the most derived configuration should not contain the item and therefore no value...
 				var ex = Assert.Throws<TargetInvocationException>(() => method.Invoke(derivedConfiguration, new object[] { itemPath, false }));
 				Assert.IsType<ConfigurationException>(ex.InnerException);
 
 				// ...but the inherited configuration contains an item with the requested value
-				var actualItemValue2 = method.Invoke(derivedConfiguration, new object[] { itemPath, true });
+				object actualItemValue2 = method.Invoke(derivedConfiguration, new object[] { itemPath, true });
 				Assert.Equal(expectedItemValue, actualItemValue2);
 			}
 		}
@@ -2387,7 +2387,7 @@ namespace GriffinPlus.Lib.Configuration
 			}
 
 			// check whether GetValue<T>() fails, if the value type is different
-			var method = derivedConfiguration
+			MethodInfo method = derivedConfiguration
 				.GetType()
 				.GetMethods()
 				.Single(
@@ -2446,7 +2446,7 @@ namespace GriffinPlus.Lib.Configuration
 			}
 
 			// check whether GetValue<T>() fails, if the value type is different
-			var method = derivedConfiguration
+			MethodInfo method = derivedConfiguration
 				.GetType()
 				.GetMethods()
 				.Single(
@@ -2495,8 +2495,8 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			get
 			{
-				foreach (var inheritanceLevel in new[] { 1, 2 })
-				foreach (var data in ItemTestDataWithoutValue)
+				foreach (int inheritanceLevel in new[] { 1, 2 })
+				foreach (object[] data in ItemTestDataWithoutValue)
 				{
 					yield return new[]
 					{
@@ -2545,9 +2545,9 @@ namespace GriffinPlus.Lib.Configuration
 			foreach (string itemPath in itemPaths)
 			{
 				// values are in the most derived configuration, so the value of 'inherit' should not matter
-				var comment1 = derivedConfiguration.GetComment(itemPath, false);
+				string comment1 = derivedConfiguration.GetComment(itemPath, false);
 				Assert.Equal(testComment, comment1);
-				var comment2 = derivedConfiguration.GetComment(itemPath, true);
+				string comment2 = derivedConfiguration.GetComment(itemPath, true);
 				Assert.Equal(testComment, comment2);
 			}
 		}
@@ -2582,11 +2582,11 @@ namespace GriffinPlus.Lib.Configuration
 			foreach (string itemPath in itemPaths)
 			{
 				// the most derived configuration should not contain the item and therefore no comment...
-				var comment1 = derivedConfiguration.GetComment(itemPath, false);
+				string comment1 = derivedConfiguration.GetComment(itemPath, false);
 				Assert.Null(derivedConfiguration.GetComment(itemPath, false));
 
 				// ...but the inherited configuration contains an item with the requested comment
-				var comment2 = derivedConfiguration.GetComment(itemPath, true);
+				string comment2 = derivedConfiguration.GetComment(itemPath, true);
 				Assert.Equal(testComment, comment2);
 			}
 		}
@@ -2619,12 +2619,12 @@ namespace GriffinPlus.Lib.Configuration
 			CascadedConfiguration rootConfiguration = CreateConfiguration(1);
 
 			// populate configuration with some test data
-			var itemC0V1 = rootConfiguration.SetValue("MyValue1", 1);
-			var itemC0V2 = rootConfiguration.SetValue("MyValue2", 2);
-			var itemC1V1 = rootConfiguration.SetValue("Child1/MyValue1", 1);
-			var itemC1V2 = rootConfiguration.SetValue("Child1/MyValue2", 2);
-			var itemC2V1 = rootConfiguration.SetValue("Child2/MyValue1", 1);
-			var itemC2V2 = rootConfiguration.SetValue("Child2/MyValue2", 2);
+			CascadedConfigurationItem<int> itemC0V1 = rootConfiguration.SetValue("MyValue1", 1);
+			CascadedConfigurationItem<int> itemC0V2 = rootConfiguration.SetValue("MyValue2", 2);
+			CascadedConfigurationItem<int> itemC1V1 = rootConfiguration.SetValue("Child1/MyValue1", 1);
+			CascadedConfigurationItem<int> itemC1V2 = rootConfiguration.SetValue("Child1/MyValue2", 2);
+			CascadedConfigurationItem<int> itemC2V1 = rootConfiguration.SetValue("Child2/MyValue1", 1);
+			CascadedConfigurationItem<int> itemC2V2 = rootConfiguration.SetValue("Child2/MyValue2", 2);
 			var items = new List<ICascadedConfigurationItem> { itemC0V1, itemC0V2, itemC1V1, itemC1V2, itemC2V1, itemC2V2 };
 
 			// all items should have a value now
@@ -2785,7 +2785,7 @@ namespace GriffinPlus.Lib.Configuration
 			}
 
 			// get all items in the configuration
-			var itemsBeforeRemoving = CollectAllItemsInConfiguration(configuration);
+			List<ICascadedConfigurationItem> itemsBeforeRemoving = CollectAllItemsInConfiguration(configuration);
 
 			// remove items
 			foreach (string path in removeItemPaths)
@@ -2795,8 +2795,8 @@ namespace GriffinPlus.Lib.Configuration
 				Assert.Equal(shouldBeRemoved, removed);
 			}
 
-			var itemsAfterRemoving = CollectAllItemsInConfiguration(configuration);
-			var itemsAfterRemovingPaths = itemsAfterRemoving.Select(x => x.Path);
+			List<ICascadedConfigurationItem> itemsAfterRemoving = CollectAllItemsInConfiguration(configuration);
+			IEnumerable<string> itemsAfterRemovingPaths = itemsAfterRemoving.Select(x => x.Path);
 			Assert.Equal(expectedRemainingPaths.OrderBy(x => x), itemsAfterRemovingPaths.OrderBy(x => x));
 		}
 
@@ -2825,14 +2825,14 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			void Collect(CascadedConfiguration config, List<CascadedConfiguration> list)
 			{
-				foreach (var child in config.Children)
+				foreach (CascadedConfiguration child in config.Children)
 				{
 					list.Add(child);
 					Collect(child, list);
 				}
 			}
 
-			List<CascadedConfiguration> childConfigurations = new List<CascadedConfiguration>();
+			var childConfigurations = new List<CascadedConfiguration>();
 			Collect(configuration, childConfigurations);
 			return childConfigurations;
 		}
@@ -2847,18 +2847,18 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			void Collect(CascadedConfiguration config, List<ICascadedConfigurationItem> list)
 			{
-				foreach (var item in config.Items)
+				foreach (ICascadedConfigurationItem item in config.Items)
 				{
 					list.Add(item);
 				}
 
-				foreach (var child in config.Children)
+				foreach (CascadedConfiguration child in config.Children)
 				{
 					Collect(child, list);
 				}
 			}
 
-			List<ICascadedConfigurationItem> items = new List<ICascadedConfigurationItem>();
+			var items = new List<ICascadedConfigurationItem>();
 			Collect(configuration, items);
 			return items;
 		}
@@ -2873,19 +2873,19 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			void Collect(CascadedConfiguration config, List<string> list)
 			{
-				foreach (var item in config.Items)
+				foreach (ICascadedConfigurationItem item in config.Items)
 				{
 					list.Add(item.Path);
 				}
 
-				foreach (var child in config.Children)
+				foreach (CascadedConfiguration child in config.Children)
 				{
 					list.Add(child.Path + "/");
 					Collect(child, list);
 				}
 			}
 
-			List<string> items = new List<string>();
+			var items = new List<string>();
 			Collect(configuration, items);
 			return items;
 		}
@@ -2902,11 +2902,11 @@ namespace GriffinPlus.Lib.Configuration
 		private CascadedConfiguration CreateConfiguration(int inheritanceLevels)
 		{
 			// create a new configuration with the specified number of inheritance levels
-			var configurationName = "My Configuration";
+			string configurationName = "My Configuration";
 			CascadedConfiguration rootConfiguration = null;
 			for (int inheritanceLevel = 0; inheritanceLevel < inheritanceLevels; inheritanceLevel++)
 			{
-				var strategy = GetStrategy();
+				ICascadedConfigurationPersistenceStrategy strategy = GetStrategy();
 				rootConfiguration = rootConfiguration != null
 					                    ? new CascadedConfiguration(rootConfiguration, strategy)
 					                    : new CascadedConfiguration(configurationName, strategy);

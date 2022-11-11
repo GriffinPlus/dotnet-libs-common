@@ -318,7 +318,7 @@ namespace GriffinPlus.Lib.Threading
 			//  http://blogs.msdn.com/b/pfxteam/archive/2012/08/02/processing-tasks-as-they-complete.aspx
 
 			// Reify the source task sequence. TODO: better reification.
-			var taskArray = @this.ToArray();
+			Task<T>[] taskArray = @this.ToArray();
 
 			// Allocate a TCS array and an array of the resulting tasks.
 			int numTasks = taskArray.Length;
@@ -364,7 +364,7 @@ namespace GriffinPlus.Lib.Threading
 			//  http://blogs.msdn.com/b/pfxteam/archive/2012/08/02/processing-tasks-as-they-complete.aspx
 
 			// Reify the source task sequence. TODO: better reification.
-			var taskArray = @this.ToArray();
+			Task[] taskArray = @this.ToArray();
 
 			// Allocate a TCS array and an array of the resulting tasks.
 			int numTasks = taskArray.Length;

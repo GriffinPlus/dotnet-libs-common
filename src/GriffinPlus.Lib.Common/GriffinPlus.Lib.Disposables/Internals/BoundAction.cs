@@ -77,10 +77,10 @@ namespace GriffinPlus.Lib.Disposables.Internal
 		{
 			while (true)
 			{
-				var original = Interlocked.CompareExchange(ref mField, mField, mField);
+				BoundAction original = Interlocked.CompareExchange(ref mField, mField, mField);
 				if (original == null) return false;
 				var updatedContext = new BoundAction(original, contextUpdater);
-				var result = Interlocked.CompareExchange(ref mField, updatedContext, original);
+				BoundAction result = Interlocked.CompareExchange(ref mField, updatedContext, original);
 				if (ReferenceEquals(original, result)) return true;
 			}
 		}

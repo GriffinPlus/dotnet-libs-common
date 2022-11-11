@@ -127,7 +127,7 @@ namespace GriffinPlus.Lib.Io
 		/// <param name="clear"><c>true</c> to initialize the buffer with zeros; otherwise <c>false</c>.</param>
 		public static ChainableMemoryBlock GetPooled(int capacity, ArrayPool<byte> pool, bool clear = false)
 		{
-			var block = sObjectPool.Get();
+			ChainableMemoryBlock block = sObjectPool.Get();
 
 			block.mBufferPool = pool;
 			block.mBuffer = block.mBufferPool != null ? block.mBufferPool.Rent(capacity) : new byte[capacity];
@@ -195,7 +195,7 @@ namespace GriffinPlus.Lib.Io
 			get
 			{
 				long length = 0;
-				var current = this;
+				ChainableMemoryBlock current = this;
 				while (current != null)
 				{
 					length += current.mLength;
@@ -265,8 +265,8 @@ namespace GriffinPlus.Lib.Io
 		/// </summary>
 		public ChainableMemoryBlock GetStartOfChain()
 		{
-			var current = this;
-			var first = this;
+			ChainableMemoryBlock current = this;
+			ChainableMemoryBlock first = this;
 			while (current != null)
 			{
 				first = current;
@@ -283,8 +283,8 @@ namespace GriffinPlus.Lib.Io
 		public ChainableMemoryBlock GetStartOfChain(out long length)
 		{
 			length = 0;
-			var current = this;
-			var first = this;
+			ChainableMemoryBlock current = this;
+			ChainableMemoryBlock first = this;
 			while (current != null)
 			{
 				first = current;
@@ -300,8 +300,8 @@ namespace GriffinPlus.Lib.Io
 		/// </summary>
 		public ChainableMemoryBlock GetEndOfChain()
 		{
-			var current = this;
-			var last = this;
+			ChainableMemoryBlock current = this;
+			ChainableMemoryBlock last = this;
 			while (current != null)
 			{
 				last = current;
@@ -318,8 +318,8 @@ namespace GriffinPlus.Lib.Io
 		public ChainableMemoryBlock GetEndOfChain(out long length)
 		{
 			length = 0;
-			var current = this;
-			var last = this;
+			ChainableMemoryBlock current = this;
+			ChainableMemoryBlock last = this;
 			while (current != null)
 			{
 				last = current;

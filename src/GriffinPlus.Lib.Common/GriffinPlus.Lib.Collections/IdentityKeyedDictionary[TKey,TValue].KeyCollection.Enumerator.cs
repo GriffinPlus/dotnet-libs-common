@@ -36,26 +36,26 @@ using System.Collections.Generic;
 namespace GriffinPlus.Lib.Collections
 {
 
-	partial class ByteSequenceKeyedDictionary<TValue>
+	partial class IdentityKeyedDictionary<TKey, TValue>
 	{
 		partial class KeyCollection
 		{
 			/// <summary>
-			/// An enumerator for the <see cref="ByteSequenceKeyedDictionary{TValue}.KeyCollection"/> class.
+			/// An enumerator for the <see cref="IdentityKeyedDictionary{TKey,TValue}.KeyCollection"/> class.
 			/// </summary>
 			[Serializable]
-			public struct Enumerator : IEnumerator<IReadOnlyList<byte>>
+			public struct Enumerator : IEnumerator<TKey>
 			{
-				private ByteSequenceKeyedDictionary<TValue> mDictionary;
-				private int                                 mIndex;
-				private int                                 mVersion;
-				private byte[]                              mCurrentKey;
+				private IdentityKeyedDictionary<TKey, TValue> mDictionary;
+				private int                                   mIndex;
+				private int                                   mVersion;
+				private TKey                                  mCurrentKey;
 
 				/// <summary>
-				/// Initializes a new instance of the <see cref="ByteSequenceKeyedDictionary{TValue}.KeyCollection.Enumerator"/> class.
+				/// Initializes a new instance of the <see cref="IdentityKeyedDictionary{TKey,TValue}.KeyCollection.Enumerator"/> class.
 				/// </summary>
-				/// <param name="dictionary"></param>
-				internal Enumerator(ByteSequenceKeyedDictionary<TValue> dictionary)
+				/// <param name="dictionary">Dictionary the enumerator belongs to.</param>
+				internal Enumerator(IdentityKeyedDictionary<TKey, TValue> dictionary)
 				{
 					mDictionary = dictionary;
 					mVersion = dictionary.mVersion;
@@ -83,7 +83,7 @@ namespace GriffinPlus.Lib.Collections
 
 					while ((uint)mIndex < (uint)mDictionary.mCount)
 					{
-						ref var entry = ref mDictionary.mEntries[mIndex++];
+						ref Entry entry = ref mDictionary.mEntries[mIndex++];
 						if (entry.Next >= -1)
 						{
 							mCurrentKey = entry.Key;
@@ -99,7 +99,7 @@ namespace GriffinPlus.Lib.Collections
 				/// <summary>
 				/// Gets the current value of the enumerator.
 				/// </summary>
-				public IReadOnlyList<byte> Current => mCurrentKey;
+				public TKey Current => mCurrentKey;
 
 				/// <summary>
 				/// Gets the element in the collection at the current position of the enumerator.

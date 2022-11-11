@@ -25,7 +25,7 @@ namespace GriffinPlus.Lib.Collections
 		[MemberData(nameof(TestDataSetSizes))]
 		public void ICollection_Count_Get(int count)
 		{
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as ICollection;
 			Assert.Equal(data.Count, dict.Count);
 		}
@@ -75,7 +75,7 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollection_CopyTo_TypedArray(int count, int index)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as ICollection;
 
 			// copy the dictionary into an array
@@ -102,7 +102,7 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollection_CopyTo_DictionaryEntryArray(int count, int index)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as ICollection;
 
 			// copy the dictionary into an array
@@ -129,7 +129,7 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollection_CopyTo_ObjectArray(int count, int index)
 		{
 			// get test data and create a new dictionary with it
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as ICollection;
 
 			// copy the dictionary into an array
@@ -209,7 +209,7 @@ namespace GriffinPlus.Lib.Collections
 		[MemberData(nameof(CopyTo_TestData_IndexOutOfBounds))]
 		public void ICollection_CopyTo_IndexOutOfRange(int count, int index)
 		{
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as ICollection;
 			var destination = new KeyValuePair<TKey, TValue>[count];
 			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => dict.CopyTo(destination, index));
@@ -226,7 +226,7 @@ namespace GriffinPlus.Lib.Collections
 		[MemberData(nameof(CopyTo_TestData_ArrayTooSmall))]
 		public void ICollection_CopyTo_ArrayTooSmall(int count, int arraySize, int index)
 		{
-			var data = GetTestData(count);
+			IDictionary<TKey, TValue> data = GetTestData(count);
 			var dict = GetDictionary(data) as ICollection;
 			var destination = new KeyValuePair<TKey, TValue>[arraySize];
 			var exception = Assert.Throws<ArgumentException>(() => dict.CopyTo(destination, index));

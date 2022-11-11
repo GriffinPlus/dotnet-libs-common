@@ -66,7 +66,7 @@ namespace GriffinPlus.Lib.Events
 
 					Debug.Assert(handler.Method.DeclaringType != null, "handler.Method.DeclaringType != null");
 
-					var callerExpression = Expression.Lambda(
+					LambdaExpression callerExpression = Expression.Lambda(
 						typeof(InvokeDelegate),
 						Expression.Call(
 							Expression.Convert(parameterExpressions[0], handler.Method.DeclaringType),

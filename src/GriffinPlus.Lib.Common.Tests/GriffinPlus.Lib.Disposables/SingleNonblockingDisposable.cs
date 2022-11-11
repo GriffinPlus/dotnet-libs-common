@@ -71,7 +71,7 @@ namespace GriffinPlus.Lib.Disposables
 					signal.Wait();
 				});
 
-			var task1 = Task.Run(() => disposable.Dispose());
+			Task task1 = Task.Run(() => disposable.Dispose());
 			ready.Wait();
 
 			await Task.Run(() => disposable.Dispose());

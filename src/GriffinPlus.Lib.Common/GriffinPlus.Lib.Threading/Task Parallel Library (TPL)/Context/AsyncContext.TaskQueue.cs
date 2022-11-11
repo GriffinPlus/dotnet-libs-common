@@ -74,7 +74,7 @@ namespace GriffinPlus.Lib.Threading
 			[DebuggerNonUserCode]
 			internal IEnumerable<Task> GetScheduledTasks()
 			{
-				foreach (var item in mQueue)
+				foreach (Tuple<Task, bool> item in mQueue)
 				{
 					yield return item.Item1;
 				}

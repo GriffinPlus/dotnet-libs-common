@@ -121,7 +121,7 @@ namespace GriffinPlus.Lib.Collections
 			if (dictionary == null)
 				throw new ArgumentNullException(nameof(dictionary), "The specified dictionary must not be null.");
 
-			foreach (var pair in dictionary)
+			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> pair in dictionary)
 			{
 				Add(pair.Key, pair.Value);
 			}
@@ -179,7 +179,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			get
 			{
-				if (TryGetValue(key, out var value)) return value;
+				if (TryGetValue(key, out TValue value)) return value;
 				throw new KeyNotFoundException();
 			}
 			set => TryInsert(key, value, InsertionBehavior.OverwriteExisting);
@@ -200,7 +200,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			get
 			{
-				if (TryGetValue(key, out var value)) return value;
+				if (TryGetValue(key, out TValue value)) return value;
 				throw new KeyNotFoundException();
 			}
 			set => TryInsert(key, value, InsertionBehavior.OverwriteExisting);
@@ -297,12 +297,12 @@ namespace GriffinPlus.Lib.Collections
 				uint collisionCount = 0;
 				uint hashCode = (uint)ByteArrayEqualityComparer.GetHashCode(key);
 				ref int bucket = ref GetBucket(hashCode);
-				var entries = mEntries;
+				Entry[] entries = mEntries;
 				int last = -1;
 				int i = bucket - 1; // Value in buckets is 1-based
 				while (i >= 0)
 				{
-					ref var entry = ref entries[i];
+					ref Entry entry = ref entries[i];
 
 					if (entry.HashCode == hashCode && ByteArrayEqualityComparer.AreEqual(entry.Key, key))
 					{
@@ -408,7 +408,7 @@ namespace GriffinPlus.Lib.Collections
 		/// </returns>
 		public bool ContainsValue(TValue value)
 		{
-			var entries = mEntries;
+			Entry[] entries = mEntries;
 
 			if (value == null)
 			{
@@ -493,7 +493,7 @@ namespace GriffinPlus.Lib.Collections
 
 				uint hashCode = (uint)ByteArrayEqualityComparer.GetHashCode(key);
 				int i = GetBucket(hashCode);
-				var entries = mEntries;
+				Entry[] entries = mEntries;
 				uint collisionCount = 0;
 				i--; // Value in mBuckets is 1-based; subtract 1 from i. We do it here so it fuses with the following conditional.
 				do
@@ -503,7 +503,7 @@ namespace GriffinPlus.Lib.Collections
 					if ((uint)i >= (uint)entries.Length)
 						return false;
 
-					ref var entry = ref entries[i];
+					ref Entry entry = ref entries[i];
 					if (entry.HashCode == hashCode && ByteArrayEqualityComparer.AreEqual(entry.Key, key))
 					{
 						value = entry.Value;
@@ -624,7 +624,7 @@ namespace GriffinPlus.Lib.Collections
 			}
 			else if (array is DictionaryEntry[] dictEntryArray)
 			{
-				var entries = mEntries;
+				Entry[] entries = mEntries;
 				for (int i = 0; i < mCount; i++)
 				{
 					if (entries[i].Next >= -1)
@@ -638,7 +638,7 @@ namespace GriffinPlus.Lib.Collections
 				if (array is object[] objects)
 				{
 					int count = mCount;
-					var entries = mEntries;
+					Entry[] entries = mEntries;
 					for (int i = 0; i < count; i++)
 					{
 						if (entries[i].Next >= -1)
@@ -686,7 +686,7 @@ namespace GriffinPlus.Lib.Collections
 		/// <exception cref="ArgumentNullException"><paramref name="item.Key"/> is <c>null</c>.</exception>
 		bool ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>.Contains(KeyValuePair<IReadOnlyList<byte>, TValue> item)
 		{
-			return TryGetValue(item.Key, out var value) && EqualityComparer<TValue>.Default.Equals(value, item.Value);
+			return TryGetValue(item.Key, out TValue value) && EqualityComparer<TValue>.Default.Equals(value, item.Value);
 		}
 
 		/// <summary>
@@ -700,7 +700,7 @@ namespace GriffinPlus.Lib.Collections
 		/// <exception cref="ArgumentNullException"><paramref name="item.Key"/> is <c>null</c>.</exception>
 		bool ICollection<KeyValuePair<IReadOnlyList<byte>, TValue>>.Remove(KeyValuePair<IReadOnlyList<byte>, TValue> item)
 		{
-			if (TryGetValue(item.Key, out var value) && EqualityComparer<TValue>.Default.Equals(value, item.Value))
+			if (TryGetValue(item.Key, out TValue value) && EqualityComparer<TValue>.Default.Equals(value, item.Value))
 			{
 				Remove(item.Key);
 				return true;
@@ -766,7 +766,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			get
 			{
-				if (IsCompatibleKey(key) && TryGetValue((IReadOnlyList<byte>)key, out var value))
+				if (IsCompatibleKey(key) && TryGetValue((IReadOnlyList<byte>)key, out TValue value))
 					return value;
 
 				return null;
@@ -966,7 +966,7 @@ namespace GriffinPlus.Lib.Collections
 			if (mBuckets == null)
 				Initialize(0);
 
-			var entries = mEntries;
+			Entry[] entries = mEntries;
 
 			// calculate a hash code for the specified key
 			uint hashCode = (uint)ByteArrayEqualityComparer.GetHashCode(keyArray);
@@ -1035,7 +1035,7 @@ namespace GriffinPlus.Lib.Collections
 				entries = mEntries;
 			}
 
-			ref var entry = ref entries[index];
+			ref Entry entry = ref entries[index];
 			entry.HashCode = hashCode;
 			entry.Next = bucket - 1; // Value in mBuckets is 1-based
 			entry.Key = keyArray;
@@ -1066,7 +1066,7 @@ namespace GriffinPlus.Lib.Collections
 			if (mBuckets == null)
 				Initialize(0);
 
-			var entries = mEntries;
+			Entry[] entries = mEntries;
 
 			// calculate a hash code for the specified key
 			uint hashCode = (uint)ByteArrayEqualityComparer.GetHashCode(key);
@@ -1135,7 +1135,7 @@ namespace GriffinPlus.Lib.Collections
 				entries = mEntries;
 			}
 
-			ref var entry = ref entries[index];
+			ref Entry entry = ref entries[index];
 			entry.HashCode = hashCode;
 			entry.Next = bucket - 1; // Value in mBuckets is 1-based
 			entry.Key = key.ToArray();
@@ -1166,7 +1166,7 @@ namespace GriffinPlus.Lib.Collections
 				throw new ArgumentException("The destination array is too small.");
 
 			int count = mCount;
-			var entries = mEntries;
+			Entry[] entries = mEntries;
 			for (int i = 0; i < count; i++)
 			{
 				if (entries[i].Next >= -1)

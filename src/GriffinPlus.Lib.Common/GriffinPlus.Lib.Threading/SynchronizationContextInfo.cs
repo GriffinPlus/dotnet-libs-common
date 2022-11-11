@@ -86,7 +86,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			if (context == null) throw new ArgumentNullException(nameof(context));
 
-			var contextType = context.GetType();
+			Type contextType = context.GetType();
 			bool registerType = false;
 
 			using (sLock.LockReadOnly())

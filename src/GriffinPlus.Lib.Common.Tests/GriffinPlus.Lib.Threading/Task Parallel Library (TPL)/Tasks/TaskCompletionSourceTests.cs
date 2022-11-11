@@ -102,7 +102,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task CreateAsyncTaskSource_PermitsCompletingTask()
 		{
-			var tcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
+			TaskCompletionSource<object> tcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
 			tcs.SetResult(null);
 
 			await tcs.Task;

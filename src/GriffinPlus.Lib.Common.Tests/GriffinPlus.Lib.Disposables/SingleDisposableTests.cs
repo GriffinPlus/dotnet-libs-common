@@ -71,11 +71,11 @@ namespace GriffinPlus.Lib.Disposables
 					signal.Wait();
 				});
 
-			var task1 = Task.Run(() => disposable.Dispose());
+			Task task1 = Task.Run(() => disposable.Dispose());
 			ready.Wait();
 
-			var task2 = Task.Run(() => disposable.Dispose());
-			var timer = Task.Delay(500);
+			Task task2 = Task.Run(() => disposable.Dispose());
+			Task timer = Task.Delay(500);
 			Assert.Same(timer, await Task.WhenAny(task1, task2, timer));
 
 			signal.Set();

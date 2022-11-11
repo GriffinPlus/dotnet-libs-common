@@ -149,7 +149,7 @@ namespace GriffinPlus.Lib.Collections
 				if (index < 0 || index >= mCount) throw new ArgumentOutOfRangeException(nameof(index));
 
 				NotifyCollectionChangedEventHandler handler = CollectionChanged;
-				T oldItem = default(T);
+				var oldItem = default(T);
 
 				if (mItems != null)
 				{
@@ -159,7 +159,7 @@ namespace GriffinPlus.Lib.Collections
 					oci.Value = value;
 					if (handler != null)
 					{
-						NotifyCollectionChangedEventArgs e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, value, oldItem);
+						var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, value, oldItem);
 						OnCollectionChanged(e);
 					}
 				}
@@ -175,7 +175,7 @@ namespace GriffinPlus.Lib.Collections
 					oci.Value = page;
 					if (handler != null)
 					{
-						NotifyCollectionChangedEventArgs e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, value, oldItem);
+						var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, value, oldItem);
 						OnCollectionChanged(e);
 					}
 				}
@@ -334,7 +334,7 @@ namespace GriffinPlus.Lib.Collections
 
 				if (CollectionChanged != null)
 				{
-					NotifyCollectionChangedEventArgs e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index);
+					var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index);
 					OnCollectionChanged(e);
 				}
 			}
@@ -346,7 +346,7 @@ namespace GriffinPlus.Lib.Collections
 
 				if (itemIndex == 0)
 				{
-					T[] page = new T[1];
+					var page = new T[1];
 					page[0] = item;
 					mItemPages.Add(mCache.Set(page));
 				}
@@ -355,7 +355,7 @@ namespace GriffinPlus.Lib.Collections
 					T[] page = mItemPages[pageIndex].Value;
 					if (itemIndex >= page.Length)
 					{
-						T[] newPage = new T[page.Length + 1];
+						var newPage = new T[page.Length + 1];
 						page.CopyTo(newPage, 0);
 						page = newPage;
 					}
@@ -368,7 +368,7 @@ namespace GriffinPlus.Lib.Collections
 
 				if (CollectionChanged != null)
 				{
-					NotifyCollectionChangedEventArgs e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index);
+					var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index);
 					OnCollectionChanged(e);
 				}
 			}
@@ -403,7 +403,7 @@ namespace GriffinPlus.Lib.Collections
 
 				if (handler != null)
 				{
-					NotifyCollectionChangedEventArgs e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, changedItems, startIndex);
+					var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, changedItems, startIndex);
 					OnCollectionChanged(e);
 				}
 			}
@@ -456,7 +456,7 @@ namespace GriffinPlus.Lib.Collections
 						{
 							// not enough space
 							// => resize page
-							T[] newPage = new T[currentPage.Length + 1];
+							var newPage = new T[currentPage.Length + 1];
 							currentPage.CopyTo(newPage, 0);
 							currentPage = newPage;
 						}
@@ -484,7 +484,7 @@ namespace GriffinPlus.Lib.Collections
 
 				if (handler != null && changedItems.Count > 0)
 				{
-					NotifyCollectionChangedEventArgs e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, changedItems, startIndex);
+					var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, changedItems, startIndex);
 					OnCollectionChanged(e);
 				}
 			}
@@ -518,7 +518,7 @@ namespace GriffinPlus.Lib.Collections
 
 				if (handler != null)
 				{
-					NotifyCollectionChangedEventArgs e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, changedItems, startIndex);
+					var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, changedItems, startIndex);
 					OnCollectionChanged(e);
 				}
 			}
@@ -533,7 +533,7 @@ namespace GriffinPlus.Lib.Collections
 
 					if (itemIndex == 0)
 					{
-						T[] page = new T[1];
+						var page = new T[1];
 						page[0] = item;
 						mItemPages.Add(mCache.Set(page));
 						if (changedItems != null) changedItems.Add(item);
@@ -543,7 +543,7 @@ namespace GriffinPlus.Lib.Collections
 						T[] page = mItemPages[pageIndex].Value;
 						if (itemIndex >= page.Length)
 						{
-							T[] newPage = new T[page.Length + 1];
+							var newPage = new T[page.Length + 1];
 							page.CopyTo(newPage, 0);
 							page = newPage;
 						}
@@ -558,7 +558,7 @@ namespace GriffinPlus.Lib.Collections
 
 				if (handler != null && changedItems.Count > 0)
 				{
-					NotifyCollectionChangedEventArgs e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, changedItems, startIndex);
+					var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, changedItems, startIndex);
 					OnCollectionChanged(e);
 				}
 			}
@@ -618,7 +618,7 @@ namespace GriffinPlus.Lib.Collections
 				throw new ArgumentOutOfRangeException(nameof(index), "The specified index does not refer to a valid item in the collection.");
 
 			NotifyCollectionChangedEventHandler handler = CollectionChanged;
-			T oldItem = default(T);
+			var oldItem = default(T);
 
 			if (mItems != null)
 			{
@@ -629,7 +629,7 @@ namespace GriffinPlus.Lib.Collections
 				mCount--;
 				if (handler != null)
 				{
-					NotifyCollectionChangedEventArgs e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, oldItem, index);
+					var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, oldItem, index);
 					OnCollectionChanged(e);
 				}
 
@@ -663,7 +663,7 @@ namespace GriffinPlus.Lib.Collections
 
 				if (handler != null)
 				{
-					NotifyCollectionChangedEventArgs e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, oldItem, index);
+					var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, oldItem, index);
 					OnCollectionChanged(e);
 				}
 			}
@@ -714,7 +714,7 @@ namespace GriffinPlus.Lib.Collections
 
 			if (CollectionChanged != null)
 			{
-				NotifyCollectionChangedEventArgs e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
+				var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
 				OnCollectionChanged(e);
 			}
 

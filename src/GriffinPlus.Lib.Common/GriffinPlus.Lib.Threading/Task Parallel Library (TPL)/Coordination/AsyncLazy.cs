@@ -203,7 +203,7 @@ namespace GriffinPlus.Lib.Threading
 		/// </summary>
 		public void Start()
 		{
-			var unused = Task;
+			Task<T> unused = Task;
 		}
 
 		internal enum LazyState

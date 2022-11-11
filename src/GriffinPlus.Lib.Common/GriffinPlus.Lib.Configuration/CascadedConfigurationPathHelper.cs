@@ -61,7 +61,7 @@ namespace GriffinPlus.Lib.Configuration
 			bool                                      isItemPath,
 			bool                                      checkValidity)
 		{
-			List<string> segments = new List<string>();
+			var segments = new List<string>();
 			foreach (string segment in sPathSplitterRegex.Split(path))
 			{
 				string s = segment.Trim();

@@ -250,7 +250,7 @@ namespace GriffinPlus.Lib
 			// fall back to using Marshal.AllocHGlobal() and allocate a buffer that is a bit larger
 			// than requested and adjust the alignment appropriately as required
 			ActualSize = size + alignment - 1;
-			var bufferAddress = Marshal.AllocHGlobal(new IntPtr(ActualSize));
+			IntPtr bufferAddress = Marshal.AllocHGlobal(new IntPtr(ActualSize));
 			UnsafeAddress = new IntPtr((bufferAddress.ToInt64() + alignment - 1) & ~(alignment - 1));
 			mFreeCallback = buffer => Marshal.FreeHGlobal(buffer.handle);
 			SetHandle(bufferAddress);

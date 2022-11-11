@@ -32,7 +32,7 @@ namespace GriffinPlus.Lib.Collections
 			get
 			{
 				var items = new[] { null, new TestItem() };
-				foreach (var item in items)
+				foreach (TestItem item in items)
 				{
 					yield return new object[] { item, 0 }; // empty collection
 					yield return new object[] { item, 1 }; // one item only
@@ -485,7 +485,7 @@ namespace GriffinPlus.Lib.Collections
 			var list = new FixedItemReadOnlyList<TestItem>(item, count);
 			var enumerated1 = new List<TestItem>();
 			var enumerated2 = new List<TestItem>();
-			var enumerator = list.GetEnumerator();
+			IEnumerator<TestItem> enumerator = list.GetEnumerator();
 			while (enumerator.MoveNext()) enumerated1.Add(enumerator.Current);
 			enumerator.Reset();
 			while (enumerator.MoveNext()) enumerated2.Add(enumerator.Current);
@@ -508,7 +508,7 @@ namespace GriffinPlus.Lib.Collections
 			IEnumerable list = new FixedItemReadOnlyList<TestItem>(item, count);
 			var enumerated1 = new List<TestItem>();
 			var enumerated2 = new List<TestItem>();
-			var enumerator = list.GetEnumerator();
+			IEnumerator enumerator = list.GetEnumerator();
 			while (enumerator.MoveNext()) enumerated1.Add((TestItem)enumerator.Current);
 			enumerator.Reset();
 			while (enumerator.MoveNext()) enumerated2.Add((TestItem)enumerator.Current);

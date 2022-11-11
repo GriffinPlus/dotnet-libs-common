@@ -34,19 +34,22 @@ using System.Collections.Generic;
 namespace GriffinPlus.Lib.Collections
 {
 
-	partial class TypeKeyedDictionary<TValue>
+	/// <summary>
+	/// A generic dictionary using a byte array as key.
+	/// </summary>
+	partial class ByteSequenceKeyedDictionary<TValue>
 	{
 		/// <summary>
-		/// An enumerator for the <see cref="TypeKeyedDictionary{TValue}"/> class.
+		/// An enumerator for the <see cref="ByteSequenceKeyedDictionary{TValue}"/> class.
 		/// </summary>
 		[Serializable]
-		public struct Enumerator : IEnumerator<KeyValuePair<Type, TValue>>, IDictionaryEnumerator
+		public struct Enumerator : IEnumerator<KeyValuePair<IReadOnlyList<byte>, TValue>>, IDictionaryEnumerator
 		{
-			private readonly int                         mGetEnumeratorReturnType; // determines what Enumerator.Current should return
-			private          TypeKeyedDictionary<TValue> mDictionary;
-			private          int                         mVersion;
-			private          int                         mIndex;
-			private          KeyValuePair<Type, TValue>  mCurrent;
+			private readonly int                                       mGetEnumeratorReturnType; // determines what Enumerator.Current should return
+			private          ByteSequenceKeyedDictionary<TValue>       mDictionary;
+			private          int                                       mVersion;
+			private          int                                       mIndex;
+			private          KeyValuePair<IReadOnlyList<byte>, TValue> mCurrent;
 
 			internal const int DictEntry    = 1;
 			internal const int KeyValuePair = 2;
@@ -56,7 +59,7 @@ namespace GriffinPlus.Lib.Collections
 			/// </summary>
 			/// <param name="dictionary">Dictionary the enumerator belongs to.</param>
 			/// <param name="getEnumeratorReturnType">Item to return when enumerating.</param>
-			internal Enumerator(TypeKeyedDictionary<TValue> dictionary, int getEnumeratorReturnType)
+			internal Enumerator(ByteSequenceKeyedDictionary<TValue> dictionary, int getEnumeratorReturnType)
 			{
 				mDictionary = dictionary;
 				mVersion = dictionary.mVersion;
@@ -82,10 +85,10 @@ namespace GriffinPlus.Lib.Collections
 				// dictionary.count+1 could be negative if dictionary.count is Int32.MaxValue
 				while ((uint)mIndex < (uint)mDictionary.mCount)
 				{
-					ref var entry = ref mDictionary.mEntries[mIndex++];
+					ref Entry entry = ref mDictionary.mEntries[mIndex++];
 					if (entry.Next >= -1)
 					{
-						mCurrent = new KeyValuePair<Type, TValue>(entry.Key, entry.Value);
+						mCurrent = new KeyValuePair<IReadOnlyList<byte>, TValue>(entry.Key, entry.Value);
 						return true;
 					}
 				}
@@ -103,7 +106,7 @@ namespace GriffinPlus.Lib.Collections
 			/// <summary>
 			/// Gets the current value of the enumerator.
 			/// </summary>
-			public KeyValuePair<Type, TValue> Current => mCurrent;
+			public KeyValuePair<IReadOnlyList<byte>, TValue> Current => mCurrent;
 
 			/// <summary>
 			/// Gets the element in the collection at the current position of the enumerator.
@@ -114,7 +117,7 @@ namespace GriffinPlus.Lib.Collections
 				get
 				{
 					if (mGetEnumeratorReturnType == DictEntry) return new DictionaryEntry(mCurrent.Key, mCurrent.Value);
-					return new KeyValuePair<Type, TValue>(mCurrent.Key, mCurrent.Value);
+					return new KeyValuePair<IReadOnlyList<byte>, TValue>(mCurrent.Key, mCurrent.Value);
 				}
 			}
 
@@ -128,7 +131,7 @@ namespace GriffinPlus.Lib.Collections
 					throw new InvalidOperationException("The collection was modified after the enumerator was created.");
 
 				mIndex = 0;
-				mCurrent = new KeyValuePair<Type, TValue>();
+				mCurrent = new KeyValuePair<IReadOnlyList<byte>, TValue>();
 			}
 
 			/// <summary>

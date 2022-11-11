@@ -40,7 +40,7 @@ namespace GriffinPlus.Lib
 		/// <returns>The requested object.</returns>
 		public T Get()
 		{
-			if (!mObjects.TryTake(out var item))
+			if (!mObjects.TryTake(out T item))
 				item = mObjectCreator();
 
 			mActionOnGet?.Invoke(item);

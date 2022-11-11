@@ -55,7 +55,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
-			using (SemaphoreSlim acquired = new SemaphoreSlim(0))
+			using (var acquired = new SemaphoreSlim(0))
 			{
 				// let some other thread acquire the lock
 				ThreadPool.QueueUserWorkItem(
@@ -137,7 +137,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
-			using (SemaphoreSlim acquired = new SemaphoreSlim(0))
+			using (var acquired = new SemaphoreSlim(0))
 			{
 				// let some other thread acquire the lock
 				ThreadPool.QueueUserWorkItem(
@@ -195,7 +195,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
-			using (SemaphoreSlim acquired = new SemaphoreSlim(0))
+			using (var acquired = new SemaphoreSlim(0))
 			{
 				// let some other thread acquire the lock
 				ThreadPool.QueueUserWorkItem(

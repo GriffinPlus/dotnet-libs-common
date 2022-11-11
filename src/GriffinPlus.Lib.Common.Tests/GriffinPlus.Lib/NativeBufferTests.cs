@@ -49,7 +49,7 @@ namespace GriffinPlus.Lib
 			Assert.Equal(size, buffer.Size);
 
 			// an accessor working on top of the buffer should return the same address and size
-			var accessor = buffer.GetAccessor();
+			NativeBufferAccessor accessor = buffer.GetAccessor();
 			Assert.Equal(buffer.UnsafeAddress, accessor.Address);
 			Assert.Equal(size, accessor.Size);
 
@@ -128,7 +128,7 @@ namespace GriffinPlus.Lib
 			Assert.Equal(0, buffer.UnsafeAddress.ToInt64() & (alignment - 1));
 
 			// an accessor working on top of the buffer should return the same address and size
-			var accessor = buffer.GetAccessor();
+			NativeBufferAccessor accessor = buffer.GetAccessor();
 			Assert.Equal(buffer.UnsafeAddress, accessor.Address);
 			Assert.Equal(size, accessor.Size);
 
@@ -242,7 +242,7 @@ namespace GriffinPlus.Lib
 			Assert.Equal(0, buffer.UnsafeAddress.ToInt64() & (Environment.SystemPageSize - 1));
 
 			// an accessor working on top of the buffer should return the same address and size
-			var accessor = buffer.GetAccessor();
+			NativeBufferAccessor accessor = buffer.GetAccessor();
 			Assert.Equal(buffer.UnsafeAddress, accessor.Address);
 			Assert.Equal(size, accessor.Size);
 
@@ -333,7 +333,7 @@ namespace GriffinPlus.Lib
 			Assert.Equal(size, buffer.ActualSize);
 
 			// an accessor working on top of the buffer should return the same address and size
-			var accessor = buffer.GetAccessor();
+			NativeBufferAccessor accessor = buffer.GetAccessor();
 			Assert.Equal(buffer.UnsafeAddress, accessor.Address);
 			Assert.Equal(size, accessor.Size);
 
@@ -406,7 +406,7 @@ namespace GriffinPlus.Lib
 		{
 			using (var buffer = NativeBuffer.Create(size))
 			{
-				var span = buffer.AsSpan();
+				Span<byte> span = buffer.AsSpan();
 
 				fixed (byte* p = span)
 				{
@@ -425,7 +425,7 @@ namespace GriffinPlus.Lib
 		{
 			// initialize a fake buffer to check whether the buffer size is checked properly
 			// (no problem as the buffer is neither read nor written)
-			using (var buffer = NativeBuffer.FromPointer(
+			using (NativeBuffer buffer = NativeBuffer.FromPointer(
 				       new IntPtr(0x12345678),
 				       (long)int.MaxValue + 1,
 				       false,

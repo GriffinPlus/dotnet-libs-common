@@ -46,7 +46,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var are = new AsyncAutoResetEvent();
 
-			var task = are.WaitAsync();
+			Task task = are.WaitAsync();
 
 			await AsyncAssert.DoesNotCompleteAsync(task);
 		}
@@ -57,7 +57,7 @@ namespace GriffinPlus.Lib.Threading
 			var are = new AsyncAutoResetEvent();
 
 			are.Set();
-			var task = are.WaitAsync();
+			Task task = are.WaitAsync();
 
 			Assert.True(task.IsCompleted);
 		}
@@ -67,7 +67,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var are = new AsyncAutoResetEvent(true);
 
-			var task = are.WaitAsync();
+			Task task = are.WaitAsync();
 
 			Assert.True(task.IsCompleted);
 		}
@@ -78,8 +78,8 @@ namespace GriffinPlus.Lib.Threading
 			var are = new AsyncAutoResetEvent();
 
 			are.Set();
-			var task1 = are.WaitAsync();
-			var task2 = are.WaitAsync();
+			Task task1 = are.WaitAsync();
+			Task task2 = are.WaitAsync();
 
 			Assert.True(task1.IsCompleted);
 			await AsyncAssert.DoesNotCompleteAsync(task2);
@@ -90,8 +90,8 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var are = new AsyncAutoResetEvent(true);
 
-			var task1 = are.WaitAsync();
-			var task2 = are.WaitAsync();
+			Task task1 = are.WaitAsync();
+			Task task2 = are.WaitAsync();
 
 			Assert.True(task1.IsCompleted);
 			await AsyncAssert.DoesNotCompleteAsync(task2);
@@ -104,8 +104,8 @@ namespace GriffinPlus.Lib.Threading
 
 			are.Set();
 			are.Set();
-			var task1 = are.WaitAsync();
-			var task2 = are.WaitAsync();
+			Task task1 = are.WaitAsync();
+			Task task2 = are.WaitAsync();
 
 			Assert.True(task1.IsCompleted);
 			await AsyncAssert.DoesNotCompleteAsync(task2);
@@ -117,7 +117,7 @@ namespace GriffinPlus.Lib.Threading
 			var are = new AsyncAutoResetEvent(true);
 			var token = new CancellationToken(true);
 
-			var task = are.WaitAsync(token);
+			Task task = are.WaitAsync(token);
 
 			Assert.True(task.IsCompleted);
 			Assert.False(task.IsCanceled);
@@ -131,10 +131,10 @@ namespace GriffinPlus.Lib.Threading
 			var cts = new CancellationTokenSource();
 
 			cts.Cancel();
-			var task1 = are.WaitAsync(cts.Token);
+			Task task1 = are.WaitAsync(cts.Token);
 			task1.WaitWithoutException(CancellationToken.None);
 			are.Set();
-			var task2 = are.WaitAsync(CancellationToken.None);
+			Task task2 = are.WaitAsync(CancellationToken.None);
 
 			await task2;
 		}
@@ -145,7 +145,7 @@ namespace GriffinPlus.Lib.Threading
 			var are = new AsyncAutoResetEvent(false);
 			var token = new CancellationToken(true);
 
-			var task = are.WaitAsync(token);
+			Task task = are.WaitAsync(token);
 
 			Assert.True(task.IsCompleted);
 			Assert.True(task.IsCanceled);
@@ -161,7 +161,7 @@ namespace GriffinPlus.Lib.Threading
 					var are = new AsyncAutoResetEvent(false);
 					var token = new CancellationToken(true);
 
-					var task = are.WaitAsync(token);
+					Task task = are.WaitAsync(token);
 
 					Assert.True(task.IsCompleted);
 					Assert.True(task.IsCanceled);
@@ -175,7 +175,7 @@ namespace GriffinPlus.Lib.Threading
 			var are = new AsyncAutoResetEvent();
 			var cts = new CancellationTokenSource();
 			cts.Cancel();
-			var task = are.WaitAsync(cts.Token);
+			Task task = are.WaitAsync(cts.Token);
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
 		}
 

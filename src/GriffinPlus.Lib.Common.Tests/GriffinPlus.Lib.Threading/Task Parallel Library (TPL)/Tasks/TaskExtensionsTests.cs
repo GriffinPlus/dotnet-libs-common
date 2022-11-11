@@ -28,6 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,7 +51,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void WaitAndUnwrapException_Faulted_UnwrapsException()
 		{
-			var task = Task.Run(() => throw new NotImplementedException());
+			Task task = Task.Run(() => throw new NotImplementedException());
 			Assert.Throws<NotImplementedException>(() => task.WaitAndUnwrapException());
 		}
 
@@ -65,7 +66,7 @@ namespace GriffinPlus.Lib.Threading
 		public void WaitAndUnwrapExceptionWithCT_Faulted_UnwrapsException()
 		{
 			var cts = new CancellationTokenSource();
-			var task = Task.Run(() => throw new NotImplementedException(), CancellationToken.None);
+			Task task = Task.Run(() => throw new NotImplementedException(), CancellationToken.None);
 			Assert.Throws<NotImplementedException>(() => task.WaitAndUnwrapException(cts.Token));
 		}
 
@@ -88,7 +89,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void WaitAndUnwrapExceptionResult_Faulted_UnwrapsException()
 		{
-			var task = Task.Run((Func<int>)(() => throw new NotImplementedException()));
+			Task<int> task = Task.Run((Func<int>)(() => throw new NotImplementedException()));
 			Assert.Throws<NotImplementedException>(() => task.WaitAndUnwrapException());
 		}
 
@@ -103,7 +104,7 @@ namespace GriffinPlus.Lib.Threading
 		public void WaitAndUnwrapExceptionResultWithCT_Faulted_UnwrapsException()
 		{
 			var cts = new CancellationTokenSource();
-			var task = Task.Run((Func<int>)(() => throw new NotImplementedException()), CancellationToken.None);
+			Task<int> task = Task.Run((Func<int>)(() => throw new NotImplementedException()), CancellationToken.None);
 			Assert.Throws<NotImplementedException>(() => task.WaitAndUnwrapException(cts.Token));
 		}
 
@@ -131,7 +132,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void WaitWithoutException_Faulted_DoesNotBlockOrThrow()
 		{
-			var task = Task.Run(() => throw new NotImplementedException());
+			Task task = Task.Run(() => throw new NotImplementedException());
 			task.WaitWithoutException();
 		}
 
@@ -150,7 +151,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void WaitWithoutExceptionResult_Faulted_DoesNotBlockOrThrow()
 		{
-			var task = Task.Run((Func<int>)(() => throw new NotImplementedException()));
+			Task<int> task = Task.Run((Func<int>)(() => throw new NotImplementedException()));
 			task.WaitWithoutException();
 		}
 
@@ -169,7 +170,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void WaitWithoutExceptionWithCancellationToken_Faulted_DoesNotBlockOrThrow()
 		{
-			var task = Task.Run(() => throw new NotImplementedException());
+			Task task = Task.Run(() => throw new NotImplementedException());
 			task.WaitWithoutException(new CancellationToken());
 		}
 
@@ -188,7 +189,7 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void WaitWithoutExceptionResultWithCancellationToken_Faulted_DoesNotBlockOrThrow()
 		{
-			var task = Task.Run((Func<int>)(() => throw new NotImplementedException()));
+			Task<int> task = Task.Run((Func<int>)(() => throw new NotImplementedException()));
 			task.WaitWithoutException(new CancellationToken());
 		}
 
@@ -206,7 +207,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			Task sourceTask = new TaskCompletionSource<object>().Task;
 			var cts = new CancellationTokenSource();
-			var task = Task.Run(() => sourceTask.WaitWithoutException(cts.Token), CancellationToken.None);
+			Task task = Task.Run(() => sourceTask.WaitWithoutException(cts.Token), CancellationToken.None);
 			bool result = task.Wait(500);
 			Assert.False(result);
 			cts.Cancel();
@@ -219,7 +220,7 @@ namespace GriffinPlus.Lib.Threading
 		public void WaitAsyncTResult_TokenThatCannotCancel_ReturnsSourceTask()
 		{
 			var tcs = new TaskCompletionSource<object>();
-			var task = tcs.Task.WaitAsync(CancellationToken.None);
+			Task<object> task = tcs.Task.WaitAsync(CancellationToken.None);
 
 			Assert.Same(tcs.Task, task);
 		}
@@ -229,7 +230,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var tcs = new TaskCompletionSource<object>();
 			var token = new CancellationToken(true);
-			var task = tcs.Task.WaitAsync(token);
+			Task<object> task = tcs.Task.WaitAsync(token);
 
 			Assert.True(task.IsCanceled);
 			Assert.Equal(token, GetCancellationTokenFromTask(task));
@@ -240,7 +241,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var tcs = new TaskCompletionSource<object>();
 			var cts = new CancellationTokenSource();
-			var task = tcs.Task.WaitAsync(cts.Token);
+			Task<object> task = tcs.Task.WaitAsync(cts.Token);
 			Assert.False(task.IsCompleted);
 
 			cts.Cancel();
@@ -253,7 +254,7 @@ namespace GriffinPlus.Lib.Threading
 		public void WaitAsync_TokenThatCannotCancel_ReturnsSourceTask()
 		{
 			var tcs = new TaskCompletionSource<object>();
-			var task = ((Task)tcs.Task).WaitAsync(CancellationToken.None);
+			Task task = ((Task)tcs.Task).WaitAsync(CancellationToken.None);
 
 			Assert.Same(tcs.Task, task);
 		}
@@ -263,7 +264,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var tcs = new TaskCompletionSource<object>();
 			var token = new CancellationToken(true);
-			var task = ((Task)tcs.Task).WaitAsync(token);
+			Task task = ((Task)tcs.Task).WaitAsync(token);
 
 			Assert.True(task.IsCanceled);
 			Assert.Equal(token, GetCancellationTokenFromTask(task));
@@ -274,7 +275,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var tcs = new TaskCompletionSource<object>();
 			var cts = new CancellationTokenSource();
-			var task = ((Task)tcs.Task).WaitAsync(cts.Token);
+			Task task = ((Task)tcs.Task).WaitAsync(cts.Token);
 			Assert.False(task.IsCompleted);
 
 			cts.Cancel();
@@ -288,7 +289,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var tcs = new TaskCompletionSource<object>();
 			var token = new CancellationToken(true);
-			var task = new[] { tcs.Task }.WhenAny(token);
+			Task<Task<object>> task = new[] { tcs.Task }.WhenAny(token);
 
 			Assert.True(task.IsCanceled);
 			Assert.Equal(token, GetCancellationTokenFromTask(task));
@@ -299,12 +300,12 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var tcs = new TaskCompletionSource<object>();
 			var cts = new CancellationTokenSource();
-			var task = new[] { tcs.Task }.WhenAny(cts.Token);
+			Task<Task<object>> task = new[] { tcs.Task }.WhenAny(cts.Token);
 			Assert.False(task.IsCompleted);
 
 			tcs.SetResult(null);
 
-			var result = await task;
+			Task<object> result = await task;
 			Assert.Same(tcs.Task, result);
 		}
 
@@ -313,7 +314,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var tcs = new TaskCompletionSource<object>();
 			var cts = new CancellationTokenSource();
-			var task = new[] { tcs.Task }.WhenAny(cts.Token);
+			Task<Task<object>> task = new[] { tcs.Task }.WhenAny(cts.Token);
 			Assert.False(task.IsCompleted);
 
 			cts.Cancel();
@@ -327,7 +328,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var tcs = new TaskCompletionSource<object>();
 			var token = new CancellationToken(true);
-			var task = new Task[] { tcs.Task }.WhenAny(token);
+			Task<Task> task = new Task[] { tcs.Task }.WhenAny(token);
 
 			Assert.True(task.IsCanceled);
 			Assert.Equal(token, GetCancellationTokenFromTask(task));
@@ -338,12 +339,12 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var tcs = new TaskCompletionSource<object>();
 			var cts = new CancellationTokenSource();
-			var task = new Task[] { tcs.Task }.WhenAny(cts.Token);
+			Task<Task> task = new Task[] { tcs.Task }.WhenAny(cts.Token);
 			Assert.False(task.IsCompleted);
 
 			tcs.SetResult(null);
 
-			var result = await task;
+			Task result = await task;
 			Assert.Same(tcs.Task, result);
 		}
 
@@ -352,7 +353,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var tcs = new TaskCompletionSource<object>();
 			var cts = new CancellationTokenSource();
-			var task = new Task[] { tcs.Task }.WhenAny(cts.Token);
+			Task<Task> task = new Task[] { tcs.Task }.WhenAny(cts.Token);
 			Assert.False(task.IsCompleted);
 
 			cts.Cancel();
@@ -365,12 +366,12 @@ namespace GriffinPlus.Lib.Threading
 		public async Task WhenAnyTResultWithoutToken_TaskCompletes_CompletesTask()
 		{
 			var tcs = new TaskCompletionSource<object>();
-			var task = new[] { tcs.Task }.WhenAny();
+			Task<Task<object>> task = new[] { tcs.Task }.WhenAny();
 			Assert.False(task.IsCompleted);
 
 			tcs.SetResult(null);
 
-			var result = await task;
+			Task<object> result = await task;
 			Assert.Same(tcs.Task, result);
 		}
 
@@ -378,12 +379,12 @@ namespace GriffinPlus.Lib.Threading
 		public async Task WhenAnyWithoutToken_TaskCompletes_CompletesTask()
 		{
 			var tcs = new TaskCompletionSource<object>();
-			var task = new Task[] { tcs.Task }.WhenAny();
+			Task<Task> task = new Task[] { tcs.Task }.WhenAny();
 			Assert.False(task.IsCompleted);
 
 			tcs.SetResult(null);
 
-			var result = await task;
+			Task result = await task;
 			Assert.Same(tcs.Task, result);
 		}
 
@@ -391,7 +392,7 @@ namespace GriffinPlus.Lib.Threading
 		public async Task WhenAllTResult_TaskCompletes_CompletesTask()
 		{
 			var tcs = new TaskCompletionSource<object>();
-			var task = new[] { tcs.Task }.WhenAll();
+			Task<object[]> task = new[] { tcs.Task }.WhenAll();
 			Assert.False(task.IsCompleted);
 
 			object expectedResult = new object();
@@ -405,7 +406,7 @@ namespace GriffinPlus.Lib.Threading
 		public async Task WhenAll_TaskCompletes_CompletesTask()
 		{
 			var tcs = new TaskCompletionSource<object>();
-			var task = new Task[] { tcs.Task }.WhenAll();
+			Task task = new Task[] { tcs.Task }.WhenAll();
 			Assert.False(task.IsCompleted);
 
 			object expectedResult = new object();
@@ -418,7 +419,7 @@ namespace GriffinPlus.Lib.Threading
 		public async Task OrderByCompletion_OrdersByCompletion()
 		{
 			var tcs = new[] { new TaskCompletionSource<int>(), new TaskCompletionSource<int>() };
-			var results = tcs.Select(x => x.Task).OrderByCompletion();
+			List<Task<int>> results = tcs.Select(x => x.Task).OrderByCompletion();
 
 			Assert.False(results[0].IsCompleted);
 			Assert.False(results[1].IsCompleted);
@@ -438,7 +439,7 @@ namespace GriffinPlus.Lib.Threading
 		public async Task OrderByCompletion_PropagatesFaultOnFirstCompletion()
 		{
 			var tcs = new[] { new TaskCompletionSource<int>(), new TaskCompletionSource<int>() };
-			var results = tcs.Select(x => x.Task).OrderByCompletion();
+			List<Task<int>> results = tcs.Select(x => x.Task).OrderByCompletion();
 
 			tcs[1].SetException(new InvalidOperationException("test message"));
 			try
@@ -458,7 +459,7 @@ namespace GriffinPlus.Lib.Threading
 		public async Task OrderByCompletion_PropagatesFaultOnSecondCompletion()
 		{
 			var tcs = new[] { new TaskCompletionSource<int>(), new TaskCompletionSource<int>() };
-			var results = tcs.Select(x => x.Task).OrderByCompletion();
+			List<Task<int>> results = tcs.Select(x => x.Task).OrderByCompletion();
 
 			tcs[0].SetResult(13);
 			tcs[1].SetException(new InvalidOperationException("test message"));
@@ -480,7 +481,7 @@ namespace GriffinPlus.Lib.Threading
 		public async Task OrderByCompletion_PropagatesCancelOnFirstCompletion()
 		{
 			var tcs = new[] { new TaskCompletionSource<int>(), new TaskCompletionSource<int>() };
-			var results = tcs.Select(x => x.Task).OrderByCompletion();
+			List<Task<int>> results = tcs.Select(x => x.Task).OrderByCompletion();
 
 			tcs[1].SetCanceled();
 			try
@@ -499,7 +500,7 @@ namespace GriffinPlus.Lib.Threading
 		public async Task OrderByCompletion_PropagatesCancelOnSecondCompletion()
 		{
 			var tcs = new[] { new TaskCompletionSource<int>(), new TaskCompletionSource<int>() };
-			var results = tcs.Select(x => x.Task).OrderByCompletion();
+			List<Task<int>> results = tcs.Select(x => x.Task).OrderByCompletion();
 
 			tcs[0].SetResult(13);
 			tcs[1].SetCanceled();

@@ -44,7 +44,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var mre = new AsyncManualResetEvent();
 
-			var task = mre.WaitAsync();
+			Task task = mre.WaitAsync();
 
 			await AsyncAssert.DoesNotCompleteAsync(task);
 		}
@@ -54,7 +54,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var mre = new AsyncManualResetEvent();
 
-			var task = Task.Run(() => mre.Wait());
+			Task task = Task.Run(() => mre.Wait());
 
 			await AsyncAssert.DoesNotCompleteAsync(task);
 		}
@@ -65,7 +65,7 @@ namespace GriffinPlus.Lib.Threading
 			var mre = new AsyncManualResetEvent();
 
 			mre.Set();
-			var task = mre.WaitAsync();
+			Task task = mre.WaitAsync();
 
 			Assert.True(task.IsCompleted);
 		}
@@ -84,7 +84,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var mre = new AsyncManualResetEvent(true);
 
-			var task = mre.WaitAsync();
+			Task task = mre.WaitAsync();
 
 			Assert.True(task.IsCompleted);
 		}
@@ -103,8 +103,8 @@ namespace GriffinPlus.Lib.Threading
 			var mre = new AsyncManualResetEvent();
 
 			mre.Set();
-			var task1 = mre.WaitAsync();
-			var task2 = mre.WaitAsync();
+			Task task1 = mre.WaitAsync();
+			Task task2 = mre.WaitAsync();
 
 			Assert.True(task1.IsCompleted);
 			Assert.True(task2.IsCompleted);
@@ -125,8 +125,8 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var mre = new AsyncManualResetEvent(true);
 
-			var task1 = mre.WaitAsync();
-			var task2 = mre.WaitAsync();
+			Task task1 = mre.WaitAsync();
+			Task task2 = mre.WaitAsync();
 
 			Assert.True(task1.IsCompleted);
 			Assert.True(task2.IsCompleted);
@@ -148,7 +148,7 @@ namespace GriffinPlus.Lib.Threading
 
 			mre.Set();
 			mre.Reset();
-			var task = mre.WaitAsync();
+			Task task = mre.WaitAsync();
 
 			await AsyncAssert.DoesNotCompleteAsync(task);
 		}
@@ -160,7 +160,7 @@ namespace GriffinPlus.Lib.Threading
 
 			mre.Set();
 			mre.Reset();
-			var task = Task.Run(() => mre.Wait());
+			Task task = Task.Run(() => mre.Wait());
 
 			await AsyncAssert.DoesNotCompleteAsync(task);
 		}

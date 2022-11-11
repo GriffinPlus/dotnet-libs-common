@@ -339,9 +339,9 @@ namespace GriffinPlus.Lib.Events
 			EventManager<EventManagerEventArgs>.RegisterEventHandler(this, EventName, recipient2.Handler, null, scheduleAlways);
 
 			// get event callers
-			var callers = EventManager<EventManagerEventArgs>.GetEventCallers(this, EventName);
+			EventHandler<EventManagerEventArgs> callers = EventManager<EventManagerEventArgs>.GetEventCallers(this, EventName);
 			Assert.NotNull(callers);
-			var delegates = callers.GetInvocationList().Cast<EventHandler<EventManagerEventArgs>>().ToArray();
+			EventHandler<EventManagerEventArgs>[] delegates = callers.GetInvocationList().Cast<EventHandler<EventManagerEventArgs>>().ToArray();
 			Assert.Equal(2, delegates.Length);
 
 			// call handlers
@@ -456,9 +456,9 @@ namespace GriffinPlus.Lib.Events
 			}
 
 			// get delegates invoking the event handlers
-			var callers = EventManager<EventManagerEventArgs>.GetEventCallers(this, EventName);
+			EventHandler<EventManagerEventArgs> callers = EventManager<EventManagerEventArgs>.GetEventCallers(this, EventName);
 			Assert.NotNull(callers);
-			var delegates = callers.GetInvocationList().Cast<EventHandler<EventManagerEventArgs>>().ToArray();
+			EventHandler<EventManagerEventArgs>[] delegates = callers.GetInvocationList().Cast<EventHandler<EventManagerEventArgs>>().ToArray();
 			Assert.Equal(2, delegates.Length);
 
 			// reset event handler data
@@ -528,7 +528,7 @@ namespace GriffinPlus.Lib.Events
 
 			// register an event handler to a dummy event provider object
 			// (must not be done in the same method to allow the object to be collected in the next step)
-			var weakReferenceProvider = new Func<WeakReference>(
+			WeakReference weakReferenceProvider = new Func<WeakReference>(
 				() =>
 				{
 					object provider = new object();

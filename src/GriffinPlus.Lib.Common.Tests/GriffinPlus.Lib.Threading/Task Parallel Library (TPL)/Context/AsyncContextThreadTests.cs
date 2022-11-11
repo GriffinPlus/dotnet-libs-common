@@ -76,7 +76,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			using (var thread = new AsyncContextThread())
 			{
-				var observedContext = await thread.Factory.Run(() => AsyncContext.Current);
+				AsyncContext observedContext = await thread.Factory.Run(() => AsyncContext.Current);
 				Assert.Same(observedContext, thread.Context);
 			}
 		}

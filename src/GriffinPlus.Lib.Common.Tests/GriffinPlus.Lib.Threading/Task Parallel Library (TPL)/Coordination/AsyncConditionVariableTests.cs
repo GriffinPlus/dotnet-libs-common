@@ -27,6 +27,7 @@
 //     SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Threading.Tasks;
 
 using GriffinPlus.Lib.Tests;
@@ -46,7 +47,7 @@ namespace GriffinPlus.Lib.Threading
 			var cv = new AsyncConditionVariable(mutex);
 
 			await mutex.LockAsync();
-			var task = cv.WaitAsync();
+			Task task = cv.WaitAsync();
 
 			await AsyncAssert.DoesNotCompleteAsync(task);
 		}
@@ -57,7 +58,7 @@ namespace GriffinPlus.Lib.Threading
 			var mutex = new AsyncLock();
 			var cv = new AsyncConditionVariable(mutex);
 			await mutex.LockAsync();
-			var task = cv.WaitAsync();
+			Task task = cv.WaitAsync();
 
 			await Task.Run(
 				async () =>
@@ -85,7 +86,7 @@ namespace GriffinPlus.Lib.Threading
 				});
 
 			await mutex.LockAsync();
-			var task = cv.WaitAsync();
+			Task task = cv.WaitAsync();
 
 			await AsyncAssert.DoesNotCompleteAsync(task);
 		}
@@ -95,12 +96,12 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var mutex = new AsyncLock();
 			var cv = new AsyncConditionVariable(mutex);
-			var key1 = await mutex.LockAsync();
-			var task1 = cv.WaitAsync();
-			var __ = task1.ContinueWith(_ => key1.Dispose());
-			var key2 = await mutex.LockAsync();
-			var task2 = cv.WaitAsync();
-			var ___ = task2.ContinueWith(_ => key2.Dispose());
+			IDisposable key1 = await mutex.LockAsync();
+			Task task1 = cv.WaitAsync();
+			Task __ = task1.ContinueWith(_ => key1.Dispose());
+			IDisposable key2 = await mutex.LockAsync();
+			Task task2 = cv.WaitAsync();
+			Task ___ = task2.ContinueWith(_ => key2.Dispose());
 
 			await Task.Run(
 				async () =>
@@ -120,11 +121,11 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var mutex = new AsyncLock();
 			var cv = new AsyncConditionVariable(mutex);
-			var key = await mutex.LockAsync();
-			var task1 = cv.WaitAsync();
-			var __ = task1.ContinueWith(_ => key.Dispose());
+			IDisposable key = await mutex.LockAsync();
+			Task task1 = cv.WaitAsync();
+			Task __ = task1.ContinueWith(_ => key.Dispose());
 			await mutex.LockAsync();
-			var task2 = cv.WaitAsync();
+			Task task2 = cv.WaitAsync();
 
 			await Task.Run(
 				async () =>

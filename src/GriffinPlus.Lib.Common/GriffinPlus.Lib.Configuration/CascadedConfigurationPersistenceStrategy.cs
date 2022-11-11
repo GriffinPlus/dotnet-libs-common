@@ -48,7 +48,7 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			lock (Sync)
 			{
-				mValueConverters.TryGetValue(type, out var converter);
+				mValueConverters.TryGetValue(type, out IConverter converter);
 				return converter;
 			}
 		}

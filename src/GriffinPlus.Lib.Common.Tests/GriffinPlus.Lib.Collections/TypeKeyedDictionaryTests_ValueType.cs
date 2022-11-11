@@ -34,10 +34,10 @@ namespace GriffinPlus.Lib.Collections
 		{
 			// generate random test data
 			var dict = new Dictionary<Type, int>(EqualityComparer<Type>.Default);
-			var types = GetTypes();
+			Type[] types = GetTypes();
 			for (int i = 0; i < count; i++)
 			{
-				var key = types[i];
+				Type key = types[i];
 				dict[key] = types[i].GetHashCode();
 			}
 

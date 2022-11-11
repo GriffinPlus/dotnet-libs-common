@@ -69,7 +69,7 @@ namespace GriffinPlus.Lib.Threading
 		public void Dequeue_SynchronouslyCompletesTask()
 		{
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
-			var task = queue.Enqueue();
+			Task<object> task = queue.Enqueue();
 			queue.Dequeue();
 			Assert.True(task.IsCompleted);
 		}
@@ -78,8 +78,8 @@ namespace GriffinPlus.Lib.Threading
 		public async Task Dequeue_WithTwoItems_OnlyCompletesFirstItem()
 		{
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
-			var task1 = queue.Enqueue();
-			var task2 = queue.Enqueue();
+			Task<object> task1 = queue.Enqueue();
+			Task<object> task2 = queue.Enqueue();
 			queue.Dequeue();
 			Assert.True(task1.IsCompleted);
 			await AsyncAssert.DoesNotCompleteAsync(task2);
@@ -90,7 +90,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
 			object result = new object();
-			var task = queue.Enqueue();
+			Task<object> task = queue.Enqueue();
 			queue.Dequeue(result);
 			Assert.Same(result, task.Result);
 		}
@@ -99,7 +99,7 @@ namespace GriffinPlus.Lib.Threading
 		public void Dequeue_WithoutResult_SynchronouslyCompletesWithDefaultResult()
 		{
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
-			var task = queue.Enqueue();
+			Task<object> task = queue.Enqueue();
 			queue.Dequeue();
 			Assert.Equal(default(object), task.Result);
 		}
@@ -108,8 +108,8 @@ namespace GriffinPlus.Lib.Threading
 		public void DequeueAll_SynchronouslyCompletesAllTasks()
 		{
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
-			var task1 = queue.Enqueue();
-			var task2 = queue.Enqueue();
+			Task<object> task1 = queue.Enqueue();
+			Task<object> task2 = queue.Enqueue();
 			queue.DequeueAll();
 			Assert.True(task1.IsCompleted);
 			Assert.True(task2.IsCompleted);
@@ -119,8 +119,8 @@ namespace GriffinPlus.Lib.Threading
 		public void DequeueAll_WithoutResult_SynchronouslyCompletesAllTasksWithDefaultResult()
 		{
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
-			var task1 = queue.Enqueue();
-			var task2 = queue.Enqueue();
+			Task<object> task1 = queue.Enqueue();
+			Task<object> task2 = queue.Enqueue();
 			queue.DequeueAll();
 			Assert.Equal(default(object), task1.Result);
 			Assert.Equal(default(object), task2.Result);
@@ -131,8 +131,8 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
 			object result = new object();
-			var task1 = queue.Enqueue();
-			var task2 = queue.Enqueue();
+			Task<object> task1 = queue.Enqueue();
+			Task<object> task2 = queue.Enqueue();
 			queue.DequeueAll(result);
 			Assert.Same(result, task1.Result);
 			Assert.Same(result, task2.Result);
@@ -142,7 +142,7 @@ namespace GriffinPlus.Lib.Threading
 		public void TryCancel_EntryFound_SynchronouslyCancelsTask()
 		{
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
-			var task = queue.Enqueue();
+			Task<object> task = queue.Enqueue();
 			queue.TryCancel(task, new CancellationToken(true));
 			Assert.True(task.IsCanceled);
 		}
@@ -151,7 +151,7 @@ namespace GriffinPlus.Lib.Threading
 		public void TryCancel_EntryFound_RemovesTaskFromQueue()
 		{
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
-			var task = queue.Enqueue();
+			Task<object> task = queue.Enqueue();
 			queue.TryCancel(task, new CancellationToken(true));
 			Assert.True(queue.IsEmpty);
 		}
@@ -160,7 +160,7 @@ namespace GriffinPlus.Lib.Threading
 		public void TryCancel_EntryNotFound_DoesNotRemoveTaskFromQueue()
 		{
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
-			var task = queue.Enqueue();
+			Task<object> task = queue.Enqueue();
 			queue.Enqueue();
 			queue.Dequeue();
 			queue.TryCancel(task, new CancellationToken(true));
@@ -172,7 +172,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
 			var cts = new CancellationTokenSource();
-			var task = queue.Enqueue(new object(), cts.Token);
+			Task<object> task = queue.Enqueue(new object(), cts.Token);
 			cts.Cancel();
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
 		}
@@ -182,7 +182,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
 			var cts = new CancellationTokenSource();
-			var task = queue.Enqueue(new object(), cts.Token);
+			Task<object> task = queue.Enqueue(new object(), cts.Token);
 			cts.Cancel();
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
 			Assert.True(queue.IsEmpty);
@@ -193,8 +193,8 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
 			var cts = new CancellationTokenSource();
-			var _ = queue.Enqueue(new object(), cts.Token);
-			var __ = queue.Enqueue();
+			Task<object> _ = queue.Enqueue(new object(), cts.Token);
+			Task<object> __ = queue.Enqueue();
 			queue.Dequeue();
 			cts.Cancel();
 			Assert.False(queue.IsEmpty);
@@ -206,7 +206,7 @@ namespace GriffinPlus.Lib.Threading
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
 			var cts = new CancellationTokenSource();
 			cts.Cancel();
-			var task = queue.Enqueue(new object(), cts.Token);
+			Task<object> task = queue.Enqueue(new object(), cts.Token);
 			Assert.True(task.IsCanceled);
 		}
 
@@ -216,7 +216,7 @@ namespace GriffinPlus.Lib.Threading
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
 			var cts = new CancellationTokenSource();
 			cts.Cancel();
-			var _ = queue.Enqueue(new object(), cts.Token);
+			Task<object> _ = queue.Enqueue(new object(), cts.Token);
 			Assert.True(queue.IsEmpty);
 		}
 	}

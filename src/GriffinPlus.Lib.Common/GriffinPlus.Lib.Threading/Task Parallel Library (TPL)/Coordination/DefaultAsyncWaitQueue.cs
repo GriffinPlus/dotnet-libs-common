@@ -53,7 +53,7 @@ namespace GriffinPlus.Lib.Threading
 
 		Task<T> IAsyncWaitQueue<T>.Enqueue()
 		{
-			var tcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<T>();
+			TaskCompletionSource<T> tcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<T>();
 			mQueue.AddToBack(tcs);
 			return tcs.Task;
 		}
@@ -65,7 +65,7 @@ namespace GriffinPlus.Lib.Threading
 
 		void IAsyncWaitQueue<T>.DequeueAll(T result)
 		{
-			foreach (var source in mQueue)
+			foreach (TaskCompletionSource<T> source in mQueue)
 			{
 				source.TrySetResult(result);
 			}
@@ -90,7 +90,7 @@ namespace GriffinPlus.Lib.Threading
 
 		void IAsyncWaitQueue<T>.CancelAll(CancellationToken cancellationToken)
 		{
-			foreach (var source in mQueue)
+			foreach (TaskCompletionSource<T> source in mQueue)
 			{
 				source.TrySetCanceled(cancellationToken);
 			}
@@ -114,7 +114,7 @@ namespace GriffinPlus.Lib.Threading
 				get
 				{
 					var result = new List<Task<T>>(mQueue.mQueue.Count);
-					foreach (var entry in mQueue.mQueue)
+					foreach (TaskCompletionSource<T> entry in mQueue.mQueue)
 					{
 						result.Add(entry.Task);
 					}

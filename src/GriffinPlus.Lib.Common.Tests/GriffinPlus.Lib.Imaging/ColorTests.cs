@@ -185,7 +185,7 @@ namespace GriffinPlus.Lib.Imaging
 			float toScRgbB = SRgbToScRgb(toSRgbB);
 
 			// create the color to start with
-			var color = Color.FromUInt32(fromArgb);
+			Color color = Color.FromUInt32(fromArgb);
 
 			// check whether the properties A, R, G and B reflect the expected channel values
 			Assert.Equal(fromSrgbA, color.A);
@@ -280,7 +280,7 @@ namespace GriffinPlus.Lib.Imaging
 			byte toSRgbB = ScRgbTosRgb(toScRgbB);
 
 			// create the color to start with
-			var color = Color.FromScRgb(fromScRgbA, fromScRgbR, fromScRgbG, fromScRgbB);
+			Color color = Color.FromScRgb(fromScRgbA, fromScRgbR, fromScRgbG, fromScRgbB);
 
 			// check whether the properties A, R, G and B reflect the expected channel values
 			Assert.Equal(fromSRgbA, color.A);
@@ -354,7 +354,7 @@ namespace GriffinPlus.Lib.Imaging
 			byte argbG = (byte)((argb & 0x0000FF00U) >> 8);
 			byte argbB = (byte)(argb & 0x000000FF);
 
-			var color = Color.FromArgb(argbA, argbR, argbG, argbB);
+			Color color = Color.FromArgb(argbA, argbR, argbG, argbB);
 
 			float scRgbA = argbA / 255.0f;
 			float scRgbR = SRgbToScRgb(argbR);
@@ -392,7 +392,7 @@ namespace GriffinPlus.Lib.Imaging
 			byte argbG = (byte)((argb & 0x0000FF00U) >> 8);
 			byte argbB = (byte)(argb & 0x000000FF);
 
-			var color = Color.FromRgb(argbR, argbG, argbB);
+			Color color = Color.FromRgb(argbR, argbG, argbB);
 
 			float scRgbA = argbA / 255.0f;
 			float scRgbR = SRgbToScRgb(argbR);
@@ -434,7 +434,7 @@ namespace GriffinPlus.Lib.Imaging
 			byte argbG = ScRgbTosRgb(scRgbG);
 			byte argbB = ScRgbTosRgb(scRgbB);
 
-			var color = Color.FromScRgb(scRgbA, scRgbR, scRgbG, scRgbB);
+			Color color = Color.FromScRgb(scRgbA, scRgbR, scRgbG, scRgbB);
 
 			Assert.Equal(argbA, color.A);
 			Assert.Equal(argbR, color.R);
@@ -469,7 +469,7 @@ namespace GriffinPlus.Lib.Imaging
 			float scRgbG,
 			float scRgbB)
 		{
-			var color = Color.FromScRgb(scRgbA, scRgbR, scRgbG, scRgbB);
+			Color color = Color.FromScRgb(scRgbA, scRgbR, scRgbG, scRgbB);
 
 			Assert.Equal(scRgbA, color.ScA);
 			Assert.Equal(scRgbR, color.ScR);
@@ -628,7 +628,7 @@ namespace GriffinPlus.Lib.Imaging
 			byte rgbG = (byte)((argb & 0x0000FF00U) >> 8);
 			byte rgbB = (byte)(argb & 0x000000FF);
 
-			var colorFromArgb = Color.FromArgb(rgbA, rgbR, rgbG, rgbB);
+			Color colorFromArgb = Color.FromArgb(rgbA, rgbR, rgbG, rgbB);
 			string expectedArgb = $"#{rgbA:X2}{rgbR:X2}{rgbG:X2}{rgbB:X2}";
 			Assert.Equal(expectedArgb, colorFromArgb.ToString());
 
@@ -637,7 +637,7 @@ namespace GriffinPlus.Lib.Imaging
 			float scRgbG = SRgbToScRgb(rgbG);
 			float scRgbB = SRgbToScRgb(rgbB);
 
-			var colorFromScRgb = Color.FromScRgb(scRgbA, scRgbR, scRgbG, scRgbB);
+			Color colorFromScRgb = Color.FromScRgb(scRgbA, scRgbR, scRgbG, scRgbB);
 			string expectedScRgb = string.Format("sc#{1:R}{0} {2:R}{0} {3:R}{0} {4:R}", GetNumericListSeparator(null), scRgbA, scRgbR, scRgbG, scRgbB);
 			Assert.Equal(expectedScRgb, colorFromScRgb.ToString());
 		}
@@ -654,14 +654,14 @@ namespace GriffinPlus.Lib.Imaging
 		[MemberData(nameof(TestData_Argb))]
 		public void ToString_WithFormatProvider(uint argb)
 		{
-			var provider = CultureInfo.InvariantCulture;
+			CultureInfo provider = CultureInfo.InvariantCulture;
 
 			byte rgbA = (byte)((argb & 0xFF000000U) >> 24);
 			byte rgbR = (byte)((argb & 0x00FF0000U) >> 16);
 			byte rgbG = (byte)((argb & 0x0000FF00U) >> 8);
 			byte rgbB = (byte)(argb & 0x000000FF);
 
-			var colorFromArgb = Color.FromArgb(rgbA, rgbR, rgbG, rgbB);
+			Color colorFromArgb = Color.FromArgb(rgbA, rgbR, rgbG, rgbB);
 			string expectedArgb = string.Format(provider, "#{0:X2}{1:X2}{2:X2}{3:X2}", rgbA, rgbR, rgbG, rgbB);
 			Assert.Equal(expectedArgb, colorFromArgb.ToString(provider));
 
@@ -670,7 +670,7 @@ namespace GriffinPlus.Lib.Imaging
 			float scRgbG = SRgbToScRgb(rgbG);
 			float scRgbB = SRgbToScRgb(rgbB);
 
-			var colorFromScRgb = Color.FromScRgb(scRgbA, scRgbR, scRgbG, scRgbB);
+			Color colorFromScRgb = Color.FromScRgb(scRgbA, scRgbR, scRgbG, scRgbB);
 			string expectedScRgb = string.Format(provider, "sc#{1:R}{0} {2:R}{0} {3:R}{0} {4:R}", GetNumericListSeparator(provider), scRgbA, scRgbR, scRgbG, scRgbB);
 			Assert.Equal(expectedScRgb, colorFromScRgb.ToString(provider));
 		}
@@ -742,7 +742,7 @@ namespace GriffinPlus.Lib.Imaging
 			// Get the NumberFormatInfo out of the provider, if possible
 			// If the IFormatProvider doesn't not contain a NumberFormatInfo, then
 			// this method returns the current culture's NumberFormatInfo.
-			NumberFormatInfo numberFormat = NumberFormatInfo.GetInstance(provider);
+			var numberFormat = NumberFormatInfo.GetInstance(provider);
 
 			// use ';' if the decimal separator is the same as the list separator
 			if (numberFormat.NumberDecimalSeparator.Length > 0 && numericSeparator == numberFormat.NumberDecimalSeparator[0])
