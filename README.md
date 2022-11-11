@@ -142,7 +142,7 @@ This namespace provides everything concerning generic i/o operations and contain
 
 This namespace provides threading specific functionality and contains the following classes:
 
-- Asynchronous Primitives (derived from Stephen Cleary's [AsyncEx](https://github.com/stephencleary/AsyncEx) library)
+- Asynchronous Primitives (primarily derived from Stephen Cleary's [AsyncEx](https://github.com/stephencleary/AsyncEx) library)
   - Context
     - `AsyncContext`: Async/await capable synchronization context.
     - `AsyncContextThread`: Async/await capable worker thread.
@@ -158,6 +158,7 @@ This namespace provides threading specific functionality and contains the follow
     - `AsyncReaderWriterLock`: An async/await capable reader-writer-lock.
     - `AsyncSemaphore`: An async/await capable semaphore.
     - `PauseToken`: A token source to pause/unpause asynchronous operations.
+    - `SerialTaskQueue`: A queue that ensures that synchronous/asynchronous actions/functions are executed one after the other using the TPL.
 - `LocklessStack<T>`: A thread-safe stack implementation using interlocked operations only.
 - `MonitorSynchronizedEnumerator<T>`: An enumerator that keeps a monitor locked until it is disposed.
 - `ReaderWriterLockSlimAutoLock`: A helper that locks a `ReaderWriterLockSlim` when created and releases it appropriately when disposed.
