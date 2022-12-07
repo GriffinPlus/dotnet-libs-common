@@ -9,7 +9,7 @@ namespace GriffinPlus.Lib.Conversion
 {
 
 	/// <summary>
-	/// Base class for converters implementing common parts of a converter.
+	/// Converter implementation using callbacks (for simple converters).
 	/// </summary>
 	/// <typeparam name="T">The type of the value the converter works with.</typeparam>
 	public sealed class Converter<T> : IConverter
