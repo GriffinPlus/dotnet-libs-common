@@ -107,7 +107,13 @@ The `Converters` class provides converters for converting objects of the followi
 - `System.UInt64`
 - `System.Net.IPAddress`
 
-Custom converters can be used by implementing the `IConverter` interface and registering the converter using the `Converters.RegisterGlobalConverter()` method.
+Custom converters can be created in one of the following ways:
+
+- Implementation of the `IConverter` interface for a maximum flexibility
+- Deriving from the `ConverterBase<T>` class for complex converters
+- Using the `Converter<T>` class with callbacks for simple converters
+
+These converters can then be globally registered using the `Converters.RegisterGlobalConverter()` method.
 
 #### Namespace: GriffinPlus.Lib.Cryptography
 
