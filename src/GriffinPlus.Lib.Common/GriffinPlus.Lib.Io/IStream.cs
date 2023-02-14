@@ -16,7 +16,7 @@ namespace GriffinPlus.Lib.Io
 	/// plus span support on target frameworks where <see cref="Stream"/> does not support spans on its own.
 	/// </summary>
 	public interface IStream :
-#if NETSTANDARD2_0 || NET461
+#if NETSTANDARD2_0 || NET48
 		IDisposable
 #elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
 		IDisposable,
@@ -188,7 +188,7 @@ namespace GriffinPlus.Lib.Io
 		/// <exception cref="NotSupportedException">The current stream does not support reading or the destination stream does not support writing.</exception>
 		/// <exception cref="IOException">An I/O error occurred.</exception>
 		Task CopyToAsync(Stream destination, CancellationToken cancellationToken);
-#elif NETSTANDARD2_0 || NET461
+#elif NETSTANDARD2_0 || NET48
 		// This method is not supported by the Stream class.
 #else
 #error Unhandled target framework.

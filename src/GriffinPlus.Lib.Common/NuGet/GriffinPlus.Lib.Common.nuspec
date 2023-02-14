@@ -21,7 +21,7 @@
 			<group targetFramework="netstandard2.1">
 				<dependency id="System.Collections.Immutable" version="6.0.0" />
 			</group>
-			<group targetFramework="net461">
+			<group targetFramework="net48">
 				<dependency id="System.Collections.Immutable" version="6.0.0" />
 				<dependency id="System.Memory" version="4.5.5" />
 				<dependency id="System.Threading.Tasks.Extensions" version="4.5.4" />
@@ -44,9 +44,9 @@
 		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\netstandard2.1\GriffinPlus.Lib.Common.dll" target="lib\netstandard2.1" />
 		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\netstandard2.1\GriffinPlus.Lib.Common.pdb" target="lib\netstandard2.1" />
 		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\netstandard2.1\GriffinPlus.Lib.Common.xml" target="lib\netstandard2.1" />
-		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.dll" target="lib\net461" />
-		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.pdb" target="lib\net461" />
-		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net461\GriffinPlus.Lib.Common.xml" target="lib\net461" />
+		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net48\GriffinPlus.Lib.Common.dll" target="lib\net48" />
+		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net48\GriffinPlus.Lib.Common.pdb" target="lib\net48" />
+		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net48\GriffinPlus.Lib.Common.xml" target="lib\net48" />
 		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\netcoreapp3.1\GriffinPlus.Lib.Common.dll" target="lib\netcoreapp3.1" />
 		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\netcoreapp3.1\GriffinPlus.Lib.Common.pdb" target="lib\netcoreapp3.1" />
 		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\netcoreapp3.1\GriffinPlus.Lib.Common.xml" target="lib\netcoreapp3.1" />

@@ -242,7 +242,7 @@ namespace GriffinPlus.Lib
 
 				return;
 			}
-#elif NETSTANDARD2_0 || NETSTANDARD2_1 || NET461 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0
+#elif NETSTANDARD2_0 || NETSTANDARD2_1 || NET48 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0
 #else
 #error Unhandled target framework.
 #endif
