@@ -18,7 +18,7 @@ namespace GriffinPlus.Lib.Io
 	public interface IStream :
 #if NETSTANDARD2_0 || NET461
 		IDisposable
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0
+#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
 		IDisposable,
 		IAsyncDisposable
 #else
@@ -172,7 +172,7 @@ namespace GriffinPlus.Lib.Io
 		/// <exception cref="IOException">An I/O error occurred.</exception>
 		Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken);
 
-#if NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0
+#if NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
 		/// <summary>
 		/// Asynchronously reads the bytes from the current stream and writes them to another stream,
 		/// using a specified cancellation token.
