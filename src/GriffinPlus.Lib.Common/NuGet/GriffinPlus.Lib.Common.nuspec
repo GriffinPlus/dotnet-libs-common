@@ -26,8 +26,6 @@
 				<dependency id="System.Memory" version="4.5.5" />
 				<dependency id="System.Threading.Tasks.Extensions" version="4.5.4" />
 			</group>
-			<group targetFramework="netcoreapp3.1">
-			</group>
 			<group targetFramework="net5.0">
 			</group>
 			<group targetFramework="net6.0">
@@ -47,9 +45,6 @@
 		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net48\GriffinPlus.Lib.Common.dll" target="lib\net48" />
 		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net48\GriffinPlus.Lib.Common.pdb" target="lib\net48" />
 		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net48\GriffinPlus.Lib.Common.xml" target="lib\net48" />
-		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\netcoreapp3.1\GriffinPlus.Lib.Common.dll" target="lib\netcoreapp3.1" />
-		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\netcoreapp3.1\GriffinPlus.Lib.Common.pdb" target="lib\netcoreapp3.1" />
-		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\netcoreapp3.1\GriffinPlus.Lib.Common.xml" target="lib\netcoreapp3.1" />
 		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net5.0\GriffinPlus.Lib.Common.dll" target="lib\net5.0" />
 		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net5.0\GriffinPlus.Lib.Common.pdb" target="lib\net5.0" />
 		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net5.0\GriffinPlus.Lib.Common.xml" target="lib\net5.0" />
