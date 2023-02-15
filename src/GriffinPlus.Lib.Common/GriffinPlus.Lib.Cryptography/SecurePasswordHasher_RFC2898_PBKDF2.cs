@@ -15,6 +15,8 @@ namespace GriffinPlus.Lib.Cryptography
 	/// <summary>
 	/// An implementation of the <see cref="SecurePasswordHasher"/> according to the password-based key
 	/// derivation function 2 (PBKDF2) described in RFC2898 (16 bytes salt + 20 bytes hash).
+	/// The hash algorithm used to derive the key is SHA-1 which is considered too weak meanwhile.
+	/// Applications should use stronger hashing functions like SHA-256 or SHA-512 as key derivation functions now.
 	/// </summary>
 	sealed class SecurePasswordHasher_RFC2898_PBKDF2 : SecurePasswordHasher
 	{
@@ -86,7 +88,13 @@ namespace GriffinPlus.Lib.Cryptography
 
 			// create hash
 			byte[] hash;
+#if NETSTANDARD2_0
 			using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations))
+#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET48 || NET5_0 || NET6_0 || NET7_0
+			using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA1))
+#else
+#error Unhandled target framework.
+#endif
 			{
 				hash = pbkdf2.GetBytes(HashSize);
 			}
@@ -130,7 +138,13 @@ namespace GriffinPlus.Lib.Cryptography
 
 			// create hash with given salt
 			byte[] hash;
+#if NETSTANDARD2_0
 			using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations))
+#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET48 || NET5_0 || NET6_0 || NET7_0
+			using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA1))
+#else
+#error Unhandled target framework.
+#endif
 			{
 				hash = pbkdf2.GetBytes(HashSize);
 			}
