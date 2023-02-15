@@ -80,9 +80,10 @@ namespace GriffinPlus.Lib.Cryptography
 		public override string Hash(string password, int iterations)
 		{
 			// create salt
-#if NET6_0 || NET7_0
-			byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
-#elif NETSTANDARD2_0 || NETSTANDARD2_1 || NET48 || NETCOREAPP3_1 || NET5_0
+#if NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+			byte[] salt = new byte[SaltSize];
+			RandomNumberGenerator.Fill(salt);
+#elif NETSTANDARD2_0 || NET48
 			byte[] salt;
 			using (var random = RandomNumberGenerator.Create())
 			{
