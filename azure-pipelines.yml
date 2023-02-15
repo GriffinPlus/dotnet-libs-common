@@ -5,6 +5,7 @@
 # Standard pipeline for building and testing C# projects with target .NET Standard 2.0.
 # The pipeline runs unit tests on the following target frameworks and platforms:
 #
+# - Windows Server 2022, .NET 4.6.2      (net462)
 # - Windows Server 2022, .NET 4.8        (net48)
 # - Windows Server 2022, .NET Core 3.1   (netcoreapp3.1)
 # - Windows Server 2022, .NET 5.0        (net5.0, no platform specific TPMs)
@@ -170,6 +171,14 @@ stages:
       inputs:
         artifact: 'Binaries'
         targetPath: '$(Build.SourcesDirectory)/_build'
+    - task: DotNetCoreCLI@2
+      displayName: 'Test .NET Framework 4.6.2'
+      condition: eq(variables['agent.os'], 'Windows_NT')
+      inputs:
+        command: 'test'
+        projects: '**/*Tests/*.csproj'
+        nobuild: true
+        arguments: '--framework net462 --verbosity normal'
     - task: DotNetCoreCLI@2
       displayName: 'Test .NET Framework 4.8'
       condition: eq(variables['agent.os'], 'Windows_NT')

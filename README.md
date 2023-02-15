@@ -187,6 +187,6 @@ Therefore it should work on the following platforms (or higher):
 - Universal Windows Platform (UWP) 10.0.16299
 
 The library is tested automatically on the following frameworks and operating systems:
-- .NET Framework 4.8 (Windows Server 2022)
+- .NET Framework 4.6.2 and 4.8 (Windows Server 2022)
 - .NET Core 3.1 (Windows Server 2022 and Ubuntu 22.04)
 - .NET 5.0/6.0/7.0 (Windows Server 2022 and Ubuntu 22.04)
