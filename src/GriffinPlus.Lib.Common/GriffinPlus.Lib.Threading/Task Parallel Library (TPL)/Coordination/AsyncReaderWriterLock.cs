@@ -91,7 +91,8 @@ namespace GriffinPlus.Lib.Threading
 			WriteLocked
 		}
 
-		[DebuggerNonUserCode] internal int GetReaderCountForDebugger => mLocksHeld > 0 ? mLocksHeld : 0;
+		[DebuggerNonUserCode]
+		internal int GetReaderCountForDebugger => mLocksHeld > 0 ? mLocksHeld : 0;
 
 		/// <summary>
 		/// Creates a new async-compatible reader/writer lock.

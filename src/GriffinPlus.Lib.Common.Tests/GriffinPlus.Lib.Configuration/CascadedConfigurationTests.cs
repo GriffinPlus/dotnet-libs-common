@@ -53,7 +53,7 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			get
 			{
-				string[][] itemPathsList = new[]
+				string[][] itemPathsList =
 				{
 					new[] { "/Value" },                                              // single value in the root configuration
 					new[] { "/Child/Value" },                                        // single value in a child configuration
@@ -142,7 +142,7 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			get
 			{
-				string[][] itemPathsList = new[]
+				string[][] itemPathsList =
 				{
 					new[] { "/Value" },                                              // single value in the root configuration
 					new[] { "/Child/Value" },                                        // single value in a child configuration
@@ -836,7 +836,7 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			get
 			{
-				string[][] childConfigurationPathsList = new[]
+				string[][] childConfigurationPathsList =
 				{
 					Array.Empty<string>(),                                                               // no child configurations at all
 					new[] { "/Child" },                                                                  // one child configuration
@@ -844,7 +844,7 @@ namespace GriffinPlus.Lib.Configuration
 					new[] { "/Child1/Child21", "/Child1/Child22", "/Child2/Child21", "/Child2/Child22" } // mix of configurations
 				};
 
-				string[][] itemPathsList = new[]
+				string[][] itemPathsList =
 				{
 					Array.Empty<string>(),                                                                                 // no items at all
 					new[] { "/Value" },                                                                                    // one item
@@ -980,7 +980,7 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			get
 			{
-				string[][][] itemPathsList = new[]
+				string[][][] itemPathsList =
 				{
 					// no items at all
 					new[]
@@ -1511,7 +1511,7 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			get
 			{
-				string[] itemPathList = new[]
+				string[] itemPathList =
 				{
 					"/Value",      // single value in the root configuration
 					"/Child/Value" // single value in a child configuration
