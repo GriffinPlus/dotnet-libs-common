@@ -14,11 +14,11 @@ namespace GriffinPlus.Lib.Cryptography
 
 	/// <summary>
 	/// An implementation of the <see cref="SecurePasswordHasher"/> according to the password-based key
-	/// derivation function 2 (PBKDF2) described in RFC2898 (16 bytes salt + 20 bytes hash).
+	/// derivation function 2 (PBKDF2) described in RFC8018 (obsoletes RFC2898, 16 bytes salt + 20 bytes hash).
 	/// The hash algorithm used to derive the key is SHA-1 which is considered too weak meanwhile.
 	/// Applications should use stronger hashing functions like SHA-256 or SHA-512 as key derivation functions now.
 	/// </summary>
-	sealed class SecurePasswordHasher_RFC2898_PBKDF2 : SecurePasswordHasher
+	sealed class SecurePasswordHasher_PBKDF2_SHA1 : SecurePasswordHasher
 	{
 		/// <summary>
 		/// Size of the salt (in bytes).
@@ -33,19 +33,25 @@ namespace GriffinPlus.Lib.Cryptography
 		/// <summary>
 		/// The short name of the algorithm (used as identifier in the hash).
 		/// </summary>
-		private const string AlgorithmNameDefinition = "PBKDF2";
+		internal const string AlgorithmNameDefinition = "PBKDF2-SHA1";
 
 		/// <summary>
-		/// Regular expression that matches a hash as expected by the RFC2898 hasher.
+		/// The short name of the algorithm (used as identifier in the hash).
+		/// For backwards compatibility.
+		/// </summary>
+		internal const string AlternativeAlgorithmNameDefinition = "PBKDF2";
+
+		/// <summary>
+		/// Regular expression that matches a hash as expected by the PBKDF2 hasher.
 		/// </summary>
 		private static readonly Regex sHashRegex = new Regex(
-			$@"^\${Regex.Escape(AlgorithmNameDefinition)}\$(?<iterations>\d+)\$(?<hash>[a-zA-Z0-9+/=]+)",
+			$@"^\$(?:{Regex.Escape(AlgorithmNameDefinition)})|(?:{Regex.Escape(AlternativeAlgorithmNameDefinition)})\$(?<iterations>\d+)\$(?<hash>[a-zA-Z0-9+/=]+)",
 			RegexOptions.Compiled);
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="SecurePasswordHasher_RFC2898_PBKDF2"/> class.
+		/// Initializes a new instance of the <see cref="SecurePasswordHasher_PBKDF2_SHA1"/> class.
 		/// </summary>
-		public SecurePasswordHasher_RFC2898_PBKDF2() { }
+		public SecurePasswordHasher_PBKDF2_SHA1() { }
 
 		/// <summary>
 		/// Gets the short name of the hashing algorithm (becomes part of the generated hash string).

@@ -18,9 +18,10 @@ namespace GriffinPlus.Lib.Cryptography
 	public abstract class SecurePasswordHasher
 	{
 		/// <summary>
-		/// A password hasher using the password-based key derivation function 2 (PBKDF2) described in RFC2898 (recommended!).
+		/// A password hasher using the password-based key derivation function 2 (PBKDF2) described in
+		/// RFC8018 (obsoletes RFC2898) with SHA-1 as key derivation function.
 		/// </summary>
-		public static readonly SecurePasswordHasher RFC2898_PBKDF2 = new SecurePasswordHasher_RFC2898_PBKDF2();
+		public static readonly SecurePasswordHasher PBKDF2_SHA1 = new SecurePasswordHasher_PBKDF2_SHA1();
 
 		/// <summary>
 		/// A password hasher using the SHA-1 hash function (16 bytes salt + 20 bytes hash).
@@ -59,11 +60,12 @@ namespace GriffinPlus.Lib.Cryptography
 		{
 			sHashers = new Dictionary<string, SecurePasswordHasher>
 			{
-				{ RFC2898_PBKDF2.AlgorithmName.ToLower(), RFC2898_PBKDF2 },
-				{ SHA1.AlgorithmName.ToLower(), SHA1 },
-				{ SHA256.AlgorithmName.ToLower(), SHA256 },
-				{ SHA384.AlgorithmName.ToLower(), SHA384 },
-				{ SHA512.AlgorithmName.ToLower(), SHA512 }
+				{ SecurePasswordHasher_PBKDF2_SHA1.AlgorithmNameDefinition.ToLower(), PBKDF2_SHA1 },
+				{ SecurePasswordHasher_PBKDF2_SHA1.AlternativeAlgorithmNameDefinition.ToLower(), PBKDF2_SHA1 },
+				{ SecurePasswordHasher_SHA1.AlgorithmNameDefinition.ToLower(), SHA1 },
+				{ SecurePasswordHasher_SHA256.AlgorithmNameDefinition.ToLower(), SHA256 },
+				{ SecurePasswordHasher_SHA384.AlgorithmNameDefinition.ToLower(), SHA384 },
+				{ SecurePasswordHasher_SHA512.AlgorithmNameDefinition.ToLower(), SHA512 }
 			};
 		}
 

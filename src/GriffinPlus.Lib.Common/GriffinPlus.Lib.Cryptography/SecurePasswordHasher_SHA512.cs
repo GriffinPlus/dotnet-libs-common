@@ -32,7 +32,7 @@ namespace GriffinPlus.Lib.Cryptography
 		/// <summary>
 		/// The short name of the algorithm (used as identifier in the hash).
 		/// </summary>
-		private const string AlgorithmNameDefinition = "SHA512";
+		internal const string AlgorithmNameDefinition = "SHA512";
 
 		/// <summary>
 		/// Regular expression that matches a hash as expected by the hasher.
