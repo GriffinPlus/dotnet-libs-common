@@ -119,7 +119,7 @@ These converters can then be globally registered using the `Converters.RegisterG
 
 This namespace provides everything concerning cryptography operations and contains the following classes:
 
-- `SecurePasswordHasher`: Utility class for hashing and verifying passwords (supports PBKDF2 (RFC2898), SHA-1, SHA-256, SHA-384 and SHA-512).
+- `SecurePasswordHasher`: Utility class for hashing and verifying passwords (supports SHA-1, SHA-256, SHA-384, SHA-512 and PBKDF2 (RFC8018, formerly RFC2898) with SHA-1, SHA-256 and SHA-512 as key derivation functions)
 
 #### Namespace: GriffinPlus.Lib.Events
 

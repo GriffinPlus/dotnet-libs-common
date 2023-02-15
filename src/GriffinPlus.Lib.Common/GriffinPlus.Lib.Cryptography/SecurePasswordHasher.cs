@@ -19,29 +19,52 @@ namespace GriffinPlus.Lib.Cryptography
 	{
 		/// <summary>
 		/// A password hasher using the password-based key derivation function 2 (PBKDF2) described in
-		/// RFC8018 (obsoletes RFC2898) with SHA-1 as key derivation function.
+		/// RFC8018 (obsoletes RFC2898) with SHA-1 as key derivation function (deprecated).
 		/// </summary>
-		public static readonly SecurePasswordHasher PBKDF2_SHA1 = new SecurePasswordHasher_PBKDF2_SHA1();
+		[Obsolete(
+			"This hasher uses PBKDF2 with SHA-1 as key derivation function, which is considered too short meanwhile. " +
+			"Please use SecurePasswordHasher.PBKDF2_SHA256 or SecurePasswordHasher.PBKDF2_SHA512 instead.")]
+		public static SecurePasswordHasher PBKDF2_SHA1 { get; } = new SecurePasswordHasher_PBKDF2_SHA1();
+
+#if NETSTANDARD2_1 || NETCOREAPP3_1 || NET48 || NET5_0 || NET6_0 || NET7_0
+
+		/// <summary>
+		/// A password hasher using the password-based key derivation function 2 (PBKDF2) described in
+		/// RFC8018 (obsoletes RFC2898) with SHA-256 as key derivation function.
+		/// </summary>
+		public static SecurePasswordHasher PBKDF2_SHA256 { get; } = new SecurePasswordHasher_PBKDF2_SHA256();
+
+		/// <summary>
+		/// A password hasher using the password-based key derivation function 2 (PBKDF2) described in
+		/// RFC8018 (obsoletes RFC2898) with SHA-512 as key derivation function.
+		/// </summary>
+		public static SecurePasswordHasher PBKDF2_SHA512 { get; } = new SecurePasswordHasher_PBKDF2_SHA512();
+
+#elif NETSTANDARD2_0
+// The Rfc2898DeriveBytes class supports SHA-1 only on .NET Standard 2.0.
+#else
+#error Unhandled target framework.
+#endif
 
 		/// <summary>
 		/// A password hasher using the SHA-1 hash function (16 bytes salt + 20 bytes hash).
 		/// </summary>
-		public static readonly SecurePasswordHasher SHA1 = new SecurePasswordHasher_SHA1();
+		public static SecurePasswordHasher SHA1 { get; } = new SecurePasswordHasher_SHA1();
 
 		/// <summary>
 		/// A password hasher using the SHA-256 hash function (16 bytes salt + 32 bytes hash).
 		/// </summary>
-		public static readonly SecurePasswordHasher SHA256 = new SecurePasswordHasher_SHA256();
+		public static SecurePasswordHasher SHA256 { get; } = new SecurePasswordHasher_SHA256();
 
 		/// <summary>
 		/// A password hasher using the SHA-384 hash function (16 bytes salt + 48 bytes hash).
 		/// </summary>
-		public static readonly SecurePasswordHasher SHA384 = new SecurePasswordHasher_SHA384();
+		public static SecurePasswordHasher SHA384 { get; } = new SecurePasswordHasher_SHA384();
 
 		/// <summary>
 		/// A password hasher using the SHA-512 hash function (16 bytes salt + 64 bytes hash).
 		/// </summary>
-		public static readonly SecurePasswordHasher SHA512 = new SecurePasswordHasher_SHA512();
+		public static SecurePasswordHasher SHA512 { get; } = new SecurePasswordHasher_SHA512();
 
 		/// <summary>
 		/// Registered hashers by algorithm.
@@ -60,8 +83,22 @@ namespace GriffinPlus.Lib.Cryptography
 		{
 			sHashers = new Dictionary<string, SecurePasswordHasher>
 			{
+				// PBKDF2 with SHA-1
+#pragma warning disable CS0618
 				{ SecurePasswordHasher_PBKDF2_SHA1.AlgorithmNameDefinition.ToLower(), PBKDF2_SHA1 },
 				{ SecurePasswordHasher_PBKDF2_SHA1.AlternativeAlgorithmNameDefinition.ToLower(), PBKDF2_SHA1 },
+#pragma warning restore CS0618
+
+				// PBKDF2 with SHA-256 and SHA-512
+#if NETSTANDARD2_1 || NETCOREAPP3_1 || NET48 || NET5_0 || NET6_0 || NET7_0
+				{ SecurePasswordHasher_PBKDF2_SHA256.AlgorithmNameDefinition.ToLower(), PBKDF2_SHA256 },
+				{ SecurePasswordHasher_PBKDF2_SHA512.AlgorithmNameDefinition.ToLower(), PBKDF2_SHA512 },
+#elif NETSTANDARD2_0
+// The Rfc2898DeriveBytes class supports SHA-1 only on .NET Standard 2.0.
+#else
+#error Unhandled target framework.
+#endif
+				// SHA1, SHA-256, SHA-384 and SHA-512
 				{ SecurePasswordHasher_SHA1.AlgorithmNameDefinition.ToLower(), SHA1 },
 				{ SecurePasswordHasher_SHA256.AlgorithmNameDefinition.ToLower(), SHA256 },
 				{ SecurePasswordHasher_SHA384.AlgorithmNameDefinition.ToLower(), SHA384 },
