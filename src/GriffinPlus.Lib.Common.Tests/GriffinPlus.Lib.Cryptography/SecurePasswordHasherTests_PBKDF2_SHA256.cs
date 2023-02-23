@@ -3,7 +3,7 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if NETCOREAPP3_1 || NET48 || NET5_0 || NET6_0 || NET7_0
+#if NET48 || NETCOREAPP3_1 ||NET5_0 || NET6_0 || NET7_0
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -215,9 +215,9 @@ namespace GriffinPlus.Lib.Cryptography
 	}
 
 }
-
-#elif NET462
-// The Rfc2898DeriveBytes class supports SHA-1 only on .NET Standard 2.0.
+#elif NET461 || NETCOREAPP2_2
+// .NET Framework 4.6.1 uses the library built with explicit support for .NET Framework 4.6.1, so there is no support for PBKDF2 with SHA-512.
+// .NET Core 2.2 uses the library built for .NET Standard 2.0, so there is no support for PBKDF2 with SHA-256.
 #else
 #error Unhandled target framework.
 #endif

@@ -31,10 +31,10 @@ namespace GriffinPlus.Lib.Cryptography
 		/// </summary>
 		public SecurePasswordHasher_SHA1() { }
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public override string AlgorithmName => "SHA1";
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public override string Hash(string password, int iterations)
 		{
 			using (var sha1 = System.Security.Cryptography.SHA1.Create())
@@ -49,7 +49,7 @@ namespace GriffinPlus.Lib.Cryptography
 			}
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public override string Hash(ReadOnlySpan<char> password, int iterations)
 		{
 			using (var sha1 = System.Security.Cryptography.SHA1.Create())
@@ -64,7 +64,7 @@ namespace GriffinPlus.Lib.Cryptography
 			}
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public override bool Verify(string password, string passwordHash)
 		{
 			using (var sha1 = System.Security.Cryptography.SHA1.Create())
@@ -79,7 +79,7 @@ namespace GriffinPlus.Lib.Cryptography
 			}
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public override bool Verify(ReadOnlySpan<char> password, ReadOnlySpan<char> passwordHash)
 		{
 			using (var sha1 = System.Security.Cryptography.SHA1.Create())

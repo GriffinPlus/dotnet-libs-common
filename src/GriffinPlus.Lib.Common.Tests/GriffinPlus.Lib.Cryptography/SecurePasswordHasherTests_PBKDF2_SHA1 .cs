@@ -3,7 +3,6 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if NETCOREAPP3_1 || NET48 || NET5_0 || NET6_0 || NET7_0
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -219,9 +218,3 @@ namespace GriffinPlus.Lib.Cryptography
 }
 
 #pragma warning restore CS0618 // Type or member is obsolete
-
-#elif NET462
-// The Rfc2898DeriveBytes class supports SHA-1 only on .NET Standard 2.0.
-#else
-#error Unhandled target framework.
-#endif

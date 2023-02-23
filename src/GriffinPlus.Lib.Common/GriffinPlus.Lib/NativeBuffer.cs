@@ -226,7 +226,7 @@ namespace GriffinPlus.Lib
 				}
 			}
 
-#if NET6_0 || NET7_0
+#if NET6_0
 			if (alignment > 1)
 			{
 				// use the platform dependent aligned allocation API, e.g. aligned_alloc or _aligned_malloc
@@ -242,7 +242,7 @@ namespace GriffinPlus.Lib
 
 				return;
 			}
-#elif NETSTANDARD2_0 || NETSTANDARD2_1 || NET48 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0
+#elif NETSTANDARD2_0 || NETSTANDARD2_1 || NET461 || NET48 || NETCOREAPP3_0 || NET5_0
 #else
 #error Unhandled target framework.
 #endif

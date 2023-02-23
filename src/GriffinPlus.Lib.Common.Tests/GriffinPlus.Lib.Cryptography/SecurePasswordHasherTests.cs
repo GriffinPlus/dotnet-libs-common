@@ -39,8 +39,9 @@ namespace GriffinPlus.Lib.Cryptography
 #if NET48 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
 				yield return new object[] { "My Password", "$PBKDF2-SHA256$10000$pamnf76rg587ZF5AlAI9CG1pnsHg7kEI9eYTUlGSg/AAR9HDqQxNiweIiJCYmqNn" };
 				yield return new object[] { "My Password", "$PBKDF2-SHA512$10000$vCr1ArVabwFt6YNgl2LNMRfaGPrFb+yicQOuTEHnCjQvU84Xb/pvM3WLj1aexLNxeet+DsXyDDhLNyV/Te9JpddDop1be6J1Zrn3pyajizQ=" };
-#elif NET462
-				// .NET Framework 4.6.2 uses the library built for .NET Standard 2.0 which does not support PBKDF2 with SHA-256 and SHA-512.
+#elif NET461 || NETCOREAPP2_2
+				// .NET Framework 4.6.1 uses the library built with explicit support for .NET Framework 4.6.1, so there is no support for PBKDF2 with SHA-256 and SHA-512.
+				// .NET Core 2.2  uses the library built for .NET Standard 2.0 which does not support PBKDF2 with SHA-256 and SHA-512.
 #else
 #error Unhandled target framework.
 #endif
@@ -179,8 +180,9 @@ namespace GriffinPlus.Lib.Cryptography
 
 		#endregion
 
-#elif NET462
-		// .NET Framework 4.6.2 uses the library built for .NET Standard 2.0 which does not support PBKDF2 with SHA-256 and SHA-512.
+#elif NET461 || NETCOREAPP2_2
+		// .NET Framework 4.6.1 uses the library built with explicit support for .NET Framework 4.6.1, so there is no support for PBKDF2 with SHA-256 and SHA-512.
+		// .NET Core 2.2  uses the library built for .NET Standard 2.0 which does not support PBKDF2 with SHA-256 and SHA-512.
 #else
 #error Unhandled target framework.
 #endif

@@ -36,10 +36,10 @@ namespace GriffinPlus.Lib.Cryptography
 		/// </summary>
 		public SecurePasswordHasher_PBKDF2_Legacy() { }
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public override string AlgorithmName => "PBKDF2";
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public override string Hash(string password, int iterations)
 		{
 			return Hash(
@@ -51,7 +51,7 @@ namespace GriffinPlus.Lib.Cryptography
 				iterations);
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public override string Hash(ReadOnlySpan<char> password, int iterations)
 		{
 			return Hash(
@@ -63,7 +63,7 @@ namespace GriffinPlus.Lib.Cryptography
 				iterations);
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public override bool Verify(string password, string passwordHash)
 		{
 			return Verify(
@@ -75,7 +75,7 @@ namespace GriffinPlus.Lib.Cryptography
 				passwordHash);
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public override bool Verify(ReadOnlySpan<char> password, ReadOnlySpan<char> passwordHash)
 		{
 			return Verify(

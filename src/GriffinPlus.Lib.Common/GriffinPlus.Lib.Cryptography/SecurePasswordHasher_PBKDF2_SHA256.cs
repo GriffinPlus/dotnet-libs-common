@@ -3,7 +3,7 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if NETSTANDARD2_1 || NETCOREAPP3_1 || NET48 || NET5_0 || NET6_0 || NET7_0
+#if NETSTANDARD2_1 || NET48 || NET5_0 || NET6_0
 
 using System;
 using System.Security.Cryptography;
@@ -36,10 +36,10 @@ namespace GriffinPlus.Lib.Cryptography
 		/// </summary>
 		public SecurePasswordHasher_PBKDF2_SHA256() { }
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public override string AlgorithmName => "PBKDF2-SHA256";
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public override string Hash(string password, int iterations)
 		{
 			return Hash(
@@ -51,7 +51,7 @@ namespace GriffinPlus.Lib.Cryptography
 				iterations);
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public override string Hash(ReadOnlySpan<char> password, int iterations)
 		{
 			return Hash(
@@ -63,7 +63,7 @@ namespace GriffinPlus.Lib.Cryptography
 				iterations);
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public override bool Verify(string password, string passwordHash)
 		{
 			return Verify(
@@ -75,7 +75,7 @@ namespace GriffinPlus.Lib.Cryptography
 				passwordHash);
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc/>
 		public override bool Verify(ReadOnlySpan<char> password, ReadOnlySpan<char> passwordHash)
 		{
 			return Verify(
@@ -89,8 +89,8 @@ namespace GriffinPlus.Lib.Cryptography
 	}
 
 }
-#elif NETSTANDARD2_0
-// The Rfc2898DeriveBytes class supports SHA-1 only on .NET Standard 2.0.
+#elif NETSTANDARD2_0 || NET461
+// The Rfc2898DeriveBytes class supports SHA-1 only on .NET Standard 2.0 and .NET Framework 4.6.1.
 #else
 #error Unhandled target framework.
 #endif

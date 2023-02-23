@@ -40,7 +40,7 @@ namespace GriffinPlus.Lib.Cryptography
 			"Please use SecurePasswordHasher.PBKDF2_SHA256 or SecurePasswordHasher.PBKDF2_SHA512 instead.")]
 		public static SecurePasswordHasher PBKDF2_SHA1 { get; } = new SecurePasswordHasher_PBKDF2_SHA1();
 
-#if NETSTANDARD2_1 || NETCOREAPP3_1 || NET48 || NET5_0 || NET6_0 || NET7_0
+#if NETSTANDARD2_1 || NET48 || NET5_0 || NET6_0
 		/// <summary>
 		/// A password hasher using the password-based key derivation function 2 (PBKDF2) described in
 		/// RFC8018 (obsoletes RFC2898) with SHA-256 as key derivation function (16 bytes salt + 32 bytes hash).
@@ -53,8 +53,8 @@ namespace GriffinPlus.Lib.Cryptography
 		/// </summary>
 		public static SecurePasswordHasher PBKDF2_SHA512 { get; } = new SecurePasswordHasher_PBKDF2_SHA512();
 
-#elif NETSTANDARD2_0
-		// The Rfc2898DeriveBytes class supports SHA-1 only on .NET Standard 2.0.
+#elif NETSTANDARD2_0 || NET461
+		// The Rfc2898DeriveBytes class supports SHA-1 only on .NET Standard 2.0 and .NET Framework 4.6.1.
 #else
 #error Unhandled target framework.
 #endif
@@ -102,12 +102,12 @@ namespace GriffinPlus.Lib.Cryptography
 				{ PBKDF2_SHA1.AlgorithmName.ToLower(), PBKDF2_SHA1 },
 #pragma warning restore CS0618
 
-#if NETSTANDARD2_1 || NETCOREAPP3_1 || NET48 || NET5_0 || NET6_0 || NET7_0
+#if NETSTANDARD2_1 || NET48 || NET5_0 || NET6_0
 				// PBKDF2 with SHA-256 and SHA-512
 				{ PBKDF2_SHA256.AlgorithmName.ToLower(), PBKDF2_SHA256 },
 				{ PBKDF2_SHA512.AlgorithmName.ToLower(), PBKDF2_SHA512 },
-#elif NETSTANDARD2_0
-				// The Rfc2898DeriveBytes class supports SHA-1 only on .NET Standard 2.0.
+#elif NETSTANDARD2_0 || NET461
+				// The Rfc2898DeriveBytes class supports SHA-1 only on .NET Standard 2.0 and .NET Framework 4.6.1.
 #else
 #error Unhandled target framework.
 #endif
@@ -282,12 +282,12 @@ namespace GriffinPlus.Lib.Cryptography
 			byte[] buffer = ArrayPool<byte>.Shared.Rent(saltSize + hashSize + Encoding.UTF8.GetMaxByteCount(password.Length));
 
 			// initialize the salt in the first part of the password hash
-#if NETSTANDARD2_0 || NET48
+#if NETSTANDARD2_0 || NET461 || NET48
 			using (var random = RandomNumberGenerator.Create())
 			{
 				random.GetBytes(buffer, 0, saltSize);
 			}
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#elif NETSTANDARD2_1 || NET5_0 || NET6_0
 			RandomNumberGenerator.Fill(buffer.AsSpan().Slice(0, saltSize));
 #else
 #error Unhandled target framework.
@@ -336,12 +336,12 @@ namespace GriffinPlus.Lib.Cryptography
 			byte[] buffer = ArrayPool<byte>.Shared.Rent(saltSize + hashSize + Encoding.UTF8.GetMaxByteCount(password.Length));
 
 			// initialize the salt in the first part of the password hash
-#if NETSTANDARD2_0 || NET48
+#if NETSTANDARD2_0 || NET461 || NET48
 			using (var random = RandomNumberGenerator.Create())
 			{
 				random.GetBytes(buffer, 0, saltSize);
 			}
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#elif NETSTANDARD2_1 || NET5_0 || NET6_0
 			RandomNumberGenerator.Fill(buffer.AsSpan().Slice(0, saltSize));
 #else
 #error Unhandled target framework.
@@ -350,9 +350,9 @@ namespace GriffinPlus.Lib.Cryptography
 			// hash the password with the salt and the specified iterations using the specified algorithm
 			hashAlgorithm.TransformBlock(buffer, 0, saltSize, buffer, 0);
 			int encodedPasswordOffset = saltSize + hashSize;
-#if NETSTANDARD2_0 || NET48
+#if NETSTANDARD2_0 || NET461 || NET48
 			int encodedPasswordLength = Encoding.UTF8.GetBytes(password.ToString(), 0, password.Length, buffer, encodedPasswordOffset);
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#elif NETSTANDARD2_1 || NET5_0 || NET6_0
 			int encodedPasswordLength = Encoding.UTF8.GetBytes(password, buffer.AsSpan().Slice(encodedPasswordOffset));
 #else
 #error Unhandled target framework.
@@ -394,12 +394,12 @@ namespace GriffinPlus.Lib.Cryptography
 
 			// prepare salt for hashing
 			byte[] salt = ArrayPool<byte>.Shared.Rent(saltSize);
-#if NETSTANDARD2_0 || NET48
+#if NETSTANDARD2_0 || NET461 || NET48
 			using (var random = RandomNumberGenerator.Create())
 			{
 				random.GetBytes(salt, 0, saltSize);
 			}
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#elif NETSTANDARD2_1 || NET5_0 || NET6_0
 			RandomNumberGenerator.Fill(salt.AsSpan());
 #else
 #error Unhandled target framework.
@@ -407,10 +407,10 @@ namespace GriffinPlus.Lib.Cryptography
 
 			// hash the password with the salt and the specified iterations using the specified algorithm
 			byte[] hash;
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
 			Debug.Assert(hashAlgorithmName == HashAlgorithmName.SHA1);
 			using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations))
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET48 || NET5_0 || NET6_0 || NET7_0
+#elif NETSTANDARD2_1 || NET48 || NET5_0 || NET6_0
 			using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations, hashAlgorithmName))
 #else
 #error Unhandled target framework.
@@ -454,12 +454,12 @@ namespace GriffinPlus.Lib.Cryptography
 
 			// prepare salt for hashing
 			byte[] salt = ArrayPool<byte>.Shared.Rent(saltSize);
-#if NETSTANDARD2_0 || NET48
+#if NETSTANDARD2_0 || NET461 || NET48
 			using (var random = RandomNumberGenerator.Create())
 			{
 				random.GetBytes(salt, 0, saltSize);
 			}
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#elif NETSTANDARD2_1 || NET5_0 || NET6_0
 			RandomNumberGenerator.Fill(salt.AsSpan());
 #else
 #error Unhandled target framework.
@@ -467,10 +467,10 @@ namespace GriffinPlus.Lib.Cryptography
 
 			// hash the password with the salt and the specified iterations using the specified algorithm
 			byte[] hash;
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
 			Debug.Assert(hashAlgorithmName == HashAlgorithmName.SHA1);
 			using (var pbkdf2 = new Rfc2898DeriveBytes(password.ToString(), salt, iterations))
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET48 || NET5_0 || NET6_0 || NET7_0
+#elif NETSTANDARD2_1 || NET48 || NET5_0 || NET6_0
 			using (var pbkdf2 = new Rfc2898DeriveBytes(password.ToString(), salt, iterations, hashAlgorithmName))
 #else
 #error Unhandled target framework.
@@ -528,7 +528,7 @@ namespace GriffinPlus.Lib.Cryptography
 			if (!algorithmField.Equals(algorithmIdentifier.AsSpan(), StringComparison.InvariantCultureIgnoreCase))
 				throw new NotSupportedException($"The algorithm ({algorithmField.ToString()}) is not supported.");
 
-#if NETSTANDARD2_0 || NET48
+#if NETSTANDARD2_0 || NET461 || NET48
 			// parse the number of iterations
 			if (!int.TryParse(iterationsField.ToString(), out int iterationCount))
 				throw new FormatException($"The number of iterations ({iterationsField.ToString()}) is not a properly formatted integer value.");
@@ -538,7 +538,7 @@ namespace GriffinPlus.Lib.Cryptography
 			try { saltedHashBytes = Convert.FromBase64String(saltedHashField.ToString()); }
 			catch { throw new FormatException("The salted hash is not encoded properly."); }
 
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#elif NETSTANDARD2_1 || NET5_0 || NET6_0
 			// parse the number of iterations
 			if (!int.TryParse(iterationsField, out int iterationCount))
 				throw new FormatException($"The number of iterations ({iterationsField.ToString()}) is not a properly formatted integer value.");
@@ -563,9 +563,9 @@ namespace GriffinPlus.Lib.Cryptography
 			// calculate hash over the salt and the repeatedly hashed UTF-8 encoded password
 			hashAlgorithm.TransformBlock(salt, 0, salt.Length, salt, 0);
 			byte[] encodedPassword = ArrayPool<byte>.Shared.Rent(Encoding.UTF8.GetMaxByteCount(password.Length));
-#if NETSTANDARD2_0 || NET48
+#if NETSTANDARD2_0 || NET461 || NET48
 			int encodedPasswordLength = Encoding.UTF8.GetBytes(password, 0, password.Length, encodedPassword, 0);
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#elif NETSTANDARD2_1 || NET5_0 || NET6_0
 			int encodedPasswordLength = Encoding.UTF8.GetBytes(password.AsSpan(), encodedPassword.AsSpan());
 #else
 #error Unhandled target framework.
@@ -619,7 +619,7 @@ namespace GriffinPlus.Lib.Cryptography
 			if (!algorithmField.Equals(algorithmIdentifier, StringComparison.InvariantCultureIgnoreCase))
 				throw new NotSupportedException($"The algorithm ({algorithmField.ToString()}) is not supported.");
 
-#if NETSTANDARD2_0 || NET48
+#if NETSTANDARD2_0 || NET461 || NET48
 			// parse the number of iterations
 			if (!int.TryParse(iterationsField.ToString(), out int iterationCount))
 				throw new FormatException($"The number of iterations ({iterationsField.ToString()}) is not a properly formatted integer value.");
@@ -629,7 +629,7 @@ namespace GriffinPlus.Lib.Cryptography
 			try { saltedHashBytes = Convert.FromBase64String(saltedHashField.ToString()); }
 			catch { throw new FormatException("The salted hash is not encoded properly."); }
 
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#elif NETSTANDARD2_1 || NET5_0 || NET6_0
 			// parse the number of iterations
 			if (!int.TryParse(iterationsField, out int iterationCount))
 				throw new FormatException($"The number of iterations ({iterationsField.ToString()}) is not a properly formatted integer value.");
@@ -654,9 +654,9 @@ namespace GriffinPlus.Lib.Cryptography
 			// calculate hash over the salt and the repeatedly hashed UTF-8 encoded password
 			hashAlgorithm.TransformBlock(salt, 0, salt.Length, salt, 0);
 			byte[] encodedPassword = ArrayPool<byte>.Shared.Rent(Encoding.UTF8.GetMaxByteCount(password.Length));
-#if NETSTANDARD2_0 || NET48
+#if NETSTANDARD2_0 || NET461 || NET48
 			int encodedPasswordLength = Encoding.UTF8.GetBytes(password.ToString(), 0, password.Length, encodedPassword, 0);
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#elif NETSTANDARD2_1 || NET5_0 || NET6_0
 			int encodedPasswordLength = Encoding.UTF8.GetBytes(password, encodedPassword.AsSpan());
 #else
 #error Unhandled target framework.
@@ -710,7 +710,7 @@ namespace GriffinPlus.Lib.Cryptography
 			if (!algorithmField.Equals(algorithmIdentifier.AsSpan(), StringComparison.InvariantCultureIgnoreCase))
 				throw new NotSupportedException($"The algorithm ({algorithmField.ToString()}) is not supported.");
 
-#if NETSTANDARD2_0 || NET48
+#if NETSTANDARD2_0 || NET461 || NET48
 			// parse the number of iterations
 			if (!int.TryParse(iterationsField.ToString(), out int iterationCount))
 				throw new FormatException($"The number of iterations ({iterationsField.ToString()}) is not a properly formatted integer value.");
@@ -720,7 +720,7 @@ namespace GriffinPlus.Lib.Cryptography
 			try { saltedHashBytes = Convert.FromBase64String(saltedHashField.ToString()); }
 			catch { throw new FormatException("The salted hash is not encoded properly."); }
 
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#elif NETSTANDARD2_1 || NET5_0 || NET6_0
 			// parse the number of iterations
 			if (!int.TryParse(iterationsField, out int iterationCount))
 				throw new FormatException($"The number of iterations ({iterationsField.ToString()}) is not a properly formatted integer value.");
@@ -745,11 +745,10 @@ namespace GriffinPlus.Lib.Cryptography
 			// calculate hash
 			byte[] hash;
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
 			Debug.Assert(hashAlgorithmName == HashAlgorithmName.SHA1);
-			Debug.Assert(iterationCount == DefaultIterationCount);
 			using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterationCount))
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET48 || NET5_0 || NET6_0 || NET7_0
+#elif NETSTANDARD2_1 || NET48 || NET5_0 || NET6_0
 			using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterationCount, hashAlgorithmName))
 #else
 #error Unhandled target framework.
@@ -801,7 +800,7 @@ namespace GriffinPlus.Lib.Cryptography
 			if (!algorithmField.Equals(algorithmIdentifier, StringComparison.InvariantCultureIgnoreCase))
 				throw new NotSupportedException($"The algorithm ({algorithmField.ToString()}) is not supported.");
 
-#if NETSTANDARD2_0 || NET48
+#if NETSTANDARD2_0 || NET461 || NET48
 			// parse the number of iterations
 			if (!int.TryParse(iterationsField.ToString(), out int iterationCount))
 				throw new FormatException($"The number of iterations ({iterationsField.ToString()}) is not a properly formatted integer value.");
@@ -811,7 +810,7 @@ namespace GriffinPlus.Lib.Cryptography
 			try { saltedHashBytes = Convert.FromBase64String(saltedHashField.ToString()); }
 			catch { throw new FormatException("The salted hash is not encoded properly."); }
 
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#elif NETSTANDARD2_1 || NET5_0 || NET6_0
 			// parse the number of iterations
 			if (!int.TryParse(iterationsField, out int iterationCount))
 				throw new FormatException($"The number of iterations ({iterationsField.ToString()}) is not a properly formatted integer value.");
@@ -836,11 +835,10 @@ namespace GriffinPlus.Lib.Cryptography
 			// calculate hash
 			byte[] hash;
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
 			Debug.Assert(hashAlgorithmName == HashAlgorithmName.SHA1);
-			Debug.Assert(iterationCount == DefaultIterationCount);
 			using (var pbkdf2 = new Rfc2898DeriveBytes(password.ToString(), salt, iterationCount))
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET48 || NET5_0 || NET6_0 || NET7_0
+#elif NETSTANDARD2_1 || NET48 || NET5_0 || NET6_0
 			using (var pbkdf2 = new Rfc2898DeriveBytes(password.ToString(), salt, iterationCount, hashAlgorithmName))
 #else
 #error Unhandled target framework.

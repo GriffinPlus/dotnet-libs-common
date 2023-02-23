@@ -100,7 +100,7 @@ namespace GriffinPlus.Lib.Io
 			}
 		}
 
-#if NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#if NETSTANDARD2_1 || NET5_0 || NET6_0
 		/// <summary>
 		/// Asynchronously disposes the stream releasing the underlying memory block chain
 		/// (returns rented buffers to their array pool, if necessary).
@@ -117,7 +117,7 @@ namespace GriffinPlus.Lib.Io
 				mLock.Release();
 			}
 		}
-#elif NETSTANDARD2_0 || NET48
+#elif NETSTANDARD2_0 || NET461 || NET48
 		// This method is not supported by the Stream class.
 #else
 #error Unhandled target framework.
@@ -435,8 +435,8 @@ namespace GriffinPlus.Lib.Io
 		/// </returns>
 		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		public
-#if NETSTANDARD2_0 || NET48
-#elif NETSTANDARD2_1 || NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#if NETSTANDARD2_0 || NET461 || NET48
+#elif NETSTANDARD2_1 || NETCOREAPP3_0 || NET5_0 || NET6_0
 			override
 #else
 #error Unhandled target framework.
@@ -475,8 +475,8 @@ namespace GriffinPlus.Lib.Io
 		/// </returns>
 		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		public
-#if NETSTANDARD2_0 || NET48
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#if NETSTANDARD2_0 || NET461 || NET48
+#elif NETSTANDARD2_1 || NET5_0 || NET6_0
 			override
 #else
 #error Unhandled target framework.
@@ -613,8 +613,8 @@ namespace GriffinPlus.Lib.Io
 		/// <param name="buffer">A region of memory. This method copies the contents of this region to the current stream.</param>
 		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		public
-#if NETSTANDARD2_0 || NET48
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#if NETSTANDARD2_0 || NET461 || NET48
+#elif NETSTANDARD2_1 || NET5_0 || NET6_0
 			override
 #else
 #error Unhandled target framework.
@@ -647,8 +647,8 @@ namespace GriffinPlus.Lib.Io
 		/// </param>
 		/// <returns>A task that represents the asynchronous write operation.</returns>
 		public
-#if NETSTANDARD2_0 || NET48
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#if NETSTANDARD2_0 || NET461 || NET48
+#elif NETSTANDARD2_1 || NET5_0 || NET6_0
 			override
 #else
 #error Unhandled target framework.
@@ -763,9 +763,9 @@ namespace GriffinPlus.Lib.Io
 		/// Either the current stream or <paramref name="destination"/> have been disposed.
 		/// </exception>
 		public
-#if NETSTANDARD2_0 || NET48
+#if NETSTANDARD2_0 || NET461 || NET48
 			new
-#elif NETSTANDARD2_1 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#elif NETSTANDARD2_1 || NET5_0 || NET6_0
 			override
 #else
 #error Unhandled target framework.
