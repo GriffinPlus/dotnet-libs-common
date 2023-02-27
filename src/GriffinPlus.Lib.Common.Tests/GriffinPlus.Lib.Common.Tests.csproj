@@ -6,9 +6,9 @@
 	- net48         => Tests with library built for net48
 	- netcoreapp2.2 => Tests with library built for netstandard2.0
 	- netcoreapp3.1 => Tests with library built for netstandard2.1
-	- net50         => Tests with library built for net5.0
-	- net60         => Tests with library built for net6.0
-	- net70         => Tests with library built for net6.0
+	- net5.0        => Tests with library built for net5.0
+	- net6.0        => Tests with library built for net6.0
+	- net7.0        => Tests with library built for net6.0
 	-->
 
 	<PropertyGroup>
