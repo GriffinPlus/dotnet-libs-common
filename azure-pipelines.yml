@@ -149,7 +149,7 @@ stages:
       matrix:
         'Windows Server 2022':
           VmImage: 'windows-2022'
-        'Ubuntu 20.04':
+        'Ubuntu 22.04':
           VmImage: 'ubuntu-22.04'
     pool:
       vmImage: '$(VmImage)'
