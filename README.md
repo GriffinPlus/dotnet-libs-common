@@ -32,6 +32,7 @@ This namespace provides common functionality and contains the following classes:
 - `ObjectPool<T>`: A simple thread-safe implementation of an object pool that allows re-using objects.
 - `RegexHelpers`: Helper methods providing common functionality when pattern matching is required.
 - `TypeDecomposer`: Utility class that assists with decomposing types to generic type definitions and non-generic types.
+- `RuntimeMetadata`: Utility class that assists with loading assemblies and provides various metadata sets (assemblies by their full name, types by assembly (all and public-only), types by their full name (all and public-only).
 
 Extension methods for common types
 
