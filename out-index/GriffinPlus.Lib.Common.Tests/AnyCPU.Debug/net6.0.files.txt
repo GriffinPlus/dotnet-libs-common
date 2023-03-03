@@ -5,6 +5,7 @@
 .\GriffinPlus.Lib.Common.Tests.pdb
 .\GriffinPlus.Lib.Common.Tests.runtimeconfig.json
 .\GriffinPlus.Lib.Common.xml
+.\GriffinPlus.Lib.Logging.Interface.dll
 .\GriffinPlus.Lib.XUnitHelpers.dll
 .\Microsoft.TestPlatform.CommunicationUtilities.dll
 .\Microsoft.TestPlatform.CoreUtilities.dll

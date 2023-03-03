@@ -1,13 +1,12 @@
 ﻿.\GriffinPlus.Lib.Common.dll
 .\GriffinPlus.Lib.Common.pdb
 .\GriffinPlus.Lib.Common.Tests.dll
-.\GriffinPlus.Lib.Common.Tests.dll.config
 .\GriffinPlus.Lib.Common.Tests.pdb
 .\GriffinPlus.Lib.Common.xml
+.\GriffinPlus.Lib.Logging.Interface.dll
 .\GriffinPlus.Lib.XUnitHelpers.dll
 .\Microsoft.VisualStudio.CodeCoverage.Shim.dll
 .\System.Buffers.dll
-.\System.Collections.Immutable.dll
 .\System.Memory.dll
 .\System.Numerics.Vectors.dll
 .\System.Runtime.CompilerServices.Unsafe.dll
