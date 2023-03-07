@@ -75,6 +75,10 @@ stages:
         packageType: 'sdk'
         version: '7.0.x'
         installationPath: '$(Agent.ToolsDirectory)/dotnet'
+    - task: NuGetToolInstaller@1
+      displayName: 'Install NuGet'
+      inputs:
+        versionSpec: '6.x'
     - task: DotNetCoreCLI@2
       displayName: 'Install GitVersion'
       inputs:
@@ -184,6 +188,10 @@ stages:
         packageType: 'sdk'
         version: '7.0.x'
         installationPath: '$(Agent.ToolsDirectory)/dotnet'
+    - task: NuGetToolInstaller@1
+      displayName: 'Install NuGet'
+      inputs:
+        versionSpec: '6.x'
     - task: DownloadPipelineArtifact@2
       displayName: 'Download Pipeline Artifacts'
       inputs:
@@ -251,6 +259,10 @@ stages:
   ######################################################################################################################
   - job: 'Pack'
     steps:
+    - task: NuGetToolInstaller@1
+      displayName: 'Install NuGet'
+      inputs:
+        versionSpec: '6.x'
     - task: DownloadPipelineArtifact@2
       displayName: 'Download Pipeline Artifacts'
       inputs:
@@ -304,6 +316,10 @@ stages:
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     dependsOn: 'Pack'
     steps:
+    - task: NuGetToolInstaller@1
+      displayName: 'Install NuGet'
+      inputs:
+        versionSpec: '6.x'
     - task: DownloadPipelineArtifact@2
       displayName: 'Download Pipeline Artifacts'
       inputs:
