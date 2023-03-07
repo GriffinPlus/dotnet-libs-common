@@ -204,7 +204,7 @@ stages:
         command: 'test'
         projects: '**/*Tests/*.csproj'
         nobuild: true
-        arguments: '--framework net461 --verbosity normal'
+        arguments: '--framework net461'
     - task: DotNetCoreCLI@2
       displayName: 'Test .NET Framework 4.8'
       condition: eq(variables['agent.os'], 'Windows_NT')
@@ -212,7 +212,7 @@ stages:
         command: 'test'
         projects: '**/*Tests/*.csproj'
         nobuild: true
-        arguments: '--framework net48 --verbosity normal'
+        arguments: '--framework net48'
     - task: DotNetCoreCLI@2
       displayName: 'Test .NET Core 2.2'
       inputs:
