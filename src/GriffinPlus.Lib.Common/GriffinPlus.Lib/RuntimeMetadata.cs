@@ -14,17 +14,38 @@ using System.Text.RegularExpressions;
 using System.Threading;
 
 using GriffinPlus.Lib.Logging;
+#if !NET461
+using System.Runtime.InteropServices;
+#endif
 
 namespace GriffinPlus.Lib
 {
 
 	/// <summary>
-	/// Provides various information about assemblies and types in the current application domain.
+	/// Provides various information about assemblies and types.<br/>
+	/// <br/>
+	/// Depending on the framework at runtime different assemblies are included:<br/>
+	/// <br/>
+	/// - .NET Framework 4+:<br/>
+	/// --> Assemblies in the Global Assembly Cache (GAC)<br/>
+	/// --> Assemblies in the application's base directory or a private bin path<br/>
+	/// --> Assemblies that have been generated dynamically<br/>
+	/// <br/>
+	/// - .NET Core 2/3, .NET 5+:<br/>
+	/// --> Assemblies that are loaded into the default assembly load context<br/>
+	/// --> Assemblies that have been generated dynamically<br/>
+	/// <br/>
+	/// Assemblies that are loaded from the web are not considered.
 	/// </summary>
 	public static class RuntimeMetadata
 	{
 		private static readonly LogWriter                                 sLog                                        = LogWriter.Get(typeof(RuntimeMetadata));
 		private static readonly ReaderWriterLockSlim                      sLock                                       = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+		private static readonly Type                                      sAssemblyLoadContextType                    = Type.GetType("System.Runtime.Loader.AssemblyLoadContext");
+		private static readonly MethodInfo                                sGetLoadContextMethod                       = null;
+		private static readonly object                                    sDefaultAssemblyLoadContext                 = null;
+		private static readonly bool                                      sIsNetFramework                             = false;
+		private static          bool                                      sInitialized                                = false;
 		private static readonly ConcurrentQueue<Assembly>                 sAssembliesToScan                           = new ConcurrentQueue<Assembly>();
 		private static readonly object                                    sLoadAssembliesSync                         = new object();
 		private static          bool                                      sLoadedAssembliesInApplicationBaseDirectory = false;
@@ -41,25 +62,77 @@ namespace GriffinPlus.Lib
 		/// </summary>
 		static RuntimeMetadata()
 		{
-			// hook up the event that is raised when an assembly is loaded into the application domain
-			AppDomain.CurrentDomain.AssemblyLoad += HandleAssemblyLoaded;
+			// .NET Core 2/3 and .NET 5+ only:
+			// get the default assembly load context
+			sDefaultAssemblyLoadContext = sAssemblyLoadContextType
+				?.GetProperty("Default")
+				?.GetMethod
+				?.Invoke(null, Array.Empty<object>());
 
-			// put currently loaded assemblies into the set of assemblies to scan
-			// and start worker thread to scan these assemblies
-			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-			foreach (Assembly assembly in assemblies)
+			// .NET Core 2/3 and .NET 5+ only:
+			// get the method to retrieve the load context an assembly is associated with
+			sGetLoadContextMethod = sAssemblyLoadContextType?.GetMethod("GetLoadContext");
+
+			// determine whether the application is running with .NET Framework
+#if NET461
+			// the build for .NET Framework 4.6.1 will only run on .NET Framework 4.6.1+
+			// => the runtime is guaranteed to be .NET Framework
+			sIsNetFramework = true;
+#else
+			sIsNetFramework = RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework");
+#endif
+		}
+
+		/// <summary>
+		/// Initializes static properties providing various information about assemblies and types and sets up an
+		/// event to scan assemblies that are loaded later on.
+		/// </summary>
+		private static void Init()
+		{
+			// abort if the class is already initialized
+			// (sInitialized is set to true and stays true until the process terminates)
+			if (sInitialized)
+				return;
+
+			sLock.EnterWriteLock();
+			try
 			{
-				// get all types from the assembly to trigger loading dependent assemblies
-				// (assemblies will be put into sAssembliesToScan, so these assemblies are scanned first)
-				try { assembly.GetTypes(); }
-				catch (ReflectionTypeLoadException)
+				// abort, if the class is already initialized
+				if (sInitialized)
+					return;
+
+				// hook up the event that is raised when an assembly is loaded into the application domain
+				AppDomain.CurrentDomain.AssemblyLoad += HandleAssemblyLoaded;
+
+				// put currently loaded assemblies into the set of assemblies to scan
+				Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+				foreach (Assembly assembly in assemblies)
 				{
-					// swallow
+					// skip assembly if it is loaded for reflection only
+					if (assembly.ReflectionOnly)
+						continue;
+
+					// get all types from the assembly to trigger loading dependent assemblies
+					// (assemblies will be put into sAssembliesToScan, so these assemblies are scanned first)
+					try { assembly.GetTypes(); }
+					catch (ReflectionTypeLoadException)
+					{
+						// swallow
+					}
+
+					sAssembliesToScan.Enqueue(assembly);
 				}
 
-				sAssembliesToScan.Enqueue(assembly);
+				// indicate that initialization has completed
+				sInitialized = true;
+
+				// start worker thread to scan these assemblies
+				TriggerUpdate();
 			}
-			TriggerUpdate();
+			finally
+			{
+				sLock.ExitWriteLock();
+			}
 		}
 
 		/// <summary>
@@ -69,6 +142,12 @@ namespace GriffinPlus.Lib
 		{
 			get
 			{
+				// initialize the class if necessary
+				if (!sInitialized)
+					Init();
+
+				// get current copy of the dictionary
+				// if there are no assemblies scheduled to be scanned
 				if (sAssembliesToScan.IsEmpty)
 				{
 					sLock.EnterReadLock();
@@ -82,6 +161,8 @@ namespace GriffinPlus.Lib
 					}
 				}
 
+				// there are assemblies scheduled to be scanned
+				// => scan and return the updated dictionary
 				sLock.EnterWriteLock();
 				try
 				{
@@ -103,6 +184,12 @@ namespace GriffinPlus.Lib
 		{
 			get
 			{
+				// initialize the class if necessary
+				if (!sInitialized)
+					Init();
+
+				// get current copy of the dictionary
+				// if there are no assemblies scheduled to be scanned
 				if (sAssembliesToScan.IsEmpty)
 				{
 					sLock.EnterReadLock();
@@ -116,6 +203,8 @@ namespace GriffinPlus.Lib
 					}
 				}
 
+				// there are assemblies scheduled to be scanned
+				// => scan and return the updated dictionary
 				sLock.EnterWriteLock();
 				try
 				{
@@ -137,6 +226,12 @@ namespace GriffinPlus.Lib
 		{
 			get
 			{
+				// initialize the class if necessary
+				if (!sInitialized)
+					Init();
+
+				// get current copy of the dictionary
+				// if there are no assemblies scheduled to be scanned
 				if (sAssembliesToScan.IsEmpty)
 				{
 					sLock.EnterReadLock();
@@ -150,6 +245,8 @@ namespace GriffinPlus.Lib
 					}
 				}
 
+				// there are assemblies scheduled to be scanned
+				// => scan and return the updated dictionary
 				sLock.EnterWriteLock();
 				try
 				{
@@ -172,6 +269,12 @@ namespace GriffinPlus.Lib
 		{
 			get
 			{
+				// initialize the class if necessary
+				if (!sInitialized)
+					Init();
+
+				// get current copy of the dictionary
+				// if there are no assemblies scheduled to be scanned
 				if (sAssembliesToScan.IsEmpty)
 				{
 					sLock.EnterReadLock();
@@ -185,6 +288,8 @@ namespace GriffinPlus.Lib
 					}
 				}
 
+				// there are assemblies scheduled to be scanned
+				// => scan and return the updated dictionary
 				sLock.EnterWriteLock();
 				try
 				{
@@ -207,6 +312,12 @@ namespace GriffinPlus.Lib
 		{
 			get
 			{
+				// initialize the class if necessary
+				if (!sInitialized)
+					Init();
+
+				// get current copy of the dictionary
+				// if there are no assemblies scheduled to be scanned
 				if (sAssembliesToScan.IsEmpty)
 				{
 					sLock.EnterReadLock();
@@ -220,6 +331,8 @@ namespace GriffinPlus.Lib
 					}
 				}
 
+				// there are assemblies scheduled to be scanned
+				// => scan and return the updated dictionary
 				sLock.EnterWriteLock();
 				try
 				{
@@ -243,6 +356,10 @@ namespace GriffinPlus.Lib
 		/// </param>
 		public static void LoadAssembliesInApplicationBaseDirectory(bool scanImmediately = false)
 		{
+			// initialize the class if necessary
+			if (!sInitialized)
+				Init();
+
 			// abort if assemblies in the application base directory have already been loaded...
 			// (flag switches to true and stays there until the process terminates, so it can be used without synchronization to save time)
 			if (sLoadedAssembliesInApplicationBaseDirectory)
@@ -315,6 +432,10 @@ namespace GriffinPlus.Lib
 		/// </param>
 		public static void LoadAllAssemblies(bool scanImmediately = false)
 		{
+			// initialize the class if necessary
+			if (!sInitialized)
+				Init();
+
 			// abort if all assemblies have already been loaded...
 			// (flag switches to true and stays there until the process terminates, so it can be used without synchronization to save time)
 			if (sLoadedAllAssemblies)
@@ -431,8 +552,9 @@ namespace GriffinPlus.Lib
 		/// <param name="args">Event arguments (contains the loaded assembly).</param>
 		private static void HandleAssemblyLoaded(object sender, AssemblyLoadEventArgs args)
 		{
-			Debug.Assert(!sLock.IsReadLockHeld);
-			Debug.Assert(!sLock.IsWriteLockHeld);
+			// skip assembly if it is loaded for reflection only
+			if (args.LoadedAssembly.ReflectionOnly)
+				return;
 
 			// get all types from the loaded assembly to trigger loading dependent assemblies
 			// (assemblies will be put into sAssembliesToScan, so these assemblies are scanned first)
@@ -458,8 +580,10 @@ namespace GriffinPlus.Lib
 				sLock.EnterWriteLock();
 				try
 				{
-					Interlocked.Exchange(ref sAsynchronousUpdatePending, 0);
-					ScanScheduledAssemblies();
+					if (Interlocked.CompareExchange(ref sAsynchronousUpdatePending, 0, 1) == 0)
+					{
+						ScanScheduledAssemblies();
+					}
 				}
 				finally
 				{
@@ -500,13 +624,123 @@ namespace GriffinPlus.Lib
 			// scan scheduled assemblies
 			while (sAssembliesToScan.TryDequeue(out Assembly assembly))
 			{
-				// log that the assembly was loaded
-				sLog.Write(LogLevel.Debug, "Scanning assembly ({0}) for information about types...", assembly.FullName);
+				Debug.Assert(assembly.FullName != null, "assembly.FullName != null");
 
-				// integrate information into temporary dictionaries
-				assembliesByFullName.Add(assembly.FullName, assembly);
+				// log that the assembly was loaded
+				sLog.Write(LogLevel.Debug, "Scanning assembly ({0})...", assembly.FullName);
+
+				// ----------------------------------------------------------------------------------------------------------------
+				// scan assembly if it has been generated dynamically
+				// ----------------------------------------------------------------------------------------------------------------
+
+				if (assembly.IsDynamic)
+					goto scan;
+
+				// ----------------------------------------------------------------------------------------------------------------
+				// .NET Core 2/3 and .NET 5+ only:
+				// scan assembly if it is loaded into the default assembly load context
+				// ----------------------------------------------------------------------------------------------------------------
+
+				if (sAssemblyLoadContextType != null)
+				{
+					Debug.Assert(sGetLoadContextMethod != null, nameof(sGetLoadContextMethod) + " != null");
+					Debug.Assert(sDefaultAssemblyLoadContext != null, nameof(sDefaultAssemblyLoadContext) + " != null");
+					object assemblyLoadContext = sGetLoadContextMethod.Invoke(null, new object[] { assembly });
+					if (assemblyLoadContext != sDefaultAssemblyLoadContext) continue;
+					goto scan;
+				}
+
+				// below this line there is only handling for the .NET Framework
+				// .NET Core 2/3 and .NET 5+ is completely handled by the section above
+				if (!sIsNetFramework) continue;
+
+#if NETSTANDARD2_0 || NET461 || NET48
+
+				// ----------------------------------------------------------------------------------------------------------------
+				// .NET Framework only:
+				// scan the assembly if it resides in the Global Assembly Cache (GAC)
+				// ----------------------------------------------------------------------------------------------------------------
+
+				if (assembly.GlobalAssemblyCache)
+					goto scan;
+
+				// ----------------------------------------------------------------------------------------------------------------
+				// skip scanning assembly if has not been loaded from the file system
+				// => dynamically generated assemblies and assemblies loaded from the web are not supported
+				// ----------------------------------------------------------------------------------------------------------------
+
+				var uri = new Uri(assembly.CodeBase);
+				if (uri.Scheme != "file") continue;
+				string assemblyFilePath = Path.GetFullPath(uri.LocalPath);
+
+				// ----------------------------------------------------------------------------------------------------------------
+				// .NET Framework only:
+				// scan the assembly if it resides in the application's base directory
+				// ----------------------------------------------------------------------------------------------------------------
+
+				string assemblyDirectoryPath = Path.GetDirectoryName(assemblyFilePath);
+				if (assemblyDirectoryPath == AppDomain.CurrentDomain.BaseDirectory)
+					goto scan;
+
+				// ----------------------------------------------------------------------------------------------------------------
+				// .NET Framework only:
+				// scan the assembly if it resides in the private bin path below the application's base directory
+				// ----------------------------------------------------------------------------------------------------------------
+
+				// get the setup information object of the current application domain
+				object setupInformation = typeof(AppDomain)
+					.GetProperty("SetupInformation")
+					?.GetMethod
+					?.Invoke(AppDomain.CurrentDomain, Array.Empty<object>());
+
+				// get the private bin paths of the current application domain
+				string[] privateBinPaths = (setupInformation
+					                            ?.GetType()
+					                            .GetProperty("PrivateBinPath")
+					                            ?.GetMethod
+					                            ?.Invoke(setupInformation, Array.Empty<object>()) as string)?.Split(';');
+
+				if (privateBinPaths != null)
+				{
+					foreach (string privateBinPath in privateBinPaths)
+					{
+						// make the private bin path a full path to perform comparisons
+						string fullPrivateBinPath;
+						if (Path.IsPathRooted(privateBinPath))
+						{
+							fullPrivateBinPath = Path.GetFullPath(privateBinPath);
+						}
+						else
+						{
+							fullPrivateBinPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, privateBinPath);
+							fullPrivateBinPath = Path.GetFullPath(fullPrivateBinPath);
+						}
+
+						// skip private bin path if it is not below the application's base directory
+						if (!fullPrivateBinPath.StartsWith(AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar))
+							continue;
+
+						// scan the assembly if it is in the private bin path of the application domain
+						string path = Path.Combine(fullPrivateBinPath, Path.GetFileName(assemblyFilePath));
+						if (assemblyFilePath == path)
+							goto scan;
+					}
+				}
+
+#elif NETSTANDARD2_1 || NET5_0 || NET6_0
+#else
+#error Unhandled target framework.
+#endif
+
+				// the previous checks did not indicate that the assembly should be scanned
+				// => skip it...
+				continue;
+
+				// scan the assembly and update the temporary data set accordingly
+				scan:
 				InspectAssemblyAndCollectInformation(
 					assembly,
+					assembliesByFullName,
 					typesByAssembly,
 					exportedTypesByAssembly,
 					typesByFullName,
@@ -525,6 +759,7 @@ namespace GriffinPlus.Lib
 		/// Inspects the specified assembly and collects information to expose.
 		/// </summary>
 		/// <param name="assembly">Assembly to inspect.</param>
+		/// <param name="assembliesByFullName">A dictionary mapping the full name of assemblies to the corresponding assembly objects.</param>
 		/// <param name="typesByAssembly">A dictionary mapping assemblies to public and non-public types stored within them.</param>
 		/// <param name="exportedTypesByAssembly">A dictionary mapping assemblies to public types stored within them.</param>
 		/// <param name="typesByFullName">
@@ -537,44 +772,46 @@ namespace GriffinPlus.Lib
 		/// </param>
 		private static void InspectAssemblyAndCollectInformation(
 			Assembly                                   assembly,
+			IDictionary<string, Assembly>              assembliesByFullName,
 			IDictionary<Assembly, IReadOnlyList<Type>> typesByAssembly,
 			IDictionary<Assembly, IReadOnlyList<Type>> exportedTypesByAssembly,
 			IDictionary<string, List<Type>>            typesByFullName,
 			IDictionary<string, List<Type>>            exportedTypesByFullName)
 		{
-			if (!typesByAssembly.TryGetValue(assembly, out IReadOnlyList<Type> types))
+			// scan the assembly for types
+			Type[] types;
+			try { types = assembly.GetTypes(); }
+			catch (ReflectionTypeLoadException ex) { types = ex.Types; }
+
+			// add assembly to the table mapping assembly names to assembly objects
+			assembliesByFullName.Add(assembly.FullName, assembly);
+
+			// add types to the table mapping assemblies to types defined in them
+			types = types.Where(x => x != null).ToArray();
+			typesByAssembly.Add(assembly, types);
+			exportedTypesByAssembly.Add(assembly, types.Where(x => x.IsPublic).ToArray());
+
+			// update the table mapping type names to type objects
+			foreach (Type type in types)
 			{
-				// scan the assembly for types
-				try { types = assembly.GetTypes(); }
-				catch (ReflectionTypeLoadException ex) { types = ex.Types; }
-
-				// add types to the table mapping assemblies to types defined in them
-				types = types.Where(x => x != null).ToArray();
-				typesByAssembly.Add(assembly, types);
-				exportedTypesByAssembly.Add(assembly, types.Where(x => x.IsPublic).ToArray());
-
-				// update the table mapping type names to type objects
-				foreach (Type type in types)
+				Debug.Assert(type.FullName != null, "type.FullName != null");
+				if (!typesByFullName.TryGetValue(type.FullName, out List<Type> list))
 				{
-					Debug.Assert(type.FullName != null, "type.FullName != null");
-					if (!typesByFullName.TryGetValue(type.FullName, out List<Type> list))
+					list = new List<Type>();
+					typesByFullName.Add(type.FullName, list);
+				}
+
+				list.Add(type);
+
+				if (type.IsPublic)
+				{
+					if (!exportedTypesByFullName.TryGetValue(type.FullName, out list))
 					{
 						list = new List<Type>();
-						typesByFullName.Add(type.FullName, list);
+						exportedTypesByFullName.Add(type.FullName, list);
 					}
 
 					list.Add(type);
-
-					if (type.IsPublic)
-					{
-						if (!exportedTypesByFullName.TryGetValue(type.FullName, out list))
-						{
-							list = new List<Type>();
-							exportedTypesByFullName.Add(type.FullName, list);
-						}
-
-						list.Add(type);
-					}
 				}
 			}
 		}
