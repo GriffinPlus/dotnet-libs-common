@@ -580,7 +580,7 @@ namespace GriffinPlus.Lib
 				sLock.EnterWriteLock();
 				try
 				{
-					if (Interlocked.CompareExchange(ref sAsynchronousUpdatePending, 0, 1) == 0)
+					if (Interlocked.CompareExchange(ref sAsynchronousUpdatePending, 0, 1) == 1)
 					{
 						ScanScheduledAssemblies();
 					}
