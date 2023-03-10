@@ -678,8 +678,9 @@ namespace GriffinPlus.Lib
 				// scan the assembly if it resides in the application's base directory
 				// ----------------------------------------------------------------------------------------------------------------
 
-				string assemblyDirectoryPath = Path.GetDirectoryName(assemblyFilePath);
-				if (assemblyDirectoryPath == AppDomain.CurrentDomain.BaseDirectory)
+				string assemblyDirectoryPath = Path.GetDirectoryName(assemblyFilePath)?.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+				string applicationBaseDirectory = AppDomain.CurrentDomain.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+				if (assemblyDirectoryPath == applicationBaseDirectory)
 					goto scan;
 
 				// ----------------------------------------------------------------------------------------------------------------
@@ -712,12 +713,12 @@ namespace GriffinPlus.Lib
 						}
 						else
 						{
-							fullPrivateBinPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, privateBinPath);
+							fullPrivateBinPath = Path.Combine(applicationBaseDirectory, privateBinPath);
 							fullPrivateBinPath = Path.GetFullPath(fullPrivateBinPath);
 						}
 
 						// skip private bin path if it is not below the application's base directory
-						if (!fullPrivateBinPath.StartsWith(AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar))
+						if (!fullPrivateBinPath.StartsWith(applicationBaseDirectory + Path.DirectorySeparatorChar))
 							continue;
 
 						// scan the assembly if it is in the private bin path of the application domain
