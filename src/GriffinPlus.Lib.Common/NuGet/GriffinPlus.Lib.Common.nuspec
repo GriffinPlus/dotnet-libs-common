@@ -5,7 +5,7 @@
 		<id>GriffinPlus.Lib.Common</id>
 		<version>$version$</version>
 		<authors>Sascha Falk</authors>
-		<copyright>Copyright (c) 2021 Sascha Falk and Contributors</copyright>
+		<copyright>Copyright (c) 2023 Sascha Falk and Contributors</copyright>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>Very basic functionality that is frequently used in Griffin+ .NET projects.</description>
 		<license type="expression">MIT</license>
@@ -26,13 +26,13 @@
 			<group targetFramework="net461">
 				<dependency id="GriffinPlus.Lib.Logging.Interface" version="1.1.1" />
 				<dependency id="System.Memory" version="4.5.5" />
-				<dependency id="System.Runtime.CompilerServices.Unsafe" version="4.5.3" />
+				<dependency id="System.Runtime.CompilerServices.Unsafe" version="6.0.0" />
 				<dependency id="System.Threading.Tasks.Extensions" version="4.5.4" />
 			</group>
 			<group targetFramework="net48">
 				<dependency id="GriffinPlus.Lib.Logging.Interface" version="1.1.1" />
 				<dependency id="System.Memory" version="4.5.5" />
-				<dependency id="System.Runtime.CompilerServices.Unsafe" version="4.5.3" />
+				<dependency id="System.Runtime.CompilerServices.Unsafe" version="6.0.0" />
 				<dependency id="System.Threading.Tasks.Extensions" version="4.5.4" />
 			</group>
 			<group targetFramework="net5.0">
