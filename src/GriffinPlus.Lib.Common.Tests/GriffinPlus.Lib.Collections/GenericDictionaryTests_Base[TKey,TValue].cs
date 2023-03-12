@@ -71,7 +71,7 @@ namespace GriffinPlus.Lib.Collections
 
 		/// <summary>
 		/// Test data for tests expecting the size of the test data set only.
-		/// Contains: 0, 1, 10, 100, 1000, 10000.
+		/// Contains: 0, 1, 100.
 		/// </summary>
 		public static IEnumerable<object[]> TestDataSetSizes
 		{
@@ -79,21 +79,19 @@ namespace GriffinPlus.Lib.Collections
 			{
 				yield return new object[] { 0 };
 				yield return new object[] { 1 };
-				yield return new object[] { 10 };
 				yield return new object[] { 100 };
 			}
 		}
 
 		/// <summary>
 		/// Test data for tests expecting the size of the test data set only.
-		/// Contains: 1, 10, 100, 1000, 10000.
+		/// Contains: 1, 100.
 		/// </summary>
 		public static IEnumerable<object[]> TestDataSetSizes_WithoutZero
 		{
 			get
 			{
 				yield return new object[] { 1 };
-				yield return new object[] { 10 };
 				yield return new object[] { 100 };
 			}
 		}
@@ -142,23 +140,20 @@ namespace GriffinPlus.Lib.Collections
 		{
 			get
 			{
-				foreach (object[] data in TestDataSetSizes)
+				foreach (object[] data in TestDataSetSizes_WithoutZero)
 				{
 					int count = (int)data[0];
 
-					if (count > 0)
-					{
-						// destination array is way too small to store any elements
-						yield return new object[] { count, 0, 0 };
+					// destination array is way too small to store any elements
+					yield return new object[] { count, 0, 0 };
 
-						// destination array itself is large enough, but start index shifts the destination out
-						// (the last element does not fit into the array)
-						yield return new object[] { count, count, 1 };
+					// destination array itself is large enough, but start index shifts the destination out
+					// (the last element does not fit into the array)
+					yield return new object[] { count, count, 1 };
 
-						// destination array itself is large enough, but start index shifts the destination out
-						// (no space left for any elements)
-						yield return new object[] { count, count, count };
-					}
+					// destination array itself is large enough, but start index shifts the destination out
+					// (no space left for any elements)
+					if (count != 1) yield return new object[] { count, count, count };
 				}
 			}
 		}

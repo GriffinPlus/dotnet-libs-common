@@ -863,20 +863,6 @@ namespace GriffinPlus.Lib.Configuration
 						childConfigurationPaths,
 						itemPaths
 					};
-
-					yield return new object[]
-					{
-						inheritanceLevels,
-						childConfigurationPaths,
-						itemPaths
-					};
-
-					yield return new object[]
-					{
-						inheritanceLevels,
-						childConfigurationPaths,
-						itemPaths
-					};
 				}
 			}
 		}
@@ -1027,22 +1013,6 @@ namespace GriffinPlus.Lib.Configuration
 				foreach (bool recursively in new[] { false, true })
 				foreach (string[][] itemPaths in itemPathsList)
 				{
-					yield return new object[]
-					{
-						inheritanceLevels,
-						recursively,
-						itemPaths[0],
-						itemPaths[recursively ? 2 : 1]
-					};
-
-					yield return new object[]
-					{
-						inheritanceLevels,
-						recursively,
-						itemPaths[0],
-						itemPaths[recursively ? 2 : 1]
-					};
-
 					yield return new object[]
 					{
 						inheritanceLevels,

@@ -116,37 +116,80 @@ namespace GriffinPlus.Lib.Io
 			get
 			{
 				var origins = new[] { SeekOrigin.Begin, SeekOrigin.Current, SeekOrigin.End };
+				var records = new HashSet<Tuple<int, int, SeekOrigin, int, int>>(); // assists with de-duplicating test cases
 
+				// ----------------------------------------------------------------------------------------------------------------
 				// empty string, don't change position
-				foreach (SeekOrigin origin in origins) yield return new object[] { 0, 0, origin, 0, 0 };
+				// ----------------------------------------------------------------------------------------------------------------
+				foreach (SeekOrigin origin in origins)
+				{
+					records.Add(new Tuple<int, int, SeekOrigin, int, int>(0, 0, origin, 0, 0));
+				}
 
-				// stream with a single block (1 byte and 10 bytes) and a huge stream with multiple blocks
+				// ----------------------------------------------------------------------------------------------------------------
+				// stream with a single block (1 byte only) and a huge stream with multiple blocks
 				// (check border positions)
-				foreach (int length in new[] { 1, 10, TestDataSize })
+				// ----------------------------------------------------------------------------------------------------------------
+				{
+					const int length = 1;
+					foreach (int initialPosition in new[] { 0, 1 })
+					{
+						// seek from the beginning and the end of the stream
+						foreach (int offset in new[] { 0, 1 })
+						{
+							records.Add(new Tuple<int, int, SeekOrigin, int, int>(length, initialPosition, SeekOrigin.Begin, offset, offset));
+							records.Add(new Tuple<int, int, SeekOrigin, int, int>(length, initialPosition, SeekOrigin.End, -offset, length - offset));
+						}
+
+						// seek with 0 bytes => do not move stream position
+						records.Add(new Tuple<int, int, SeekOrigin, int, int>(length, initialPosition, SeekOrigin.Current, 0, initialPosition));
+					}
+					// seek forward from the current position (1 byte)
+					records.Add(new Tuple<int, int, SeekOrigin, int, int>(length, 0, SeekOrigin.Current, 1, 1));
+
+					// seek backwards from the current position
+					records.Add(new Tuple<int, int, SeekOrigin, int, int>(length, 1, SeekOrigin.Current, -1, 0));
+				}
+
+				// ----------------------------------------------------------------------------------------------------------------
+				// stream with a single block (10 bytes) and a huge stream with multiple blocks
+				// (check border positions)
+				// ----------------------------------------------------------------------------------------------------------------
+
+				foreach (int length in new[] { 10, TestDataSize })
 				{
 					foreach (int initialPosition in new[] { 0, 1, length / 2, length - 1, length })
 					{
 						// seek from the beginning and the end of the stream
 						foreach (int offset in new[] { 0, 1, length - 1, length })
 						{
-							yield return new object[] { length, initialPosition, SeekOrigin.Begin, offset, offset };
-							yield return new object[] { length, initialPosition, SeekOrigin.End, -offset, length - offset };
+							records.Add(new Tuple<int, int, SeekOrigin, int, int>(length, initialPosition, SeekOrigin.Begin, offset, offset));
+							records.Add(new Tuple<int, int, SeekOrigin, int, int>(length, initialPosition, SeekOrigin.End, -offset, length - offset));
 						}
 
+						// seek with 0 bytes => do not move stream position
+						records.Add(new Tuple<int, int, SeekOrigin, int, int>(length, initialPosition, SeekOrigin.Current, 0, initialPosition));
+
 						// seek forward from the current position
-						foreach (int offset in new[] { 0, 1, length - initialPosition - 1, length - initialPosition })
+						foreach (int offset in new[] { 1, length - initialPosition - 1, length - initialPosition })
 						{
 							if (initialPosition + offset <= length)
-								yield return new object[] { length, initialPosition, SeekOrigin.Current, offset, initialPosition + offset };
+								records.Add(new Tuple<int, int, SeekOrigin, int, int>(length, initialPosition, SeekOrigin.Current, offset, initialPosition + offset));
 						}
 
 						// seek backwards from the current position
-						foreach (int offset in new[] { 0, 1, initialPosition - 1, initialPosition })
+						foreach (int offset in new[] { 1, initialPosition - 1, initialPosition })
 						{
 							if (initialPosition - offset >= 0)
-								yield return new object[] { length, initialPosition, SeekOrigin.Current, -offset, initialPosition - offset };
+								records.Add(new Tuple<int, int, SeekOrigin, int, int>(length, initialPosition, SeekOrigin.Current, -offset, initialPosition - offset));
 						}
 					}
+				}
+
+				// enumerate the collected test data records
+				foreach (Tuple<int, int, SeekOrigin, int, int> record in records)
+				{
+					yield return new object[] { record.Item1, record.Item2, record.Item3, record.Item4, record.Item5 };
 				}
 			}
 		}
