@@ -3,6 +3,7 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 
 using Xunit;
@@ -109,6 +110,36 @@ namespace GriffinPlus.Lib.Imaging
 					};
 				}
 			}
+		}
+
+		#endregion
+
+		#region PixelFormat FromId(int id)
+
+		/// <summary>
+		/// Tests the <see cref="PixelFormat.FromId"/> method.
+		/// </summary>
+		/// <param name="format">The pixel format to test.</param>
+		[Theory]
+		[MemberData(nameof(TestData_AllPixelFormats))]
+		public void FromId(PixelFormat format)
+		{
+			PixelFormat otherFormat = PixelFormat.FromId(format.Id);
+			Assert.Equal(format, otherFormat);
+		}
+
+		/// <summary>
+		/// Tests the <see cref="PixelFormat.FromId"/> method.
+		/// </summary>
+		[Theory]
+		[InlineData(-1)]
+		[InlineData((int)PixelFormatEnum.MaxValue + 1)]
+		public void FromId_InvalidId(int id)
+		{
+			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => PixelFormat.FromId(id));
+			Assert.Equal("id", exception.ParamName);
+			Assert.Equal(id, exception.ActualValue);
+			Assert.StartsWith("The specified id is not a valid pixel format.", exception.Message);
 		}
 
 		#endregion

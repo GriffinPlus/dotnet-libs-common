@@ -35,6 +35,22 @@ namespace GriffinPlus.Lib.Imaging
 		}
 
 		/// <summary>
+		/// Gets the pixel format with the specified id as returned by <see cref="Id"/>.
+		/// </summary>
+		/// <param name="id">Id of the pixel format to get.</param>
+		/// <returns>The pixel format with the specified id.</returns>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// The specified <paramref name="id"/> is not a valid pixel format.
+		/// </exception>
+		public static PixelFormat FromId(int id)
+		{
+			if (id < 0 || id > (int)PixelFormatEnum.MaxValue)
+				throw new ArgumentOutOfRangeException(nameof(id), id, "The specified id is not a valid pixel format.");
+
+			return new PixelFormat((PixelFormatEnum)id);
+		}
+
+		/// <summary>
 		/// Gets the pixel format enumeration value.
 		/// </summary>
 		internal PixelFormatEnum FormatEnum { get; }
@@ -51,6 +67,11 @@ namespace GriffinPlus.Lib.Imaging
 		public bool HasAlpha => (mFlags & PixelFormatFlags.ChannelOrderABGR) != PixelFormatFlags.BitsPerPixelUndefined ||
 		                        (mFlags & PixelFormatFlags.ChannelOrderARGB) != PixelFormatFlags.BitsPerPixelUndefined ||
 		                        (mFlags & PixelFormatFlags.NChannelAlpha) != 0;
+
+		/// <summary>
+		/// Gets a value uniquely identifying the pixel format.
+		/// </summary>
+		public int Id => (int)FormatEnum;
 
 		/// <summary>
 		/// Gets a value indicating whether the pixel format is palettized.

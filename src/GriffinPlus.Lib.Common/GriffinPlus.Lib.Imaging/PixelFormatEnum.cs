@@ -35,14 +35,15 @@ namespace GriffinPlus.Lib.Imaging
 		Bgra32        = 15,
 		Pbgra32       = 16,
 		Gray32Float   = 17,
-		Bgr101010     = 20,
-		Rgb48         = 21,
-		Rgba64        = 22,
-		Prgba64       = 23,
-		Rgba128Float  = 25,
-		Prgba128Float = 26,
-		Rgb128Float   = 27,
-		Cmyk32        = 28
+		Bgr101010     = 18,
+		Rgb48         = 19,
+		Rgba64        = 20,
+		Prgba64       = 21,
+		Rgba128Float  = 22,
+		Prgba128Float = 23,
+		Rgb128Float   = 24,
+		Cmyk32        = 25,
+		MaxValue      = 25
 	}
 
 }
