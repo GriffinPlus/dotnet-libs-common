@@ -803,6 +803,171 @@ namespace GriffinPlus.Lib.Imaging
 
 		#endregion
 
+		#region NativeBitmap(NativeBuffer buffer, int width, int height, long stride, double dpiX, double dpiY, PixelFormat format, BitmapPalette palette, bool ownsBuffer)
+
+		/// <summary>
+		/// Tests the <see cref="NativeBitmap(NativeBuffer, int, int, long, double, double, PixelFormat, BitmapPalette, bool)"/> constructor,
+		/// getting all properties and disposing the instance.
+		/// </summary>
+		/// <param name="width">Width of the <see cref="NativeBitmap"/> instance to create.</param>
+		/// <param name="height">Height of the <see cref="NativeBitmap"/> instance to create.</param>
+		/// <param name="dpiX">Horizontal resolution of the <see cref="NativeBitmap"/> instance to create.</param>
+		/// <param name="dpiY">Vertical resolution of the <see cref="NativeBitmap"/> instance to create.</param>
+		/// <param name="format">Pixel format of the <see cref="NativeBitmap"/> instance to create.</param>
+		/// <param name="palette">Bitmap palette of the <see cref="NativeBitmap"/> instance to create.</param>
+		[Theory]
+		[MemberData(nameof(TestData_Create))]
+		public void NativeBitmap_FromNativeBuffer(
+			int           width,
+			int           height,
+			double        dpiX,
+			double        dpiY,
+			PixelFormat   format,
+			BitmapPalette palette)
+		{
+			// calculate the expected alignment and stride of the backing buffer
+			CalculateBufferAlignmentAndStride(format, width, out _, out long stride);
+
+			// create a NativeBuffer with the required size
+			long bufferSize = height * stride;
+			var buffer = NativeBuffer.CreatePageAligned(bufferSize);
+			Assert.False(buffer.IsInvalid);
+
+			// create a NativeBitmap wrapping the NativeBuffer
+			// (does not dispose buffer on its on disposal)
+			var bitmap = new NativeBitmap(
+				buffer,
+				width,
+				height,
+				stride,
+				dpiX,
+				dpiY,
+				format,
+				palette,
+				false); // buffer not owned
+
+			// ensure that the properties reflect the correct state
+			Assert.Equal(width, bitmap.PixelWidth);
+			Assert.Equal(height, bitmap.PixelHeight);
+			Assert.Equal(dpiX, bitmap.DpiX);
+			Assert.Equal(dpiY, bitmap.DpiY);
+			Assert.Equal(format, bitmap.Format);
+			Assert.Same(palette, bitmap.Palette);
+			Assert.Equal(stride, bitmap.BufferStride);
+			Assert.Equal(bufferSize, bitmap.BufferSize);
+			Assert.Equal(buffer.UnsafeAddress, bitmap.UnsafeBufferStart);
+
+			// dispose bitmap
+			// => buffer should not be disposed
+			Assert.False(buffer.IsInvalid);
+			bitmap.Dispose();
+			Assert.False(buffer.IsInvalid);
+
+			// create another NativeBitmap wrapping the same NativeBuffer
+			// (dispose buffer on its on disposal this time)
+			bitmap = new NativeBitmap(
+				buffer,
+				width,
+				height,
+				stride,
+				dpiX,
+				dpiY,
+				format,
+				palette,
+				true); // buffer owned
+
+			// ensure that the properties reflect the correct state
+			Assert.Equal(width, bitmap.PixelWidth);
+			Assert.Equal(height, bitmap.PixelHeight);
+			Assert.Equal(dpiX, bitmap.DpiX);
+			Assert.Equal(dpiY, bitmap.DpiY);
+			Assert.Equal(format, bitmap.Format);
+			Assert.Same(palette, bitmap.Palette);
+			Assert.Equal(stride, bitmap.BufferStride);
+			Assert.Equal(bufferSize, bitmap.BufferSize);
+			Assert.Equal(buffer.UnsafeAddress, bitmap.UnsafeBufferStart);
+
+			// dispose bitmap
+			// => buffer should be disposed
+			Assert.False(buffer.IsInvalid);
+			bitmap.Dispose();
+			Assert.True(buffer.IsInvalid);
+		}
+
+		/// <summary>
+		/// Tests the <see cref="NativeBitmap(NativeBuffer, int, int, long, double, double, PixelFormat, BitmapPalette, bool)"/> constructor.
+		/// The constructor should throw an exception if the width is too small.
+		/// </summary>
+		[Theory]
+		[InlineData(0)]
+		[InlineData(-1)]
+		public void NativeBitmap_FromNativeBuffer_WidthTooSmall(int width)
+		{
+			const int height = 100;
+			const double dpi = 100.0;
+			PixelFormat format = PixelFormats.Gray8;
+			var buffer = NativeBuffer.Create(1); // not used
+			const int stride = 1;
+			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, width, height, stride, dpi, dpi, format, null, true));
+			Assert.Equal("width", exception.ParamName);
+		}
+
+		/// <summary>
+		/// Tests the <see cref="NativeBitmap(NativeBuffer, int, int, long, double, double, PixelFormat, BitmapPalette, bool)"/> constructor.
+		/// The constructor should throw an exception if the height is too small.
+		/// </summary>
+		[Theory]
+		[InlineData(0)]
+		[InlineData(-1)]
+		public void NativeBitmap_FromNativeBuffer_HeightTooSmall(int height)
+		{
+			const int width = 100;
+			const double dpi = 100.0;
+			PixelFormat format = PixelFormats.Gray8;
+			var buffer = NativeBuffer.Create(1); // not used
+			const int stride = 1;
+			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, width, height, stride, dpi, dpi, format, null, true));
+			Assert.Equal("height", exception.ParamName);
+		}
+
+		/// <summary>
+		/// Tests the <see cref="NativeBitmap(NativeBuffer, int, int, long, double, double, PixelFormat, BitmapPalette, bool)"/> constructor.
+		/// The constructor should throw an exception if the stride is too small.
+		/// </summary>
+		[Fact]
+		public void NativeBitmap_FromNativeBuffer_StrideTooSmall()
+		{
+			const int width = 100;
+			const int height = 100;
+			const double dpi = 100.0;
+			PixelFormat format = PixelFormats.Gray8;
+			var buffer = NativeBuffer.Create(1); // not used
+			CalculateBufferAlignmentAndStride(format, width, out _, out long stride);
+			stride -= 1;
+			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, width, height, stride, dpi, dpi, format, null, true));
+			Assert.Equal("stride", exception.ParamName);
+		}
+
+		/// <summary>
+		/// Tests the <see cref="NativeBitmap(NativeBuffer, int, int, long, double, double, PixelFormat, BitmapPalette, bool)"/> constructor.
+		/// The constructor should throw an exception if the buffer size is too small for the specified bitmap dimensions.
+		/// </summary>
+		[Fact]
+		public void NativeBitmap_FromNativeBuffer_BufferTooSmall()
+		{
+			const int width = 100;
+			const int height = 100;
+			const double dpi = 100.0;
+			PixelFormat format = PixelFormats.Gray2; // 2 bits per pixel
+			CalculateBufferAlignmentAndStride(format, width, out _, out long stride);
+			long minimumBufferSize = (height - 1) * stride + (width * format.BitsPerPixel + 7) / 8;
+			var buffer = NativeBuffer.Create(minimumBufferSize - 1);
+			var exception = Assert.Throws<ArgumentException>(() => new NativeBitmap(buffer, width, height, stride, dpi, dpi, format, null, true));
+			Assert.Equal("buffer", exception.ParamName);
+		}
+
+		#endregion
+
 		#region NativeBitmap(IntPtr pImageData, long bufferSize, int width, int height, long stride, double dpiX, double dpiY, PixelFormat format, BitmapPalette palette)
 
 		/// <summary>
@@ -897,6 +1062,25 @@ namespace GriffinPlus.Lib.Imaging
 			int stride = 1;
 			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, bufferSize, width, height, stride, dpi, dpi, format, null));
 			Assert.Equal("height", exception.ParamName);
+		}
+
+		/// <summary>
+		/// Tests the <see cref="NativeBitmap(IntPtr, long, int, int, long, double, double, PixelFormat, BitmapPalette)"/> constructor.
+		/// The constructor should throw an exception if the stride is too small.
+		/// </summary>
+		[Fact]
+		public void NativeBitmap_FromUnmanagedBuffer_StrideTooSmall()
+		{
+			const int width = 100;
+			const int height = 100;
+			const double dpi = 100.0;
+			const long bufferSize = 1;
+			PixelFormat format = PixelFormats.Gray8;
+			var buffer = (IntPtr)0x1; // invalid buffer, but not used anyway
+			CalculateBufferAlignmentAndStride(format, width, out _, out long stride);
+			stride -= 1;
+			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, bufferSize, width, height, stride, dpi, dpi, format, null));
+			Assert.Equal("stride", exception.ParamName);
 		}
 
 		/// <summary>

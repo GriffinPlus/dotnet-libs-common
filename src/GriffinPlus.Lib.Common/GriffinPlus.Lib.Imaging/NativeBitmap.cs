@@ -25,6 +25,7 @@ namespace GriffinPlus.Lib.Imaging
 		private readonly NativeBuffer  mBuffer;
 		private readonly IntPtr        mBufferStart;
 		private readonly long          mBufferSize;
+		private readonly bool          mOwnsBuffer = true;
 		private          bool          mDisposed;
 
 		/// <summary>
@@ -185,6 +186,75 @@ namespace GriffinPlus.Lib.Imaging
 		}
 
 		/// <summary>
+		/// Initializes a new instance of the <see cref="NativeBitmap"/> class wrapping the specified <see cref="NativeBuffer"/> instance.
+		/// </summary>
+		/// <param name="buffer">Buffer to use as the back buffer for the image.</param>
+		/// <param name="width">Width of the image (in pixels).</param>
+		/// <param name="height">Height of the image (in pixels).</param>
+		/// <param name="stride">Size of a row in the image (in bytes).</param>
+		/// <param name="dpiX">Horizontal resolution of the image (in dpi).</param>
+		/// <param name="dpiY">Vertical resolution of the image (in dpi).</param>
+		/// <param name="format">Pixel format of the image.</param>
+		/// <param name="palette">Color palette, if the pixel format requires one.</param>
+		/// <param name="ownsBuffer">
+		/// <c>true</c> if the <see cref="NativeBitmap"/> should dispose <paramref name="buffer" /> when it is disposed itself;<br/>
+		/// otherwise <c>false</c>.
+		/// </param>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// The <paramref name="width"/> or <paramref name="height"/> is less than 1.<br/>
+		/// -or-<br/>
+		/// The <paramref name="stride"/> is too small for an image with the specified <paramref name="width"/> and <paramref name="format"/>.
+		/// </exception>
+		/// <exception cref="ArgumentException">
+		/// The specified image width, height, pixel format and stride requires a larger buffer than specified.
+		/// </exception>
+		public NativeBitmap(
+			NativeBuffer  buffer,
+			int           width,
+			int           height,
+			long          stride,
+			double        dpiX,
+			double        dpiY,
+			PixelFormat   format,
+			BitmapPalette palette,
+			bool          ownsBuffer = true)
+		{
+			if (width < 1) throw new ArgumentOutOfRangeException(nameof(width), "The width must be at least 1 pixel.");
+			if (height < 1) throw new ArgumentOutOfRangeException(nameof(height), "The height must be at least 1 pixel.");
+
+			// check whether the specified stride is long enough for an image with the specified width and pixel format
+			long minimumStride = ((long)width * format.BitsPerPixel + 7) / 8;
+			if (stride < minimumStride)
+			{
+				throw new ArgumentOutOfRangeException(
+					nameof(stride),
+					$"The stride ({stride}) is too small for an image with the specified width ({width}) and pixel format ({format}).");
+			}
+
+			// ensure that the specified buffer size is large enough to contain an image of the specified width/height,
+			// pixel format and stride
+			long minimumRequiredBufferSize = checked((height - 1) * stride + ((long)width * format.BitsPerPixel + 7) / 8);
+			if (buffer.Size < minimumRequiredBufferSize)
+			{
+				throw new ArgumentException(
+					"The specified image width, height, pixel format and stride requires a larger buffer than specified.",
+					nameof(buffer));
+			}
+
+			mPixelWidth = width;
+			mPixelHeight = height;
+			mDpiX = dpiX;
+			mDpiY = dpiY;
+			mPalette = palette;
+			mPixelFormat = format;
+			mBufferStride = stride;
+			mBufferSize = buffer.Size;
+			mBuffer = buffer;
+			mBufferStart = mBuffer.UnsafeAddress;
+			mOwnsBuffer = ownsBuffer;
+		}
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="NativeBitmap"/> class using the specified image buffer as backing buffer.
 		/// The image is _NOT_ copied, so it must be kept valid as long as the <see cref="NativeBitmap"/> instance is used!
 		/// </summary>
@@ -197,7 +267,11 @@ namespace GriffinPlus.Lib.Imaging
 		/// <param name="dpiY">Vertical resolution of the image (in dpi).</param>
 		/// <param name="format">Pixel format of the image.</param>
 		/// <param name="palette">Color palette, if the pixel format requires one.</param>
-		/// <exception cref="ArgumentOutOfRangeException">The <paramref name="width"/> or <paramref name="height"/> is less than 1.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// The <paramref name="width"/> or <paramref name="height"/> is less than 1.<br/>
+		/// -or-<br/>
+		/// The <paramref name="stride"/> is too small for an image with the specified <paramref name="width"/> and <paramref name="format"/>.
+		/// </exception>
 		/// <exception cref="ArgumentException">
 		/// The specified <paramref name="width"/>, <paramref name="height"/>, <paramref name="format"/> and <paramref name="stride"/>
 		/// requires a larger buffer than <paramref name="bufferSize"/> specifies.
@@ -215,6 +289,15 @@ namespace GriffinPlus.Lib.Imaging
 		{
 			if (width < 1) throw new ArgumentOutOfRangeException(nameof(width), "The width must be at least 1 pixel.");
 			if (height < 1) throw new ArgumentOutOfRangeException(nameof(height), "The height must be at least 1 pixel.");
+
+			// check whether the specified stride is long enough for an image with the specified width and pixel format
+			long minimumStride = ((long)width * format.BitsPerPixel + 7) / 8;
+			if (stride < minimumStride)
+			{
+				throw new ArgumentOutOfRangeException(
+					nameof(stride),
+					$"The stride ({stride}) is too small for an image with the specified width ({width}) and pixel format ({format}).");
+			}
 
 			// ensure that the specified buffer size is large enough to contain an image of the specified width/height,
 			// pixel format and stride
@@ -240,7 +323,7 @@ namespace GriffinPlus.Lib.Imaging
 		{
 			if (!mDisposed)
 			{
-				mBuffer?.Dispose();
+				if (mOwnsBuffer) mBuffer?.Dispose();
 				mDisposed = true;
 			}
 		}
