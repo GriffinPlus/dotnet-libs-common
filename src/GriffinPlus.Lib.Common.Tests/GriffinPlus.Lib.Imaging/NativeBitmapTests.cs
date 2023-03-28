@@ -63,21 +63,6 @@ namespace GriffinPlus.Lib.Imaging
 					{
 						int width = 100 + i;
 
-						CalculateBufferAlignmentAndStride(format, width, out _, out _);
-
-						// use the same stride for the bitmap to copy as for the copy
-						yield return new object[]
-						{
-							width,                             // width (in pixels)
-							height,                            // height (in pixels)
-							dpiX,                              // dpiX
-							dpiY,                              // dpiY
-							format,                            // pixel format
-							format.Palettized ? palette : null // bitmap palette, if pixel format needs one
-						};
-
-						// increment the stride of bitmap to copy by one byte
-						// => destroys the alignment of rows, but this should work as well
 						yield return new object[]
 						{
 							width,                             // width (in pixels)
@@ -698,6 +683,10 @@ namespace GriffinPlus.Lib.Imaging
 			byte[] buffer2 = new byte[bufferSize2];
 			new Random(0).NextBytes(buffer1);
 			new Random(0).NextBytes(buffer2);
+			byte[] savedBuffer1 = new byte[bufferSize1];
+			byte[] savedBuffer2 = new byte[bufferSize2];
+			Array.Copy(buffer1, savedBuffer1, buffer1.Length);
+			Array.Copy(buffer2, savedBuffer2, buffer2.Length);
 
 			// create two bitmap with the specified parameters copying the bitmap stored in the buffer
 			// bitmap 1: same stride as the source buffer (the entire buffer is copied at once)
@@ -705,6 +694,10 @@ namespace GriffinPlus.Lib.Imaging
 			using (var bitmap1 = new NativeBitmap(buffer1, width, height, bufferStride1, dpiX, dpiY, format, palette))
 			using (var bitmap2 = new NativeBitmap(buffer2, width, height, bufferStride2, dpiX, dpiY, format, palette))
 			{
+				// the buffers should not have been modified by the constructor
+				Assert.Equal(savedBuffer1, buffer1);
+				Assert.Equal(savedBuffer2, buffer2);
+
 				void Test(NativeBitmap bitmap, byte[] buffer, long stride)
 				{
 					// ensure that the properties of the bitmap reflect the correct state
@@ -725,6 +718,7 @@ namespace GriffinPlus.Lib.Imaging
 
 					// ensure that the bitmap contains the reference data as well
 					// (compare byte-wise, but skip non-significant bytes)
+
 					fixed (byte* pOriginalBuffer = &buffer[0])
 					{
 						byte* pOriginalRowStart = pOriginalBuffer;
