@@ -167,7 +167,7 @@ namespace GriffinPlus.Lib.Imaging
 			{
 				if (mBufferStride == stride)
 				{
-					Buffer.MemoryCopy(mBufferStart.ToPointer(), pSourceArray, validSourceBufferSize, validSourceBufferSize);
+					Buffer.MemoryCopy(pSourceArray, mBufferStart.ToPointer(), validSourceBufferSize, validSourceBufferSize);
 				}
 				else
 				{
