@@ -84,6 +84,12 @@ namespace GriffinPlus.Lib
 		private readonly NativeBufferFreeCallback mFreeCallback;
 
 		/// <summary>
+		/// A disposable pre-allocated buffer of some external code.
+		/// Used by the <see cref="NativeBuffer(IDisposable,IntPtr,long,bool)"/> constructor.
+		/// </summary>
+		private readonly IDisposable mDisposableBuffer;
+
+		/// <summary>
 		/// Creates a buffer with the specified size and no alignment constraints.
 		/// </summary>
 		/// <param name="size">Size of the buffer to create.</param>
@@ -136,13 +142,18 @@ namespace GriffinPlus.Lib
 		}
 
 		/// <summary>
-		/// Creates a <see cref="NativeBuffer"/> instance wrapping a pre-allocated buffer.
+		/// Creates a <see cref="NativeBuffer"/> instance wrapping a pre-allocated buffer.<br/>
+		/// Optionally, the pre-allocated buffer can be owned by the <see cref="NativeBuffer"/> instance.
+		/// In this case the pre-allocated buffer is released on disposal or finalization using the specified callback.
+		/// If the buffer is owned it will add the appropriate amount of memory pressure to the garbage collection and free
+		/// the buffer on disposal or finalization and remove previously added memory pressure.
 		/// </summary>
 		/// <param name="address">Address of the buffer to wrap.</param>
 		/// <param name="size">Size of the buffer (in bytes).</param>
 		/// <param name="ownsBuffer">
-		/// Indicates whether this instance should own the specified native buffer.
-		/// If it owns the buffer, it will free it on disposal or finalization.
+		/// Indicates whether this instance should own the specified native buffer.<br/>
+		/// If <c>true</c> it will add the appropriate amount of memory pressure to the garbage collection and free the
+		/// buffer on disposal or finalization and remove previously added memory pressure.
 		/// </param>
 		/// <param name="freeCallback">Callback that frees the specified buffer.</param>
 		/// <returns>A <see cref="NativeBuffer"/> instance wrapping the specified buffer.</returns>
@@ -152,9 +163,6 @@ namespace GriffinPlus.Lib
 		/// <exception cref="ArgumentOutOfRangeException">
 		/// <paramref name="size"/> is negative or greater than <see cref="int.MaxValue"/> in a 32-bit process.
 		/// </exception>
-		/// <exception cref="OutOfMemoryException">
-		/// Allocation failed because there is not enough memory available.
-		/// </exception>
 		public static NativeBuffer FromPointer(
 			IntPtr                   address,
 			long                     size,
@@ -162,6 +170,35 @@ namespace GriffinPlus.Lib
 			NativeBufferFreeCallback freeCallback)
 		{
 			return new NativeBuffer(address, size, ownsBuffer, freeCallback);
+		}
+
+		/// <summary>
+		/// Creates a <see cref="NativeBuffer"/> instance wrapping a pre-allocated buffer.<br/>
+		/// The buffer is released on disposal by disposing the pre-allocated buffer.<br/>
+		/// Assuming the pre-allocated buffer already adds memory pressure to the garbage collection accordingly
+		/// <see cref="NativeBuffer"/> will NOT apply any additional pressure.
+		/// </summary>
+		/// <param name="buffer">The buffer to wrap.</param>
+		/// <param name="address">Address of the buffer to wrap (must be the buffer passed to <paramref name="buffer"/>).</param>
+		/// <param name="size">Size of the buffer (in bytes).</param>
+		/// <param name="ownsBuffer">
+		/// Indicates whether this instance should own the <paramref name="buffer"/>.<br/>
+		/// If <c>true</c> the <see cref="NativeBuffer"/> will dispose <paramref name="buffer"/> on its own disposal.
+		/// </param>
+		/// <returns>A <see cref="NativeBuffer"/> instance wrapping the specified buffer.</returns>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="buffer"/> or <paramref name="address"/> is <c>null</c>.
+		/// </exception>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// <paramref name="size"/> is negative or greater than <see cref="int.MaxValue"/> in a 32-bit process.
+		/// </exception>
+		public static NativeBuffer FromPreAllocatedBuffer(
+			IDisposable buffer,
+			IntPtr      address,
+			long        size,
+			bool        ownsBuffer)
+		{
+			return new NativeBuffer(buffer, address, size, ownsBuffer);
 		}
 
 		/// <summary>
@@ -262,14 +299,18 @@ namespace GriffinPlus.Lib
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="NativeBuffer"/> class wrapping a pre-allocated buffer.
+		/// Initializes a new instance of the <see cref="NativeBuffer"/> class wrapping a pre-allocated buffer.<br/>
+		/// Optionally, the pre-allocated buffer can be owned by the <see cref="NativeBuffer"/> instance.
+		/// In this case the pre-allocated buffer is released on disposal or finalization using the specified callback.
+		/// If the buffer is owned it will add the appropriate amount of memory pressure to the garbage collection and free
+		/// the buffer on disposal or finalization and remove previously added memory pressure.
 		/// </summary>
 		/// <param name="address">Address of the buffer to wrap.</param>
 		/// <param name="size">Size of the buffer (in bytes).</param>
 		/// <param name="ownsBuffer">
-		/// Indicates whether this instance should own the specified native buffer.
+		/// Indicates whether this instance should own the specified native buffer.<br/>
 		/// If <c>true</c> it will add the appropriate amount of memory pressure to the garbage collection and free the
-		/// buffer on disposal or finalization and remove the memory pressure from the garbage collection.
+		/// buffer on disposal or finalization and remove previously added memory pressure.
 		/// </param>
 		/// <param name="freeCallback">Callback that frees the specified buffer.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="address"/> or <paramref name="freeCallback"/> is <c>null</c>.</exception>
@@ -298,13 +339,58 @@ namespace GriffinPlus.Lib
 		}
 
 		/// <summary>
+		/// Initializes a new instance of the <see cref="NativeBuffer"/> class wrapping a disposable pre-allocated buffer.
+		/// The buffer is released on disposal by disposing the pre-allocated buffer.<br/>
+		/// Assuming the pre-allocated buffer already adds memory pressure to the garbage collection accordingly
+		/// <see cref="NativeBuffer"/> will NOT apply any additional pressure.
+		/// </summary>
+		/// <param name="buffer">The buffer to wrap.</param>
+		/// <param name="address">Address of the buffer to wrap (must be the buffer passed to <paramref name="buffer"/>).</param>
+		/// <param name="size">Size of the buffer (in bytes).</param>
+		/// <param name="ownsBuffer">
+		/// Indicates whether this instance should own the <paramref name="buffer"/>.<br/>
+		/// If <c>true</c> the <see cref="NativeBuffer"/> will dispose <paramref name="buffer"/> on its own disposal.
+		/// </param>
+		/// <returns>A <see cref="NativeBuffer"/> instance wrapping the specified buffer.</returns>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="buffer"/> or <paramref name="address"/> is <c>null</c>.
+		/// </exception>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// <paramref name="size"/> is negative or greater than <see cref="int.MaxValue"/> in a 32-bit process.
+		/// </exception>
+		private NativeBuffer(
+			IDisposable buffer,
+			IntPtr      address,
+			long        size,
+			bool        ownsBuffer) :
+			base(IntPtr.Zero, true)
+		{
+			if (address == IntPtr.Zero) throw new ArgumentNullException(nameof(address));
+
+			if (size < 0) throw new ArgumentOutOfRangeException(nameof(size), size, "The size must be positive.");
+
+			if (IntPtr.Size == 4 && size > int.MaxValue)
+				throw new ArgumentOutOfRangeException(nameof(size), size, "The size must be int.MaxValue at maximum in a 32-bit process.");
+
+			mDisposableBuffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
+			mFreeCallback = nativeBuffer =>
+			{
+				if (nativeBuffer.OwnsBuffer)
+					nativeBuffer.mDisposableBuffer.Dispose();
+			};
+			ActualSize = Size = size;
+			OwnsBuffer = ownsBuffer;
+			SetHandle(address);
+		}
+
+		/// <summary>
 		/// Gets a value indicating whether the buffer is invalid.
 		/// </summary>
 		public override bool IsInvalid => IsClosed || handle == IntPtr.Zero;
 
 		/// <summary>
 		/// Gets a value indicating whether this instance owns the wrapped native buffer. If <c>true</c> it will free
-		/// the buffer on disposal or finalization and reduce the previously added memory pressure from the garbage
+		/// the buffer on disposal or finalization and reduce previously added memory pressure from the garbage
 		/// collection.
 		/// </summary>
 		public bool OwnsBuffer { get; private set; }
@@ -358,7 +444,7 @@ namespace GriffinPlus.Lib
 		{
 			mFreeCallback(this);
 			SetHandleAsInvalid();
-			if (OwnsBuffer && ActualSize > 0) GC.RemoveMemoryPressure(ActualSize);
+			if (OwnsBuffer && ActualSize > 0 && mDisposableBuffer == null) GC.RemoveMemoryPressure(ActualSize);
 			OwnsBuffer = false;
 			ActualSize = 0;
 			UnsafeAddress = IntPtr.Zero;

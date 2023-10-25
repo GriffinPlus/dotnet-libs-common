@@ -14,7 +14,7 @@ namespace GriffinPlus.Lib
 	/// <summary>
 	/// Unit tests targeting the <see cref="NativeBuffer"/> and the <see cref="NativeBufferAccessor"/> class.
 	/// </summary>
-	public class NativeBufferTests
+	public partial class NativeBufferTests
 	{
 		#region Create(long size)
 
@@ -286,7 +286,7 @@ namespace GriffinPlus.Lib
 
 		#endregion
 
-		#region FromPointer(long size)
+		#region FromPointer(IntPtr, long size, bool)
 
 		public static IEnumerable<object[]> FromPointerTestData
 		{
@@ -389,6 +389,102 @@ namespace GriffinPlus.Lib
 		{
 			var exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPointer(new IntPtr(1), 1, true, null));
 			Assert.Equal("freeCallback", exception.ParamName);
+		}
+
+		#endregion
+
+		#region FromPreAllocatedBuffer(IDisposable, IntPtr, long size, bool)
+
+		public static IEnumerable<object[]> FromPreAllocatedBufferTestData
+		{
+			get
+			{
+				foreach (bool ownsBuffer in new[] { false, true })
+				{
+					yield return new object[] { new DisposableBufferMock(1), ownsBuffer };
+					yield return new object[] { new DisposableBufferMock(1), ownsBuffer };
+				}
+			}
+		}
+
+		[Theory]
+		[MemberData(nameof(FromPreAllocatedBufferTestData))]
+		public void FromPreAllocatedBuffer(DisposableBufferMock disposableBuffer, bool ownsBuffer)
+		{
+			// create an instance wrapping the buffer
+			NativeBuffer buffer = NativeBuffer.FromPreAllocatedBuffer(disposableBuffer, disposableBuffer.Address, disposableBuffer.Size, ownsBuffer);
+			Assert.NotNull(buffer);
+
+			// the handle should be valid
+			Assert.False(buffer.IsInvalid);
+
+			// the native buffer should reflect the 'owned' status properly
+			Assert.Equal(ownsBuffer, buffer.OwnsBuffer);
+
+			// the published address and the size of the buffer should be as specified
+			Assert.NotEqual(disposableBuffer.Address, buffer.UnsafeAddress);
+			Assert.Equal(disposableBuffer.Size, buffer.Size);
+			Assert.Equal(disposableBuffer.Address, buffer.UnsafeActualAddress);
+			Assert.Equal(disposableBuffer.Size, buffer.ActualSize);
+
+			// an accessor working on top of the buffer should return the same address and size
+			NativeBufferAccessor accessor = buffer.GetAccessor();
+			Assert.Equal(buffer.UnsafeAddress, accessor.Address);
+			Assert.Equal(disposableBuffer.Size, accessor.Size);
+
+			// dispose the accessor and the buffer instance 
+			accessor.Dispose();
+			buffer.Dispose();
+
+			// the handle should be invalid now
+			Assert.True(buffer.IsInvalid);
+
+			// the disposable buffer should have been freed
+			Assert.Equal(ownsBuffer, disposableBuffer.WasReleased);
+
+			// the addresses of the buffer should be null and the size should be 0 now
+			Assert.Equal(IntPtr.Zero, buffer.UnsafeAddress);
+			Assert.Equal(0, buffer.Size);
+			Assert.Equal(IntPtr.Zero, buffer.UnsafeActualAddress);
+			Assert.Equal(0, buffer.ActualSize);
+			Assert.Equal(IntPtr.Zero, accessor.Address);
+			Assert.Equal(0, accessor.Size);
+		}
+
+		[Fact]
+		public void FromPreAllocatedBuffer_BufferIsNull()
+		{
+			var disposableBuffer = new DisposableBufferMock(1);
+			var exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPreAllocatedBuffer(null, disposableBuffer.Address, disposableBuffer.Size, true));
+			Assert.Equal("buffer", exception.ParamName);
+		}
+
+		[Fact]
+		public void FromPreAllocatedBuffer_AddressIsNull()
+		{
+			var disposableBuffer = new DisposableBufferMock(1);
+			var exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPreAllocatedBuffer(disposableBuffer, IntPtr.Zero, disposableBuffer.Size, true));
+			Assert.Equal("address", exception.ParamName);
+		}
+
+		[Fact]
+		public void FromPreAllocatedBuffer_SizeIsNegative()
+		{
+			var disposableBuffer = new DisposableBufferMock(1);
+			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPreAllocatedBuffer(disposableBuffer, disposableBuffer.Address, -1, true));
+			Assert.Equal("size", exception.ParamName);
+		}
+
+		[Fact]
+		public void FromPreAllocatedBuffer_SizeTooBigFor32Bit()
+		{
+			// note: of course this can only work when running the test with a 32 bit test agent
+			if (IntPtr.Size == 4)
+			{
+				var disposableBuffer = new DisposableBufferMock(1);
+				var exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPreAllocatedBuffer(disposableBuffer, disposableBuffer.Address, (long)int.MaxValue + 1, true));
+				Assert.Equal("size", exception.ParamName);
+			}
 		}
 
 		#endregion
