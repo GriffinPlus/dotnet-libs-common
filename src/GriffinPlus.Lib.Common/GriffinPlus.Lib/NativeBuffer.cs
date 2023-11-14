@@ -332,6 +332,7 @@ namespace GriffinPlus.Lib
 				throw new ArgumentOutOfRangeException(nameof(size), size, "The size must be int.MaxValue at maximum in a 32-bit process.");
 
 			mFreeCallback = freeCallback ?? throw new ArgumentNullException(nameof(freeCallback));
+			UnsafeAddress = address;
 			ActualSize = Size = size;
 			OwnsBuffer = ownsBuffer;
 			SetHandle(address);
@@ -378,6 +379,7 @@ namespace GriffinPlus.Lib
 				if (nativeBuffer.OwnsBuffer)
 					nativeBuffer.mDisposableBuffer.Dispose();
 			};
+			UnsafeAddress = address;
 			ActualSize = Size = size;
 			OwnsBuffer = ownsBuffer;
 			SetHandle(address);

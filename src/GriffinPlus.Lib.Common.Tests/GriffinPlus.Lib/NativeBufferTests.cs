@@ -327,7 +327,7 @@ namespace GriffinPlus.Lib
 			Assert.Equal(ownsBuffer, buffer.OwnsBuffer);
 
 			// the published address and the size of the buffer should be as specified
-			Assert.NotEqual(address, buffer.UnsafeAddress);
+			Assert.Equal(address, buffer.UnsafeAddress);
 			Assert.Equal(size, buffer.Size);
 			Assert.Equal(address, buffer.UnsafeActualAddress);
 			Assert.Equal(size, buffer.ActualSize);
@@ -422,7 +422,7 @@ namespace GriffinPlus.Lib
 			Assert.Equal(ownsBuffer, buffer.OwnsBuffer);
 
 			// the published address and the size of the buffer should be as specified
-			Assert.NotEqual(disposableBuffer.Address, buffer.UnsafeAddress);
+			Assert.Equal(disposableBuffer.Address, buffer.UnsafeAddress);
 			Assert.Equal(disposableBuffer.Size, buffer.Size);
 			Assert.Equal(disposableBuffer.Address, buffer.UnsafeActualAddress);
 			Assert.Equal(disposableBuffer.Size, buffer.ActualSize);
