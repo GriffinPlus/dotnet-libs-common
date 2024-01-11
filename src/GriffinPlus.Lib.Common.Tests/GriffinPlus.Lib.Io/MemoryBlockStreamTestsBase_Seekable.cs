@@ -455,14 +455,13 @@ namespace GriffinPlus.Lib.Io
 			const bool overwrite = false;
 			const bool advancePosition = false;
 			await InjectBufferAtCurrentPositionAsync(
-					streamBlockSize,
-					initialLength,
-					position,
-					overwrite,
-					advancePosition,
-					blockToInsertCount,
-					blockToInsertSize)
-				.ConfigureAwait(false);
+				streamBlockSize,
+				initialLength,
+				position,
+				overwrite,
+				advancePosition,
+				blockToInsertCount,
+				blockToInsertSize);
 		}
 
 		/// <summary>
@@ -480,14 +479,13 @@ namespace GriffinPlus.Lib.Io
 			const bool overwrite = false;
 			const bool advancePosition = true;
 			await InjectBufferAtCurrentPositionAsync(
-					streamBlockSize,
-					initialLength,
-					position,
-					overwrite,
-					advancePosition,
-					blockToInsertCount,
-					blockToInsertSize)
-				.ConfigureAwait(false);
+				streamBlockSize,
+				initialLength,
+				position,
+				overwrite,
+				advancePosition,
+				blockToInsertCount,
+				blockToInsertSize);
 		}
 
 		/// <summary>
@@ -505,14 +503,13 @@ namespace GriffinPlus.Lib.Io
 			const bool overwrite = true;
 			const bool advancePosition = false;
 			await InjectBufferAtCurrentPositionAsync(
-					streamBlockSize,
-					initialLength,
-					position,
-					overwrite,
-					advancePosition,
-					blockToInsertCount,
-					blockToInsertSize)
-				.ConfigureAwait(false);
+				streamBlockSize,
+				initialLength,
+				position,
+				overwrite,
+				advancePosition,
+				blockToInsertCount,
+				blockToInsertSize);
 		}
 
 		/// <summary>
@@ -530,14 +527,13 @@ namespace GriffinPlus.Lib.Io
 			const bool overwrite = true;
 			const bool advancePosition = true;
 			await InjectBufferAtCurrentPositionAsync(
-					streamBlockSize,
-					initialLength,
-					position,
-					overwrite,
-					advancePosition,
-					blockToInsertCount,
-					blockToInsertSize)
-				.ConfigureAwait(false);
+				streamBlockSize,
+				initialLength,
+				position,
+				overwrite,
+				advancePosition,
+				blockToInsertCount,
+				blockToInsertSize);
 		}
 
 		/// <summary>

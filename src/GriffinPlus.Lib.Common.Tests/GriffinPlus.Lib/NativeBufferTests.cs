@@ -360,7 +360,7 @@ namespace GriffinPlus.Lib
 		public void FromPointer_AddressIsNull()
 		{
 			void FreeCallback(NativeBuffer buf) { }
-			var exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPointer(IntPtr.Zero, 1, true, FreeCallback));
+			ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPointer(IntPtr.Zero, 1, true, FreeCallback));
 			Assert.Equal("address", exception.ParamName);
 		}
 
@@ -368,7 +368,7 @@ namespace GriffinPlus.Lib
 		public void FromPointer_SizeIsNegative()
 		{
 			void FreeCallback(NativeBuffer buf) { }
-			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPointer(new IntPtr(1), -1, true, FreeCallback));
+			ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPointer(new IntPtr(1), -1, true, FreeCallback));
 			Assert.Equal("size", exception.ParamName);
 		}
 
@@ -379,7 +379,7 @@ namespace GriffinPlus.Lib
 			if (IntPtr.Size == 4)
 			{
 				void FreeCallback(NativeBuffer buf) { }
-				var exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPointer(new IntPtr(1), (long)int.MaxValue + 1, true, FreeCallback));
+				ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPointer(new IntPtr(1), (long)int.MaxValue + 1, true, FreeCallback));
 				Assert.Equal("size", exception.ParamName);
 			}
 		}
@@ -387,7 +387,7 @@ namespace GriffinPlus.Lib
 		[Fact]
 		public void FromPointer_FreeCallbackIsNull()
 		{
-			var exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPointer(new IntPtr(1), 1, true, null));
+			ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPointer(new IntPtr(1), 1, true, null));
 			Assert.Equal("freeCallback", exception.ParamName);
 		}
 
@@ -455,7 +455,7 @@ namespace GriffinPlus.Lib
 		public void FromPreAllocatedBuffer_BufferIsNull()
 		{
 			var disposableBuffer = new DisposableBufferMock(1);
-			var exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPreAllocatedBuffer(null, disposableBuffer.Address, disposableBuffer.Size, true));
+			ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPreAllocatedBuffer(null, disposableBuffer.Address, disposableBuffer.Size, true));
 			Assert.Equal("buffer", exception.ParamName);
 		}
 
@@ -463,7 +463,7 @@ namespace GriffinPlus.Lib
 		public void FromPreAllocatedBuffer_AddressIsNull()
 		{
 			var disposableBuffer = new DisposableBufferMock(1);
-			var exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPreAllocatedBuffer(disposableBuffer, IntPtr.Zero, disposableBuffer.Size, true));
+			ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPreAllocatedBuffer(disposableBuffer, IntPtr.Zero, disposableBuffer.Size, true));
 			Assert.Equal("address", exception.ParamName);
 		}
 
@@ -471,7 +471,7 @@ namespace GriffinPlus.Lib
 		public void FromPreAllocatedBuffer_SizeIsNegative()
 		{
 			var disposableBuffer = new DisposableBufferMock(1);
-			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPreAllocatedBuffer(disposableBuffer, disposableBuffer.Address, -1, true));
+			ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPreAllocatedBuffer(disposableBuffer, disposableBuffer.Address, -1, true));
 			Assert.Equal("size", exception.ParamName);
 		}
 
@@ -482,7 +482,7 @@ namespace GriffinPlus.Lib
 			if (IntPtr.Size == 4)
 			{
 				var disposableBuffer = new DisposableBufferMock(1);
-				var exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPreAllocatedBuffer(disposableBuffer, disposableBuffer.Address, (long)int.MaxValue + 1, true));
+				ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPreAllocatedBuffer(disposableBuffer, disposableBuffer.Address, (long)int.MaxValue + 1, true));
 				Assert.Equal("size", exception.ParamName);
 			}
 		}

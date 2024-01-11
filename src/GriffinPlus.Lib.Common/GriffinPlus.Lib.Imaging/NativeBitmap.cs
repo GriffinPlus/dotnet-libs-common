@@ -197,7 +197,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <param name="format">Pixel format of the image.</param>
 		/// <param name="palette">Color palette, if the pixel format requires one.</param>
 		/// <param name="ownsBuffer">
-		/// <c>true</c> if the <see cref="NativeBitmap"/> should dispose <paramref name="buffer" /> when it is disposed itself;<br/>
+		/// <c>true</c> if the <see cref="NativeBitmap"/> should dispose <paramref name="buffer"/> when it is disposed itself;<br/>
 		/// otherwise <c>false</c>.
 		/// </param>
 		/// <exception cref="ArgumentOutOfRangeException">

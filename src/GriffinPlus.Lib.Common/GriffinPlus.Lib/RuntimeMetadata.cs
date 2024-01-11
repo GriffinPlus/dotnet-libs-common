@@ -655,7 +655,6 @@ namespace GriffinPlus.Lib
 				if (!sIsNetFramework) continue;
 
 #if NETSTANDARD2_0 || NET461 || NET48
-
 				// ----------------------------------------------------------------------------------------------------------------
 				// .NET Framework only:
 				// scan the assembly if it resides in the Global Assembly Cache (GAC)

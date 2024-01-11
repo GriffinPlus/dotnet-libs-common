@@ -193,7 +193,7 @@ namespace GriffinPlus.Lib.Threading
 		public async Task OutputAvailableAsync_ItemInQueue_ReturnsTrue()
 		{
 			var queue = new AsyncProducerConsumerQueue<int>();
-			await queue.EnqueueAsync(13).ConfigureAwait(false);
+			await queue.EnqueueAsync(13);
 
 			bool result = await queue.OutputAvailableAsync();
 			Assert.True(result);
@@ -213,7 +213,7 @@ namespace GriffinPlus.Lib.Threading
 		public async Task OutputAvailableAsync_ItemInQueueAndCompleted_ReturnsTrue()
 		{
 			var queue = new AsyncProducerConsumerQueue<int>();
-			await queue.EnqueueAsync(13).ConfigureAwait(false);
+			await queue.EnqueueAsync(13);
 			queue.CompleteAdding();
 
 			bool result = await queue.OutputAvailableAsync();
@@ -239,7 +239,7 @@ namespace GriffinPlus.Lib.Threading
 			var results = new List<int>();
 			while (await queue.OutputAvailableAsync())
 			{
-				results.Add(await queue.DequeueAsync().ConfigureAwait(false));
+				results.Add(await queue.DequeueAsync());
 			}
 
 			Assert.Equal(3, results.Count);

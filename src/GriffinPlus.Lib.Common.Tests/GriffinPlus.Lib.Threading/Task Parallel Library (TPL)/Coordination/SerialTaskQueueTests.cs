@@ -66,7 +66,7 @@ namespace GriffinPlus.Lib.Threading
 				Assert.False(task.IsCompleted);
 				Assert.False(finished);
 				startProcessingEvent.Set();
-				await task.ConfigureAwait(false);
+				await task;
 				Assert.True(task.IsCompleted);
 				Assert.True(finished);
 			}
@@ -104,7 +104,7 @@ namespace GriffinPlus.Lib.Threading
 
 				Assert.All(tasks, task => Assert.False(task.IsCompleted));
 				startProcessingEvent.Set();
-				await Task.WhenAll(tasks).ConfigureAwait(false);
+				await Task.WhenAll(tasks);
 				Assert.All(tasks, task => Assert.True(task.IsCompleted && !task.IsCanceled && !task.IsFaulted));
 				Assert.Equal(expectedOrder, actualOrder);
 			}
@@ -152,7 +152,7 @@ namespace GriffinPlus.Lib.Threading
 				Assert.False(task.IsCompleted);
 				Assert.False(finished);
 				startProcessingEvent.Set();
-				int result = await task.ConfigureAwait(false);
+				int result = await task;
 				Assert.Equal(expectedResult, result);
 				Assert.True(task.IsCompleted);
 				Assert.True(finished);
@@ -192,7 +192,7 @@ namespace GriffinPlus.Lib.Threading
 
 				Assert.All(tasks, task => Assert.False(task.IsCompleted));
 				startProcessingEvent.Set();
-				await Task.WhenAll(tasks).ConfigureAwait(false);
+				await Task.WhenAll(tasks);
 				Assert.All(tasks, task => Assert.True(task.IsCompleted && !task.IsCanceled && !task.IsFaulted));
 				Assert.Equal(expectedOrder, actualOrder);
 				Assert.Equal(expectedOrder, tasks.Select(x => x.Result));
@@ -238,7 +238,7 @@ namespace GriffinPlus.Lib.Threading
 				Assert.False(task.IsCompleted);
 				Assert.False(finished);
 				startProcessingEvent.Set();
-				await task.ConfigureAwait(false);
+				await task;
 				Assert.True(task.IsCompleted);
 				Assert.True(finished);
 			}
@@ -276,7 +276,7 @@ namespace GriffinPlus.Lib.Threading
 
 				Assert.All(tasks, task => Assert.False(task.IsCompleted));
 				startProcessingEvent.Set();
-				await Task.WhenAll(tasks).ConfigureAwait(false);
+				await Task.WhenAll(tasks);
 				Assert.All(tasks, task => Assert.True(task.IsCompleted));
 				Assert.Equal(expectedOrder, actualOrder);
 			}
@@ -323,7 +323,7 @@ namespace GriffinPlus.Lib.Threading
 				Assert.False(task.IsCompleted);
 				Assert.False(finished);
 				startProcessingEvent.Set();
-				int result = await task.ConfigureAwait(false);
+				int result = await task;
 				Assert.Equal(expectedResult, result);
 				Assert.True(task.IsCompleted);
 				Assert.True(finished);
@@ -363,7 +363,7 @@ namespace GriffinPlus.Lib.Threading
 
 				Assert.All(tasks, task => Assert.False(task.IsCompleted));
 				startProcessingEvent.Set();
-				await Task.WhenAll(tasks).ConfigureAwait(false);
+				await Task.WhenAll(tasks);
 				Assert.All(tasks, task => Assert.True(task.IsCompleted));
 				Assert.Equal(expectedOrder, actualOrder);
 				Assert.Equal(expectedOrder, tasks.Select(x => x.Result));

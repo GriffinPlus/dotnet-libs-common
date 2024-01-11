@@ -35,6 +35,8 @@ using GriffinPlus.Lib.Tests;
 
 using Xunit;
 
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
+
 namespace GriffinPlus.Lib.Threading
 {
 
@@ -92,6 +94,7 @@ namespace GriffinPlus.Lib.Threading
 			object result = new object();
 			Task<object> task = queue.Enqueue();
 			queue.Dequeue(result);
+			Assert.True(task.IsCompleted);
 			Assert.Same(result, task.Result);
 		}
 
@@ -101,6 +104,7 @@ namespace GriffinPlus.Lib.Threading
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
 			Task<object> task = queue.Enqueue();
 			queue.Dequeue();
+			Assert.True(task.IsCompleted);
 			Assert.Equal(default(object), task.Result);
 		}
 
@@ -122,6 +126,8 @@ namespace GriffinPlus.Lib.Threading
 			Task<object> task1 = queue.Enqueue();
 			Task<object> task2 = queue.Enqueue();
 			queue.DequeueAll();
+			Assert.True(task1.IsCompleted);
+			Assert.True(task2.IsCompleted);
 			Assert.Equal(default(object), task1.Result);
 			Assert.Equal(default(object), task2.Result);
 		}
@@ -134,6 +140,8 @@ namespace GriffinPlus.Lib.Threading
 			Task<object> task1 = queue.Enqueue();
 			Task<object> task2 = queue.Enqueue();
 			queue.DequeueAll(result);
+			Assert.True(task1.IsCompleted);
+			Assert.True(task2.IsCompleted);
 			Assert.Same(result, task1.Result);
 			Assert.Same(result, task2.Result);
 		}

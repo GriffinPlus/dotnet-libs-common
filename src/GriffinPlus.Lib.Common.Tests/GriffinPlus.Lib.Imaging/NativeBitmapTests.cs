@@ -1035,7 +1035,7 @@ namespace GriffinPlus.Lib.Imaging
 			var buffer = (IntPtr)0x1; // invalid buffer, but not used anyway
 			long bufferSize = 1;
 			int stride = 1;
-			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, bufferSize, width, height, stride, dpi, dpi, format, null));
+			ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, bufferSize, width, height, stride, dpi, dpi, format, null));
 			Assert.Equal("width", exception.ParamName);
 		}
 
@@ -1054,7 +1054,7 @@ namespace GriffinPlus.Lib.Imaging
 			var buffer = (IntPtr)0x1; // invalid buffer, but not used anyway
 			long bufferSize = 1;
 			int stride = 1;
-			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, bufferSize, width, height, stride, dpi, dpi, format, null));
+			ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, bufferSize, width, height, stride, dpi, dpi, format, null));
 			Assert.Equal("height", exception.ParamName);
 		}
 
@@ -1073,7 +1073,7 @@ namespace GriffinPlus.Lib.Imaging
 			var buffer = (IntPtr)0x1; // invalid buffer, but not used anyway
 			CalculateBufferAlignmentAndStride(format, width, out _, out long stride);
 			stride -= 1;
-			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, bufferSize, width, height, stride, dpi, dpi, format, null));
+			ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, bufferSize, width, height, stride, dpi, dpi, format, null));
 			Assert.Equal("stride", exception.ParamName);
 		}
 
@@ -1091,7 +1091,7 @@ namespace GriffinPlus.Lib.Imaging
 			var buffer = (IntPtr)0x1;                // invalid buffer, but not used anyway
 			CalculateBufferAlignmentAndStride(format, width, out _, out long stride);
 			long minimumBufferSize = (height - 1) * stride + (width * format.BitsPerPixel + 7) / 8;
-			var exception = Assert.Throws<ArgumentException>(() => new NativeBitmap(buffer, minimumBufferSize - 1, width, height, stride, dpi, dpi, format, null));
+			ArgumentException exception = Assert.Throws<ArgumentException>(() => new NativeBitmap(buffer, minimumBufferSize - 1, width, height, stride, dpi, dpi, format, null));
 			Assert.Equal("bufferSize", exception.ParamName);
 		}
 

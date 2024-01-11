@@ -31,6 +31,8 @@ using System.Threading.Tasks;
 
 using Xunit;
 
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
+
 namespace GriffinPlus.Lib.Threading
 {
 

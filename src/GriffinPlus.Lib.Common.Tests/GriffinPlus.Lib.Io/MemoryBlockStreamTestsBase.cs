@@ -133,7 +133,7 @@ namespace GriffinPlus.Lib.Io
 		public async Task FlushAsync()
 		{
 			MemoryBlockStream stream = CreateStreamToTest();
-			await stream.FlushAsync(CancellationToken.None).ConfigureAwait(false);
+			await stream.FlushAsync(CancellationToken.None);
 		}
 
 		#endregion
@@ -200,15 +200,14 @@ namespace GriffinPlus.Lib.Io
 			async Task<int> Operation(MemoryBlockStream stream, byte[] readBuffer, int bytesToRead)
 			{
 				int readByteCount = await stream.ReadAsync(
-						                    readBuffer,
-						                    0,
-						                    bytesToRead,
-						                    CancellationToken.None)
-					                    .ConfigureAwait(false);
+					                    readBuffer,
+					                    0,
+					                    bytesToRead,
+					                    CancellationToken.None);
 				return readByteCount;
 			}
 
-			await TestReadAsync(initialLength, chunkedRead, Operation).ConfigureAwait(false);
+			await TestReadAsync(initialLength, chunkedRead, Operation);
 		}
 
 		#endregion
@@ -229,13 +228,12 @@ namespace GriffinPlus.Lib.Io
 			async Task<int> Operation(MemoryBlockStream stream, byte[] readBuffer, int bytesToRead)
 			{
 				int readByteCount = await stream.ReadAsync(
-						                    readBuffer.AsMemory(0, bytesToRead),
-						                    CancellationToken.None)
-					                    .ConfigureAwait(false);
+					                    readBuffer.AsMemory(0, bytesToRead),
+					                    CancellationToken.None);
 				return readByteCount;
 			}
 
-			await TestReadAsync(initialLength, chunkedRead, Operation).ConfigureAwait(false);
+			await TestReadAsync(initialLength, chunkedRead, Operation);
 		}
 
 		#endregion
@@ -417,10 +415,10 @@ namespace GriffinPlus.Lib.Io
 		{
 			async Task Operation(MemoryBlockStream stream, byte[] data)
 			{
-				await stream.WriteAsync(data, 0, data.Length, CancellationToken.None).ConfigureAwait(false);
+				await stream.WriteAsync(data, 0, data.Length, CancellationToken.None);
 			}
 
-			await TestWriteAsync(count, Operation).ConfigureAwait(false);
+			await TestWriteAsync(count, Operation);
 		}
 
 		/// <summary>
@@ -440,17 +438,16 @@ namespace GriffinPlus.Lib.Io
 					int bytesToWrite = Math.Min(data.Length - offset, chunkSize);
 
 					await stream.WriteAsync(
-							data,
-							offset,
-							bytesToWrite,
-							CancellationToken.None)
-						.ConfigureAwait(false);
+						data,
+						offset,
+						bytesToWrite,
+						CancellationToken.None);
 
 					offset += bytesToWrite;
 				} while (offset < data.Length);
 			}
 
-			await TestWriteAsync(count, Operation).ConfigureAwait(false);
+			await TestWriteAsync(count, Operation);
 		}
 
 		#endregion
@@ -470,12 +467,11 @@ namespace GriffinPlus.Lib.Io
 			async Task Operation(MemoryBlockStream stream, byte[] data)
 			{
 				await stream.WriteAsync(
-						data.AsMemory(0, data.Length),
-						CancellationToken.None)
-					.ConfigureAwait(false);
+					data.AsMemory(0, data.Length),
+					CancellationToken.None);
 			}
 
-			await TestWriteAsync(count, Operation).ConfigureAwait(false);
+			await TestWriteAsync(count, Operation);
 		}
 
 		/// <summary>
@@ -496,15 +492,14 @@ namespace GriffinPlus.Lib.Io
 
 					// write the buffer
 					await stream.WriteAsync(
-							data.AsMemory(offset, bytesToWrite),
-							CancellationToken.None)
-						.ConfigureAwait(false);
+						data.AsMemory(offset, bytesToWrite),
+						CancellationToken.None);
 
 					offset += bytesToWrite;
 				} while (offset < data.Length);
 			}
 
-			await TestWriteAsync(count, Operation).ConfigureAwait(false);
+			await TestWriteAsync(count, Operation);
 		}
 
 		#endregion
@@ -523,12 +518,11 @@ namespace GriffinPlus.Lib.Io
 			async Task Operation(MemoryBlockStream stream, byte[] data)
 			{
 				await stream.WriteAsync(
-						new MemoryStream(data),
-						CancellationToken.None)
-					.ConfigureAwait(false);
+					new MemoryStream(data),
+					CancellationToken.None);
 			}
 
-			await TestWriteAsync(count, Operation).ConfigureAwait(false);
+			await TestWriteAsync(count, Operation);
 		}
 
 		#endregion
@@ -596,15 +590,14 @@ namespace GriffinPlus.Lib.Io
 					byte[] data = list.ToArray();
 
 					// attach chain of blocks to the stream
-					await stream.AttachBufferAsync(chain).ConfigureAwait(false);
+					await stream.AttachBufferAsync(chain);
 
 					// copy the stream to another stream
 					var otherStream = new MemoryStream();
 					await stream.CopyToAsync(
-							otherStream,
-							8 * 1024,
-							CancellationToken.None)
-						.ConfigureAwait(false);
+						otherStream,
+						8 * 1024,
+						CancellationToken.None);
 
 					// the read stream should be at its end now
 					Assert.Equal(data.Length, stream.Position);
@@ -657,7 +650,7 @@ namespace GriffinPlus.Lib.Io
 			{
 				// generate some test data and attach the buffer to the stream
 				ChainableMemoryBlock chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out List<byte> data);
-				await stream.AttachBufferAsync(chain, CancellationToken.None).ConfigureAwait(false);
+				await stream.AttachBufferAsync(chain, CancellationToken.None);
 
 				// the stream's properties should reflect the new buffer
 				Assert.Equal(0, stream.Position);
@@ -717,14 +710,14 @@ namespace GriffinPlus.Lib.Io
 			{
 				// generate some test data and pass ownership to the stream
 				ChainableMemoryBlock chain = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out List<byte> data);
-				await stream.AttachBufferAsync(chain).ConfigureAwait(false);
+				await stream.AttachBufferAsync(chain);
 
 				// the stream's properties should reflect the new buffer
 				Assert.Equal(0, stream.Position);
 				Assert.Equal(data.Count, stream.Length);
 
 				// detach the buffer, should be the same as attached
-				using (ChainableMemoryBlock firstBlock = await stream.DetachBufferAsync(CancellationToken.None).ConfigureAwait(false))
+				using (ChainableMemoryBlock firstBlock = await stream.DetachBufferAsync(CancellationToken.None))
 				{
 					Assert.Same(chain, firstBlock);
 
@@ -822,7 +815,7 @@ namespace GriffinPlus.Lib.Io
 				// the stream should contain data from both buffers
 				Assert.Equal(0, stream.Position);
 				Assert.Equal(data.Count, stream.Length);
-				using (ChainableMemoryBlock detachedBuffer = await stream.DetachBufferAsync().ConfigureAwait(false))
+				using (ChainableMemoryBlock detachedBuffer = await stream.DetachBufferAsync())
 				{
 					Assert.Equal(data, detachedBuffer.GetChainData());
 				}
@@ -844,15 +837,15 @@ namespace GriffinPlus.Lib.Io
 				ChainableMemoryBlock chain2 = GetRandomTestDataChain(TestDataSize, StreamMemoryBlockSize, out List<byte> data2);
 
 				// attach the first buffer to the stream
-				await stream.AttachBufferAsync(chain1, CancellationToken.None).ConfigureAwait(false);
+				await stream.AttachBufferAsync(chain1, CancellationToken.None);
 
 				// append the second buffer
-				await stream.AppendBufferAsync(chain2, CancellationToken.None).ConfigureAwait(false);
+				await stream.AppendBufferAsync(chain2, CancellationToken.None);
 
 				// the stream should contain data from both buffers
 				Assert.Equal(0, stream.Position);
 				Assert.Equal(data1.Count + data2.Count, stream.Length);
-				using (ChainableMemoryBlock detachedBuffer = await stream.DetachBufferAsync().ConfigureAwait(false))
+				using (ChainableMemoryBlock detachedBuffer = await stream.DetachBufferAsync())
 				{
 					Assert.Equal(data1.Concat(data2), detachedBuffer.GetChainData());
 				}
