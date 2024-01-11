@@ -3,7 +3,7 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if NET48 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#if NET48 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0 || NET8_0
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;

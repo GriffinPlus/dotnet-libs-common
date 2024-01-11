@@ -10,12 +10,14 @@
 # - Windows Server 2022, .NET Core 3.1   (tests with build for .NET Standard 2.1)
 # - Windows Server 2022, .NET 5.0        (tests with build for .NET 5)
 # - Windows Server 2022, .NET 6.0        (tests with build for .NET 6)
-# - Windows Server 2022, .NET 7.0        (tests with build for .NET 6)
+# - Windows Server 2022, .NET 7.0        (tests with build for .NET 7)
+# - Windows Server 2022, .NET 8.0        (tests with build for .NET 8) 
 # - Ubuntu 22.04, .NET Core 2.2          (tests with build for .NET Standard 2.0)
 # - Ubuntu 22.04, .NET Core 3.1          (tests with build for .NET Standard 2.1)
 # - Ubuntu 22.04, .NET 5.0               (tests with build for .NET 5)
 # - Ubuntu 22.04, .NET 6.0               (tests with build for .NET 6)
-# - Ubuntu 22.04, .NET 7.0               (tests with build for .NET 6)
+# - Ubuntu 22.04, .NET 7.0               (tests with build for .NET 7)
+# - Ubuntu 22.04, .NET 8.0               (tests with build for .NET 8)
 #
 # After tests have completed successfully nuget packages are created according to their specification (*.nuspec).
 # If the build was tagged with a tag starting with 'v' the nuget packages are pushed to nuget.org.
@@ -74,6 +76,12 @@ stages:
       inputs:
         packageType: 'sdk'
         version: '7.0.x'
+        installationPath: '$(Agent.ToolsDirectory)/dotnet'
+    - task: UseDotNet@2
+      displayName: 'Use .NET 8.0 SDK'
+      inputs:
+        packageType: 'sdk'
+        version: '8.0.x'
         installationPath: '$(Agent.ToolsDirectory)/dotnet'
     - task: NuGetToolInstaller@1
       displayName: 'Install NuGet'
@@ -145,6 +153,7 @@ stages:
   # - .NET 5.0 on Windows Server 2022 and Ubuntu 22.04
   # - .NET 6.0 on Windows Server 2022 and Ubuntu 22.04
   # - .NET 7.0 on Windows Server 2022 and Ubuntu 22.04
+  # - .NET 8.0 on Windows Server 2022 and Ubuntu 22.04
   ######################################################################################################################
   - job:
     displayName: ''
@@ -187,6 +196,12 @@ stages:
       inputs:
         packageType: 'sdk'
         version: '7.0.x'
+        installationPath: '$(Agent.ToolsDirectory)/dotnet'
+    - task: UseDotNet@2
+      displayName: 'Use .NET 8.0 SDK'
+      inputs:
+        packageType: 'sdk'
+        version: '8.0.x'
         installationPath: '$(Agent.ToolsDirectory)/dotnet'
     - task: NuGetToolInstaller@1
       displayName: 'Install NuGet'
@@ -248,6 +263,13 @@ stages:
         projects: '**/*Tests/*.csproj'
         nobuild: true
         arguments: '--framework net7.0'
+    - task: DotNetCoreCLI@2
+      displayName: 'Test .NET 8.0'
+      inputs:
+        command: 'test'
+        projects: '**/*Tests/*.csproj'
+        nobuild: true
+        arguments: '--framework net8.0'
 
 ########################################################################################################################
 # Stage: Deployment

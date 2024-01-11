@@ -3,7 +3,7 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if NETSTANDARD2_1 || NET48 || NET5_0 || NET6_0
+#if NETSTANDARD2_1 || NET48 || NET5_0 || NET6_0 || NET7_0 || NET8_0
 
 using System;
 using System.Security.Cryptography;

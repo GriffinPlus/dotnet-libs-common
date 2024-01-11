@@ -174,12 +174,12 @@ This namespace provides threading specific functionality and contains the follow
 
 The library is entirely written in C# using .NET Standard 2.0.
 
-More specific builds for .NET Standard 2.1, .NET Framework 4.6.1, .NET Framework 4.8, .NET 5.0 and .NET 6.0 minimize dependencies to framework components and provide optimizations for the different frameworks.
+More specific builds for .NET Standard 2.1, .NET Framework 4.6.1, .NET Framework 4.8, .NET 5.0, .NET 6.0, .NET 7.0 and .NET 8.0 minimize dependencies to framework components and provide optimizations for the different frameworks.
 
 Therefore it should work on the following platforms (or higher):
 - .NET Framework 4.6.1
 - .NET Core 2/3
-- .NET 5/6/7
+- .NET 5/6/7/8
 - Mono 5.4
 - Xamarin iOS 10.14
 - Xamarin Mac 3.8
@@ -192,4 +192,6 @@ The library is tested automatically on the following frameworks and operating sy
 - .NET Core 2.2: Tests with library built for .NET Standard 2.0 (Windows Server 2022 and Ubuntu 22.04)
 - .NET Core 3.1: Tests with library built for .NET Standard 2.1 (Windows Server 2022 and Ubuntu 22.04)
 - .NET 5.0: Tests with library built for .NET 5.0 (Windows Server 2022 and Ubuntu 22.04)
-- .NET 6.0/7.0: Tests with library built for .NET 5.0 (Windows Server 2022 and Ubuntu 22.04)
+- .NET 6.0: Tests with library built for .NET 6.0 (Windows Server 2022 and Ubuntu 22.04)
+- .NET 7.0: Tests with library built for .NET 7.0 (Windows Server 2022 and Ubuntu 22.04)
+- .NET 8.0: Tests with library built for .NET 8.0 (Windows Server 2022 and Ubuntu 22.04)

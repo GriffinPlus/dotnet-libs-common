@@ -36,7 +36,7 @@ namespace GriffinPlus.Lib.Cryptography
 				yield return new object[] { "My Password", "$SHA512$10000$KV8EtTGZFgVBkuNlWNpdooB2aH3hxPrAykH5dz6RB7/j19hP7iZaZQib0x22a3F8HaCrxDDqQvye7yj19vnkrxBQe2Lm6H83rKMCkiJQGBs=" };
 				yield return new object[] { "My Password", "$PBKDF2$10000$ADPaOpUuLQeR1ggvnraz11KDUY60FdzzNKdVp8/iGFxqlPpP" };
 				yield return new object[] { "My Password", "$PBKDF2-SHA1$10000$ADPaOpUuLQeR1ggvnraz11KDUY60FdzzNKdVp8/iGFxqlPpP" };
-#if NET48 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#if NET48 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0 || NET8_0
 				yield return new object[] { "My Password", "$PBKDF2-SHA256$10000$pamnf76rg587ZF5AlAI9CG1pnsHg7kEI9eYTUlGSg/AAR9HDqQxNiweIiJCYmqNn" };
 				yield return new object[] { "My Password", "$PBKDF2-SHA512$10000$vCr1ArVabwFt6YNgl2LNMRfaGPrFb+yicQOuTEHnCjQvU84Xb/pvM3WLj1aexLNxeet+DsXyDDhLNyV/Te9JpddDop1be6J1Zrn3pyajizQ=" };
 #elif NET461 || NETCOREAPP2_2
@@ -148,7 +148,7 @@ namespace GriffinPlus.Lib.Cryptography
 
 		#endregion
 
-#if NET48 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0
+#if NET48 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0 || NET8_0
 
 		#region SecurePasswordHasher.PBKDF2_SHA256 (Singleton Instance)
 
