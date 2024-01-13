@@ -252,12 +252,16 @@ namespace GriffinPlus.Lib.Io
 		{
 			int Operation(MemoryBlockStream stream, byte[] readBuffer, ref int bytesToRead)
 			{
-				Debug.Assert(bytesToRead >= 1);
-				bytesToRead = 1; // overrides the number of bytes to read, so the test does not fail...
-				int readByte = stream.ReadByte();
-				if (readByte < 0) return 0;
-				readBuffer[0] = (byte)readByte;
-				return 1;
+				if (readBuffer.Length > 0)
+				{
+					bytesToRead = 1; // overrides the number of bytes to read, so the test does not fail...
+					int readByte = stream.ReadByte();
+					if (readByte < 0) return 0;
+					readBuffer[0] = (byte)readByte;
+					return 1;
+				}
+
+				return 0;
 			}
 
 			// test reading byte-wise
@@ -876,6 +880,11 @@ namespace GriffinPlus.Lib.Io
 				ChainableMemoryBlock chain = GetRandomTestDataChain(initialLength, StreamMemoryBlockSize, out List<byte> expectedData);
 				stream.AttachBuffer(chain);
 
+				// try to read zero bytes (should work as well and do nothing)
+				int bytesToRead = 0;
+				int bytesRead = operation(stream, Array.Empty<byte>(), ref bytesToRead);
+				Assert.Equal(0, bytesRead);
+
 				var readData = new List<byte>(expectedData.Count);
 				if (randomChunks)
 				{
@@ -885,8 +894,8 @@ namespace GriffinPlus.Lib.Io
 					int remaining = expectedData.Count;
 					while (true)
 					{
-						int bytesToRead = random.Next(1, readBuffer.Length);
-						int bytesRead = operation(stream, readBuffer, ref bytesToRead);
+						bytesToRead = random.Next(1, readBuffer.Length);
+						bytesRead = operation(stream, readBuffer, ref bytesToRead);
 						int expectedByteRead = Math.Min(bytesToRead, remaining);
 						Assert.Equal(expectedByteRead, bytesRead);
 						if (bytesRead == 0) break;
@@ -898,8 +907,8 @@ namespace GriffinPlus.Lib.Io
 				{
 					// read entire stream at once
 					byte[] readBuffer = new byte[expectedData.Count + 1];
-					int bytesToRead = readBuffer.Length;
-					int bytesRead = operation(stream, readBuffer, ref bytesToRead); // operation should not override bytesToRead
+					bytesToRead = readBuffer.Length;
+					bytesRead = operation(stream, readBuffer, ref bytesToRead); // operation should not override bytesToRead
 					readData.AddRange(readBuffer.Take(bytesRead));
 				}
 
@@ -940,6 +949,11 @@ namespace GriffinPlus.Lib.Io
 				ChainableMemoryBlock chain = GetRandomTestDataChain(initialLength, StreamMemoryBlockSize, out List<byte> expectedData);
 				await stream.AttachBufferAsync(chain).ConfigureAwait(false);
 
+				// try to read zero bytes (should work as well and do nothing)
+				int bytesToRead = 0;
+				int bytesRead = await operation(stream, Array.Empty<byte>(), bytesToRead).ConfigureAwait(false);
+				Assert.Equal(0, bytesRead);
+
 				var readData = new List<byte>(expectedData.Count);
 				if (randomChunks)
 				{
@@ -948,8 +962,8 @@ namespace GriffinPlus.Lib.Io
 					byte[] readBuffer = new byte[8 * 1024];
 					while (true)
 					{
-						int bytesToRead = random.Next(1, readBuffer.Length);
-						int bytesRead = await operation(stream, readBuffer, bytesToRead).ConfigureAwait(false);
+						bytesToRead = random.Next(1, readBuffer.Length);
+						bytesRead = await operation(stream, readBuffer, bytesToRead).ConfigureAwait(false);
 						if (bytesRead == 0) break;
 						readData.AddRange(readBuffer.Take(bytesRead));
 					}
@@ -958,8 +972,8 @@ namespace GriffinPlus.Lib.Io
 				{
 					// read entire stream at once
 					byte[] readBuffer = new byte[expectedData.Count + 1];
-					int bytesToRead = readBuffer.Length;
-					int bytesRead = await operation(stream, readBuffer, bytesToRead).ConfigureAwait(false);
+					bytesToRead = readBuffer.Length;
+					bytesRead = await operation(stream, readBuffer, bytesToRead).ConfigureAwait(false);
 					readData.AddRange(readBuffer.Take(bytesRead));
 				}
 

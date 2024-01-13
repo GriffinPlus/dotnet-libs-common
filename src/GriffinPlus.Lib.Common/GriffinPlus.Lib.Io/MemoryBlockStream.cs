@@ -519,9 +519,6 @@ namespace GriffinPlus.Lib.Io
 			if (count < 0)
 				throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than or equal to 0.");
 
-			if (offset >= buffer.Length)
-				throw new ArgumentException("Offset exceeds the end of the buffer.", nameof(offset));
-
 			if (offset + count > buffer.Length)
 				throw new ArgumentException("The buffer's length is less than offset + count.", nameof(count));
 
@@ -580,9 +577,6 @@ namespace GriffinPlus.Lib.Io
 
 			if (count < 0)
 				throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than or equal to 0.");
-
-			if (offset >= buffer.Length)
-				throw new ArgumentException("Offset exceeds the end of the buffer.", nameof(offset));
 
 			if (offset + count > buffer.Length)
 				throw new ArgumentException("The buffer's length is less than offset + count.", nameof(count));
