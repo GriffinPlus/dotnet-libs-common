@@ -5,7 +5,7 @@
 		<id>GriffinPlus.Lib.Common</id>
 		<version>$version$</version>
 		<authors>Sascha Falk</authors>
-		<copyright>Copyright (c) 2023 Sascha Falk and Contributors</copyright>
+		<copyright>Copyright (c) 2024 Sascha Falk and Contributors</copyright>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>Very basic functionality that is frequently used in Griffin+ .NET projects.</description>
 		<license type="expression">MIT</license>
@@ -41,6 +41,12 @@
 			<group targetFramework="net6.0">
 				<dependency id="GriffinPlus.Lib.Logging.Interface" version="1.1.1" />
 			</group>
+			<group targetFramework="net7.0">
+				<dependency id="GriffinPlus.Lib.Logging.Interface" version="1.1.1" />
+			</group>
+			<group targetFramework="net8.0">
+				<dependency id="GriffinPlus.Lib.Logging.Interface" version="1.1.1" />
+			</group>
 		</dependencies>
 	</metadata>
 	<files>
@@ -63,5 +69,11 @@
 		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net6.0\GriffinPlus.Lib.Common.dll" target="lib\net6.0" />
 		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net6.0\GriffinPlus.Lib.Common.pdb" target="lib\net6.0" />
 		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net6.0\GriffinPlus.Lib.Common.xml" target="lib\net6.0" />
+		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net7.0\GriffinPlus.Lib.Common.dll" target="lib\net7.0" />
+		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net7.0\GriffinPlus.Lib.Common.pdb" target="lib\net7.0" />
+		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net7.0\GriffinPlus.Lib.Common.xml" target="lib\net7.0" />
+		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net8.0\GriffinPlus.Lib.Common.dll" target="lib\net8.0" />
+		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net8.0\GriffinPlus.Lib.Common.pdb" target="lib\net8.0" />
+		<file src="..\..\..\_build\.out\GriffinPlus.Lib.Common\AnyCPU.Release\net8.0\GriffinPlus.Lib.Common.xml" target="lib\net8.0" />
 	</files>
 </package>
