@@ -6,6 +6,7 @@
 		<AssemblyName>GriffinPlus.Lib.Common</AssemblyName>
 		<RootNamespace>GriffinPlus.Lib</RootNamespace>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -15,6 +16,10 @@
 	<ItemGroup>
 		<PackageReference Include="GriffinPlus.Lib.Logging.Interface" Version="1.1.1" />
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+		<PackageReference Include="PolySharp" Version="1.14.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
