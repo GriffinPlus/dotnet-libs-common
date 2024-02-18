@@ -15,6 +15,6 @@ namespace GriffinPlus.Lib
 	/// especially if these tests try to test timeout behavior of operations.
 	/// </summary>
 	[CollectionDefinition("NoParallelization", DisableParallelization = true)]
-	public class NoParallelizationCollection { }
+	public class NoParallelizationCollection;
 
 }

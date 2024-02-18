@@ -28,7 +28,7 @@ namespace GriffinPlus.Lib.Collections
 			/// <summary>
 			/// An instance of the <see cref="TypeComparer"/> class.
 			/// </summary>
-			public static readonly TypeComparer Instance = new TypeComparer();
+			public static readonly TypeComparer Instance = new();
 
 			/// <summary>
 			/// Compares the assembly qualified name of the specified types with each other.
@@ -293,6 +293,7 @@ namespace GriffinPlus.Lib.Collections
 
 			// the enumerator should point to the position after the last valid element now,
 			// but the 'Current' property should not throw an exception
+			// ReSharper disable once AssignmentInsteadOfDiscard
 			// ReSharper disable once RedundantAssignment
 			_ = enumerator.Current;
 

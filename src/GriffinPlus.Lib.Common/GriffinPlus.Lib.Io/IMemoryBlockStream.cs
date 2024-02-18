@@ -85,8 +85,8 @@ namespace GriffinPlus.Lib.Io
 		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		/// <remarks>
 		/// This method allows you to detach the underlying buffer from the stream and use it in another place.
-		/// If blocks contain buffers that have been rented from an array pool, the returned block chain must
-		/// be disposed to return buffers to the pool. The stream is empty afterwards.
+		/// If blocks contain buffers that have been rented from an array pool, the returned memory-block chain must
+		/// be disposed to return buffers to the pool. The stream is empty afterward.
 		/// </remarks>
 		ChainableMemoryBlock DetachBuffer();
 
@@ -101,8 +101,8 @@ namespace GriffinPlus.Lib.Io
 		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		/// <remarks>
 		/// This method allows you to detach the underlying buffer from the stream and use it in another place.
-		/// If blocks contain buffers that have been rented from an array pool, the returned block chain must
-		/// be disposed to return buffers to the pool. The stream is empty afterwards.
+		/// If blocks contain buffers that have been rented from an array pool, the returned memory-block chain must
+		/// be disposed to return buffers to the pool. The stream is empty afterward.
 		/// </remarks>
 		Task<ChainableMemoryBlock> DetachBufferAsync(CancellationToken cancellationToken = default);
 	}

@@ -56,7 +56,7 @@ namespace GriffinPlus.Lib.Disposables
 		/// </summary>
 		private readonly BoundActionField<T> mContext;
 
-		private readonly ManualResetEventSlim mDisposingEvent = new ManualResetEventSlim();
+		private readonly ManualResetEventSlim mDisposingEvent = new();
 
 		/// <summary>
 		/// Initializes a disposable for the specified context.

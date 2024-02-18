@@ -22,7 +22,7 @@ namespace GriffinPlus.Lib.Collections
 	{
 		#region Test Data
 
-		public class TestItem { }
+		public class TestItem;
 
 		/// <summary>
 		/// Test data for tests expecting a certain number of items in the collection.
@@ -34,9 +34,9 @@ namespace GriffinPlus.Lib.Collections
 				var items = new[] { null, new TestItem() };
 				foreach (TestItem item in items)
 				{
-					yield return new object[] { item, 0 }; // empty collection
-					yield return new object[] { item, 1 }; // one item only
-					yield return new object[] { item, 2 }; // more than one item
+					yield return [item, 0]; // empty collection
+					yield return [item, 1]; // one item only
+					yield return [item, 2]; // more than one item
 				}
 			}
 		}
@@ -54,7 +54,7 @@ namespace GriffinPlus.Lib.Collections
 		[MemberData(nameof(TestData))]
 		public void Create(TestItem item, int count)
 		{
-			var _ = new FixedItemReadOnlyList<TestItem>(item, count);
+			_ = new FixedItemReadOnlyList<TestItem>(item, count);
 		}
 
 		/// <summary>
@@ -179,7 +179,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			var list = new FixedItemReadOnlyList<TestItem>(item, count);
 
-			// all items reachable via the the indexer should be the same as the item passed during construction
+			// all items reachable via the indexer should be the same as the item passed during construction
 			for (int i = 0; i < count; i++)
 			{
 				Assert.Same(item, list[i]);
@@ -201,7 +201,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			IList<TestItem> list = new FixedItemReadOnlyList<TestItem>(item, count);
 
-			// all items reachable via the the indexer should be the same as the item passed during construction
+			// all items reachable via the indexer should be the same as the item passed during construction
 			for (int i = 0; i < count; i++)
 			{
 				Assert.Same(item, list[i]);
@@ -237,7 +237,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			IList list = new FixedItemReadOnlyList<TestItem>(item, count);
 
-			// all items reachable via the the indexer should be the same as the item passed during construction
+			// all items reachable via the indexer should be the same as the item passed during construction
 			for (int i = 0; i < count; i++)
 			{
 				Assert.Same(item, list[i]);
@@ -456,7 +456,7 @@ namespace GriffinPlus.Lib.Collections
 
 		/// <summary>
 		/// Tests the explicit implementation of the <see cref="ICollection.CopyTo"/> method.
-		/// The method should throw an exception if the specified array is multi-dimensional.
+		/// The method should throw an exception if the specified array is multidimensional.
 		/// </summary>
 		/// <param name="item">The item the list should provide.</param>
 		/// <param name="count">Number of times the list should provide the item.</param>
@@ -512,6 +512,7 @@ namespace GriffinPlus.Lib.Collections
 			while (enumerator.MoveNext()) enumerated1.Add((TestItem)enumerator.Current);
 			enumerator.Reset();
 			while (enumerator.MoveNext()) enumerated2.Add((TestItem)enumerator.Current);
+			(enumerator as IDisposable)!.Dispose();
 			Assert.Equal(count, enumerated1.Count);
 			Assert.Equal(count, enumerated2.Count);
 			Assert.All(enumerated1, x => Assert.Same(item, x));

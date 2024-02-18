@@ -149,7 +149,7 @@ namespace GriffinPlus.Lib.Events
 			regCount = PropertyChangedEventManager.UnregisterEventHandler(this, recipient.Handler);
 			Assert.Equal(0, regCount);
 
-			// check whether the handler is not registered any more
+			// check whether the handler is not registered anymore
 			Assert.False(PropertyChangedEventManager.IsHandlerRegistered(this));
 		}
 
@@ -228,7 +228,7 @@ namespace GriffinPlus.Lib.Events
 			int regCount2 = PropertyChangedEventManager.UnregisterEventHandler(this, recipient.Handler);
 			Assert.Equal(0, regCount2);
 
-			// check whether the handler is not registered any more
+			// check whether the handler is not registered anymore
 			Assert.False(PropertyChangedEventManager.IsHandlerRegistered(this));
 		}
 
@@ -296,7 +296,7 @@ namespace GriffinPlus.Lib.Events
 			int regCount2 = PropertyChangedEventManager.UnregisterEventHandler(this, recipient.Handler);
 			Assert.Equal(0, regCount2);
 
-			// check whether the handler is not registered any more
+			// check whether the handler is not registered anymore
 			Assert.False(PropertyChangedEventManager.IsHandlerRegistered(this));
 		}
 
@@ -505,7 +505,7 @@ namespace GriffinPlus.Lib.Events
 			WeakReference weakReferenceProvider = new Func<WeakReference>(
 				() =>
 				{
-					object provider = new object();
+					object provider = new();
 					int regCount = PropertyChangedEventManager.RegisterEventHandler(provider, recipient.Handler, null, scheduleAlways);
 					Assert.Equal(1, regCount);
 					return new WeakReference(provider);

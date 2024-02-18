@@ -74,69 +74,69 @@ namespace GriffinPlus.Lib
 				// primitive types are inherently immutable
 				// ----------------------------------------------------------------------------------------------------
 				string reason = "primitive type, inherently immutable";
-				yield return new object[] { typeof(bool), true, true, reason };
-				yield return new object[] { typeof(sbyte), true, true, reason };
-				yield return new object[] { typeof(byte), true, true, reason };
-				yield return new object[] { typeof(short), true, true, reason };
-				yield return new object[] { typeof(ushort), true, true, reason };
-				yield return new object[] { typeof(int), true, true, reason };
-				yield return new object[] { typeof(uint), true, true, reason };
-				yield return new object[] { typeof(long), true, true, reason };
-				yield return new object[] { typeof(ulong), true, true, reason };
-				yield return new object[] { typeof(float), true, true, reason };
-				yield return new object[] { typeof(double), true, true, reason };
-				yield return new object[] { typeof(char), true, true, reason };
-				yield return new object[] { typeof(IntPtr), true, true, reason };
-				yield return new object[] { typeof(UIntPtr), true, true, reason };
+				yield return [typeof(bool), true, true, reason];
+				yield return [typeof(sbyte), true, true, reason];
+				yield return [typeof(byte), true, true, reason];
+				yield return [typeof(short), true, true, reason];
+				yield return [typeof(ushort), true, true, reason];
+				yield return [typeof(int), true, true, reason];
+				yield return [typeof(uint), true, true, reason];
+				yield return [typeof(long), true, true, reason];
+				yield return [typeof(ulong), true, true, reason];
+				yield return [typeof(float), true, true, reason];
+				yield return [typeof(double), true, true, reason];
+				yield return [typeof(char), true, true, reason];
+				yield return [typeof(IntPtr), true, true, reason];
+				yield return [typeof(UIntPtr), true, true, reason];
 
 				// built-in types that are known to be immutable in practice
 				// ----------------------------------------------------------------------------------------------------
 				reason = "builtin type, known to be immutable";
-				yield return new object[] { typeof(Guid), true, true, reason };
-				yield return new object[] { typeof(DateTime), true, true, reason };
-				yield return new object[] { typeof(DateTimeOffset), true, true, reason };
-				yield return new object[] { typeof(object), true, true, reason };
-				yield return new object[] { typeof(string), true, true, reason };
-				yield return new object[] { typeof(TimeSpan), true, true, reason };
-				yield return new object[] { typeof(TimeZoneInfo), true, true, reason };
-				yield return new object[] { typeof(Type), true, true, reason };
-				yield return new object[] { typeof(Uri), true, true, reason };
+				yield return [typeof(Guid), true, true, reason];
+				yield return [typeof(DateTime), true, true, reason];
+				yield return [typeof(DateTimeOffset), true, true, reason];
+				yield return [typeof(object), true, true, reason];
+				yield return [typeof(string), true, true, reason];
+				yield return [typeof(TimeSpan), true, true, reason];
+				yield return [typeof(TimeZoneInfo), true, true, reason];
+				yield return [typeof(Type), true, true, reason];
+				yield return [typeof(Uri), true, true, reason];
 
 				// enum types
 				// ----------------------------------------------------------------------------------------------------
 				reason = "enum type, inherently immutable";
-				yield return new object[] { typeof(DateTimeKind), true, true, reason };
+				yield return [typeof(DateTimeKind), true, true, reason];
 
 				// types that have been annotated with the 'Immutable' attribute
 				// ----------------------------------------------------------------------------------------------------
 				reason = "type was declared immutable (by attribute)";
 
 				// unsealed public class, may have mutable derivations in other assemblies
-				yield return new object[] { typeof(TestClass_Public_Unsealed_ImmutableByAttribute), true, false, reason };
+				yield return [typeof(TestClass_Public_Unsealed_ImmutableByAttribute), true, false, reason];
 
 				// unsealed internal class, current assembly does not contain mutable derivations
-				yield return new object[] { typeof(TestClass_Internal_Unsealed_ImmutableByAttribute_NoDerivations), true, true, reason };
+				yield return [typeof(TestClass_Internal_Unsealed_ImmutableByAttribute_NoDerivations), true, true, reason];
 
 				// unsealed internal class, current assembly contains mutable derivations
-				yield return new object[] { typeof(TestClass_Internal_Unsealed_ImmutableByAttribute_HasMutableDerivation), true, false, reason };
+				yield return [typeof(TestClass_Internal_Unsealed_ImmutableByAttribute_HasMutableDerivation), true, false, reason];
 
 				// sealed class, cannot have derivations
-				yield return new object[] { typeof(TestClass_Sealed_ImmutableByAttribute), true, true, reason };
+				yield return [typeof(TestClass_Sealed_ImmutableByAttribute), true, true, reason];
 
 				// struct, cannot have derivations
-				yield return new object[] { typeof(TestStruct_ImmutableByAttribute), true, true, reason };
+				yield return [typeof(TestStruct_ImmutableByAttribute), true, true, reason];
 
 				// interfaces
 				// ----------------------------------------------------------------------------------------------------
 				reason = "interface type, inherently mutable";
-				yield return new object[] { typeof(IDisposable), false, false, reason };
+				yield return [typeof(IDisposable), false, false, reason];
 
 				// mutable types
 				// ----------------------------------------------------------------------------------------------------
 				reason = "analysis yielded mutability";
-				yield return new object[] { typeof(TestClass_Mutable), false, false, reason };
-				yield return new object[] { typeof(TestStruct_Mutable), false, false, reason };
-				yield return new object[] { typeof(TestClass_Mutable_DerivedFromImmutable), false, false, reason };
+				yield return [typeof(TestClass_Mutable), false, false, reason];
+				yield return [typeof(TestStruct_Mutable), false, false, reason];
+				yield return [typeof(TestClass_Mutable_DerivedFromImmutable), false, false, reason];
 			}
 		}
 
@@ -149,11 +149,11 @@ namespace GriffinPlus.Lib
 		/// </summary>
 		/// <param name="type">Type to check for immutability.</param>
 		/// <param name="isImmutable">
-		/// <c>true</c>, if the type is expected to reported as immutable;
+		/// <c>true</c>, if the type is expected to be reported as immutable;<br/>
 		/// otherwise <c>false</c>.
 		/// </param>
 		/// <param name="hasImmutableDerivationsOnly">
-		/// <c>true</c> if the type is immutable and all derived types (if any) are immutable as well;
+		/// <c>true</c> if the type is immutable and all derived types (if any) are immutable as well;<br/>
 		/// otherwise <c>false</c>.
 		/// </param>
 		/// <param name="reason">Expected reason associated with the evaluation result.</param>
@@ -170,7 +170,7 @@ namespace GriffinPlus.Lib
 				.GetMethods()
 				.First(x => x.Name == nameof(Immutability.IsImmutable) && x.IsGenericMethod)
 				.MakeGenericMethod(type);
-			object actualIsImmutable = method.Invoke(null, new object[] { });
+			object actualIsImmutable = method.Invoke(null, []);
 			Assert.Equal(isImmutable, actualIsImmutable);
 
 			// check cached information about the type
@@ -186,10 +186,11 @@ namespace GriffinPlus.Lib
 		/// </summary>
 		/// <param name="type">Type to check for immutability.</param>
 		/// <param name="isImmutable">
-		/// <c>true</c>, if the type is expected to reported as immutable; otherwise <c>false</c>.
+		/// <c>true</c>, if the type is expected to be reported as immutable;<br/>
+		/// otherwise <c>false</c>.
 		/// </param>
 		/// <param name="hasImmutableDerivationsOnly">
-		/// <c>true</c> if the type is immutable and all derived types (if any) are immutable as well;
+		/// <c>true</c> if the type is immutable and all derived types (if any) are immutable as well;<br/>
 		/// otherwise <c>false</c>.
 		/// </param>
 		/// <param name="reason">Expected reason associated with the evaluation result.</param>
@@ -222,11 +223,11 @@ namespace GriffinPlus.Lib
 		/// </summary>
 		/// <param name="type">Type to check for immutability.</param>
 		/// <param name="isImmutable">
-		/// <c>true</c>, if the type is expected to reported as immutable;
+		/// <c>true</c>, if the type is expected to be reported as immutable;<br/>
 		/// otherwise <c>false</c>.
 		/// </param>
 		/// <param name="hasImmutableDerivationsOnly">
-		/// <c>true</c> if the type is immutable and all derived types (if any) are immutable as well;
+		/// <c>true</c> if the type is immutable and all derived types (if any) are immutable as well;<br/>
 		/// otherwise <c>false</c>.
 		/// </param>
 		/// <param name="reason">Expected reason associated with the evaluation result.</param>
@@ -243,7 +244,7 @@ namespace GriffinPlus.Lib
 				.GetMethods()
 				.First(x => x.Name == nameof(Immutability.HasImmutableDerivationsOnly) && x.IsGenericMethod)
 				.MakeGenericMethod(type);
-			object actualHasImmutableDerivationsOnly = method.Invoke(null, new object[] { });
+			object actualHasImmutableDerivationsOnly = method.Invoke(null, []);
 			Assert.Equal(hasImmutableDerivationsOnly, actualHasImmutableDerivationsOnly);
 
 			// check cached information about the type
@@ -259,10 +260,11 @@ namespace GriffinPlus.Lib
 		/// </summary>
 		/// <param name="type">Type to check for immutability.</param>
 		/// <param name="isImmutable">
-		/// <c>true</c>, if the type is expected to reported as immutable; otherwise <c>false</c>.
+		/// <c>true</c>, if the type is expected to be reported as immutable;<br/>
+		/// otherwise <c>false</c>.
 		/// </param>
 		/// <param name="hasImmutableDerivationsOnly">
-		/// <c>true</c> if the type is immutable and all derived types (if any) are immutable as well;
+		/// <c>true</c> if the type is immutable and all derived types (if any) are immutable as well;<br/>
 		/// otherwise <c>false</c>.
 		/// </param>
 		/// <param name="reason">Expected reason associated with the evaluation result.</param>
@@ -304,8 +306,8 @@ namespace GriffinPlus.Lib
 		{
 			get
 			{
-				yield return new object[] { typeof(AddImmutableTypeT_TestClass_Mutable) };
-				yield return new object[] { typeof(AddImmutableTypeT_TestStruct_Mutable) };
+				yield return [typeof(AddImmutableTypeT_TestClass_Mutable)];
+				yield return [typeof(AddImmutableTypeT_TestStruct_Mutable)];
 			}
 		}
 
@@ -328,7 +330,7 @@ namespace GriffinPlus.Lib
 				.GetMethods()
 				.First(x => x.Name == nameof(Immutability.AddImmutableType) && x.IsGenericMethod)
 				.MakeGenericMethod(type);
-			method.Invoke(null, new object[] { });
+			method.Invoke(null, []);
 
 			// now some information about the type should be in the cache
 			info = Immutability.EvaluatedTypeInfos.FirstOrDefault(x => x.Type == type);
@@ -355,8 +357,8 @@ namespace GriffinPlus.Lib
 		{
 			get
 			{
-				yield return new object[] { typeof(AddImmutableType_TestClass_Mutable) };
-				yield return new object[] { typeof(AddImmutableType_TestStruct_Mutable) };
+				yield return [typeof(AddImmutableType_TestClass_Mutable)];
+				yield return [typeof(AddImmutableType_TestStruct_Mutable)];
 			}
 		}
 

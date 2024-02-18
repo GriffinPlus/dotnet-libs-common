@@ -20,11 +20,11 @@ namespace GriffinPlus.Lib
 			/// </summary>
 			/// <param name="type">The analyzed type.</param>
 			/// <param name="isImmutable">
-			/// <c>true</c> if the type is considered immutable;
+			/// <c>true</c> if the type is considered immutable;<br/>
 			/// otherwise <c>false</c>.
 			/// </param>
 			/// <param name="hasImmutableDerivationsOnly">
-			/// <c>true</c> if the type is considered immutable and it has only immutable derivations (if any);
+			/// <c>true</c> if the type is considered immutable, and it has only immutable derivations (if any);<br/>
 			/// otherwise <c>false</c>.
 			/// </param>
 			/// <param name="reason">Reason describing what led to the immutability evaluation.</param>

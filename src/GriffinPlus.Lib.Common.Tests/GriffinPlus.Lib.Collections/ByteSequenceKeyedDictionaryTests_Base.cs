@@ -378,7 +378,7 @@ namespace GriffinPlus.Lib.Collections
 			KeyValuePair<IReadOnlyList<byte>, TValue>? last = null;
 			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in data)
 			{
-				if (first == null) first = kvp;
+				first ??= kvp;
 				last = kvp;
 				dict.Add(new ReadOnlySpan<byte>((byte[])kvp.Key), kvp.Value);
 			}
@@ -500,6 +500,7 @@ namespace GriffinPlus.Lib.Collections
 
 			// the enumerator should point to the position after the last valid element now,
 			// but the 'Current' property should not throw an exception
+			// ReSharper disable once AssignmentInsteadOfDiscard
 			// ReSharper disable once RedundantAssignment
 			_ = enumerator.Current;
 
@@ -624,7 +625,7 @@ namespace GriffinPlus.Lib.Collections
 			KeyValuePair<IReadOnlyList<byte>, TValue>? last = null;
 			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in data)
 			{
-				if (first == null) first = kvp;
+				first ??= kvp;
 				last = kvp;
 				Assert.True(dict.TryAdd(new ReadOnlySpan<byte>((byte[])kvp.Key), kvp.Value));
 			}
@@ -765,7 +766,7 @@ namespace GriffinPlus.Lib.Collections
 			}
 
 			// the dictionary should now contain the expected key/value pairs
-			enumerated = new List<KeyValuePair<IReadOnlyList<byte>, TValue>>();
+			enumerated = [];
 			foreach (KeyValuePair<IReadOnlyList<byte>, TValue> kvp in dict) enumerated.Add(kvp);
 			Assert.Equal(
 				data.OrderBy(x => x.Key, KeyComparer),

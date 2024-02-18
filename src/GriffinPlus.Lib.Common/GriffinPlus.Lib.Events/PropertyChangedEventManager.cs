@@ -25,28 +25,20 @@ namespace GriffinPlus.Lib.Events
 		/// <summary>
 		/// An event handler item in the event manager.
 		/// </summary>
-		private readonly struct Item
+		private readonly struct Item(SynchronizationContext context, PropertyChangedEventHandler handler, bool scheduleAlways)
 		{
-			public readonly SynchronizationContext      SynchronizationContext;
-			public readonly PropertyChangedEventHandler Handler;
-			public readonly bool                        ScheduleAlways;
-
-			public Item(SynchronizationContext context, PropertyChangedEventHandler handler, bool scheduleAlways)
-			{
-				SynchronizationContext = context;
-				Handler = handler;
-				ScheduleAlways = scheduleAlways;
-			}
+			public readonly SynchronizationContext      SynchronizationContext = context;
+			public readonly PropertyChangedEventHandler Handler                = handler;
+			public readonly bool                        ScheduleAlways         = scheduleAlways;
 		}
 
 		#endregion
 
 		#region Class Variables
 
-		private static readonly ConditionalWeakTable<object, Item[]> sItemsByObject =
-			new ConditionalWeakTable<object, Item[]>();
+		private static readonly ConditionalWeakTable<object, Item[]> sItemsByObject = new();
 
-		private static readonly object sSync = new object();
+		private static readonly object sSync = new();
 
 		#endregion
 
@@ -138,7 +130,7 @@ namespace GriffinPlus.Lib.Events
 				}
 				else
 				{
-					newItems = new[] { new Item(context, handler, scheduleAlways) };
+					newItems = [new Item(context, handler, scheduleAlways)];
 					sItemsByObject.Remove(obj);
 					sItemsByObject.Add(obj, newItems);
 				}
@@ -211,8 +203,8 @@ namespace GriffinPlus.Lib.Events
 		/// </summary>
 		/// <param name="obj">Object providing the event.</param>
 		/// <returns>
-		/// true, if a least one event handler has been removed;
-		/// false, if no event handler was registered.
+		/// <c>true</c> if at least one event handler has been removed;<br/>
+		/// <c>false</c> if no event handler was registered.
 		/// </returns>
 		public static bool UnregisterEventHandlers(object obj)
 		{
@@ -226,15 +218,15 @@ namespace GriffinPlus.Lib.Events
 		/// Checks whether the specified event has event handlers attached to it.
 		/// </summary>
 		/// <param name="obj">Object providing the event.</param>
-		/// <returns>true, if the specified event has event handlers attached; otherwise false.</returns>
+		/// <returns>
+		/// <c>true</c> if the specified event has event handlers attached;<br/>
+		/// otherwise <c>false</c>.
+		/// </returns>
 		public static bool IsHandlerRegistered(object obj)
 		{
 			lock (sSync)
 			{
-				if (!sItemsByObject.TryGetValue(obj, out _))
-					return false;
-
-				return true;
+				return sItemsByObject.TryGetValue(obj, out Item[] _);
 			}
 		}
 

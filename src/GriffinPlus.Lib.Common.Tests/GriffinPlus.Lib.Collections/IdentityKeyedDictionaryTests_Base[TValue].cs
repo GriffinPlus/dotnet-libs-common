@@ -238,6 +238,7 @@ namespace GriffinPlus.Lib.Collections
 
 			// the enumerator should point to the position after the last valid element now,
 			// but the 'Current' property should not throw an exception
+			// ReSharper disable once AssignmentInsteadOfDiscard
 			// ReSharper disable once RedundantAssignment
 			_ = enumerator.Current;
 

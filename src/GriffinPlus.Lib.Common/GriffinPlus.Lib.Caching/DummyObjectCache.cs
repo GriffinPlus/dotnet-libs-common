@@ -15,7 +15,7 @@ namespace GriffinPlus.Lib.Caching
 		/// <summary>
 		/// Puts an object into the cache.
 		/// </summary>
-		/// <typeparam name="T">Type of the object to put into the cache (may be it's base type).</typeparam>
+		/// <typeparam name="T">Type of the object to put into the cache (it may also be it's base type).</typeparam>
 		/// <param name="obj">Object to put into the cache.</param>
 		/// <returns>Cache item keeping track of the object.</returns>
 		IObjectCacheItem<T> IObjectCache.Set<T>(T obj)
@@ -26,7 +26,7 @@ namespace GriffinPlus.Lib.Caching
 		/// <summary>
 		/// Puts an object into the cache.
 		/// </summary>
-		/// <typeparam name="T">Type of the object to put into the cache (may be it's base type).</typeparam>
+		/// <typeparam name="T">Type of the object to put into the cache (it may also be it's base type).</typeparam>
 		/// <param name="obj">Object to put into the cache.</param>
 		/// <returns>Cache item keeping track of the object.</returns>
 		public static DummyObjectCacheItem<T> Set<T>(T obj) where T : class

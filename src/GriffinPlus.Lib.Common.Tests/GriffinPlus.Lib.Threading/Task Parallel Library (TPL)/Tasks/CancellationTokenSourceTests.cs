@@ -40,10 +40,8 @@ namespace GriffinPlus.Lib.Threading
 		public void Constructor_AlreadyCanceledToken_TaskReturnsSynchronouslyCanceledTask()
 		{
 			var token = new CancellationToken(true);
-			using (var source = new CancellationTokenTaskSource<object>(token))
-			{
-				Assert.True(source.Task.IsCanceled);
-			}
+			using var source = new CancellationTokenTaskSource<object>(token);
+			Assert.True(source.Task.IsCanceled);
 		}
 	}
 

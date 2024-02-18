@@ -33,7 +33,7 @@ namespace GriffinPlus.Lib.Configuration
 			return basePath + '/' + string.Join("/", pathSegments);
 		}
 
-		private static readonly Regex sPathSplitterRegex = new Regex(@"(?:(?<![\\])[/])|(?:(?<![\\])[\\](?![\\]))", RegexOptions.Compiled);
+		private static readonly Regex sPathSplitterRegex = new(@"(?:(?<![\\])[/])|(?:(?<![\\])[\\](?![\\]))", RegexOptions.Compiled);
 
 		/// <summary>
 		/// Splits up the specified path into a list of path segments using '/' and '\' as delimiters.
@@ -44,16 +44,16 @@ namespace GriffinPlus.Lib.Configuration
 		/// otherwise the segment will be split up).
 		/// </param>
 		/// <param name="isItemPath">
-		/// <c>true</c> if the path is an item path;
+		/// <c>true</c> if the path is an item path;<br/>
 		/// <c>false</c> if the specified path is a configuration node path.
 		/// </param>
 		/// <param name="checkValidity">
-		/// <c>true</c> to check the validity of path segment names using the specified persistence strategy;
+		/// <c>true</c> to check the validity of path segment names using the specified persistence strategy;<br/>
 		/// <c>false</c> to skip checking the validity of path segment names.
 		/// </param>
 		/// <returns>The resulting list of path segments.</returns>
 		/// <exception cref="ConfigurationException">
-		/// <paramref name="path"/> contains parts that are not supported by the the specified persistence strategy.
+		/// <paramref name="path"/> contains parts that are not supported by the specified persistence strategy.
 		/// </exception>
 		public static string[] SplitPath(
 			ICascadedConfigurationPersistenceStrategy strategy,
@@ -159,7 +159,7 @@ namespace GriffinPlus.Lib.Configuration
 			return sPathSplitterRegex.IsMatch(s);
 		}
 
-		private static readonly Regex sEscapeRegex = new Regex(@"(?<sep>[\\/])", RegexOptions.Compiled);
+		private static readonly Regex sEscapeRegex = new(@"(?<sep>[\\/])", RegexOptions.Compiled);
 
 		/// <summary>
 		/// Escapes the specified name for use in the configuration (avoid splitting up path segments unintentionally).
@@ -171,7 +171,7 @@ namespace GriffinPlus.Lib.Configuration
 			return sEscapeRegex.Replace(s, "\\${sep}");
 		}
 
-		private static readonly Regex sUnescapeRegex = new Regex(@"[\\](?<sep>[\\/])", RegexOptions.Compiled);
+		private static readonly Regex sUnescapeRegex = new(@"[\\](?<sep>[\\/])", RegexOptions.Compiled);
 
 		/// <summary>
 		/// Removes path delimiter escaping from the specified string.

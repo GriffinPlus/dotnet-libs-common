@@ -24,10 +24,10 @@ namespace GriffinPlus.Lib.Threading
 		/// (the full type name is used to avoid referencing the assemblies here)
 		/// </summary>
 		private static readonly string[] sPredefinedSynchronizingContexts =
-		{
+		[
 			"System.Windows.Forms.WindowsFormsSynchronizationContext",  // Windows Forms
 			"System.Windows.Threading.DispatcherSynchronizationContext" // WPF
-		};
+		];
 
 		/// <summary>
 		/// A set of synchronization contexts that are known to be serializing.
@@ -35,9 +35,9 @@ namespace GriffinPlus.Lib.Threading
 		private static Type[] sSerializingContextTypes = Type.EmptyTypes;
 
 		/// <summary>
-		/// Synchronizes a access to data structures.
+		/// Synchronizes accesses to data structures.
 		/// </summary>
-		private static readonly ReaderWriterLockSlim sLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+		private static readonly ReaderWriterLockSlim sLock = new(LockRecursionPolicy.NoRecursion);
 
 		/// <summary>
 		/// Adds the specified synchronization context to the list of serializing contexts,

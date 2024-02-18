@@ -214,25 +214,18 @@ namespace GriffinPlus.Lib.Threading
 		}
 
 		[DebuggerNonUserCode]
-		internal sealed class DebugView
+		internal sealed class DebugView(AsyncLazy<T> lazy)
 		{
-			private readonly AsyncLazy<T> mLazy;
-
-			public DebugView(AsyncLazy<T> lazy)
-			{
-				mLazy = lazy;
-			}
-
-			public LazyState State => mLazy.GetStateForDebugger;
+			public LazyState State => lazy.GetStateForDebugger;
 
 			public Task Task
 			{
 				get
 				{
-					if (!mLazy.mInstance.IsValueCreated)
+					if (!lazy.mInstance.IsValueCreated)
 						throw new InvalidOperationException("Not yet created.");
 
-					return mLazy.mInstance.Value;
+					return lazy.mInstance.Value;
 				}
 			}
 
@@ -240,10 +233,10 @@ namespace GriffinPlus.Lib.Threading
 			{
 				get
 				{
-					if (!mLazy.mInstance.IsValueCreated || !mLazy.mInstance.Value.IsCompleted)
+					if (!lazy.mInstance.IsValueCreated || !lazy.mInstance.Value.IsCompleted)
 						throw new InvalidOperationException("Not yet created.");
 
-					return mLazy.mInstance.Value.Result;
+					return lazy.mInstance.Value.Result;
 				}
 			}
 		}

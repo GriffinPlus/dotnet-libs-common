@@ -155,12 +155,12 @@ namespace GriffinPlus.Lib.Collections
 		/// <summary>
 		/// Gets a collection containing the keys in the dictionary.
 		/// </summary>
-		public KeyCollection Keys => mKeys ?? (mKeys = new KeyCollection(this));
+		public KeyCollection Keys => mKeys ??= new KeyCollection(this);
 
 		/// <summary>
 		/// Gets a collection containing the values in the dictionary.
 		/// </summary>
-		public ValueCollection Values => mValues ?? (mValues = new ValueCollection(this));
+		public ValueCollection Values => mValues ??= new ValueCollection(this);
 
 		/// <summary>
 		/// Gets or sets the value associated with the specified key.
@@ -394,7 +394,7 @@ namespace GriffinPlus.Lib.Collections
 				int i = GetBucket(hashCode);
 				Entry[] entries = mEntries;
 				uint collisionCount = 0;
-				i--; // Value in mBuckets is 1-based; subtract 1 from i. We do it here so it fuses with the following conditional.
+				i--; // Value in mBuckets is 1-based; subtract 1 from 'i'. We do it here, so it fuses with the following conditional.
 				do
 				{
 					// Should be a while loop https://github.com/dotnet/runtime/issues/9422
@@ -478,7 +478,7 @@ namespace GriffinPlus.Lib.Collections
 					Interlocked.CompareExchange<object>(ref mSyncRoot, new object(), null);
 				}
 
-				return mSyncRoot;
+				return mSyncRoot!;
 			}
 		}
 
@@ -785,12 +785,12 @@ namespace GriffinPlus.Lib.Collections
 		/// <summary>
 		/// Gets a collection containing the keys in the dictionary.
 		/// </summary>
-		ICollection<Type> IDictionary<Type, TValue>.Keys => mKeys ?? (mKeys = new KeyCollection(this));
+		ICollection<Type> IDictionary<Type, TValue>.Keys => mKeys ??= new KeyCollection(this);
 
 		/// <summary>
 		/// Gets a collection containing the values in the dictionary.
 		/// </summary>
-		ICollection<TValue> IDictionary<Type, TValue>.Values => mValues ?? (mValues = new ValueCollection(this));
+		ICollection<TValue> IDictionary<Type, TValue>.Values => mValues ??= new ValueCollection(this);
 
 		#endregion
 
@@ -799,12 +799,12 @@ namespace GriffinPlus.Lib.Collections
 		/// <summary>
 		/// Gets a collection containing the keys in the dictionary.
 		/// </summary>
-		IEnumerable<Type> IReadOnlyDictionary<Type, TValue>.Keys => mKeys ?? (mKeys = new KeyCollection(this));
+		IEnumerable<Type> IReadOnlyDictionary<Type, TValue>.Keys => mKeys ??= new KeyCollection(this);
 
 		/// <summary>
 		/// Gets a collection containing the values in the dictionary.
 		/// </summary>
-		IEnumerable<TValue> IReadOnlyDictionary<Type, TValue>.Values => mValues ?? (mValues = new ValueCollection(this));
+		IEnumerable<TValue> IReadOnlyDictionary<Type, TValue>.Values => mValues ??= new ValueCollection(this);
 
 		#endregion
 

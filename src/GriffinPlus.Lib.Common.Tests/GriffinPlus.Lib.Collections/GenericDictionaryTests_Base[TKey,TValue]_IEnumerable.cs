@@ -55,12 +55,13 @@ namespace GriffinPlus.Lib.Collections
 
 			// the enumerator should point to the position after the last valid element now,
 			// but the 'Current' property should not throw an exception
+			// ReSharper disable once AssignmentInsteadOfDiscard
 			// ReSharper disable once RedundantAssignment
 			_ = enumerator.Current;
 
 			// reset the enumerator and try again
 			enumerator.Reset();
-			enumerated = new List<KeyValuePair<TKey, TValue>>();
+			enumerated = [];
 			while (enumerator.MoveNext())
 			{
 				Assert.IsType<KeyValuePair<TKey, TValue>>(enumerator.Current);
@@ -80,6 +81,9 @@ namespace GriffinPlus.Lib.Collections
 			dict[KeyNotInTestData] = ValueNotInTestData;
 			Assert.Throws<InvalidOperationException>(() => enumerator.Reset());
 			Assert.Throws<InvalidOperationException>(() => enumerator.MoveNext());
+
+			// dispose enumerator
+			(enumerator as IDisposable)!.Dispose();
 		}
 
 		#endregion

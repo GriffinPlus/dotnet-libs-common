@@ -252,22 +252,13 @@ namespace GriffinPlus.Lib.Threading
 			return Lock(CancellationToken.None);
 		}
 
-		// ReSharper disable UnusedMember.Local
 		[DebuggerNonUserCode]
-		private sealed class DebugView
+		private sealed class DebugView(AsyncSemaphore semaphore)
 		{
-			private readonly AsyncSemaphore mSemaphore;
-
-			public DebugView(AsyncSemaphore semaphore)
-			{
-				mSemaphore = semaphore;
-			}
-
-			public int                     Id           => mSemaphore.Id;
-			public long                    CurrentCount => mSemaphore.mCount;
-			public IAsyncWaitQueue<object> WaitQueue    => mSemaphore.mQueue;
+			public int                     Id           => semaphore.Id;
+			public long                    CurrentCount => semaphore.mCount;
+			public IAsyncWaitQueue<object> WaitQueue    => semaphore.mQueue;
 		}
-		// ReSharper restore UnusedMember.Local
 	}
 
 }

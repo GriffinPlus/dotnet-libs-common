@@ -25,7 +25,7 @@ namespace GriffinPlus.Lib.Collections
 		/// effectively providing a read-only wrapper for the list.
 		/// </summary>
 		/// <param name="list">
-		/// List to wrap (must not change afterwards as the <see cref="PartialList"/> directly refers to this list).
+		/// List to wrap (must not change afterward as the <see cref="PartialList"/> directly refers to this list).
 		/// </param>
 		/// <exception cref="ArgumentNullException">The <paramref name="list"/> is <c>null.</c></exception>
 		public PartialList(IList list)
@@ -40,7 +40,7 @@ namespace GriffinPlus.Lib.Collections
 		/// with the specified number of items starting at the specified index.
 		/// </summary>
 		/// <param name="list">
-		/// List to wrap (must not change afterwards as the <see cref="PartialList"/> directly refers to this list).
+		/// List to wrap (must not change afterward as the <see cref="PartialList"/> directly refers to this list).
 		/// </param>
 		/// <param name="offset">Index in the list to start at.</param>
 		/// <param name="count">Number of items the subset should contain.</param>
@@ -294,18 +294,11 @@ namespace GriffinPlus.Lib.Collections
 		#region Debug View
 
 		[DebuggerNonUserCode]
-		internal sealed class DebugView
+		internal sealed class DebugView(PartialList list)
 		{
-			private readonly PartialList mList;
-
-			public DebugView(PartialList list)
-			{
-				mList = list;
-			}
-
 			[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
 			// ReSharper disable once UnusedMember.Local
-			public object[] Items => mList.ToArray();
+			public object[] Items => list.ToArray();
 		}
 
 		#endregion

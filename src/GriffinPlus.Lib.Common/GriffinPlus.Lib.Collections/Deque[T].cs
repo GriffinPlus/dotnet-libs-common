@@ -929,18 +929,11 @@ namespace GriffinPlus.Lib.Collections
 		}
 
 		[DebuggerNonUserCode]
-		private sealed class DebugView
+		private sealed class DebugView(Deque<T> deque)
 		{
-			private readonly Deque<T> mDeque;
-
-			public DebugView(Deque<T> deque)
-			{
-				mDeque = deque;
-			}
-
 			[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
 			// ReSharper disable once UnusedMember.Local
-			public T[] Items => mDeque.ToArray();
+			public T[] Items => deque.ToArray();
 		}
 	}
 

@@ -24,7 +24,7 @@ namespace GriffinPlus.Lib
 			{
 				foreach (long size in new[] { 0, 1, 4096 })
 				{
-					yield return new object[] { size };
+					yield return [size];
 				}
 			}
 		}
@@ -102,7 +102,7 @@ namespace GriffinPlus.Lib
 				foreach (long size in new[] { 0, 1, 4096 })
 				foreach (long alignment in new[] { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096 })
 				{
-					yield return new object[] { size, alignment };
+					yield return [size, alignment];
 				}
 			}
 		}
@@ -216,7 +216,7 @@ namespace GriffinPlus.Lib
 					         2 * Environment.SystemPageSize + 1
 				         })
 				{
-					yield return new object[] { size };
+					yield return [size];
 				}
 			}
 		}
@@ -294,8 +294,8 @@ namespace GriffinPlus.Lib
 			{
 				foreach (bool ownsBuffer in new[] { false, true })
 				{
-					yield return new object[] { new IntPtr(1), 0, ownsBuffer };
-					yield return new object[] { new IntPtr(1), 1, ownsBuffer };
+					yield return [new IntPtr(1), 0, ownsBuffer];
+					yield return [new IntPtr(1), 1, ownsBuffer];
 				}
 			}
 		}
@@ -360,7 +360,7 @@ namespace GriffinPlus.Lib
 		public void FromPointer_AddressIsNull()
 		{
 			void FreeCallback(NativeBuffer buf) { }
-			ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPointer(IntPtr.Zero, 1, true, FreeCallback));
+			var exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPointer(IntPtr.Zero, 1, true, FreeCallback));
 			Assert.Equal("address", exception.ParamName);
 		}
 
@@ -368,7 +368,7 @@ namespace GriffinPlus.Lib
 		public void FromPointer_SizeIsNegative()
 		{
 			void FreeCallback(NativeBuffer buf) { }
-			ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPointer(new IntPtr(1), -1, true, FreeCallback));
+			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPointer(new IntPtr(1), -1, true, FreeCallback));
 			Assert.Equal("size", exception.ParamName);
 		}
 
@@ -379,7 +379,7 @@ namespace GriffinPlus.Lib
 			if (IntPtr.Size == 4)
 			{
 				void FreeCallback(NativeBuffer buf) { }
-				ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPointer(new IntPtr(1), (long)int.MaxValue + 1, true, FreeCallback));
+				var exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPointer(new IntPtr(1), (long)int.MaxValue + 1, true, FreeCallback));
 				Assert.Equal("size", exception.ParamName);
 			}
 		}
@@ -387,7 +387,7 @@ namespace GriffinPlus.Lib
 		[Fact]
 		public void FromPointer_FreeCallbackIsNull()
 		{
-			ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPointer(new IntPtr(1), 1, true, null));
+			var exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPointer(new IntPtr(1), 1, true, null));
 			Assert.Equal("freeCallback", exception.ParamName);
 		}
 
@@ -401,8 +401,8 @@ namespace GriffinPlus.Lib
 			{
 				foreach (bool ownsBuffer in new[] { false, true })
 				{
-					yield return new object[] { new DisposableBufferMock(1), ownsBuffer };
-					yield return new object[] { new DisposableBufferMock(1), ownsBuffer };
+					yield return [new DisposableBufferMock(1), ownsBuffer];
+					yield return [new DisposableBufferMock(1), ownsBuffer];
 				}
 			}
 		}
@@ -455,7 +455,7 @@ namespace GriffinPlus.Lib
 		public void FromPreAllocatedBuffer_BufferIsNull()
 		{
 			var disposableBuffer = new DisposableBufferMock(1);
-			ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPreAllocatedBuffer(null, disposableBuffer.Address, disposableBuffer.Size, true));
+			var exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPreAllocatedBuffer(null, disposableBuffer.Address, disposableBuffer.Size, true));
 			Assert.Equal("buffer", exception.ParamName);
 		}
 
@@ -463,7 +463,7 @@ namespace GriffinPlus.Lib
 		public void FromPreAllocatedBuffer_AddressIsNull()
 		{
 			var disposableBuffer = new DisposableBufferMock(1);
-			ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPreAllocatedBuffer(disposableBuffer, IntPtr.Zero, disposableBuffer.Size, true));
+			var exception = Assert.Throws<ArgumentNullException>(() => NativeBuffer.FromPreAllocatedBuffer(disposableBuffer, IntPtr.Zero, disposableBuffer.Size, true));
 			Assert.Equal("address", exception.ParamName);
 		}
 
@@ -471,7 +471,7 @@ namespace GriffinPlus.Lib
 		public void FromPreAllocatedBuffer_SizeIsNegative()
 		{
 			var disposableBuffer = new DisposableBufferMock(1);
-			ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPreAllocatedBuffer(disposableBuffer, disposableBuffer.Address, -1, true));
+			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPreAllocatedBuffer(disposableBuffer, disposableBuffer.Address, -1, true));
 			Assert.Equal("size", exception.ParamName);
 		}
 
@@ -482,7 +482,7 @@ namespace GriffinPlus.Lib
 			if (IntPtr.Size == 4)
 			{
 				var disposableBuffer = new DisposableBufferMock(1);
-				ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPreAllocatedBuffer(disposableBuffer, disposableBuffer.Address, (long)int.MaxValue + 1, true));
+				var exception = Assert.Throws<ArgumentOutOfRangeException>(() => NativeBuffer.FromPreAllocatedBuffer(disposableBuffer, disposableBuffer.Address, (long)int.MaxValue + 1, true));
 				Assert.Equal("size", exception.ParamName);
 			}
 		}
@@ -500,15 +500,13 @@ namespace GriffinPlus.Lib
 		[InlineData(1)]
 		public unsafe void AsSpan(long size)
 		{
-			using (var buffer = NativeBuffer.Create(size))
-			{
-				Span<byte> span = buffer.AsSpan();
+			using var buffer = NativeBuffer.Create(size);
+			Span<byte> span = buffer.AsSpan();
 
-				fixed (byte* p = span)
-				{
-					Assert.Equal(size == 0 ? IntPtr.Zero : buffer.UnsafeAddress, new IntPtr(p));
-					Assert.Equal(size, span.Length);
-				}
+			fixed (byte* p = span)
+			{
+				Assert.Equal(size == 0 ? IntPtr.Zero : buffer.UnsafeAddress, new IntPtr(p));
+				Assert.Equal(size, span.Length);
 			}
 		}
 
@@ -521,14 +519,12 @@ namespace GriffinPlus.Lib
 		{
 			// initialize a fake buffer to check whether the buffer size is checked properly
 			// (no problem as the buffer is neither read nor written)
-			using (NativeBuffer buffer = NativeBuffer.FromPointer(
-				       new IntPtr(0x12345678),
-				       (long)int.MaxValue + 1,
-				       false,
-				       _ => { }))
-			{
-				Assert.Throws<NotSupportedException>(() => buffer.AsSpan());
-			}
+			using NativeBuffer buffer = NativeBuffer.FromPointer(
+				new IntPtr(0x12345678),
+				(long)int.MaxValue + 1,
+				false,
+				_ => { });
+			Assert.Throws<NotSupportedException>(() => buffer.AsSpan());
 		}
 
 		#endregion

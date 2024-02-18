@@ -16,8 +16,8 @@ namespace GriffinPlus.Lib
 	/// </summary>
 	public static class TypeDecomposer
 	{
-		private static volatile Dictionary<Type, DecomposedType> sCache = new Dictionary<Type, DecomposedType>(); // immutable, dictionary is exchanged atomically
-		private static readonly object                           sSync  = new object();
+		private static volatile Dictionary<Type, DecomposedType> sCache = new(); // immutable, dictionary is exchanged atomically
+		private static readonly object                           sSync  = new();
 
 		/// <summary>
 		/// Decomposes the specified type.

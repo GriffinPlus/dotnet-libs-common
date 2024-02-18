@@ -16,7 +16,7 @@ namespace GriffinPlus.Lib.Configuration
 {
 
 	/// <summary>
-	/// A persistence strategy that enables a <see cref="CascadedConfiguration"/> to persist its data in a XML file.
+	/// A persistence strategy that enables a <see cref="CascadedConfiguration"/> to persist its data in an XML file.
 	/// </summary>
 	public class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrategy
 	{
@@ -220,7 +220,7 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			if (type.IsArray && type.GetArrayRank() == 1)
 			{
-				// an hash value is stored using nested 'Item' elements
+				// a hash value is stored using nested 'Item' elements
 				Type elementType = type.GetElementType();
 				XmlNodeList nodeList = element.SelectNodes("Item");
 				Debug.Assert(elementType != null, nameof(elementType) + " != null");
@@ -406,12 +406,12 @@ namespace GriffinPlus.Lib.Configuration
 		{
 			if (type.IsArray && type.GetArrayRank() == 1)
 			{
-				// an hash value is stored using nested 'Item' elements
+				// a hash value is stored using nested 'Item' elements
 				Type elementType = type.GetElementType();
-				var array = value as Array;
+				var array = (Array)value;
 				XmlElement arrayElement = SetItem(parent, itemName, null);
 
-				// remove all old xml elements representing an hash element
+				// remove all old xml elements representing a hash element
 				Debug.Assert(arrayElement != null, nameof(arrayElement) + " != null");
 				foreach (XmlNode node in arrayElement.SelectNodes("Item"))
 				{

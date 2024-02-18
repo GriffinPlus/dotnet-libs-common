@@ -41,7 +41,7 @@ namespace GriffinPlus.Lib.Disposables
 		[Fact]
 		public void ConstructedWithContext_DisposeReceivesThatContext()
 		{
-			object providedContext = new object();
+			object providedContext = new();
 			object seenContext = null;
 			var disposable = new DelegateSingleDisposable<object>(providedContext, context => { seenContext = context; });
 			disposable.Dispose();
@@ -80,20 +80,12 @@ namespace GriffinPlus.Lib.Disposables
 			await task1;
 		}
 
-		private sealed class DelegateSingleDisposable<T> : SingleNonBlockingDisposable<T>
+		private sealed class DelegateSingleDisposable<T>(T context, Action<T> callback) : SingleNonBlockingDisposable<T>(context)
 			where T : class
 		{
-			private readonly Action<T> mCallback;
-
-			public DelegateSingleDisposable(T context, Action<T> callback)
-				: base(context)
-			{
-				mCallback = callback;
-			}
-
 			protected override void Dispose(T context)
 			{
-				mCallback(context);
+				callback(context);
 			}
 		}
 	}

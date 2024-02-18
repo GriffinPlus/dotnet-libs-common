@@ -4,6 +4,7 @@
 	<s:String x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=727E58525FC10D448E40ED2D0C4304C4/RelativePath/@EntryValue">..\build.vs\ReSharper.DotSettings</s:String>
 	<s:Boolean x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=File727E58525FC10D448E40ED2D0C4304C4/@KeyIndexDefined">True</s:Boolean>
 	<s:Double x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=File727E58525FC10D448E40ED2D0C4304C4/RelativePriority/@EntryValue">1</s:Double>
+	<s:Boolean x:Key="/Default/GrammarAndSpelling/GrammarChecking/Exceptions/=an_0020enumerable_0020of/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=abcde/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=ABGR/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=accu/@EntryIndexedValue">True</s:Boolean>
@@ -36,7 +37,6 @@
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=gibibytes/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Giga/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=grayscale/@EntryIndexedValue">True</s:Boolean>
-	
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=hashers/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=ints/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Kibi/@EntryIndexedValue">True</s:Boolean>

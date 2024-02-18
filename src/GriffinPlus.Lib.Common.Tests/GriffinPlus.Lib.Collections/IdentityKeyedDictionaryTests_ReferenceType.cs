@@ -12,6 +12,7 @@ namespace GriffinPlus.Lib.Collections
 	/// <summary>
 	/// Unit tests targeting the <see cref="IdentityKeyedDictionary{TKey,TValue}"/> class (for reference types as value).
 	/// </summary>
+	// ReSharper disable once UnusedMember.Global
 	public class IdentityKeyedDictionaryTests_ReferenceType : IdentityKeyedDictionaryTests_Base<string>
 	{
 		/// <summary>

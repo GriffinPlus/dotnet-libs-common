@@ -125,7 +125,7 @@ namespace GriffinPlus.Lib.Threading
 		private void ReleaseWaitersWhenCanceled(Task task)
 		{
 			task.ContinueWith(
-				t =>
+				_ =>
 				{
 					lock (mMutex) { ReleaseWaiters(); }
 				},
@@ -378,24 +378,15 @@ namespace GriffinPlus.Lib.Threading
 			}
 		}
 
-		// ReSharper disable UnusedMember.Local
 		[DebuggerNonUserCode]
-		private sealed class DebugView
+		private sealed class DebugView(AsyncReaderWriterLock arwLock)
 		{
-			private readonly AsyncReaderWriterLock mArwLock;
-
-			public DebugView(AsyncReaderWriterLock arwLock)
-			{
-				mArwLock = arwLock;
-			}
-
-			public int                          Id              => mArwLock.Id;
-			public State                        State           => mArwLock.GetStateForDebugger;
-			public int                          ReaderCount     => mArwLock.GetReaderCountForDebugger;
-			public IAsyncWaitQueue<IDisposable> ReaderWaitQueue => mArwLock.mReaderQueue;
-			public IAsyncWaitQueue<IDisposable> WriterWaitQueue => mArwLock.mWriterQueue;
+			public int                          Id              => arwLock.Id;
+			public State                        State           => arwLock.GetStateForDebugger;
+			public int                          ReaderCount     => arwLock.GetReaderCountForDebugger;
+			public IAsyncWaitQueue<IDisposable> ReaderWaitQueue => arwLock.mReaderQueue;
+			public IAsyncWaitQueue<IDisposable> WriterWaitQueue => arwLock.mWriterQueue;
 		}
-		// ReSharper restore UnusedMember.Local
 	}
 
 }

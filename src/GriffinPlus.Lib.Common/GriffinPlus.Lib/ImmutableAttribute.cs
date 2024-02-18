@@ -14,6 +14,6 @@ namespace GriffinPlus.Lib
 	/// The attribute is not inherited, so derived classes must be declared immutable as well, if appropriate.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
-	public sealed class ImmutableAttribute : Attribute { }
+	public sealed class ImmutableAttribute : Attribute;
 
 }

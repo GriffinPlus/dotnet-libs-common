@@ -109,7 +109,7 @@ namespace GriffinPlus.Lib.Collections
 			KeyValuePair<TKey, TValue>? last = null;
 			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
-				if (first == null) first = kvp;
+				first ??= kvp;
 				last = kvp;
 				Assert.True(dict.TryAdd(kvp.Key, kvp.Value));
 			}

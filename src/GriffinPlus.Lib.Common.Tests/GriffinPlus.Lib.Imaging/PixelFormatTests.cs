@@ -26,7 +26,7 @@ namespace GriffinPlus.Lib.Imaging
 			get
 			{
 				PixelFormat[] formats =
-				{
+				[
 					PixelFormats.Default,
 					PixelFormats.Indexed1,
 					PixelFormats.Indexed2,
@@ -53,11 +53,11 @@ namespace GriffinPlus.Lib.Imaging
 					PixelFormats.Prgba128Float,
 					PixelFormats.Rgb128Float,
 					PixelFormats.Cmyk32
-				};
+				];
 
 				foreach (PixelFormat format in formats)
 				{
-					yield return new object[] { format };
+					yield return [format];
 				}
 			}
 		}
@@ -70,7 +70,7 @@ namespace GriffinPlus.Lib.Imaging
 			get
 			{
 				PixelFormat[] formats =
-				{
+				[
 					//PixelFormats.Default,
 					//PixelFormats.Indexed1,
 					//PixelFormats.Indexed2,
@@ -97,17 +97,17 @@ namespace GriffinPlus.Lib.Imaging
 					//PixelFormats.Prgba128Float,
 					PixelFormats.Rgb128Float,
 					PixelFormats.Cmyk32
-				};
+				];
 
 				foreach (PixelFormat format1 in formats)
 				foreach (PixelFormat format2 in formats)
 				{
-					yield return new object[]
-					{
+					yield return
+					[
 						format1,
 						format2,
 						format1.FormatEnum == format2.FormatEnum
-					};
+					];
 				}
 			}
 		}

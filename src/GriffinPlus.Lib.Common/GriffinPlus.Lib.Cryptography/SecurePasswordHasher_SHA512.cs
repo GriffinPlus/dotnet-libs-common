@@ -37,61 +37,53 @@ namespace GriffinPlus.Lib.Cryptography
 		/// <inheritdoc/>
 		public override string Hash(string password, int iterations)
 		{
-			using (var sha512 = System.Security.Cryptography.SHA512.Create())
-			{
-				return Hash(
-					sha512,
-					AlgorithmName,
-					SaltSize,
-					HashSize,
-					password,
-					iterations);
-			}
+			using var sha512 = System.Security.Cryptography.SHA512.Create();
+			return Hash(
+				sha512,
+				AlgorithmName,
+				SaltSize,
+				HashSize,
+				password,
+				iterations);
 		}
 
 		/// <inheritdoc/>
 		public override string Hash(ReadOnlySpan<char> password, int iterations)
 		{
-			using (var sha512 = System.Security.Cryptography.SHA512.Create())
-			{
-				return Hash(
-					sha512,
-					AlgorithmName,
-					SaltSize,
-					HashSize,
-					password,
-					iterations);
-			}
+			using var sha512 = System.Security.Cryptography.SHA512.Create();
+			return Hash(
+				sha512,
+				AlgorithmName,
+				SaltSize,
+				HashSize,
+				password,
+				iterations);
 		}
 
 		/// <inheritdoc/>
 		public override bool Verify(string password, string passwordHash)
 		{
-			using (var sha512 = System.Security.Cryptography.SHA512.Create())
-			{
-				return Verify(
-					sha512,
-					AlgorithmName,
-					SaltSize,
-					HashSize,
-					password,
-					passwordHash);
-			}
+			using var sha512 = System.Security.Cryptography.SHA512.Create();
+			return Verify(
+				sha512,
+				AlgorithmName,
+				SaltSize,
+				HashSize,
+				password,
+				passwordHash);
 		}
 
 		/// <inheritdoc/>
 		public override bool Verify(ReadOnlySpan<char> password, ReadOnlySpan<char> passwordHash)
 		{
-			using (var sha512 = System.Security.Cryptography.SHA512.Create())
-			{
-				return Verify(
-					sha512,
-					AlgorithmName.AsSpan(),
-					SaltSize,
-					HashSize,
-					password,
-					passwordHash);
-			}
+			using var sha512 = System.Security.Cryptography.SHA512.Create();
+			return Verify(
+				sha512,
+				AlgorithmName.AsSpan(),
+				SaltSize,
+				HashSize,
+				password,
+				passwordHash);
 		}
 	}
 

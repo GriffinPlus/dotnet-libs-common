@@ -21,7 +21,7 @@ namespace GriffinPlus.Lib.Threading
 	{
 		#region RegisterSerializingContext()
 
-		private class TestSynchronizationContext1 : SynchronizationContext { }
+		private class TestSynchronizationContext1 : SynchronizationContext;
 
 		[Fact]
 		public void RegisterSerializingContext_GenericParameter()
@@ -32,7 +32,7 @@ namespace GriffinPlus.Lib.Threading
 			Assert.True(SynchronizationContextInfo.IsSerializingSynchronizationContext(context));
 		}
 
-		private class TestSynchronizationContext2 : SynchronizationContext { }
+		private class TestSynchronizationContext2 : SynchronizationContext;
 
 		[Fact]
 		public void RegisterSerializingContext_TypeParameter()
@@ -51,15 +51,15 @@ namespace GriffinPlus.Lib.Threading
 		{
 			get
 			{
-				yield return new object[]
-				{
+				yield return
+				[
 					new WindowsFormsSynchronizationContext()
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					new DispatcherSynchronizationContext()
-				};
+				];
 			}
 		}
 
@@ -74,10 +74,10 @@ namespace GriffinPlus.Lib.Threading
 		{
 			get
 			{
-				yield return new object[]
-				{
+				yield return
+				[
 					new SynchronizationContext()
-				};
+				];
 			}
 		}
 

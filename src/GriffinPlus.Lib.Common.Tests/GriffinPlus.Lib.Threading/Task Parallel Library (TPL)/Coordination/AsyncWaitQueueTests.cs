@@ -37,6 +37,8 @@ using Xunit;
 
 #pragma warning disable xUnit1031 // Do not use blocking task operations in test method
 
+// ReSharper disable MethodHasAsyncOverload
+
 namespace GriffinPlus.Lib.Threading
 {
 
@@ -91,7 +93,7 @@ namespace GriffinPlus.Lib.Threading
 		public void Dequeue_WithResult_SynchronouslyCompletesWithResult()
 		{
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
-			object result = new object();
+			object result = new();
 			Task<object> task = queue.Enqueue();
 			queue.Dequeue(result);
 			Assert.True(task.IsCompleted);
@@ -136,7 +138,7 @@ namespace GriffinPlus.Lib.Threading
 		public void DequeueAll_WithResult_CompletesAllTasksWithResult()
 		{
 			var queue = new DefaultAsyncWaitQueue<object>() as IAsyncWaitQueue<object>;
-			object result = new object();
+			object result = new();
 			Task<object> task1 = queue.Enqueue();
 			Task<object> task2 = queue.Enqueue();
 			queue.DequeueAll(result);

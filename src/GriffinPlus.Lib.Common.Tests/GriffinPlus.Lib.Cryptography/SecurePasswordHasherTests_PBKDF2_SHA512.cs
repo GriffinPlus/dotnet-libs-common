@@ -4,12 +4,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if NET48 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0 || NET8_0
+
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 using Xunit;
 
+// ReSharper disable InconsistentNaming
 // ReSharper disable StringLiteralTypo
 
 namespace GriffinPlus.Lib.Cryptography
@@ -39,7 +41,7 @@ namespace GriffinPlus.Lib.Cryptography
 		/// <summary>
 		/// Gets a regular expression matching a password hash emitted by the tested hasher.
 		/// </summary>
-		protected override Regex PasswordHashRegex { get; } = new Regex(@"^\$PBKDF2-SHA512\$(?<iterations>\d+)\$(?<hash>[a-zA-Z0-9+/=]{108})$", RegexOptions.Compiled);
+		protected override Regex PasswordHashRegex { get; } = new(@"^\$PBKDF2-SHA512\$(?<iterations>\d+)\$(?<hash>[a-zA-Z0-9+/=]{108})$", RegexOptions.Compiled);
 
 		#region Test Data
 
@@ -50,10 +52,10 @@ namespace GriffinPlus.Lib.Cryptography
 		{
 			get
 			{
-				yield return new object[] { "" };
-				yield return new object[] { "$" };
-				yield return new object[] { "$PBKDF2-SHA512$" };
-				yield return new object[] { "$PBKDF2-SHA512$10000" };
+				yield return [""];
+				yield return ["$"];
+				yield return ["$PBKDF2-SHA512$"];
+				yield return ["$PBKDF2-SHA512$10000"];
 			}
 		}
 
@@ -62,7 +64,7 @@ namespace GriffinPlus.Lib.Cryptography
 		/// </summary>
 		public static IEnumerable<object[]> TestData_Verify_AlgorithmNotSupported
 		{
-			get { yield return new object[] { "$XXX$10000$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" }; }
+			get { yield return ["$XXX$10000$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="]; }
 		}
 
 		/// <summary>
@@ -70,7 +72,7 @@ namespace GriffinPlus.Lib.Cryptography
 		/// </summary>
 		public static IEnumerable<object[]> TestData_Verify_InvalidIterationCount
 		{
-			get { yield return new object[] { "$PBKDF2-SHA512$x$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" }; }
+			get { yield return ["$PBKDF2-SHA512$x$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="]; }
 		}
 
 		/// <summary>
@@ -80,8 +82,8 @@ namespace GriffinPlus.Lib.Cryptography
 		{
 			get
 			{
-				yield return new object[] { "$PBKDF2-SHA512$10000$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==" };
-				yield return new object[] { "$PBKDF2-SHA512$10000$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" };
+				yield return ["$PBKDF2-SHA512$10000$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="];
+				yield return ["$PBKDF2-SHA512$10000$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"];
 			}
 		}
 
@@ -90,7 +92,7 @@ namespace GriffinPlus.Lib.Cryptography
 		/// </summary>
 		public static IEnumerable<object[]> TestData_Verify_ImproperEncodedSaltedHash
 		{
-			get { yield return new object[] { "$PBKDF2-SHA512$10000$============================================================================================================" }; }
+			get { yield return ["$PBKDF2-SHA512$10000$============================================================================================================"]; }
 		}
 
 		#endregion
@@ -99,7 +101,7 @@ namespace GriffinPlus.Lib.Cryptography
 
 		/// <summary>
 		/// Tests the <see cref="SecurePasswordHasher_PBKDF2_SHA512.Verify(string,string)"/> method.
-		/// The method should throw a <see cref="FormatException"/> if the password hash contains too less fields.
+		/// The method should throw a <see cref="FormatException"/> if the password hash contains too few fields.
 		/// </summary>
 		[Theory]
 		[MemberData(nameof(TestData_Verify_TooLessFields))]
@@ -158,7 +160,7 @@ namespace GriffinPlus.Lib.Cryptography
 
 		/// <summary>
 		/// Tests the <see cref="SecurePasswordHasher_PBKDF2_SHA512.Verify(ReadOnlySpan{char},ReadOnlySpan{char})"/> method.
-		/// The method should throw a <see cref="FormatException"/> if the password hash contains too less fields.
+		/// The method should throw a <see cref="FormatException"/> if the password hash contains too few fields.
 		/// </summary>
 		[Theory]
 		[MemberData(nameof(TestData_Verify_TooLessFields))]

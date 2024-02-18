@@ -56,7 +56,7 @@ namespace GriffinPlus.Lib.Threading
 			}
 
 			/// <summary>
-			/// Generates an enumerable of <see cref="System.Threading.Tasks.Task"/> instances currently queued to the
+			/// Generates an enumerable of <see cref="Task"/> instances currently queued to the
 			/// scheduler waiting to be executed.
 			/// </summary>
 			/// <returns>An enumerable that allows traversal of tasks currently queued to this scheduler.</returns>
@@ -67,7 +67,7 @@ namespace GriffinPlus.Lib.Threading
 			}
 
 			/// <summary>
-			/// Queues a <see cref="System.Threading.Tasks.Task"/> to the scheduler.
+			/// Queues a <see cref="Task"/> to the scheduler.
 			/// If all tasks have been completed and the outstanding asynchronous operation count is zero, then this method has undefined behavior.
 			/// </summary>
 			/// <param name="task">The <see cref="System.Threading.Tasks.Task"/> to be queued.</param>
@@ -95,7 +95,7 @@ namespace GriffinPlus.Lib.Threading
 			}
 
 			/// <summary>
-			/// Gets the maximum maximum concurrency level this <see cref="System.Threading.Tasks.TaskScheduler"/> is able to support.
+			/// Gets the maximum concurrency level this <see cref="TaskScheduler"/> is able to support.
 			/// </summary>
 			public override int MaximumConcurrencyLevel => 1;
 

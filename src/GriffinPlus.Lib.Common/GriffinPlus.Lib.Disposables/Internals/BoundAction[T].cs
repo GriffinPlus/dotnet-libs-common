@@ -97,22 +97,13 @@ namespace GriffinPlus.Lib.Disposables.Internal
 			void Invoke();
 		}
 
-		private sealed class BoundAction : IBoundAction
+		private sealed class BoundAction(Action<T> action, T context) : IBoundAction
 		{
-			private readonly Action<T> mAction;
-			private readonly T         mContext;
+			private readonly Action<T> mAction  = action;
+			private readonly T         mContext = context;
 
-			public BoundAction(Action<T> action, T context)
-			{
-				mAction = action;
-				mContext = context;
-			}
-
-			public BoundAction(BoundAction originalBoundAction, Func<T, T> contextUpdater)
-			{
-				mAction = originalBoundAction.mAction;
-				mContext = contextUpdater(originalBoundAction.mContext);
-			}
+			public BoundAction(BoundAction originalBoundAction, Func<T, T> contextUpdater) :
+				this(originalBoundAction.mAction, contextUpdater(originalBoundAction.mContext)) { }
 
 			public void Invoke()
 			{

@@ -11,7 +11,7 @@ namespace GriffinPlus.Lib.Caching
 	/// <summary>
 	/// An item in an <see cref="IObjectCache"/>.
 	/// </summary>
-	/// <typeparam name="T">Type of object stored in the item (may also be the type of a base type).</typeparam>
+	/// <typeparam name="T">Type of object stored in the item (it may also be a base type).</typeparam>
 	public interface IObjectCacheItem<T> : IObjectCacheItem where T : class
 	{
 		/// <summary>

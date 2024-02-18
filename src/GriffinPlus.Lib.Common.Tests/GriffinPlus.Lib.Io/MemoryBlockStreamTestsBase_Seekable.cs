@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 
 using Xunit;
 
+// ReSharper disable UseAwaitUsing
+
 namespace GriffinPlus.Lib.Io
 {
 
@@ -58,49 +60,45 @@ namespace GriffinPlus.Lib.Io
 		public void SetLength(int oldLength, int newLength, int initialPosition)
 		{
 			// create a new stream
-			using (MemoryBlockStream stream = CreateStreamToTest())
+			using MemoryBlockStream stream = CreateStreamToTest();
+			// populate the stream with some initial data, if necessary
+			var expectedData = new List<byte>();
+			if (oldLength > 0)
 			{
-				// populate the stream with some initial data, if necessary
-				var expectedData = new List<byte>();
-				if (oldLength > 0)
-				{
-					// generate some test data and attach it to the stream
-					ChainableMemoryBlock chain = GetRandomTestDataChain(oldLength, StreamMemoryBlockSize, out expectedData);
-					stream.AttachBuffer(chain);
-				}
+				// generate some test data and attach it to the stream
+				ChainableMemoryBlock chain = GetRandomTestDataChain(oldLength, StreamMemoryBlockSize, out expectedData);
+				stream.AttachBuffer(chain);
+			}
 
-				// seek stream to the initial position
-				stream.Position = initialPosition;
-				Assert.Equal(initialPosition, stream.Position);
+			// seek stream to the initial position
+			stream.Position = initialPosition;
+			Assert.Equal(initialPosition, stream.Position);
 
-				// set new length
-				stream.SetLength(newLength);
+			// set new length
+			stream.SetLength(newLength);
 
-				// the stream should reflect the new length now
-				Assert.Equal(newLength, stream.Length);
+			// the stream should reflect the new length now
+			Assert.Equal(newLength, stream.Length);
 
-				// the position should have changed only, if it would have been outside the stream bounds now
-				long expectedPosition = Math.Min(initialPosition, newLength);
-				Assert.Equal(expectedPosition, stream.Position);
+			// the position should have changed only, if it had been outside the stream bounds now
+			long expectedPosition = Math.Min(initialPosition, newLength);
+			Assert.Equal(expectedPosition, stream.Position);
 
-				// adjust expected data
-				// (shrink buffer, if the stream gets shorter, add zero bytes, if the stream gets longer)
-				if (newLength < oldLength) expectedData.RemoveRange(newLength, expectedData.Count - newLength);
-				else expectedData.AddRange(Enumerable.Repeat((byte)0, newLength - oldLength));
+			// adjust expected data
+			// (shrink buffer, if the stream gets shorter, add zero bytes, if the stream gets longer)
+			if (newLength < oldLength) expectedData.RemoveRange(newLength, expectedData.Count - newLength);
+			else expectedData.AddRange(Enumerable.Repeat((byte)0, newLength - oldLength));
 
-				// detach the underlying buffer and check its state
-				using (ChainableMemoryBlock firstBlock = stream.DetachBuffer())
-				{
-					if (newLength > 0)
-					{
-						byte[] buffer = firstBlock.GetChainData();
-						Assert.Equal(expectedData, buffer);
-					}
-					else
-					{
-						Assert.Null(firstBlock);
-					}
-				}
+			// detach the underlying buffer and check its state
+			using ChainableMemoryBlock firstBlock = stream.DetachBuffer();
+			if (newLength > 0)
+			{
+				byte[] buffer = firstBlock.GetChainData();
+				Assert.Equal(expectedData, buffer);
+			}
+			else
+			{
+				Assert.Null(firstBlock);
 			}
 		}
 
@@ -189,7 +187,7 @@ namespace GriffinPlus.Lib.Io
 				// enumerate the collected test data records
 				foreach (Tuple<int, int, SeekOrigin, int, int> record in records)
 				{
-					yield return new object[] { record.Item1, record.Item2, record.Item3, record.Item4, record.Item5 };
+					yield return [record.Item1, record.Item2, record.Item3, record.Item4, record.Item5];
 				}
 			}
 		}
@@ -207,25 +205,23 @@ namespace GriffinPlus.Lib.Io
 			int        expectedPosition)
 		{
 			// create a new stream
-			using (MemoryBlockStream stream = CreateStreamToTest())
-			{
-				// generate some test data and attach it to the stream
-				ChainableMemoryBlock chain = GetRandomTestDataChain(initialLength, StreamMemoryBlockSize, out List<byte> expectedData);
-				stream.AttachBuffer(chain);
+			using MemoryBlockStream stream = CreateStreamToTest();
+			// generate some test data and attach it to the stream
+			ChainableMemoryBlock chain = GetRandomTestDataChain(initialLength, StreamMemoryBlockSize, out List<byte> expectedData);
+			stream.AttachBuffer(chain);
 
-				// change position (already involves seeking)
-				stream.Position = initialPosition;
-				Assert.Equal(initialPosition, stream.Position);
+			// change position (already involves seeking)
+			stream.Position = initialPosition;
+			Assert.Equal(initialPosition, stream.Position);
 
-				// seek to the specified position
-				stream.Seek(seekOffset, seekOrigin);
+			// seek to the specified position
+			stream.Seek(seekOffset, seekOrigin);
 
-				// the position of the stream should now be as expected
-				Assert.Equal(expectedPosition, stream.Position);
+			// the position of the stream should now be as expected
+			Assert.Equal(expectedPosition, stream.Position);
 
-				// the length should not have been changed
-				Assert.Equal(expectedData.Count, stream.Length);
-			}
+			// the length should not have been changed
+			Assert.Equal(expectedData.Count, stream.Length);
 		}
 
 		#endregion
@@ -246,40 +242,40 @@ namespace GriffinPlus.Lib.Io
 				foreach (int initialLength in new[] { 0, 1, 500, 999, 1000, 1001, 1500, 1999, 2000, 2001, 2500, 2999, 3000, 3001, 3500, 3999, 4000 })
 				{
 					// inject at the beginning of the stream
-					yield return new object[]
-					{
+					yield return
+					[
 						streamBlockSize,
 						initialLength,
 						0,
 						blocksToInsertCount,
 						blocksToInsertSize
-					};
+					];
 
 					// inject in the middle of the stream
 					if (initialLength > 2)
 					{
-						yield return new object[]
-						{
+						yield return
+						[
 							streamBlockSize,
 							initialLength,
 							initialLength / 2,
 							blocksToInsertCount,
 							blocksToInsertSize
-						};
+						];
 					}
 
 					// inject at the end of the stream
-					// (may be in the middle of the last block, so the injected block fits into the remaining space of the block)
+					// (it may be in the middle of the last block, so the injected block fits into the remaining space of the block)
 					if (initialLength > 1)
 					{
-						yield return new object[]
-						{
+						yield return
+						[
 							streamBlockSize,
 							initialLength,
 							initialLength - 1,
 							blocksToInsertCount,
 							blocksToInsertSize
-						};
+						];
 					}
 				}
 			}
@@ -393,47 +389,43 @@ namespace GriffinPlus.Lib.Io
 			int  blockToInsertCount,
 			int  blockToInsertSize)
 		{
-			using (MemoryBlockStream stream = CreateStreamToTest(streamBlockSize))
-			{
-				// generate some test data and attach it to the stream
-				ChainableMemoryBlock chain = GetRandomTestDataChain(initialLength, streamBlockSize, out List<byte> initialStreamData);
-				stream.AttachBuffer(chain);
+			using MemoryBlockStream stream = CreateStreamToTest(streamBlockSize);
+			// generate some test data and attach it to the stream
+			ChainableMemoryBlock chain = GetRandomTestDataChain(initialLength, streamBlockSize, out List<byte> initialStreamData);
+			stream.AttachBuffer(chain);
 
-				// set position of the stream to inject the blocks into
-				stream.Position = position;
+			// set position of the stream to inject the blocks into
+			stream.Position = position;
 
-				// inject a chain of blocks into the existing chain of blocks backing the stream
-				ChainableMemoryBlock chainToInsert = GetRandomTestDataChain(blockToInsertCount * blockToInsertSize, blockToInsertSize, out List<byte> dataToInsert);
-				stream.InjectBufferAtCurrentPosition(
-					chainToInsert,
-					overwrite,
-					advancePosition);
+			// inject a chain of blocks into the existing chain of blocks backing the stream
+			ChainableMemoryBlock chainToInsert = GetRandomTestDataChain(blockToInsertCount * blockToInsertSize, blockToInsertSize, out List<byte> dataToInsert);
+			stream.InjectBufferAtCurrentPosition(
+				chainToInsert,
+				overwrite,
+				advancePosition);
 
-				// check whether the stream length reflects the change
-				long expectedLength = overwrite
-					                      ? Math.Max(initialStreamData.Count, position + dataToInsert.Count)
-					                      : initialStreamData.Count + dataToInsert.Count;
-				Assert.Equal(expectedLength, stream.Length);
+			// check whether the stream length reflects the change
+			long expectedLength = overwrite
+				                      ? Math.Max(initialStreamData.Count, position + dataToInsert.Count)
+				                      : initialStreamData.Count + dataToInsert.Count;
+			Assert.Equal(expectedLength, stream.Length);
 
-				// check whether the stream position has changed as expected
-				long expectedPosition = advancePosition
-					                        ? position + dataToInsert.Count
-					                        : position;
-				Assert.Equal(expectedPosition, stream.Position);
+			// check whether the stream position has changed as expected
+			long expectedPosition = advancePosition
+				                        ? position + dataToInsert.Count
+				                        : position;
+			Assert.Equal(expectedPosition, stream.Position);
 
-				// check whether the data in the stream has changed as expected
-				var expectedData = new List<byte>();
-				expectedData.AddRange(initialStreamData.Take(position));
-				expectedData.AddRange(dataToInsert);
-				expectedData.AddRange(initialStreamData.Skip(position));
-				if (overwrite) expectedData.RemoveRange(position + dataToInsert.Count, Math.Min(dataToInsert.Count, expectedData.Count - position - dataToInsert.Count));
-				using (ChainableMemoryBlock detachedBuffer = stream.DetachBuffer())
-				{
-					byte[] data = detachedBuffer.GetChainData();
-					Assert.Equal(expectedData.Count, data.Length);
-					Assert.Equal(expectedData, data);
-				}
-			}
+			// check whether the data in the stream has changed as expected
+			var expectedData = new List<byte>();
+			expectedData.AddRange(initialStreamData.Take(position));
+			expectedData.AddRange(dataToInsert);
+			expectedData.AddRange(initialStreamData.Skip(position));
+			if (overwrite) expectedData.RemoveRange(position + dataToInsert.Count, Math.Min(dataToInsert.Count, expectedData.Count - position - dataToInsert.Count));
+			using ChainableMemoryBlock detachedBuffer = stream.DetachBuffer();
+			byte[] data = detachedBuffer.GetChainData();
+			Assert.Equal(expectedData.Count, data.Length);
+			Assert.Equal(expectedData, data);
 		}
 
 		#endregion
@@ -548,49 +540,46 @@ namespace GriffinPlus.Lib.Io
 			int  blockToInsertCount,
 			int  blockToInsertSize)
 		{
-			using (MemoryBlockStream stream = CreateStreamToTest(streamBlockSize))
-			{
-				// generate some test data and attach it to the stream
-				ChainableMemoryBlock chain = GetRandomTestDataChain(initialLength, streamBlockSize, out List<byte> initialStreamData);
-				await stream.AttachBufferAsync(chain).ConfigureAwait(false);
+			using MemoryBlockStream stream = CreateStreamToTest(streamBlockSize);
 
-				// set position of the stream to inject the blocks into
-				stream.Position = position;
+			// generate some test data and attach it to the stream
+			ChainableMemoryBlock chain = GetRandomTestDataChain(initialLength, streamBlockSize, out List<byte> initialStreamData);
+			await stream.AttachBufferAsync(chain).ConfigureAwait(false);
 
-				// inject a chain of blocks into the existing chain of blocks backing the stream
-				ChainableMemoryBlock chainToInsert = GetRandomTestDataChain(blockToInsertCount * blockToInsertSize, blockToInsertSize, out List<byte> dataToInsert);
-				await stream.InjectBufferAtCurrentPositionAsync(
-						chainToInsert,
-						overwrite,
-						advancePosition,
-						CancellationToken.None)
-					.ConfigureAwait(false);
+			// set position of the stream to inject the blocks into
+			stream.Position = position;
 
-				// check whether the stream length reflects the change
-				long expectedLength = overwrite
-					                      ? Math.Max(initialStreamData.Count, position + dataToInsert.Count)
-					                      : initialStreamData.Count + dataToInsert.Count;
-				Assert.Equal(expectedLength, stream.Length);
+			// inject a chain of blocks into the existing chain of blocks backing the stream
+			ChainableMemoryBlock chainToInsert = GetRandomTestDataChain(blockToInsertCount * blockToInsertSize, blockToInsertSize, out List<byte> dataToInsert);
+			await stream.InjectBufferAtCurrentPositionAsync(
+					chainToInsert,
+					overwrite,
+					advancePosition,
+					CancellationToken.None)
+				.ConfigureAwait(false);
 
-				// check whether the stream position has changed as expected
-				long expectedPosition = advancePosition
-					                        ? position + dataToInsert.Count
-					                        : position;
-				Assert.Equal(expectedPosition, stream.Position);
+			// check whether the stream length reflects the change
+			long expectedLength = overwrite
+				                      ? Math.Max(initialStreamData.Count, position + dataToInsert.Count)
+				                      : initialStreamData.Count + dataToInsert.Count;
+			Assert.Equal(expectedLength, stream.Length);
 
-				// check whether the data in the stream has changed as expected
-				var expectedData = new List<byte>();
-				expectedData.AddRange(initialStreamData.Take(position));
-				expectedData.AddRange(dataToInsert);
-				expectedData.AddRange(initialStreamData.Skip(position));
-				if (overwrite) expectedData.RemoveRange(position + dataToInsert.Count, Math.Min(dataToInsert.Count, expectedData.Count - position - dataToInsert.Count));
-				using (ChainableMemoryBlock detachedBuffer = await stream.DetachBufferAsync(CancellationToken.None).ConfigureAwait(false))
-				{
-					byte[] data = detachedBuffer.GetChainData();
-					Assert.Equal(expectedData.Count, data.Length);
-					Assert.Equal(expectedData, data);
-				}
-			}
+			// check whether the stream position has changed as expected
+			long expectedPosition = advancePosition
+				                        ? position + dataToInsert.Count
+				                        : position;
+			Assert.Equal(expectedPosition, stream.Position);
+
+			// check whether the data in the stream has changed as expected
+			var expectedData = new List<byte>();
+			expectedData.AddRange(initialStreamData.Take(position));
+			expectedData.AddRange(dataToInsert);
+			expectedData.AddRange(initialStreamData.Skip(position));
+			if (overwrite) expectedData.RemoveRange(position + dataToInsert.Count, Math.Min(dataToInsert.Count, expectedData.Count - position - dataToInsert.Count));
+			using ChainableMemoryBlock detachedBuffer = await stream.DetachBufferAsync(CancellationToken.None).ConfigureAwait(false);
+			byte[] data = detachedBuffer.GetChainData();
+			Assert.Equal(expectedData.Count, data.Length);
+			Assert.Equal(expectedData, data);
 		}
 
 		#endregion

@@ -75,7 +75,7 @@ namespace GriffinPlus.Lib.Threading
 		public bool CanGrow => mCanGrow;
 
 		/// <summary>
-		/// Gets the number of items the stack accepts before it rejects pushing an item or before it resizes its
+		/// Gets the number of items the stack accepts before it rejects pushing an item, or before it resizes its
 		/// internal buffer (depending on the setting specified at construction time).
 		/// </summary>
 		public int FreeItemCount => Interlocked.CompareExchange(ref mFreeItemCount, 0, 0);
@@ -86,8 +86,8 @@ namespace GriffinPlus.Lib.Threading
 		public int UsedItemCount => Interlocked.CompareExchange(ref mUsedItemCount, 0, 0);
 
 		/// <summary>
-		/// Gets the total number of items that can be pushed onto the stack before the stack rejects pushing an item or
-		/// before it resizes its internal buffer (depending on the setting specified at construction time).
+		/// Gets the total number of items that can be pushed onto the stack before the stack rejects pushing an item,
+		/// or before it resizes its internal buffer (depending on the setting specified at construction time).
 		/// </summary>
 		public int Capacity => mCapacity;
 
@@ -257,10 +257,10 @@ namespace GriffinPlus.Lib.Threading
 		/// <summary>
 		/// Tries to pop an item from the stack.
 		/// </summary>
-		/// <param name="element">Receives the the popped element.</param>
+		/// <param name="element">Receives the popped element.</param>
 		/// <returns>
-		/// true, if the element was popped successfully;
-		/// false, if the stack is empty.
+		/// <c>true</c> if the element was popped successfully;<br/>
+		/// <c>false</c> if the stack is empty.
 		/// </returns>
 		public bool TryPop(out T element)
 		{
@@ -463,7 +463,7 @@ namespace GriffinPlus.Lib.Threading
 					{
 						item.NextItem = null;
 						Interlocked.Decrement(ref mFreeItemCount);
-						if (chainStart == null) chainStart = item;
+						chainStart ??= item;
 						if (chainEnd != null) chainEnd.NextItem = item;
 						chainEnd = item;
 						chainLength++;
@@ -496,7 +496,7 @@ namespace GriffinPlus.Lib.Threading
 
 					// create item
 					item = new Item { NextItem = null };
-					if (chainStart == null) chainStart = item;
+					chainStart ??= item;
 					if (chainEnd != null) chainEnd.NextItem = item;
 					chainEnd = item;
 					chainLength++;

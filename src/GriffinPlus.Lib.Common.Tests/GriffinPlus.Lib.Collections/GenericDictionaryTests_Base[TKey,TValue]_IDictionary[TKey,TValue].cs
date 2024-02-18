@@ -257,7 +257,7 @@ namespace GriffinPlus.Lib.Collections
 			KeyValuePair<TKey, TValue>? last = null;
 			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
-				if (first == null) first = kvp;
+				first ??= kvp;
 				last = kvp;
 				dict.Add(kvp.Key, kvp.Value);
 			}
@@ -529,7 +529,7 @@ namespace GriffinPlus.Lib.Collections
 			}
 
 			// the dictionary should now contain the expected key/value pairs
-			enumerated = new List<KeyValuePair<TKey, TValue>>();
+			enumerated = [];
 			foreach (KeyValuePair<TKey, TValue> kvp in dict) enumerated.Add(kvp);
 			Assert.Equal(
 				data.OrderBy(x => x.Key, KeyComparer),

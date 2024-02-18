@@ -47,7 +47,7 @@ namespace GriffinPlus.Lib.Disposables
 		/// <summary>
 		/// Gets the instance of <see cref="NoopDisposable"/>.
 		/// </summary>
-		public static NoopDisposable Instance { get; } = new NoopDisposable();
+		public static NoopDisposable Instance { get; } = new();
 	}
 
 }

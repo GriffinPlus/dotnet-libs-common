@@ -179,22 +179,13 @@ namespace GriffinPlus.Lib.Threading
 			}
 		}
 
-		// ReSharper disable UnusedMember.Local
 		[DebuggerNonUserCode]
-		private sealed class DebugView
+		private sealed class DebugView(AsyncAutoResetEvent are)
 		{
-			private readonly AsyncAutoResetEvent mAre;
-
-			public DebugView(AsyncAutoResetEvent are)
-			{
-				mAre = are;
-			}
-
-			public int                     Id        => mAre.Id;
-			public bool                    IsSet     => mAre.mSet;
-			public IAsyncWaitQueue<object> WaitQueue => mAre.mQueue;
+			public int                     Id        => are.Id;
+			public bool                    IsSet     => are.mSet;
+			public IAsyncWaitQueue<object> WaitQueue => are.mQueue;
 		}
-		// ReSharper restore UnusedMember.Local
 	}
 
 }

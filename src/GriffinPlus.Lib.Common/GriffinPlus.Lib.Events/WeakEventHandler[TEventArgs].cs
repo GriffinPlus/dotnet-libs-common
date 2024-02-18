@@ -30,7 +30,7 @@ namespace GriffinPlus.Lib.Events
 		/// <summary>
 		/// Stores dynamically created delegates (value) that invoke a certain event handler method (key).
 		/// </summary>
-		private static readonly Dictionary<MethodInfo, InvokeDelegate> sInvokeMethods = new Dictionary<MethodInfo, InvokeDelegate>();
+		private static readonly Dictionary<MethodInfo, InvokeDelegate> sInvokeMethods = new();
 
 		#endregion
 
@@ -58,11 +58,11 @@ namespace GriffinPlus.Lib.Events
 				if (!sInvokeMethods.TryGetValue(handler.Method, out Invoker))
 				{
 					ParameterExpression[] parameterExpressions =
-					{
+					[
 						Expression.Parameter(typeof(object), "target"),
 						Expression.Parameter(typeof(object), "sender"),
 						Expression.Parameter(typeof(TEventArgs), "e")
-					};
+					];
 
 					Debug.Assert(handler.Method.DeclaringType != null, "handler.Method.DeclaringType != null");
 

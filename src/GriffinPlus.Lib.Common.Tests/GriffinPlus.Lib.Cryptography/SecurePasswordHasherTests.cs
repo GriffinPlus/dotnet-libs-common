@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 
 using Xunit;
 
+// ReSharper disable InconsistentNaming
 // ReSharper disable StringLiteralTypo
 
 #pragma warning disable CS0618 // type or member is obsolete
@@ -30,15 +31,15 @@ namespace GriffinPlus.Lib.Cryptography
 		{
 			get
 			{
-				yield return new object[] { "My Password", "$SHA1$10000$KNBeaGa3wuHptKXLyw2HOPSSTlnGM1D78fAVW+bZnpV8dNCy" };
-				yield return new object[] { "My Password", "$SHA256$10000$fvnD9a3wElFc72ZVkqGd1tioUQ0eO+gyOvNDF0ZU1Bu26kevy+eCbqRTlMGBVcUG" };
-				yield return new object[] { "My Password", "$SHA384$10000$BfIJylwtOHwPAyv/vzbzbe47OVOBeYhKkiIdyrtyj1CRpjfhucoqej3ZOtcHqhlbrLPbEvQiuqZgKfJiK7cweg==" };
-				yield return new object[] { "My Password", "$SHA512$10000$KV8EtTGZFgVBkuNlWNpdooB2aH3hxPrAykH5dz6RB7/j19hP7iZaZQib0x22a3F8HaCrxDDqQvye7yj19vnkrxBQe2Lm6H83rKMCkiJQGBs=" };
-				yield return new object[] { "My Password", "$PBKDF2$10000$ADPaOpUuLQeR1ggvnraz11KDUY60FdzzNKdVp8/iGFxqlPpP" };
-				yield return new object[] { "My Password", "$PBKDF2-SHA1$10000$ADPaOpUuLQeR1ggvnraz11KDUY60FdzzNKdVp8/iGFxqlPpP" };
+				yield return ["My Password", "$SHA1$10000$KNBeaGa3wuHptKXLyw2HOPSSTlnGM1D78fAVW+bZnpV8dNCy"];
+				yield return ["My Password", "$SHA256$10000$fvnD9a3wElFc72ZVkqGd1tioUQ0eO+gyOvNDF0ZU1Bu26kevy+eCbqRTlMGBVcUG"];
+				yield return ["My Password", "$SHA384$10000$BfIJylwtOHwPAyv/vzbzbe47OVOBeYhKkiIdyrtyj1CRpjfhucoqej3ZOtcHqhlbrLPbEvQiuqZgKfJiK7cweg=="];
+				yield return ["My Password", "$SHA512$10000$KV8EtTGZFgVBkuNlWNpdooB2aH3hxPrAykH5dz6RB7/j19hP7iZaZQib0x22a3F8HaCrxDDqQvye7yj19vnkrxBQe2Lm6H83rKMCkiJQGBs="];
+				yield return ["My Password", "$PBKDF2$10000$ADPaOpUuLQeR1ggvnraz11KDUY60FdzzNKdVp8/iGFxqlPpP"];
+				yield return ["My Password", "$PBKDF2-SHA1$10000$ADPaOpUuLQeR1ggvnraz11KDUY60FdzzNKdVp8/iGFxqlPpP"];
 #if NET48 || NETCOREAPP3_1 || NET5_0 || NET6_0 || NET7_0 || NET8_0
-				yield return new object[] { "My Password", "$PBKDF2-SHA256$10000$pamnf76rg587ZF5AlAI9CG1pnsHg7kEI9eYTUlGSg/AAR9HDqQxNiweIiJCYmqNn" };
-				yield return new object[] { "My Password", "$PBKDF2-SHA512$10000$vCr1ArVabwFt6YNgl2LNMRfaGPrFb+yicQOuTEHnCjQvU84Xb/pvM3WLj1aexLNxeet+DsXyDDhLNyV/Te9JpddDop1be6J1Zrn3pyajizQ=" };
+				yield return ["My Password", "$PBKDF2-SHA256$10000$pamnf76rg587ZF5AlAI9CG1pnsHg7kEI9eYTUlGSg/AAR9HDqQxNiweIiJCYmqNn"];
+				yield return ["My Password", "$PBKDF2-SHA512$10000$vCr1ArVabwFt6YNgl2LNMRfaGPrFb+yicQOuTEHnCjQvU84Xb/pvM3WLj1aexLNxeet+DsXyDDhLNyV/Te9JpddDop1be6J1Zrn3pyajizQ="];
 #elif NET461 || NETCOREAPP2_2
 				// .NET Framework 4.6.1 uses the library built with explicit support for .NET Framework 4.6.1, so there is no support for PBKDF2 with SHA-256 and SHA-512.
 				// .NET Core 2.2  uses the library built for .NET Standard 2.0 which does not support PBKDF2 with SHA-256 and SHA-512.
@@ -54,7 +55,7 @@ namespace GriffinPlus.Lib.Cryptography
 		/// </summary>
 		public static IEnumerable<object[]> TestData_VerifyPassword_WrongHashFormat
 		{
-			get { yield return new object[] { "XXX" }; }
+			get { yield return ["XXX"]; }
 		}
 
 		/// <summary>
@@ -63,13 +64,13 @@ namespace GriffinPlus.Lib.Cryptography
 		/// </summary>
 		public static IEnumerable<object[]> TestData_VerifyPassword_AlgorithmNotSupported
 		{
-			get { yield return new object[] { "$UNKNOWN$10000$XXXXXXXXXXXXXXXXXXXX" }; }
+			get { yield return ["$UNKNOWN$10000$XXXXXXXXXXXXXXXXXXXX"]; }
 		}
 
 		/// <summary>
 		/// Regular expression matching all kinds of password hashes conforming to the pattern: '$&lt;algorithm&gt;$&lt;iterations&gt;$'
 		/// </summary>
-		private static readonly Regex sCommonHashRegex = new Regex(@"^\$(?<algorithm>[^\$]*)\$(?<iterations>[^\$]*)\$(?<hash>[^\$]*)", RegexOptions.Compiled);
+		private static readonly Regex sCommonHashRegex = new(@"^\$(?<algorithm>[^\$]*)\$(?<iterations>[^\$]*)\$(?<hash>[^\$]*)", RegexOptions.Compiled);
 
 		#endregion
 

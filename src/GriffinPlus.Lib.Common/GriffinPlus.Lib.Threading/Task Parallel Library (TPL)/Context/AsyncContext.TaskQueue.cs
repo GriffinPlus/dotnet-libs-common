@@ -67,7 +67,7 @@ namespace GriffinPlus.Lib.Threading
 			}
 
 			/// <summary>
-			/// Generates an enumerable of <see cref="System.Threading.Tasks.Task"/> instances currently queued to the
+			/// Generates an enumerable of <see cref="Task"/> instances currently queued to the
 			/// scheduler waiting to be executed.
 			/// </summary>
 			/// <returns>An enumerable that allows traversal of tasks currently queued to this scheduler.</returns>

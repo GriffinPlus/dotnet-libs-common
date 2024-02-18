@@ -19,7 +19,7 @@ namespace GriffinPlus.Lib
 		/// <summary>
 		/// Gets the <see cref="ReadOnlyListEqualityComparer{T}"/> instance.
 		/// </summary>
-		public static readonly ReadOnlyListEqualityComparer<T> Instance = new ReadOnlyListEqualityComparer<T>();
+		public static readonly ReadOnlyListEqualityComparer<T> Instance = new();
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ReadOnlyListEqualityComparer{T}"/> class using the default comparer of <typeparamref name="T"/>.
@@ -29,7 +29,7 @@ namespace GriffinPlus.Lib
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ReadOnlyListEqualityComparer{T}"/> class using the specified element comparer.
 		/// </summary>
-		/// <param name="comparer">Comparer to use for comparing elements (may be <c>null</c> to use the default comparer).</param>
+		/// <param name="comparer">Comparer to use for comparing elements (may also be <c>null</c> to use the default comparer).</param>
 		public ReadOnlyListEqualityComparer(IEqualityComparer<T> comparer)
 		{
 			mElementComparer = comparer ?? EqualityComparer<T>.Default;

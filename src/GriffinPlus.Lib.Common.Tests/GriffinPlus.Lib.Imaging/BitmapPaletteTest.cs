@@ -26,18 +26,18 @@ namespace GriffinPlus.Lib.Imaging
 		{
 			get
 			{
-				//yield return new object[] { BitmapPalettes.BlackAndWhite };
-				//yield return new object[] { BitmapPalettes.Halftone8 };
-				//yield return new object[] { BitmapPalettes.Halftone27 };
-				//yield return new object[] { BitmapPalettes.Halftone64 };
-				//yield return new object[] { BitmapPalettes.Halftone125 };
-				//yield return new object[] { BitmapPalettes.Halftone216 };
-				//yield return new object[] { BitmapPalettes.Halftone252 };
-				//yield return new object[] { BitmapPalettes.Halftone256 };
-				//yield return new object[] { BitmapPalettes.Gray4 };
-				//yield return new object[] { BitmapPalettes.Gray16 };
-				yield return new object[] { BitmapPalettes.Gray256 };
-				yield return new object[] { BitmapPalettes.WebPalette };
+				//yield return [BitmapPalettes.BlackAndWhite];
+				//yield return [BitmapPalettes.Halftone8];
+				//yield return [BitmapPalettes.Halftone27];
+				//yield return [BitmapPalettes.Halftone64];
+				//yield return [BitmapPalettes.Halftone125];
+				//yield return [BitmapPalettes.Halftone216];
+				//yield return [BitmapPalettes.Halftone252];
+				//yield return [BitmapPalettes.Halftone256];
+				//yield return [BitmapPalettes.Gray4];
+				//yield return [BitmapPalettes.Gray16];
+				yield return [BitmapPalettes.Gray256];
+				yield return [BitmapPalettes.WebPalette];
 			}
 		}
 
@@ -51,12 +51,12 @@ namespace GriffinPlus.Lib.Imaging
 				foreach (object palette1 in TestData_Palettes.Select(x => x[0]))
 				foreach (object palette2 in TestData_Palettes.Select(x => x[0]))
 				{
-					yield return new[]
-					{
+					yield return
+					[
 						palette1,
 						palette2,
 						ReferenceEquals(palette1, palette2)
-					};
+					];
 				}
 			}
 		}
@@ -75,9 +75,9 @@ namespace GriffinPlus.Lib.Imaging
 				}
 
 				BitmapPalette palette = BitmapPalettes.Gray256;
-				yield return new object[] { palette, null, false };
-				yield return new object[] { null, palette, false };
-				yield return new object[] { null, null, true };
+				yield return [palette, null, false];
+				yield return [null, palette, false];
+				yield return [null, null, true];
 			}
 		}
 
@@ -95,7 +95,7 @@ namespace GriffinPlus.Lib.Imaging
 				}
 
 				BitmapPalette palette = BitmapPalettes.Gray256;
-				yield return new object[] { palette, null, false };
+				yield return [palette, null, false];
 			}
 		}
 

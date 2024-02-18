@@ -95,7 +95,7 @@ namespace GriffinPlus.Lib.Events
 			regCount = WeakEventManager<EventManagerEventArgs>.UnregisterEventHandler(this, EventName, recipient.Handler);
 			Assert.Equal(0, regCount);
 
-			// check whether the handler is not registered any more
+			// check whether the handler is not registered anymore
 			Assert.False(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
 			Assert.False(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
 		}
@@ -162,7 +162,7 @@ namespace GriffinPlus.Lib.Events
 			regCount = WeakEventManager<EventManagerEventArgs>.UnregisterEventHandler(this, EventName, recipient.Handler);
 			Assert.Equal(0, regCount);
 
-			// check whether the handler is not registered any more
+			// check whether the handler is not registered anymore
 			Assert.False(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
 			Assert.False(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
 		}
@@ -536,7 +536,7 @@ namespace GriffinPlus.Lib.Events
 			WeakReference weakReferenceProvider = new Func<WeakReference>(
 				() =>
 				{
-					object provider = new object();
+					object provider = new();
 					int regCount = WeakEventManager<EventManagerEventArgs>.RegisterEventHandler(provider, EventName, recipient.Handler, null, scheduleAlways);
 					Assert.Equal(1, regCount);
 					return new WeakReference(provider);
@@ -559,7 +559,7 @@ namespace GriffinPlus.Lib.Events
 		public void EnsureEventRecipientsAreCollectable(bool scheduleAlways)
 		{
 			// create an event object and register its event handler with the event manager
-			object provider = new object();
+			object provider = new();
 			WeakReference recipientWeakReference = new Func<WeakReference>(
 				() =>
 				{

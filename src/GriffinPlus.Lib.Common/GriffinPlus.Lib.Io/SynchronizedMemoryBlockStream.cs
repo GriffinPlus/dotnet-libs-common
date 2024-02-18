@@ -77,7 +77,7 @@ namespace GriffinPlus.Lib.Io
 		}
 
 		/// <summary>
-		/// Disposes the stream releasing the underlying memory block chain
+		/// Disposes the stream releasing the underlying memory-block chain
 		/// (returns rented buffers to their array pool, if necessary).
 		/// </summary>
 		/// <param name="disposing">
@@ -102,7 +102,7 @@ namespace GriffinPlus.Lib.Io
 
 #if NETSTANDARD2_1 || NET5_0 || NET6_0 || NET7_0 || NET8_0
 		/// <summary>
-		/// Asynchronously disposes the stream releasing the underlying memory block chain
+		/// Asynchronously disposes the stream releasing the underlying memory-block chain
 		/// (returns rented buffers to their array pool, if necessary).
 		/// </summary>
 		public override async ValueTask DisposeAsync()
@@ -980,8 +980,8 @@ namespace GriffinPlus.Lib.Io
 		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		/// <remarks>
 		/// This method allows you to detach the underlying buffer from the stream and use it in another place.
-		/// If blocks contain buffers that have been rented from an array pool, the returned block chain must
-		/// be disposed to return buffers to the pool. The stream is empty afterwards.
+		/// If blocks contain buffers that have been rented from an array pool, the returned memory-block chain must
+		/// be disposed to return buffers to the pool. The stream is empty afterward.
 		/// </remarks>
 		public ChainableMemoryBlock DetachBuffer()
 		{
@@ -1007,8 +1007,8 @@ namespace GriffinPlus.Lib.Io
 		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		/// <remarks>
 		/// This method allows you to detach the underlying buffer from the stream and use it in another place.
-		/// If blocks contain buffers that have been rented from an array pool, the returned block chain must
-		/// be disposed to return buffers to the pool. The stream is empty afterwards.
+		/// If blocks contain buffers that have been rented from an array pool, the returned memory-block chain must
+		/// be disposed to return buffers to the pool. The stream is empty afterward.
 		/// </remarks>
 		public async Task<ChainableMemoryBlock> DetachBufferAsync(CancellationToken cancellationToken = default)
 		{

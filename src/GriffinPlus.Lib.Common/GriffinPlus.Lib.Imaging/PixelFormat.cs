@@ -37,7 +37,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <summary>
 		/// Gets the pixel format with the specified id as returned by <see cref="Id"/>.
 		/// </summary>
-		/// <param name="id">Id of the pixel format to get.</param>
+		/// <param name="id">ID of the pixel format to get.</param>
 		/// <returns>The pixel format with the specified id.</returns>
 		/// <exception cref="ArgumentOutOfRangeException">
 		/// The specified <paramref name="id"/> is not a valid pixel format.

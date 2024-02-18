@@ -62,14 +62,9 @@ namespace GriffinPlus.Lib.Collections
 			return new List<T>(source);
 		}
 
-		private sealed class NonGenericCollectionWrapper<T> : IReadOnlyCollection<T>
+		private sealed class NonGenericCollectionWrapper<T>(ICollection collection) : IReadOnlyCollection<T>
 		{
-			private readonly ICollection mCollection;
-
-			public NonGenericCollectionWrapper(ICollection collection)
-			{
-				mCollection = collection ?? throw new ArgumentNullException(nameof(collection));
-			}
+			private readonly ICollection mCollection = collection ?? throw new ArgumentNullException(nameof(collection));
 
 			public int Count => mCollection.Count;
 
@@ -87,14 +82,9 @@ namespace GriffinPlus.Lib.Collections
 			}
 		}
 
-		private sealed class CollectionWrapper<T> : IReadOnlyCollection<T>
+		private sealed class CollectionWrapper<T>(ICollection<T> collection) : IReadOnlyCollection<T>
 		{
-			private readonly ICollection<T> mCollection;
-
-			public CollectionWrapper(ICollection<T> collection)
-			{
-				mCollection = collection ?? throw new ArgumentNullException(nameof(collection));
-			}
+			private readonly ICollection<T> mCollection = collection ?? throw new ArgumentNullException(nameof(collection));
 
 			public int Count => mCollection.Count;
 

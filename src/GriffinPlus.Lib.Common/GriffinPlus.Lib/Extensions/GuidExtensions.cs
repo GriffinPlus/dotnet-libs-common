@@ -14,7 +14,7 @@ namespace GriffinPlus.Lib
 	public static class GuidExtensions
 	{
 		/// <summary>
-		/// Converts the <see cref="Guid"/> to a byte array containing a RFC 4122 compliant UUID.
+		/// Converts the <see cref="Guid"/> to a byte array containing an RFC 4122 compliant UUID.
 		/// </summary>
 		/// <param name="guid">The <see cref="Guid"/> itself.</param>
 		/// <returns>An array containing a RFC 4122 compliant UUID.</returns>

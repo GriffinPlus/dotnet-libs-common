@@ -12,9 +12,9 @@ namespace GriffinPlus.Lib
 	{
 		public struct TestStruct
 		{
-			public struct NestedTestStruct { }
+			public struct NestedTestStruct;
 
-			public struct NestedGenericTestStruct<T> { }
+			public struct NestedGenericTestStruct<T>;
 		}
 	}
 

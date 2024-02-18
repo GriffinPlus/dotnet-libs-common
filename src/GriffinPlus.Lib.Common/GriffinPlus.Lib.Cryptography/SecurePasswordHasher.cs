@@ -11,6 +11,8 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 
+// ReSharper disable InconsistentNaming
+
 namespace GriffinPlus.Lib.Cryptography
 {
 

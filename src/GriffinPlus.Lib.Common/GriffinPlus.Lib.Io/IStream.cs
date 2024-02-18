@@ -108,7 +108,7 @@ namespace GriffinPlus.Lib.Io
 		/// <param name="buffer">The buffer to write data from.</param>
 		/// <param name="offset">The byte offset in <paramref name="buffer"/> from which to begin writing.</param>
 		/// <param name="count">The maximum number of bytes to write.</param>
-		/// <param name="callback">An optional asynchronous callback, to be called when the write is complete.</param>
+		/// <param name="callback">An optional asynchronous callback, to be called when the write operation is complete.</param>
 		/// <param name="state">A user-provided object that distinguishes this particular asynchronous write request from other requests.</param>
 		/// <returns>An <see cref="IAsyncResult"/> that represents the asynchronous write, which could still be pending.</returns>
 		/// <exception cref="ArgumentException">One or more of the arguments is invalid.</exception>
@@ -410,7 +410,7 @@ namespace GriffinPlus.Lib.Io
 		/// or returns -1 if at the end of the stream.
 		/// </summary>
 		/// <returns>
-		/// The unsigned byte cast to an <see cref="int"/>;
+		/// The unsigned byte cast to an <see cref="int"/>;<br/>
 		/// -1, if at the end of the stream.
 		/// </returns>
 		/// <exception cref="NotSupportedException">The stream does not support reading.</exception>

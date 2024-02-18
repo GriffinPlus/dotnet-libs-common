@@ -143,7 +143,7 @@ namespace GriffinPlus.Lib.Collections
 
 		/// <summary>
 		/// Tests the <see cref="ICollection.CopyTo"/> method of the <see cref="IDictionary{TKey,TValue}.Values"/> collection
-		/// passing a multi-dimensional destination array.
+		/// passing a multidimensional destination array.
 		/// </summary>
 		[Fact]
 		public void ValueCollection_ICollection_CopyTo_MultidimensionalArray()
@@ -167,7 +167,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			var dict = GetDictionary() as IDictionary<TKey, TValue>;
 			var collection = (ICollection)dict.Values;
-			var destination = Array.CreateInstance(typeof(TValue), new[] { 0 }, new[] { lowerBound });
+			var destination = Array.CreateInstance(typeof(TValue), [0], [lowerBound]);
 			var exception = Assert.Throws<ArgumentException>(() => collection.CopyTo(destination, 0));
 			Assert.Equal("array", exception.ParamName);
 		}
@@ -208,7 +208,7 @@ namespace GriffinPlus.Lib.Collections
 
 		/// <summary>
 		/// Tests the <see cref="ICollection.CopyTo"/> method of the <see cref="IDictionary{TKey,TValue}.Values"/> collection
-		/// passing an destination array that is too small to store all elements.
+		/// passing a destination array that is too small to store all elements.
 		/// </summary>
 		/// <param name="count">Number of elements to populate the dictionary with before running the test.</param>
 		/// <param name="arraySize">Size of the destination array.</param>
@@ -414,7 +414,7 @@ namespace GriffinPlus.Lib.Collections
 
 		/// <summary>
 		/// Tests the <see cref="ICollection{T}.CopyTo"/> method of the <see cref="IDictionary{TKey,TValue}.Values"/> collection
-		/// passing an destination array that is too small to store all.
+		/// passing a destination array that is too small to store all.
 		/// elements.
 		/// </summary>
 		/// <param name="count">Number of elements to populate the dictionary with before running the test.</param>
@@ -484,12 +484,13 @@ namespace GriffinPlus.Lib.Collections
 
 			// the enumerator should point to the position after the last valid element now,
 			// but the 'Current' property should not throw an exception
+			// ReSharper disable once AssignmentInsteadOfDiscard
 			// ReSharper disable once RedundantAssignment
 			_ = enumerator.Current;
 
 			// reset the enumerator and try again
 			enumerator.Reset();
-			enumerated = new List<TValue>();
+			enumerated = [];
 			while (enumerator.MoveNext()) enumerated.Add((TValue)enumerator.Current);
 
 			// the order of values should be the same as returned by the dictionary enumerator
@@ -502,6 +503,9 @@ namespace GriffinPlus.Lib.Collections
 			dict[KeyNotInTestData] = ValueNotInTestData;
 			Assert.Throws<InvalidOperationException>(() => enumerator.Reset());
 			Assert.Throws<InvalidOperationException>(() => enumerator.MoveNext());
+
+			// dispose enumerator
+			(enumerator as IDisposable)!.Dispose();
 		}
 
 		#endregion
@@ -540,12 +544,13 @@ namespace GriffinPlus.Lib.Collections
 
 			// the enumerator should point to the position after the last valid element now,
 			// but the 'Current' property should not throw an exception
+			// ReSharper disable once AssignmentInsteadOfDiscard
 			// ReSharper disable once RedundantAssignment
 			_ = enumerator.Current;
 
 			// reset the enumerator and try again
 			enumerator.Reset();
-			enumerated = new List<TValue>();
+			enumerated = [];
 			while (enumerator.MoveNext()) enumerated.Add(enumerator.Current);
 
 			// the order of values should be the same as returned by the dictionary enumerator

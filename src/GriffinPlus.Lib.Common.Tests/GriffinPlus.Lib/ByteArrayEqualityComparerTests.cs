@@ -21,7 +21,7 @@ namespace GriffinPlus.Lib
 		[Fact]
 		public void Create()
 		{
-			var _ = new ByteArrayEqualityComparer();
+			_ = new ByteArrayEqualityComparer();
 		}
 
 		#endregion
@@ -47,9 +47,9 @@ namespace GriffinPlus.Lib
 			{
 				// test passing null references
 				byte[] data = Array.Empty<byte>();
-				yield return new object[] { null, null, true };
-				yield return new object[] { null, data, false };
-				yield return new object[] { data, null, false };
+				yield return [null, null, true];
+				yield return [null, data, false];
+				yield return [data, null, false];
 
 				// equality
 				// (test up to 16 bytes to check splitting up the data in 8/4/2/1 bytes
@@ -57,7 +57,7 @@ namespace GriffinPlus.Lib
 				{
 					byte[] data1 = GetConsecutiveByteSequence(i);
 					byte[] data2 = GetConsecutiveByteSequence(i);
-					yield return new object[] { data1, data2, true };
+					yield return [data1, data2, true];
 				}
 
 				// no equality
@@ -66,7 +66,7 @@ namespace GriffinPlus.Lib
 				{
 					byte[] data1 = GetConsecutiveByteSequence(i);
 					byte[] data2 = GetConsecutiveByteSequence(16 - i);
-					if (data1.Length != data2.Length) yield return new object[] { data1, data2, false };
+					if (data1.Length != data2.Length) yield return [data1, data2, false];
 				}
 
 				// no equality
@@ -76,7 +76,7 @@ namespace GriffinPlus.Lib
 					byte[] data1 = GetConsecutiveByteSequence(i);
 					byte[] data2 = GetConsecutiveByteSequence(i);
 					data2[0] = 0xFF;
-					yield return new object[] { data1, data2, false };
+					yield return [data1, data2, false];
 				}
 			}
 		}
@@ -131,15 +131,15 @@ namespace GriffinPlus.Lib
 			get
 			{
 				// equality
-				yield return new object[] { GetConsecutiveByteSequence(0), -2128831035 };
-				yield return new object[] { GetConsecutiveByteSequence(1), 84696351 };
-				yield return new object[] { GetConsecutiveByteSequence(2), 276207162 };
-				yield return new object[] { GetConsecutiveByteSequence(3), 581859880 };
-				yield return new object[] { GetConsecutiveByteSequence(4), -1012248143 };
-				yield return new object[] { GetConsecutiveByteSequence(5), -1172398097 };
-				yield return new object[] { GetConsecutiveByteSequence(6), -399131298 };
-				yield return new object[] { GetConsecutiveByteSequence(7), -459730552 };
-				yield return new object[] { GetConsecutiveByteSequence(8), 1811325981 };
+				yield return [GetConsecutiveByteSequence(0), -2128831035];
+				yield return [GetConsecutiveByteSequence(1), 84696351];
+				yield return [GetConsecutiveByteSequence(2), 276207162];
+				yield return [GetConsecutiveByteSequence(3), 581859880];
+				yield return [GetConsecutiveByteSequence(4), -1012248143];
+				yield return [GetConsecutiveByteSequence(5), -1172398097];
+				yield return [GetConsecutiveByteSequence(6), -399131298];
+				yield return [GetConsecutiveByteSequence(7), -459730552];
+				yield return [GetConsecutiveByteSequence(8), 1811325981];
 			}
 		}
 

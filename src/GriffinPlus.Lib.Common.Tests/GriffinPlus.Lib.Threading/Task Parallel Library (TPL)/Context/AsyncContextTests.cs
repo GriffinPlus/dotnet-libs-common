@@ -204,7 +204,7 @@ namespace GriffinPlus.Lib.Threading
 				AsyncContext.Run(
 					async () =>
 					{
-						SynchronizationContext.Current.Post(_ => throw new NotImplementedException(), null);
+						SynchronizationContext.Current!.Post(_ => throw new NotImplementedException(), null);
 						await Task.Yield();
 					});
 			}
@@ -215,29 +215,25 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task SynchronizationContext_Send_ExecutesSynchronously()
 		{
-			using (var thread = new AsyncContextThread())
-			{
-				SynchronizationContext synchronizationContext = await thread.Factory.Run(() => SynchronizationContext.Current);
-				int value = 0;
-				synchronizationContext.Send(_ => { value = 13; }, null);
-				Assert.Equal(13, value);
-			}
+			using var thread = new AsyncContextThread();
+			SynchronizationContext synchronizationContext = await thread.Factory.Run(() => SynchronizationContext.Current);
+			int value = 0;
+			synchronizationContext.Send(_ => { value = 13; }, null);
+			Assert.Equal(13, value);
 		}
 
 		[Fact]
 		public async Task SynchronizationContext_Send_ExecutesInlineIfNecessary()
 		{
-			using (var thread = new AsyncContextThread())
-			{
-				int value = 0;
-				await thread.Factory.Run(
-					() =>
-					{
-						SynchronizationContext.Current.Send(_ => { value = 13; }, null);
-						Assert.Equal(13, value);
-					});
-				Assert.Equal(13, value);
-			}
+			using var thread = new AsyncContextThread();
+			int value = 0;
+			await thread.Factory.Run(
+				() =>
+				{
+					SynchronizationContext.Current!.Send(_ => { value = 13; }, null);
+					Assert.Equal(13, value);
+				});
+			Assert.Equal(13, value);
 		}
 
 		[Fact]

@@ -51,27 +51,27 @@ namespace GriffinPlus.Lib.Cryptography
 		/// Regular expression matching all kinds of password hashes.
 		/// The string must start with '$&lt;algorithm&gt;$&lt;iterations&gt;$' only.
 		/// </summary>
-		private static readonly Regex sCommonHashRegex = new Regex(@"^\$(?<algorithm>[^\$]*)\$(?<iterations>[^\$]*)\$(?<hash>[^\$]*)", RegexOptions.Compiled);
+		private static readonly Regex sCommonHashRegex = new(@"^\$(?<algorithm>[^\$]*)\$(?<iterations>[^\$]*)\$(?<hash>[^\$]*)", RegexOptions.Compiled);
 
 		/// <summary>
 		/// Test data for testing hashing with a specific number of iterations and verifying the generated password
-		/// hash afterwards.
+		/// hash afterward.
 		/// </summary>
 		public static IEnumerable<object[]> HashWithDefaultIterationCountAndVerify_TestData
 		{
-			get { yield return new object[] { "My Password" }; }
+			get { yield return ["My Password"]; }
 		}
 
 		/// <summary>
 		/// Test data for testing hashing with a specific number of iterations and verifying the generated password
-		/// hash afterwards.
+		/// hash afterward.
 		/// </summary>
 		public static IEnumerable<object[]> HashWithSpecificIterationCountAndVerify_TestData
 		{
 			get
 			{
-				yield return new object[] { "My Password", 10000 };
-				yield return new object[] { "My Password", 20000 };
+				yield return ["My Password", 10000];
+				yield return ["My Password", 20000];
 			}
 		}
 
@@ -159,7 +159,7 @@ namespace GriffinPlus.Lib.Cryptography
 
 		/// <summary>
 		/// Tests the <see cref="SecurePasswordHasher.Verify(string,string)"/> method.
-		/// The method should throw a <see cref="FormatException"/> if the password hash contains too less fields.
+		/// The method should throw a <see cref="FormatException"/> if the password hash contains too few fields.
 		/// </summary>
 		public virtual void Verify_WithString_TooLessFields(string passwordHash)
 		{
@@ -230,7 +230,7 @@ namespace GriffinPlus.Lib.Cryptography
 
 		/// <summary>
 		/// Tests the <see cref="SecurePasswordHasher.Verify(ReadOnlySpan{char},ReadOnlySpan{char})"/> method.
-		/// The method should throw a <see cref="FormatException"/> if the password hash contains too less fields.
+		/// The method should throw a <see cref="FormatException"/> if the password hash contains too few fields.
 		/// </summary>
 		public virtual void Verify_WithSpan_TooLessFields(string passwordHash)
 		{

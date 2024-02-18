@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 
 using Xunit;
 
+// ReSharper disable InconsistentNaming
 // ReSharper disable StringLiteralTypo
 
 namespace GriffinPlus.Lib.Cryptography
@@ -38,7 +39,7 @@ namespace GriffinPlus.Lib.Cryptography
 		/// <summary>
 		/// Gets a regular expression matching a password hash emitted by the tested hasher.
 		/// </summary>
-		protected override Regex PasswordHashRegex { get; } = new Regex(@"^\$SHA256\$(?<iterations>\d+)\$(?<hash>[a-zA-Z0-9+/=]{64})$", RegexOptions.Compiled);
+		protected override Regex PasswordHashRegex { get; } = new(@"^\$SHA256\$(?<iterations>\d+)\$(?<hash>[a-zA-Z0-9+/=]{64})$", RegexOptions.Compiled);
 
 		#region Test Data
 
@@ -49,10 +50,10 @@ namespace GriffinPlus.Lib.Cryptography
 		{
 			get
 			{
-				yield return new object[] { "" };
-				yield return new object[] { "$" };
-				yield return new object[] { "$SHA256$" };
-				yield return new object[] { "$SHA256$10000" };
+				yield return [""];
+				yield return ["$"];
+				yield return ["$SHA256$"];
+				yield return ["$SHA256$10000"];
 			}
 		}
 
@@ -61,7 +62,7 @@ namespace GriffinPlus.Lib.Cryptography
 		/// </summary>
 		public static IEnumerable<object[]> TestData_Verify_AlgorithmNotSupported
 		{
-			get { yield return new object[] { "$XXX$10000$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" }; }
+			get { yield return ["$XXX$10000$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"]; }
 		}
 
 		/// <summary>
@@ -69,7 +70,7 @@ namespace GriffinPlus.Lib.Cryptography
 		/// </summary>
 		public static IEnumerable<object[]> TestData_Verify_InvalidIterationCount
 		{
-			get { yield return new object[] { "$SHA256$x$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" }; }
+			get { yield return ["$SHA256$x$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"]; }
 		}
 
 		/// <summary>
@@ -79,8 +80,8 @@ namespace GriffinPlus.Lib.Cryptography
 		{
 			get
 			{
-				yield return new object[] { "$SHA256$10000$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" };
-				yield return new object[] { "$SHA256$10000$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==" };
+				yield return ["$SHA256$10000$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="];
+				yield return ["$SHA256$10000$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="];
 			}
 		}
 
@@ -89,7 +90,7 @@ namespace GriffinPlus.Lib.Cryptography
 		/// </summary>
 		public static IEnumerable<object[]> TestData_Verify_ImproperEncodedSaltedHash
 		{
-			get { yield return new object[] { "$SHA256$10000$================================================================" }; }
+			get { yield return ["$SHA256$10000$================================================================"]; }
 		}
 
 		#endregion
@@ -98,7 +99,7 @@ namespace GriffinPlus.Lib.Cryptography
 
 		/// <summary>
 		/// Tests the <see cref="SecurePasswordHasher_SHA256.Verify(string,string)"/> method.
-		/// The method should throw a <see cref="FormatException"/> if the password hash contains too less fields.
+		/// The method should throw a <see cref="FormatException"/> if the password hash contains too few fields.
 		/// </summary>
 		[Theory]
 		[MemberData(nameof(TestData_Verify_TooLessFields))]
@@ -157,7 +158,7 @@ namespace GriffinPlus.Lib.Cryptography
 
 		/// <summary>
 		/// Tests the <see cref="SecurePasswordHasher_SHA256.Verify(ReadOnlySpan{char},ReadOnlySpan{char})"/> method.
-		/// The method should throw a <see cref="FormatException"/> if the password hash contains too less fields.
+		/// The method should throw a <see cref="FormatException"/> if the password hash contains too few fields.
 		/// </summary>
 		[Theory]
 		[MemberData(nameof(TestData_Verify_TooLessFields))]

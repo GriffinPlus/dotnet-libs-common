@@ -9,6 +9,7 @@ namespace GriffinPlus.Lib.Configuration
 	/// <summary>
 	/// Tests for the <see cref="CascadedConfiguration"/> class without a persistence strategy.
 	/// </summary>
+	// ReSharper disable once UnusedMember.Global
 	public class CascadedConfigurationTests_NoPersistence : CascadedConfigurationTests
 	{
 		/// <summary>

@@ -418,17 +418,10 @@ namespace GriffinPlus.Lib.Threading
 		}
 
 		[DebuggerNonUserCode]
-		internal sealed class DebugView
+		internal sealed class DebugView(AsyncProducerConsumerQueue<T> queue)
 		{
-			private readonly AsyncProducerConsumerQueue<T> mQueue;
-
-			public DebugView(AsyncProducerConsumerQueue<T> queue)
-			{
-				mQueue = queue;
-			}
-
 			[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-			public T[] Items => mQueue.mQueue.ToArray();
+			public T[] Items => queue.mQueue.ToArray();
 		}
 	}
 

@@ -51,7 +51,7 @@ namespace GriffinPlus.Lib
 		}
 
 		/// <summary>
-		/// Creates a <see cref="System.Guid"/> from the specified byte array containing a RFC 4122 compliant UUID.
+		/// Creates a <see cref="System.Guid"/> from the specified byte array containing an RFC 4122 compliant UUID.
 		/// </summary>
 		/// <param name="uuid">Buffer containing the UUID (must be at least 16 bytes starting at the specified index).</param>
 		/// <param name="index">Index in the byte array to start at.</param>
@@ -73,9 +73,7 @@ namespace GriffinPlus.Lib
 		/// <param name="index">Index in the byte array to start at.</param>
 		public static void Swap2(this byte[] buffer, int index)
 		{
-			byte swap = buffer[index];
-			buffer[index] = buffer[index + 1];
-			buffer[index + 1] = swap;
+			(buffer[index], buffer[index + 1]) = (buffer[index + 1], buffer[index]);
 		}
 
 		/// <summary>

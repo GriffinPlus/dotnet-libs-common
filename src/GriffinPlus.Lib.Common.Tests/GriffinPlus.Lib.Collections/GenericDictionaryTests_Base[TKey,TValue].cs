@@ -65,7 +65,7 @@ namespace GriffinPlus.Lib.Collections
 		/// <summary>
 		/// Gets an equality comparer for comparing key/value pairs returned by the dictionary
 		/// </summary>
-		protected virtual KeyValuePairEqualityComparer<TKey, TValue> KeyValuePairEqualityComparer => new KeyValuePairEqualityComparer<TKey, TValue>(KeyEqualityComparer, ValueEqualityComparer);
+		protected virtual KeyValuePairEqualityComparer<TKey, TValue> KeyValuePairEqualityComparer => new(KeyEqualityComparer, ValueEqualityComparer);
 
 		#region Test Data
 
@@ -77,9 +77,9 @@ namespace GriffinPlus.Lib.Collections
 		{
 			get
 			{
-				yield return new object[] { 0 };
-				yield return new object[] { 1 };
-				yield return new object[] { 100 };
+				yield return [0];
+				yield return [1];
+				yield return [100];
 			}
 		}
 
@@ -91,8 +91,8 @@ namespace GriffinPlus.Lib.Collections
 		{
 			get
 			{
-				yield return new object[] { 1 };
-				yield return new object[] { 100 };
+				yield return [1];
+				yield return [100];
 			}
 		}
 
@@ -107,9 +107,9 @@ namespace GriffinPlus.Lib.Collections
 				foreach (object[] data in TestDataSetSizes)
 				{
 					int count = (int)data[0];
-					yield return new object[] { count, 0 };
-					yield return new object[] { count, 1 };
-					yield return new object[] { count, 5 };
+					yield return [count, 0];
+					yield return [count, 1];
+					yield return [count, 5];
 				}
 			}
 		}
@@ -125,8 +125,8 @@ namespace GriffinPlus.Lib.Collections
 				foreach (object[] data in TestDataSetSizes)
 				{
 					int count = (int)data[0];
-					yield return new object[] { count, -1 };        // before start of array
-					yield return new object[] { count, count + 1 }; // after end of array (count is ok, if there are no elements to copy)
+					yield return [count, -1];        // before start of array
+					yield return [count, count + 1]; // after end of array (count is ok, if there are no elements to copy)
 				}
 			}
 		}
@@ -145,15 +145,15 @@ namespace GriffinPlus.Lib.Collections
 					int count = (int)data[0];
 
 					// destination array is way too small to store any elements
-					yield return new object[] { count, 0, 0 };
+					yield return [count, 0, 0];
 
 					// destination array itself is large enough, but start index shifts the destination out
 					// (the last element does not fit into the array)
-					yield return new object[] { count, count, 1 };
+					yield return [count, count, 1];
 
 					// destination array itself is large enough, but start index shifts the destination out
 					// (no space left for any elements)
-					if (count != 1) yield return new object[] { count, count, count };
+					if (count != 1) yield return [count, count, count];
 				}
 			}
 		}

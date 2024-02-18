@@ -160,7 +160,7 @@ namespace GriffinPlus.Lib.Collections
 		}
 
 		/// <summary>
-		/// Tests the <see cref="ICollection.CopyTo"/> method passing a multi-dimensional destination array.
+		/// Tests the <see cref="ICollection.CopyTo"/> method passing a multidimensional destination array.
 		/// </summary>
 		[Fact]
 		public void ICollection_CopyTo_MultidimensionalArray()
@@ -182,7 +182,7 @@ namespace GriffinPlus.Lib.Collections
 		public void ICollection_CopyTo_InvalidLowerArrayBound(int lowerBound)
 		{
 			var dict = GetDictionary() as ICollection;
-			var destination = Array.CreateInstance(typeof(KeyValuePair<TKey, TValue>), new[] { 0 }, new[] { lowerBound });
+			var destination = Array.CreateInstance(typeof(KeyValuePair<TKey, TValue>), [0], [lowerBound]);
 			var exception = Assert.Throws<ArgumentException>(() => dict.CopyTo(destination, 0));
 			Assert.Equal("array", exception.ParamName);
 		}
@@ -217,7 +217,7 @@ namespace GriffinPlus.Lib.Collections
 		}
 
 		/// <summary>
-		/// Tests the <see cref="ICollection.CopyTo"/> method passing an destination array that is too small to store all elements.
+		/// Tests the <see cref="ICollection.CopyTo"/> method passing a destination array that is too small to store all elements.
 		/// </summary>
 		/// <param name="count">Number of elements to populate the dictionary with before running the test.</param>
 		/// <param name="arraySize">Size of the destination array.</param>

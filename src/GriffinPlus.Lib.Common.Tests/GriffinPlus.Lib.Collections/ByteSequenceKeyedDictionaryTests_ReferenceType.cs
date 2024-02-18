@@ -12,6 +12,7 @@ namespace GriffinPlus.Lib.Collections
 	/// <summary>
 	/// Unit tests targeting the <see cref="ByteSequenceKeyedDictionary{TValue}"/> class (for reference types).
 	/// </summary>
+	// ReSharper disable once UnusedMember.Global
 	public class ByteSequenceKeyedDictionaryTests_ReferenceType : ByteSequenceKeyedDictionaryTests_Base<string>
 	{
 		/// <summary>

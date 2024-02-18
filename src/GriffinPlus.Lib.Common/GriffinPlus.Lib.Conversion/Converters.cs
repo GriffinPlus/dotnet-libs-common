@@ -22,93 +22,93 @@ namespace GriffinPlus.Lib.Conversion
 		/// <summary>
 		/// A converter for translating a <see cref="System.Boolean"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter<bool> Boolean = new Converter<bool>((s, provider) => bool.Parse(s));
+		public static readonly Converter<bool> Boolean = new((s, _) => bool.Parse(s));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.SByte"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter<sbyte> SByte = new Converter<sbyte>((s, provider) => sbyte.Parse(s, provider));
+		public static readonly Converter<sbyte> SByte = new((s, provider) => sbyte.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Byte"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter<byte> Byte = new Converter<byte>((s, provider) => byte.Parse(s, provider));
+		public static readonly Converter<byte> Byte = new((s, provider) => byte.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating an array of <see cref="System.Byte"/> to a BASE64 encoded string and vice versa.
 		/// </summary>
-		public static readonly Converter<byte[]> ByteArray = new Converter<byte[]>(
-			(s,   provider) => Convert.FromBase64String(s),
-			(obj, provider) => Convert.ToBase64String(obj));
+		public static readonly Converter<byte[]> ByteArray = new(
+			(s,   _) => Convert.FromBase64String(s),
+			(obj, _) => Convert.ToBase64String(obj));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Int16"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter<short> Int16 = new Converter<short>((s, provider) => short.Parse(s, provider));
+		public static readonly Converter<short> Int16 = new((s, provider) => short.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.UInt16"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter<ushort> UInt16 = new Converter<ushort>((s, provider) => ushort.Parse(s, provider));
+		public static readonly Converter<ushort> UInt16 = new((s, provider) => ushort.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Int32"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter<int> Int32 = new Converter<int>((s, provider) => int.Parse(s, provider));
+		public static readonly Converter<int> Int32 = new((s, provider) => int.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.UInt32"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter<uint> UInt32 = new Converter<uint>((s, provider) => uint.Parse(s, provider));
+		public static readonly Converter<uint> UInt32 = new((s, provider) => uint.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Int64"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter<long> Int64 = new Converter<long>((s, provider) => long.Parse(s, provider));
+		public static readonly Converter<long> Int64 = new((s, provider) => long.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.UInt64"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter<ulong> UInt64 = new Converter<ulong>((s, provider) => ulong.Parse(s, provider));
+		public static readonly Converter<ulong> UInt64 = new((s, provider) => ulong.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Decimal"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter<decimal> Decimal = new Converter<decimal>((s, provider) => decimal.Parse(s, provider));
+		public static readonly Converter<decimal> Decimal = new((s, provider) => decimal.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Single"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter<float> Single = new Converter<float>((s, provider) => float.Parse(s, provider));
+		public static readonly Converter<float> Single = new((s, provider) => float.Parse(s, provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Double"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter<double> Double = new Converter<double>((s, provider) => double.Parse(s, provider));
+		public static readonly Converter<double> Double = new((s, provider) => double.Parse(s, provider));
 
 		/// <summary>
 		/// The string identity conversion (the string remains the same).
 		/// </summary>
-		public static readonly Converter<string> String = new Converter<string>((s, provider) => s, (obj, provider) => obj);
+		public static readonly Converter<string> String = new((s, _) => s, (obj, _) => obj);
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.Guid"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter<Guid> Guid = new Converter<Guid>(
-			(s,   provider) => System.Guid.Parse(s),
-			(obj, provider) => obj.ToString("D"));
+		public static readonly Converter<Guid> Guid = new(
+			(s,   _) => System.Guid.Parse(s),
+			(obj, _) => obj.ToString("D"));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.DateTime"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter<DateTime> DateTime = new Converter<DateTime>(
+		public static readonly Converter<DateTime> DateTime = new(
 			(s,   provider) => System.DateTime.Parse(s, provider),
 			(obj, provider) => obj.ToString("o", provider));
 
 		/// <summary>
 		/// A converter for translating a <see cref="System.TimeSpan"/> to a string and vice versa.
 		/// </summary>
-		public static readonly Converter<TimeSpan> TimeSpan = new Converter<TimeSpan>(
+		public static readonly Converter<TimeSpan> TimeSpan = new(
 			(s,   provider) => System.TimeSpan.Parse(s, provider),
 			(obj, provider) => obj.ToString("c", provider));
 
@@ -116,13 +116,13 @@ namespace GriffinPlus.Lib.Conversion
 		/// A converter for translating a <see cref="System.Net.IPAddress"/> to a string and vice versa.
 		/// </summary>
 		// ReSharper disable once InconsistentNaming
-		public static readonly Converter<IPAddress> IPAddress = new Converter<IPAddress>((s, provider) => System.Net.IPAddress.Parse(s));
+		public static readonly Converter<IPAddress> IPAddress = new((s, _) => System.Net.IPAddress.Parse(s));
 
 		/// <summary>
 		/// Gets all converters that are provided by the <see cref="Converters"/> class out-of-the-box.
 		/// </summary>
 		public static readonly IConverter[] Predefined =
-		{
+		[
 			Boolean,
 			SByte,
 			Byte,
@@ -141,9 +141,9 @@ namespace GriffinPlus.Lib.Conversion
 			DateTime,
 			TimeSpan,
 			IPAddress
-		};
+		];
 
-		private static readonly object                       sSync = new object();
+		private static readonly object                       sSync = new();
 		private static volatile Dictionary<Type, IConverter> sConverters;
 
 		/// <summary>

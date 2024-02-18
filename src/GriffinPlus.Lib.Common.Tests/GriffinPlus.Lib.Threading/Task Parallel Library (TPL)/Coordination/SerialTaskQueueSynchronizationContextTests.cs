@@ -48,27 +48,25 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public void Post_SingleInvocation()
 		{
-			using (var cts = new CancellationTokenSource(Timeout))
-			{
-				var queue = new SerialTaskQueue();
-				var startProcessingEvent = new AsyncManualResetEvent(false);
-				var processingFinishedEvent = new AsyncManualResetEvent(false);
-				object obj = new object();
+			using var cts = new CancellationTokenSource(Timeout);
+			var queue = new SerialTaskQueue();
+			var startProcessingEvent = new AsyncManualResetEvent(false);
+			var processingFinishedEvent = new AsyncManualResetEvent(false);
+			object obj = new();
 
-				queue.SynchronizationContext.Post(
-					state =>
-					{
-						Assert.Same(obj, state);
-						startProcessingEvent.Wait(cts.Token);
-						processingFinishedEvent.Set();
-					},
-					obj);
+			queue.SynchronizationContext.Post(
+				state =>
+				{
+					Assert.Same(obj, state);
+					startProcessingEvent.Wait(cts.Token);
+					processingFinishedEvent.Set();
+				},
+				obj);
 
-				Assert.False(processingFinishedEvent.IsSet);
-				startProcessingEvent.Set();
-				processingFinishedEvent.Wait(cts.Token);
-				Assert.True(processingFinishedEvent.IsSet);
-			}
+			Assert.False(processingFinishedEvent.IsSet);
+			startProcessingEvent.Set();
+			processingFinishedEvent.Wait(cts.Token);
+			Assert.True(processingFinishedEvent.IsSet);
 		}
 
 		/// <summary>
@@ -80,44 +78,42 @@ namespace GriffinPlus.Lib.Threading
 		{
 			const int iterations = 1000;
 
-			using (var cts = new CancellationTokenSource(Timeout))
+			using var cts = new CancellationTokenSource(Timeout);
+			var queue = new SerialTaskQueue();
+			var startProcessingEvent = new AsyncManualResetEvent(false);
+			var processingFinishedEvent = new AsyncManualResetEvent(false);
+			int invocationCounter = 0;
+			var expectedOrder = new List<int>();
+			var actualOrder = new List<int>();
+			object obj = new();
+			for (int i = 0; i < iterations; i++)
 			{
-				var queue = new SerialTaskQueue();
-				var startProcessingEvent = new AsyncManualResetEvent(false);
-				var processingFinishedEvent = new AsyncManualResetEvent(false);
-				int invocationCounter = 0;
-				var expectedOrder = new List<int>();
-				var actualOrder = new List<int>();
-				object obj = new object();
-				for (int i = 0; i < iterations; i++)
-				{
-					int value = i;
-					expectedOrder.Add(value);
+				int value = i;
+				expectedOrder.Add(value);
 
-					queue.SynchronizationContext.Post(
-						state =>
-						{
-							Assert.Same(obj, state);
-							startProcessingEvent.Wait(cts.Token);
-							actualOrder.Add(value);
-							// ReSharper disable once AccessToModifiedClosure
-							if (Interlocked.Increment(ref invocationCounter) == iterations)
-								processingFinishedEvent.Set();
-						},
-						obj);
-				}
-
-				// give the first scheduled callback a chance to start execution
-				// (the resulting order list should still be empty as execution is stopped at the processing event)
-				Thread.Sleep(1);
-				Assert.Empty(actualOrder);
-
-				// start processing and wait for it to complete
-				// (the resulting order list should now equal the expected order list)
-				startProcessingEvent.Set();
-				processingFinishedEvent.Wait(cts.Token);
-				Assert.Equal(expectedOrder, actualOrder);
+				queue.SynchronizationContext.Post(
+					state =>
+					{
+						Assert.Same(obj, state);
+						startProcessingEvent.Wait(cts.Token);
+						actualOrder.Add(value);
+						// ReSharper disable once AccessToModifiedClosure
+						if (Interlocked.Increment(ref invocationCounter) == iterations)
+							processingFinishedEvent.Set();
+					},
+					obj);
 			}
+
+			// give the first scheduled callback a chance to start execution
+			// (the resulting order list should still be empty as execution is stopped at the processing event)
+			Thread.Sleep(1);
+			Assert.Empty(actualOrder);
+
+			// start processing and wait for it to complete
+			// (the resulting order list should now equal the expected order list)
+			startProcessingEvent.Set();
+			processingFinishedEvent.Wait(cts.Token);
+			Assert.Equal(expectedOrder, actualOrder);
 		}
 
 		/// <summary>
@@ -146,7 +142,7 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var queue = new SerialTaskQueue();
 			bool finished = false;
-			object obj = new object();
+			object obj = new();
 
 			queue.SynchronizationContext.Send(
 				state =>
@@ -172,7 +168,7 @@ namespace GriffinPlus.Lib.Threading
 			var queue = new SerialTaskQueue();
 			var expectedOrder = new List<int>();
 			var actualOrder = new List<int>();
-			object obj = new object();
+			object obj = new();
 			for (int i = 0; i < iterations; i++)
 			{
 				int value = i;
@@ -253,44 +249,44 @@ namespace GriffinPlus.Lib.Threading
 				SerialTaskQueueSynchronizationContext context = new SerialTaskQueue().SynchronizationContext;
 
 				// object to compare with is the same synchronization context
-				yield return new object[]
-				{
+				yield return
+				[
 					context,
 					context,
 					true
-				};
+				];
 
 				// object to compare with is a copy of the synchronization context
-				yield return new object[]
-				{
+				yield return
+				[
 					context,
 					context.CreateCopy(),
 					true
-				};
+				];
 
 				// object to compare with is a synchronization context of the same type, but attached to a different queue
-				yield return new object[]
-				{
+				yield return
+				[
 					context,
 					new SerialTaskQueue().SynchronizationContext,
 					false
-				};
+				];
 
 				// object to compare with is a synchronization context of a different type
-				yield return new object[]
-				{
+				yield return
+				[
 					context,
 					new SynchronizationContext(),
 					false
-				};
+				];
 
 				// object to compare with is null
-				yield return new object[]
-				{
+				yield return
+				[
 					context,
 					null,
 					false
-				};
+				];
 			}
 		}
 

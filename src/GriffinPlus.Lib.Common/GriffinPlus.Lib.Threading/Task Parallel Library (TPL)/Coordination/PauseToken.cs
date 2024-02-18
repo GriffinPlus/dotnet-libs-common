@@ -42,10 +42,10 @@ namespace GriffinPlus.Lib.Threading
 		/// The manual-reset-event that manages the "pause" logic.
 		/// When the manual-reset-event is set, the token is not paused; when the manual-reset-event is not set, the token is paused.
 		/// </summary>
-		private readonly AsyncManualResetEvent mManualResetEvent = new AsyncManualResetEvent(true);
+		private readonly AsyncManualResetEvent mManualResetEvent = new(true);
 
 		/// <summary>
-		/// Whether or not this source (and its tokens) are in the paused state.
+		/// Whether this source (and its tokens) are in the paused state.
 		/// This member is seldom used; code using this member has a high possibility of race conditions.
 		/// </summary>
 		public bool IsPaused
@@ -63,7 +63,7 @@ namespace GriffinPlus.Lib.Threading
 		/// <summary>
 		/// Gets a pause token controlled by this source.
 		/// </summary>
-		public PauseToken Token => new PauseToken(mManualResetEvent);
+		public PauseToken Token => new(mManualResetEvent);
 	}
 
 	/// <summary>
@@ -88,9 +88,9 @@ namespace GriffinPlus.Lib.Threading
 		public bool CanBePaused => mManualResetEvent != null;
 
 		/// <summary>
-		/// Whether or not this token is in the paused state.
+		/// Whether this token is in the paused state.
 		/// </summary>
-		public bool IsPaused => mManualResetEvent != null && !mManualResetEvent.IsSet;
+		public bool IsPaused => mManualResetEvent is { IsSet: false };
 
 		/// <summary>
 		/// Asynchronously waits until the pause token is not paused.

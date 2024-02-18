@@ -50,26 +50,24 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task Enqueue_Synchronous_Action_SingleInvocation()
 		{
-			using (var cts = new CancellationTokenSource(Timeout))
-			{
-				var queue = new SerialTaskQueue();
-				var startProcessingEvent = new AsyncManualResetEvent(false);
-				bool finished = false;
+			using var cts = new CancellationTokenSource(Timeout);
+			var queue = new SerialTaskQueue();
+			var startProcessingEvent = new AsyncManualResetEvent(false);
+			bool finished = false;
 
-				Task task = queue.Enqueue(
-					() =>
-					{
-						startProcessingEvent.Wait(cts.Token);
-						finished = true;
-					});
+			Task task = queue.Enqueue(
+				() =>
+				{
+					startProcessingEvent.Wait(cts.Token);
+					finished = true;
+				});
 
-				Assert.False(task.IsCompleted);
-				Assert.False(finished);
-				startProcessingEvent.Set();
-				await task;
-				Assert.True(task.IsCompleted);
-				Assert.True(finished);
-			}
+			Assert.False(task.IsCompleted);
+			Assert.False(finished);
+			startProcessingEvent.Set();
+			await task;
+			Assert.True(task.IsCompleted);
+			Assert.True(finished);
 		}
 
 		/// <summary>
@@ -82,32 +80,30 @@ namespace GriffinPlus.Lib.Threading
 			// Create a new queue and enqueue multiple invocations of a callback adding the iteration counter value to
 			// a list. At the end the list should contain the numbers in ascending order. The first callback should
 			// delay the execution, so all tasks should not have been completed, yet.
-			using (var cts = new CancellationTokenSource(Timeout))
+			using var cts = new CancellationTokenSource(Timeout);
+			var queue = new SerialTaskQueue();
+			var startProcessingEvent = new AsyncManualResetEvent(false);
+			var tasks = new List<Task>();
+			var expectedOrder = new List<int>();
+			var actualOrder = new List<int>();
+			for (int i = 0; i < 1000; i++)
 			{
-				var queue = new SerialTaskQueue();
-				var startProcessingEvent = new AsyncManualResetEvent(false);
-				var tasks = new List<Task>();
-				var expectedOrder = new List<int>();
-				var actualOrder = new List<int>();
-				for (int i = 0; i < 1000; i++)
-				{
-					int value = i;
-					expectedOrder.Add(value);
-					tasks.Add(
-						queue.Enqueue(
-							() =>
-							{
-								startProcessingEvent.Wait(cts.Token);
-								actualOrder.Add(value);
-							}));
-				}
-
-				Assert.All(tasks, task => Assert.False(task.IsCompleted));
-				startProcessingEvent.Set();
-				await Task.WhenAll(tasks);
-				Assert.All(tasks, task => Assert.True(task.IsCompleted && !task.IsCanceled && !task.IsFaulted));
-				Assert.Equal(expectedOrder, actualOrder);
+				int value = i;
+				expectedOrder.Add(value);
+				tasks.Add(
+					queue.Enqueue(
+						() =>
+						{
+							startProcessingEvent.Wait(cts.Token);
+							actualOrder.Add(value);
+						}));
 			}
+
+			Assert.All(tasks, task => Assert.False(task.IsCompleted));
+			startProcessingEvent.Set();
+			await Task.WhenAll(tasks);
+			Assert.All(tasks, task => Assert.True(task.IsCompleted && !task.IsCanceled && !task.IsFaulted));
+			Assert.Equal(expectedOrder, actualOrder);
 		}
 
 		/// <summary>
@@ -135,28 +131,26 @@ namespace GriffinPlus.Lib.Threading
 		{
 			const int expectedResult = 42;
 
-			using (var cts = new CancellationTokenSource(Timeout))
-			{
-				var queue = new SerialTaskQueue();
-				var startProcessingEvent = new AsyncManualResetEvent(false);
-				bool finished = false;
+			using var cts = new CancellationTokenSource(Timeout);
+			var queue = new SerialTaskQueue();
+			var startProcessingEvent = new AsyncManualResetEvent(false);
+			bool finished = false;
 
-				Task<int> task = queue.Enqueue(
-					() =>
-					{
-						startProcessingEvent.Wait(cts.Token);
-						finished = true;
-						return expectedResult;
-					});
+			Task<int> task = queue.Enqueue(
+				() =>
+				{
+					startProcessingEvent.Wait(cts.Token);
+					finished = true;
+					return expectedResult;
+				});
 
-				Assert.False(task.IsCompleted);
-				Assert.False(finished);
-				startProcessingEvent.Set();
-				int result = await task;
-				Assert.Equal(expectedResult, result);
-				Assert.True(task.IsCompleted);
-				Assert.True(finished);
-			}
+			Assert.False(task.IsCompleted);
+			Assert.False(finished);
+			startProcessingEvent.Set();
+			int result = await task;
+			Assert.Equal(expectedResult, result);
+			Assert.True(task.IsCompleted);
+			Assert.True(finished);
 		}
 
 		/// <summary>
@@ -169,34 +163,32 @@ namespace GriffinPlus.Lib.Threading
 			// Create a new queue and enqueue multiple invocations of a callback adding the iteration counter value to
 			// a list. At the end the list should contain the numbers in ascending order. The first callback should
 			// delay the execution, so all tasks should not have been completed, yet.
-			using (var cts = new CancellationTokenSource(Timeout))
+			using var cts = new CancellationTokenSource(Timeout);
+			var queue = new SerialTaskQueue();
+			var startProcessingEvent = new AsyncManualResetEvent(false);
+			var tasks = new List<Task<int>>();
+			var expectedOrder = new List<int>();
+			var actualOrder = new List<int>();
+			for (int i = 0; i < 1000; i++)
 			{
-				var queue = new SerialTaskQueue();
-				var startProcessingEvent = new AsyncManualResetEvent(false);
-				var tasks = new List<Task<int>>();
-				var expectedOrder = new List<int>();
-				var actualOrder = new List<int>();
-				for (int i = 0; i < 1000; i++)
-				{
-					int value = i;
-					expectedOrder.Add(value);
-					tasks.Add(
-						queue.Enqueue(
-							() =>
-							{
-								startProcessingEvent.Wait(cts.Token);
-								actualOrder.Add(value);
-								return value;
-							}));
-				}
-
-				Assert.All(tasks, task => Assert.False(task.IsCompleted));
-				startProcessingEvent.Set();
-				await Task.WhenAll(tasks);
-				Assert.All(tasks, task => Assert.True(task.IsCompleted && !task.IsCanceled && !task.IsFaulted));
-				Assert.Equal(expectedOrder, actualOrder);
-				Assert.Equal(expectedOrder, tasks.Select(x => x.Result));
+				int value = i;
+				expectedOrder.Add(value);
+				tasks.Add(
+					queue.Enqueue(
+						() =>
+						{
+							startProcessingEvent.Wait(cts.Token);
+							actualOrder.Add(value);
+							return value;
+						}));
 			}
+
+			Assert.All(tasks, task => Assert.False(task.IsCompleted));
+			startProcessingEvent.Set();
+			await Task.WhenAll(tasks);
+			Assert.All(tasks, task => Assert.True(task.IsCompleted && !task.IsCanceled && !task.IsFaulted));
+			Assert.Equal(expectedOrder, actualOrder);
+			Assert.Equal(expectedOrder, tasks.Select(x => x.Result));
 		}
 
 		/// <summary>
@@ -222,26 +214,24 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task Enqueue_Asynchronous_Action_SingleInvocation()
 		{
-			using (var cts = new CancellationTokenSource(Timeout))
-			{
-				var queue = new SerialTaskQueue();
-				var startProcessingEvent = new AsyncManualResetEvent(false);
-				bool finished = false;
+			using var cts = new CancellationTokenSource(Timeout);
+			var queue = new SerialTaskQueue();
+			var startProcessingEvent = new AsyncManualResetEvent(false);
+			bool finished = false;
 
-				Task task = queue.Enqueue(
-					async () =>
-					{
-						await startProcessingEvent.WaitAsync(cts.Token).ConfigureAwait(false);
-						finished = true;
-					});
+			Task task = queue.Enqueue(
+				async () =>
+				{
+					await startProcessingEvent.WaitAsync(cts.Token).ConfigureAwait(false);
+					finished = true;
+				});
 
-				Assert.False(task.IsCompleted);
-				Assert.False(finished);
-				startProcessingEvent.Set();
-				await task;
-				Assert.True(task.IsCompleted);
-				Assert.True(finished);
-			}
+			Assert.False(task.IsCompleted);
+			Assert.False(finished);
+			startProcessingEvent.Set();
+			await task;
+			Assert.True(task.IsCompleted);
+			Assert.True(finished);
 		}
 
 		/// <summary>
@@ -254,32 +244,30 @@ namespace GriffinPlus.Lib.Threading
 			// Create a new queue and enqueue multiple invocations of a callback adding the iteration counter value to
 			// a list. At the end the list should contain the numbers in ascending order. The first callback should
 			// delay the execution, so all tasks should not have been completed, yet.
-			using (var cts = new CancellationTokenSource(Timeout))
+			using var cts = new CancellationTokenSource(Timeout);
+			var queue = new SerialTaskQueue();
+			var startProcessingEvent = new AsyncManualResetEvent(false);
+			var tasks = new List<Task>();
+			var expectedOrder = new List<int>();
+			var actualOrder = new List<int>();
+			for (int i = 0; i < 1000; i++)
 			{
-				var queue = new SerialTaskQueue();
-				var startProcessingEvent = new AsyncManualResetEvent(false);
-				var tasks = new List<Task>();
-				var expectedOrder = new List<int>();
-				var actualOrder = new List<int>();
-				for (int i = 0; i < 1000; i++)
-				{
-					int value = i;
-					expectedOrder.Add(value);
-					tasks.Add(
-						queue.Enqueue(
-							async () =>
-							{
-								await startProcessingEvent.WaitAsync(cts.Token).ConfigureAwait(false);
-								actualOrder.Add(value);
-							}));
-				}
-
-				Assert.All(tasks, task => Assert.False(task.IsCompleted));
-				startProcessingEvent.Set();
-				await Task.WhenAll(tasks);
-				Assert.All(tasks, task => Assert.True(task.IsCompleted));
-				Assert.Equal(expectedOrder, actualOrder);
+				int value = i;
+				expectedOrder.Add(value);
+				tasks.Add(
+					queue.Enqueue(
+						async () =>
+						{
+							await startProcessingEvent.WaitAsync(cts.Token).ConfigureAwait(false);
+							actualOrder.Add(value);
+						}));
 			}
+
+			Assert.All(tasks, task => Assert.False(task.IsCompleted));
+			startProcessingEvent.Set();
+			await Task.WhenAll(tasks);
+			Assert.All(tasks, task => Assert.True(task.IsCompleted));
+			Assert.Equal(expectedOrder, actualOrder);
 		}
 
 		/// <summary>
@@ -307,27 +295,25 @@ namespace GriffinPlus.Lib.Threading
 		{
 			const int expectedResult = 42;
 
-			using (var startProcessingEvent = new ManualResetEventSlim())
-			{
-				var queue = new SerialTaskQueue();
-				bool finished = false;
+			using var startProcessingEvent = new ManualResetEventSlim();
+			var queue = new SerialTaskQueue();
+			bool finished = false;
 
-				Task<int> task = queue.Enqueue(
-					() =>
-					{
-						Assert.True(startProcessingEvent.Wait(Timeout));
-						finished = true;
-						return expectedResult;
-					});
+			Task<int> task = queue.Enqueue(
+				() =>
+				{
+					Assert.True(startProcessingEvent.Wait(Timeout));
+					finished = true;
+					return expectedResult;
+				});
 
-				Assert.False(task.IsCompleted);
-				Assert.False(finished);
-				startProcessingEvent.Set();
-				int result = await task;
-				Assert.Equal(expectedResult, result);
-				Assert.True(task.IsCompleted);
-				Assert.True(finished);
-			}
+			Assert.False(task.IsCompleted);
+			Assert.False(finished);
+			startProcessingEvent.Set();
+			int result = await task;
+			Assert.Equal(expectedResult, result);
+			Assert.True(task.IsCompleted);
+			Assert.True(finished);
 		}
 
 		/// <summary>
@@ -340,34 +326,32 @@ namespace GriffinPlus.Lib.Threading
 			// Create a new queue and enqueue multiple invocations of a callback adding the iteration counter value to
 			// a list. At the end the list should contain the numbers in ascending order. The first callback should
 			// delay the execution, so all tasks should not have been completed, yet.
-			using (var cts = new CancellationTokenSource(Timeout))
+			using var cts = new CancellationTokenSource(Timeout);
+			var queue = new SerialTaskQueue();
+			var startProcessingEvent = new AsyncManualResetEvent(false);
+			var tasks = new List<Task<int>>();
+			var expectedOrder = new List<int>();
+			var actualOrder = new List<int>();
+			for (int i = 0; i < 1000; i++)
 			{
-				var queue = new SerialTaskQueue();
-				var startProcessingEvent = new AsyncManualResetEvent(false);
-				var tasks = new List<Task<int>>();
-				var expectedOrder = new List<int>();
-				var actualOrder = new List<int>();
-				for (int i = 0; i < 1000; i++)
-				{
-					int value = i;
-					expectedOrder.Add(value);
-					tasks.Add(
-						queue.Enqueue(
-							async () =>
-							{
-								await startProcessingEvent.WaitAsync(cts.Token).ConfigureAwait(false);
-								actualOrder.Add(value);
-								return value;
-							}));
-				}
-
-				Assert.All(tasks, task => Assert.False(task.IsCompleted));
-				startProcessingEvent.Set();
-				await Task.WhenAll(tasks);
-				Assert.All(tasks, task => Assert.True(task.IsCompleted));
-				Assert.Equal(expectedOrder, actualOrder);
-				Assert.Equal(expectedOrder, tasks.Select(x => x.Result));
+				int value = i;
+				expectedOrder.Add(value);
+				tasks.Add(
+					queue.Enqueue(
+						async () =>
+						{
+							await startProcessingEvent.WaitAsync(cts.Token).ConfigureAwait(false);
+							actualOrder.Add(value);
+							return value;
+						}));
 			}
+
+			Assert.All(tasks, task => Assert.False(task.IsCompleted));
+			startProcessingEvent.Set();
+			await Task.WhenAll(tasks);
+			Assert.All(tasks, task => Assert.True(task.IsCompleted));
+			Assert.Equal(expectedOrder, actualOrder);
+			Assert.Equal(expectedOrder, tasks.Select(x => x.Result));
 		}
 
 		/// <summary>

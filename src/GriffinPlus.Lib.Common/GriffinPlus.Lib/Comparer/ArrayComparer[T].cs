@@ -10,17 +10,17 @@ namespace GriffinPlus.Lib
 {
 
 	/// <summary>
-	/// An generic comparer for arrays.
+	/// A generic comparer for arrays.
 	/// The content of the arrays are compared first, followed by the length of the arrays.
 	/// </summary>
-	/// <typeparam name="T">Type of an array element.</typeparam>
+	/// <typeparam name="T">Array element type (may also be a base type).</typeparam>
 	public class ArrayComparer<T> : IComparer<T[]>
 		where T : IComparable<T>
 	{
 		/// <summary>
 		/// The singleton instance of the comparer.
 		/// </summary>
-		public static readonly ArrayComparer<T> Instance = new ArrayComparer<T>();
+		public static readonly ArrayComparer<T> Instance = new();
 
 		/// <summary>
 		/// Compares two arrays and returns a value indicating whether one is less than, equal to, or greater than the other.

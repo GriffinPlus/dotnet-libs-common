@@ -24,25 +24,17 @@ namespace GriffinPlus.Lib.Events
 		/// <summary>
 		/// An event handler item in the event manager.
 		/// </summary>
-		private readonly struct Item
+		private readonly struct Item(SynchronizationContext context, EventHandler<TEventArgs> handler, bool scheduleAlways)
 		{
-			public readonly SynchronizationContext   SynchronizationContext;
-			public readonly EventHandler<TEventArgs> Handler;
-			public readonly bool                     ScheduleAlways;
-
-			public Item(SynchronizationContext context, EventHandler<TEventArgs> handler, bool scheduleAlways)
-			{
-				SynchronizationContext = context;
-				Handler = handler;
-				ScheduleAlways = scheduleAlways;
-			}
+			public readonly SynchronizationContext   SynchronizationContext = context;
+			public readonly EventHandler<TEventArgs> Handler                = handler;
+			public readonly bool                     ScheduleAlways         = scheduleAlways;
 		}
 
-		private static readonly ConditionalWeakTable<object, Dictionary<string, Item[]>> sItemsByObject =
-			new ConditionalWeakTable<object, Dictionary<string, Item[]>>();
+		private static readonly ConditionalWeakTable<object, Dictionary<string, Item[]>> sItemsByObject = new();
 
 		// ReSharper disable once StaticMemberInGenericType
-		private static readonly object sSync = new object();
+		private static readonly object sSync = new();
 
 		/// <summary>
 		/// Registers an event handler for an event associated with the specified object.
@@ -50,7 +42,7 @@ namespace GriffinPlus.Lib.Events
 		/// <param name="obj">Object providing the event.</param>
 		/// <param name="eventName">Name of the event.</param>
 		/// <param name="handler">Event handler to register.</param>
-		/// <param name="context">Synchronization context to use when calling the event handler (may be null).</param>
+		/// <param name="context">Synchronization context to use when calling the event handler (it may also be <c>null</c>).</param>
 		/// <param name="scheduleAlways">
 		/// If <paramref name="context"/> is set:
 		/// <c>true</c> to always schedule the event handler in the specified synchronization context,
@@ -212,8 +204,8 @@ namespace GriffinPlus.Lib.Events
 		/// <param name="obj">Object providing the event.</param>
 		/// <param name="eventName">Name of the event (<c>null</c> to remove all handlers attached to events of the specified object).</param>
 		/// <returns>
-		/// true, if a least one event handler has been removed;
-		/// false, if no event handler was registered.
+		/// <c>true</c> if at least one event handler has been removed;<br/>
+		/// <c>false</c> if no event handler was registered.
 		/// </returns>
 		public static bool UnregisterEventHandlers(object obj, string eventName)
 		{

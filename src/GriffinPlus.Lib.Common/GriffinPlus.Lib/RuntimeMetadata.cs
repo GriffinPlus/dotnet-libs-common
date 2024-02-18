@@ -40,22 +40,22 @@ namespace GriffinPlus.Lib
 	public static class RuntimeMetadata
 	{
 		private static readonly LogWriter                                 sLog                                        = LogWriter.Get(typeof(RuntimeMetadata));
-		private static readonly ReaderWriterLockSlim                      sLock                                       = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+		private static readonly ReaderWriterLockSlim                      sLock                                       = new(LockRecursionPolicy.NoRecursion);
 		private static readonly Type                                      sAssemblyLoadContextType                    = Type.GetType("System.Runtime.Loader.AssemblyLoadContext");
 		private static readonly MethodInfo                                sGetLoadContextMethod                       = null;
 		private static readonly object                                    sDefaultAssemblyLoadContext                 = null;
 		private static readonly bool                                      sIsNetFramework                             = false;
 		private static          bool                                      sInitialized                                = false;
-		private static readonly ConcurrentQueue<Assembly>                 sAssembliesToScan                           = new ConcurrentQueue<Assembly>();
-		private static readonly object                                    sLoadAssembliesSync                         = new object();
+		private static readonly ConcurrentQueue<Assembly>                 sAssembliesToScan                           = new();
+		private static readonly object                                    sLoadAssembliesSync                         = new();
 		private static          bool                                      sLoadedAssembliesInApplicationBaseDirectory = false;
 		private static          bool                                      sLoadedAllAssemblies                        = false;
 		private static          int                                       sAsynchronousUpdatePending                  = 0; // boolean: 0 = false, 1 = true
-		private static          Dictionary<string, Assembly>              sAssembliesByFullName                       = new Dictionary<string, Assembly>();
-		private static          Dictionary<Assembly, IReadOnlyList<Type>> sTypesByAssembly                            = new Dictionary<Assembly, IReadOnlyList<Type>>();
-		private static          Dictionary<Assembly, IReadOnlyList<Type>> sExportedTypesByAssembly                    = new Dictionary<Assembly, IReadOnlyList<Type>>();
-		private static          Dictionary<string, IReadOnlyList<Type>>   sTypesByFullName                            = new Dictionary<string, IReadOnlyList<Type>>();
-		private static          Dictionary<string, IReadOnlyList<Type>>   sExportedTypesByFullName                    = new Dictionary<string, IReadOnlyList<Type>>();
+		private static          Dictionary<string, Assembly>              sAssembliesByFullName                       = new();
+		private static          Dictionary<Assembly, IReadOnlyList<Type>> sTypesByAssembly                            = new();
+		private static          Dictionary<Assembly, IReadOnlyList<Type>> sExportedTypesByAssembly                    = new();
+		private static          Dictionary<string, IReadOnlyList<Type>>   sTypesByFullName                            = new();
+		private static          Dictionary<string, IReadOnlyList<Type>>   sExportedTypesByFullName                    = new();
 
 		/// <summary>
 		/// Initializes the <see cref="RuntimeMetadata"/> class.
@@ -375,7 +375,7 @@ namespace GriffinPlus.Lib
 				int asynchronousUpdatePendingState = Interlocked.Exchange(ref sAsynchronousUpdatePending, 1);
 
 				// load all assemblies in the application's base directory recursively
-				// (should cover plugin assemblies that may reside in a sub-directory)
+				// (should cover plugin assemblies that may reside in a subdirectory)
 				string path = AppDomain.CurrentDomain.BaseDirectory;
 				var regex = new Regex(@"\.(exe|dll)$", RegexOptions.IgnoreCase);
 				foreach (string filename in Directory.GetFiles(path, "*.*", SearchOption.AllDirectories))
@@ -451,7 +451,7 @@ namespace GriffinPlus.Lib
 				int asynchronousUpdatePendingState = Interlocked.Exchange(ref sAsynchronousUpdatePending, 1);
 
 				// load all assemblies in the application's base directory recursively
-				// (should cover plugin assemblies that may reside in a sub-directory)
+				// (should cover plugin assemblies that may reside in a subdirectory)
 				if (!sLoadedAssembliesInApplicationBaseDirectory)
 				{
 					string path = AppDomain.CurrentDomain.BaseDirectory;
@@ -518,14 +518,12 @@ namespace GriffinPlus.Lib
 		private static void LoadReferencedAssemblies(Assembly assembly, HashSet<Assembly> processedAssemblies = null)
 		{
 			// create a new set of loaded assemblies if it was not specified (first run)
-			if (processedAssemblies == null) processedAssemblies = new HashSet<Assembly>();
+			processedAssemblies ??= [];
 
-			// abort if the specified assembly was already processed to avoid processing assemblies multiple times
-			if (processedAssemblies.Contains(assembly))
+			// abort if the specified assembly was already processed to avoid processing assemblies multiple times,
+			// otherwise remember that the assembly was processed
+			if (!processedAssemblies.Add(assembly))
 				return;
-
-			// remember that the assembly was processed
-			processedAssemblies.Add(assembly);
 
 			// load references of the assembly
 			foreach (AssemblyName referencedAssemblyName in assembly.GetReferencedAssemblies())
@@ -645,7 +643,7 @@ namespace GriffinPlus.Lib
 				{
 					Debug.Assert(sGetLoadContextMethod != null, nameof(sGetLoadContextMethod) + " != null");
 					Debug.Assert(sDefaultAssemblyLoadContext != null, nameof(sDefaultAssemblyLoadContext) + " != null");
-					object assemblyLoadContext = sGetLoadContextMethod.Invoke(null, new object[] { assembly });
+					object assemblyLoadContext = sGetLoadContextMethod.Invoke(null, [assembly]);
 					if (assemblyLoadContext != sDefaultAssemblyLoadContext) continue;
 					goto scan;
 				}
@@ -664,7 +662,7 @@ namespace GriffinPlus.Lib
 					goto scan;
 
 				// ----------------------------------------------------------------------------------------------------------------
-				// skip scanning assembly if has not been loaded from the file system
+				// skip scanning assembly if it has not been loaded from the file system
 				// => dynamically generated assemblies and assemblies loaded from the web are not supported
 				// ----------------------------------------------------------------------------------------------------------------
 
@@ -797,7 +795,7 @@ namespace GriffinPlus.Lib
 				Debug.Assert(type.FullName != null, "type.FullName != null");
 				if (!typesByFullName.TryGetValue(type.FullName, out List<Type> list))
 				{
-					list = new List<Type>();
+					list = [];
 					typesByFullName.Add(type.FullName, list);
 				}
 
@@ -807,7 +805,7 @@ namespace GriffinPlus.Lib
 				{
 					if (!exportedTypesByFullName.TryGetValue(type.FullName, out list))
 					{
-						list = new List<Type>();
+						list = [];
 						exportedTypesByFullName.Add(type.FullName, list);
 					}
 

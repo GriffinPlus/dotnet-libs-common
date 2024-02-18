@@ -55,23 +55,22 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
-			using (var acquired = new SemaphoreSlim(0))
-			{
-				// let some other thread acquire the lock
-				ThreadPool.QueueUserWorkItem(
-					acquiredSemaphore =>
-					{
-						rwlock.EnterWriteLock();
-						((SemaphoreSlim)acquiredSemaphore).Release();
-					},
-					acquired);
+			using var acquired = new SemaphoreSlim(0);
 
-				// wait for the thread to acquire the lock
-				acquired.Wait();
+			// let some other thread acquire the lock
+			ThreadPool.QueueUserWorkItem(
+				acquiredSemaphore =>
+				{
+					rwlock.EnterWriteLock();
+					(acquiredSemaphore as SemaphoreSlim)!.Release();
+				},
+				acquired);
 
-				// current thread should timeout now
-				Assert.Throws<TimeoutException>(() => { rwlock.LockReadOnly(Timeout); });
-			}
+			// wait for the thread to acquire the lock
+			acquired.Wait();
+
+			// current thread should time out now
+			Assert.Throws<TimeoutException>(() => { rwlock.LockReadOnly(Timeout); });
 		}
 
 		#endregion
@@ -137,23 +136,21 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
-			using (var acquired = new SemaphoreSlim(0))
-			{
-				// let some other thread acquire the lock
-				ThreadPool.QueueUserWorkItem(
-					acquiredSemaphore =>
-					{
-						rwlock.EnterWriteLock();
-						((SemaphoreSlim)acquiredSemaphore).Release();
-					},
-					acquired);
+			using var acquired = new SemaphoreSlim(0);
+			// let some other thread acquire the lock
+			ThreadPool.QueueUserWorkItem(
+				acquiredSemaphore =>
+				{
+					rwlock.EnterWriteLock();
+					(acquiredSemaphore as SemaphoreSlim)!.Release();
+				},
+				acquired);
 
-				// wait for the thread to acquire the lock
-				acquired.Wait();
+			// wait for the thread to acquire the lock
+			acquired.Wait();
 
-				// current thread should timeout now
-				Assert.Throws<TimeoutException>(() => { rwlock.LockUpgradeableRead(Timeout); });
-			}
+			// current thread should time out now
+			Assert.Throws<TimeoutException>(() => { rwlock.LockUpgradeableRead(Timeout); });
 		}
 
 		#endregion
@@ -195,23 +192,21 @@ namespace GriffinPlus.Lib.Threading
 		{
 			var rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
-			using (var acquired = new SemaphoreSlim(0))
-			{
-				// let some other thread acquire the lock
-				ThreadPool.QueueUserWorkItem(
-					acquiredSemaphore =>
-					{
-						rwlock.EnterWriteLock();
-						((SemaphoreSlim)acquiredSemaphore).Release();
-					},
-					acquired);
+			using var acquired = new SemaphoreSlim(0);
+			// let some other thread acquire the lock
+			ThreadPool.QueueUserWorkItem(
+				acquiredSemaphore =>
+				{
+					rwlock.EnterWriteLock();
+					(acquiredSemaphore as SemaphoreSlim)!.Release();
+				},
+				acquired);
 
-				// wait for the thread to acquire the lock
-				acquired.Wait();
+			// wait for the thread to acquire the lock
+			acquired.Wait();
 
-				// current thread should timeout now
-				Assert.Throws<TimeoutException>(() => { rwlock.LockReadWrite(Timeout); });
-			}
+			// current thread should time out now
+			Assert.Throws<TimeoutException>(() => { rwlock.LockReadWrite(Timeout); });
 		}
 
 		#endregion

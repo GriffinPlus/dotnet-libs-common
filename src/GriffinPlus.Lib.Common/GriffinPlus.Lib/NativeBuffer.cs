@@ -152,7 +152,7 @@ namespace GriffinPlus.Lib
 		/// <param name="size">Size of the buffer (in bytes).</param>
 		/// <param name="ownsBuffer">
 		/// Indicates whether this instance should own the specified native buffer.<br/>
-		/// If <c>true</c> it will add the appropriate amount of memory pressure to the garbage collection and free the
+		/// If <c>true</c>, it will add the appropriate amount of memory pressure to the garbage collection and free the
 		/// buffer on disposal or finalization and remove previously added memory pressure.
 		/// </param>
 		/// <param name="freeCallback">Callback that frees the specified buffer.</param>
@@ -241,8 +241,8 @@ namespace GriffinPlus.Lib
 				// windows platform
 
 				// use VirtualAlloc() in the following cases
-				// a) buffer must be aligned to a page boundary
-				// b) buffer is so large that some waste is negligible (threshold 5% waste)
+				// a. buffer must be aligned to a page boundary
+				// b. buffer is so large that some waste is negligible (threshold 5% waste)
 				long allocSize = (size + sPageSize - 1) & ~(sPageSize - 1);
 				if (alignment == sPageSize || (double)(allocSize - size) / size < 0.05)
 				{
@@ -309,7 +309,7 @@ namespace GriffinPlus.Lib
 		/// <param name="size">Size of the buffer (in bytes).</param>
 		/// <param name="ownsBuffer">
 		/// Indicates whether this instance should own the specified native buffer.<br/>
-		/// If <c>true</c> it will add the appropriate amount of memory pressure to the garbage collection and free the
+		/// If <c>true</c>, it will add the appropriate amount of memory pressure to the garbage collection and free the
 		/// buffer on disposal or finalization and remove previously added memory pressure.
 		/// </param>
 		/// <param name="freeCallback">Callback that frees the specified buffer.</param>
@@ -391,7 +391,7 @@ namespace GriffinPlus.Lib
 		public override bool IsInvalid => IsClosed || handle == IntPtr.Zero;
 
 		/// <summary>
-		/// Gets a value indicating whether this instance owns the wrapped native buffer. If <c>true</c> it will free
+		/// Gets a value indicating whether this instance owns the wrapped native buffer. If <c>true</c>, it will free
 		/// the buffer on disposal or finalization and reduce previously added memory pressure from the garbage
 		/// collection.
 		/// </summary>
@@ -399,7 +399,7 @@ namespace GriffinPlus.Lib
 
 		/// <summary>
 		/// Gets the address of the buffer.
-		/// The <see cref="NativeBuffer"/> must be kept alive until the underlying buffer is not used any more,
+		/// The <see cref="NativeBuffer"/> must be kept alive until the underlying buffer is not used anymore,
 		/// otherwise access violations can occur due to the buffer getting collected prematurely. This can be
 		/// done by putting a <see cref="GC.KeepAlive"/> at the end of the code using the native buffer.
 		/// It is much safer to use <see cref="GetAccessor"/> to obtain an accessor object that keeps the buffer
@@ -416,7 +416,7 @@ namespace GriffinPlus.Lib
 		/// <summary>
 		/// Gets the actual address of the wrapped native buffer. It may be less than <see cref="UnsafeAddress"/>
 		/// due to adjustments that were done to guarantee a requested alignment.
-		/// The <see cref="NativeBuffer"/> must be kept alive until the underlying buffer is not used any more,
+		/// The <see cref="NativeBuffer"/> must be kept alive until the underlying buffer is not used anymore,
 		/// otherwise access violations can occur due to the buffer getting collected prematurely. This can be
 		/// done by putting a <see cref="GC.KeepAlive"/> at the end of the code using the native buffer.
 		/// </summary>
@@ -432,7 +432,7 @@ namespace GriffinPlus.Lib
 		/// Gets an accessor that can be used to safely access the buffer.
 		/// The accessor should be used in conjunction with a 'using' statement to work as expected.
 		/// </summary>
-		/// <returns>An <see cref="NativeBufferAccessor"/> providing access to the buffer.</returns>
+		/// <returns>A <see cref="NativeBufferAccessor"/> providing access to the buffer.</returns>
 		public NativeBufferAccessor GetAccessor()
 		{
 			return new NativeBufferAccessor(this);
@@ -458,7 +458,7 @@ namespace GriffinPlus.Lib
 		/// Returns the buffer as a <see cref="Span{T}"/>.<br/>
 		/// The buffer must be kept alive as long as the span is used, because the span does not contain a
 		/// reference to the <see cref="NativeBuffer"/> instance. The garbage collector might collect it, if it is not
-		/// referenced somewhere else. Nevertheless it is a good notion to dispose the <see cref="NativeBuffer"/> instance
+		/// referenced somewhere else. Nevertheless, it is a good notion to dispose the <see cref="NativeBuffer"/> instance
 		/// when it is not needed any more. This also ensures that the garbage collector does not collect it by accident.
 		/// </summary>
 		/// <returns>A <see cref="Span{T}"/> representing the buffer.</returns>

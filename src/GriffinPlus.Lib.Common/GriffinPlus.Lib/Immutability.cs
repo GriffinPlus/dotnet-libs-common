@@ -25,8 +25,8 @@ namespace GriffinPlus.Lib
 	/// </summary>
 	public static partial class Immutability
 	{
-		private static volatile Dictionary<Type, Info> sCache = new Dictionary<Type, Info>(); // immutable, dictionary is exchanged atomically
-		private static readonly object                 sSync  = new object();
+		private static volatile Dictionary<Type, Info> sCache = new(); // immutable, dictionary is exchanged atomically
+		private static readonly object                 sSync  = new();
 
 		private const string Reason_PrimitiveType             = "primitive type, inherently immutable";
 		private const string Reason_BuiltinType               = "builtin type, known to be immutable";

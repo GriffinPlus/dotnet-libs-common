@@ -15,8 +15,8 @@ namespace GriffinPlus.Lib.Threading
 	/// </summary>
 	public sealed class SerialTaskQueue
 	{
-		private readonly object              mMutex    = new object();
-		private readonly WeakReference<Task> mLastTask = new WeakReference<Task>(null);
+		private readonly object              mMutex    = new();
+		private readonly WeakReference<Task> mLastTask = new(null);
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SerialTaskQueue"/> class.
@@ -49,7 +49,7 @@ namespace GriffinPlus.Lib.Threading
 				// if the executing thread holds synchronization objects.
 				Task resultTask = mLastTask.TryGetTarget(out Task lastTask)
 					                  ? lastTask.ContinueWith(
-						                  (task, state) => ((Action)state)(),
+						                  (_, state) => ((Action)state)(),
 						                  action,
 						                  TaskContinuationOptions.RunContinuationsAsynchronously)
 					                  : Task.Run(action);
@@ -79,7 +79,7 @@ namespace GriffinPlus.Lib.Threading
 				// if the executing thread holds synchronization objects.
 				Task<TResult> resultTask = mLastTask.TryGetTarget(out Task lastTask)
 					                           ? lastTask.ContinueWith(
-						                           (task, state) => ((Func<TResult>)state)(),
+						                           (_, state) => ((Func<TResult>)state)(),
 						                           function,
 						                           TaskContinuationOptions.RunContinuationsAsynchronously)
 					                           : Task.Run(function);
@@ -108,7 +108,7 @@ namespace GriffinPlus.Lib.Threading
 				// if the executing thread holds synchronization objects.
 				Task resultTask = mLastTask.TryGetTarget(out Task lastTask)
 					                  ? lastTask.ContinueWith(
-							                  (task, state) => ((Func<Task>)state)(),
+							                  (_, state) => ((Func<Task>)state)(),
 							                  asyncAction,
 							                  TaskContinuationOptions.RunContinuationsAsynchronously)
 						                  .Unwrap()
@@ -139,7 +139,7 @@ namespace GriffinPlus.Lib.Threading
 				// if the executing thread holds synchronization objects.
 				Task<TResult> resultTask = mLastTask.TryGetTarget(out Task lastTask)
 					                           ? lastTask.ContinueWith(
-							                           (task, state) => ((Func<Task<TResult>>)state)(),
+							                           (_, state) => ((Func<Task<TResult>>)state)(),
 							                           asyncFunction,
 							                           TaskContinuationOptions.RunContinuationsAsynchronously)
 						                           .Unwrap()

@@ -20,7 +20,7 @@ namespace GriffinPlus.Lib.Collections
 	{
 		#region Test Data
 
-		public class TestItem { }
+		public class TestItem;
 
 		/// <summary>
 		/// Test data for tests expecting a certain number of items in the collection.
@@ -31,32 +31,32 @@ namespace GriffinPlus.Lib.Collections
 			{
 				// source list contains no items
 				var items0 = new TestItem[] { };
-				yield return new object[] { items0, 0, 0 };
+				yield return [items0, 0, 0];
 
 				// source list contains one items
 				var items1 = new[] { new TestItem() };
-				yield return new object[] { items1, 0, 1 };
-				yield return new object[] { items1, 1, 0 };
+				yield return [items1, 0, 1];
+				yield return [items1, 1, 0];
 
 				// source list contains two items
 				var items2 = new[] { new TestItem(), new TestItem() };
-				yield return new object[] { items2, 0, 1 };
-				yield return new object[] { items2, 0, 2 };
-				yield return new object[] { items2, 1, 0 };
-				yield return new object[] { items2, 1, 1 };
-				yield return new object[] { items2, 2, 0 };
+				yield return [items2, 0, 1];
+				yield return [items2, 0, 2];
+				yield return [items2, 1, 0];
+				yield return [items2, 1, 1];
+				yield return [items2, 2, 0];
 
 				// source list contains three items
 				var items3 = new[] { new TestItem(), new TestItem(), new TestItem() };
-				yield return new object[] { items3, 0, 1 };
-				yield return new object[] { items3, 0, 2 };
-				yield return new object[] { items3, 0, 3 };
-				yield return new object[] { items3, 1, 0 };
-				yield return new object[] { items3, 1, 1 };
-				yield return new object[] { items3, 1, 2 };
-				yield return new object[] { items3, 2, 0 };
-				yield return new object[] { items3, 2, 1 };
-				yield return new object[] { items3, 3, 0 };
+				yield return [items3, 0, 1];
+				yield return [items3, 0, 2];
+				yield return [items3, 0, 3];
+				yield return [items3, 1, 0];
+				yield return [items3, 1, 1];
+				yield return [items3, 1, 2];
+				yield return [items3, 2, 0];
+				yield return [items3, 2, 1];
+				yield return [items3, 3, 0];
 			}
 		}
 
@@ -240,7 +240,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			var list = new PartialList<TestItem>(items, offset, count);
 
-			// all items reachable via the the indexer should be the same as the item passed during construction
+			// all items reachable via the indexer should be the same as the item passed during construction
 			for (int i = offset; i < offset + count; i++)
 			{
 				Assert.Same(items[i], list[i - offset]);
@@ -263,7 +263,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			IList<TestItem> list = new PartialList<TestItem>(items, offset, count);
 
-			// all items reachable via the the indexer should be the same as the item passed during construction
+			// all items reachable via the indexer should be the same as the item passed during construction
 			for (int i = offset; i < offset + count; i++)
 			{
 				Assert.Same(items[i], list[i - offset]);
@@ -299,7 +299,7 @@ namespace GriffinPlus.Lib.Collections
 		{
 			IList list = new PartialList<TestItem>(items, offset, count);
 
-			// all items reachable via the the indexer should be the same as the item passed during construction
+			// all items reachable via the indexer should be the same as the item passed during construction
 			for (int i = offset; i < offset + count; i++)
 			{
 				Assert.Same(items[i], list[i - offset]);
@@ -542,7 +542,7 @@ namespace GriffinPlus.Lib.Collections
 
 		/// <summary>
 		/// Tests the explicit implementation of the <see cref="ICollection.CopyTo"/> method.
-		/// The method should throw an exception if the specified array is multi-dimensional.
+		/// The method should throw an exception if the specified array is multidimensional.
 		/// </summary>
 		[Fact]
 		public void CopyTo_ICollection_ArrayIsMultiDimensional()
@@ -605,6 +605,7 @@ namespace GriffinPlus.Lib.Collections
 			while (enumerator.MoveNext()) enumerated.Add((TestItem)enumerator.Current);
 			Assert.Equal(count, enumerated.Count);
 			Assert.Equal(items.Skip(offset).Take(count), enumerated);
+			(enumerator as IDisposable)!.Dispose();
 		}
 
 		#endregion

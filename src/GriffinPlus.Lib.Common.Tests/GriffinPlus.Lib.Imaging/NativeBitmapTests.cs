@@ -29,7 +29,7 @@ namespace GriffinPlus.Lib.Imaging
 				// pixel formats to test with
 				// (contains only formats that require different handling)
 				PixelFormat[] formats =
-				{
+				[
 					PixelFormats.Indexed1,    // palettized, 1 bpp
 					PixelFormats.Indexed2,    // palettized, 2 bpp
 					PixelFormats.Indexed4,    // palettized, 4 bpp
@@ -44,7 +44,7 @@ namespace GriffinPlus.Lib.Imaging
 					PixelFormats.Rgb48,       // not palettized, 48 bpp
 					PixelFormats.Rgba64,      // not palettized, 64 bpp
 					PixelFormats.Rgba128Float // not palettized, 128 bpp
-				};
+				];
 
 				// use the web palette, if needed as it is compatible with all indexed formats
 				BitmapPalette palette = BitmapPalettes.WebPalette;
@@ -63,15 +63,15 @@ namespace GriffinPlus.Lib.Imaging
 					{
 						int width = 100 + i;
 
-						yield return new object[]
-						{
+						yield return
+						[
 							width,                             // width (in pixels)
 							height,                            // height (in pixels)
 							dpiX,                              // dpiX
 							dpiY,                              // dpiY
 							format,                            // pixel format
 							format.Palettized ? palette : null // bitmap palette, if pixel format needs one
-						};
+						];
 					}
 				}
 			}
@@ -87,7 +87,7 @@ namespace GriffinPlus.Lib.Imaging
 				// pixel formats to test with
 				// (contains only formats that require different handling)
 				PixelFormat[] formats =
-				{
+				[
 					PixelFormats.Indexed1,    // palettized, 1 bpp
 					PixelFormats.Indexed2,    // palettized, 2 bpp
 					PixelFormats.Indexed4,    // palettized, 4 bpp
@@ -102,7 +102,7 @@ namespace GriffinPlus.Lib.Imaging
 					PixelFormats.Rgb48,       // not palettized, 48 bpp
 					PixelFormats.Rgba64,      // not palettized, 64 bpp
 					PixelFormats.Rgba128Float // not palettized, 128 bpp
-				};
+				];
 
 				// use the web palette, if needed as it is compatible with all indexed formats
 				BitmapPalette palette = BitmapPalettes.WebPalette;
@@ -124,8 +124,8 @@ namespace GriffinPlus.Lib.Imaging
 						CalculateBufferAlignmentAndStride(format, width, out _, out long stride);
 
 						// use the same stride for the bitmap to copy as for the copy
-						yield return new object[]
-						{
+						yield return
+						[
 							width,                             // width (in pixels)
 							height,                            // height (in pixels)
 							stride,                            // stride (in bytes)
@@ -133,12 +133,12 @@ namespace GriffinPlus.Lib.Imaging
 							dpiY,                              // dpiY
 							format,                            // pixel format
 							format.Palettized ? palette : null // bitmap palette, if pixel format needs one
-						};
+						];
 
 						// increment the stride of bitmap to copy by one byte
 						// => destroys the alignment of rows, but this should work as well
-						yield return new object[]
-						{
+						yield return
+						[
 							width,                             // width (in pixels)
 							height,                            // height (in pixels)
 							stride + 1,                        // stride (in bytes)
@@ -146,7 +146,7 @@ namespace GriffinPlus.Lib.Imaging
 							dpiY,                              // dpiY
 							format,                            // pixel format
 							format.Palettized ? palette : null // bitmap palette, if pixel format needs one
-						};
+						];
 					}
 				}
 			}
@@ -162,7 +162,7 @@ namespace GriffinPlus.Lib.Imaging
 				// test non-palettized pixel formats only
 				// (the bitmap palette does not have any effect on copying)
 				PixelFormat[] formats =
-				{
+				[
 					//PixelFormats.Indexed1,    // palettized, 1 bpp
 					//PixelFormats.Indexed2,    // palettized, 2 bpp
 					//PixelFormats.Indexed4,    // palettized, 4 bpp
@@ -177,10 +177,10 @@ namespace GriffinPlus.Lib.Imaging
 					PixelFormats.Rgb48,       // not palettized, 48 bpp
 					PixelFormats.Rgba64,      // not palettized, 64 bpp
 					PixelFormats.Rgba128Float // not palettized, 128 bpp
-				};
+				];
 
 				Type[] bufferTypes =
-				{
+				[
 					typeof(sbyte),
 					typeof(byte),
 					typeof(short),
@@ -191,7 +191,7 @@ namespace GriffinPlus.Lib.Imaging
 					typeof(ulong),
 					typeof(float),
 					typeof(double)
-				};
+				];
 
 				BitmapPalette palette = BitmapPalettes.WebPalette;
 
@@ -212,8 +212,8 @@ namespace GriffinPlus.Lib.Imaging
 
 						// entire bitmap
 						// (selection width/height is zero => default to bitmap width/height)
-						yield return new object[]
-						{
+						yield return
+						[
 							width,                              // width (in pixels)
 							height,                             // height (in pixels)
 							dpiX,                               // dpiX
@@ -225,15 +225,15 @@ namespace GriffinPlus.Lib.Imaging
 							0,                                  // y-coordinate of the selection (in pixels)
 							0,                                  // width of the selection (in pixels)
 							0                                   // height of the selection (in pixels)
-						};
+						];
 
 						// real selections
 						int selectionCount = format.BitsPerPixel % 8 != 0 ? 8 / format.BitsPerPixel % 8 : 1;
 						for (int selectionX = 0; selectionX < selectionCount; selectionX++)
 						for (int selectionY = 0; selectionY < selectionCount; selectionY++)
 						{
-							yield return new object[]
-							{
+							yield return
+							[
 								width,                              // width (in pixels)
 								height,                             // height (in pixels)
 								dpiX,                               // dpiX
@@ -245,7 +245,7 @@ namespace GriffinPlus.Lib.Imaging
 								selectionY,                         // y-coordinate of the selection (in pixels)
 								width - 2 * selectionX,             // width of the selection (in pixels)
 								height - 2 * selectionY             // height of the selection (in pixels)
-							};
+							];
 						}
 					}
 				}
@@ -262,7 +262,7 @@ namespace GriffinPlus.Lib.Imaging
 				// test non-palettized pixel formats only
 				// (the bitmap palette does not have any effect on copying)
 				PixelFormat[] formats =
-				{
+				[
 					//PixelFormats.Indexed1,    // palettized, 1 bpp
 					//PixelFormats.Indexed2,    // palettized, 2 bpp
 					//PixelFormats.Indexed4,    // palettized, 4 bpp
@@ -277,7 +277,7 @@ namespace GriffinPlus.Lib.Imaging
 					PixelFormats.Rgb48,       // not palettized, 48 bpp
 					PixelFormats.Rgba64,      // not palettized, 64 bpp
 					PixelFormats.Rgba128Float // not palettized, 128 bpp
-				};
+				];
 
 				BitmapPalette palette = BitmapPalettes.WebPalette;
 
@@ -297,8 +297,8 @@ namespace GriffinPlus.Lib.Imaging
 
 						// entire bitmap
 						// (selection width/height is zero => default to bitmap width/height)
-						yield return new object[]
-						{
+						yield return
+						[
 							width,                              // width (in pixels)
 							height,                             // height (in pixels)
 							dpiX,                               // dpiX
@@ -309,15 +309,15 @@ namespace GriffinPlus.Lib.Imaging
 							0,                                  // y-coordinate of the selection (in pixels)
 							0,                                  // width of the selection (in pixels)
 							0                                   // height of the selection (in pixels)
-						};
+						];
 
 						// real selections
 						int selectionCount = format.BitsPerPixel % 8 != 0 ? 8 / format.BitsPerPixel % 8 : 1;
 						for (int selectionX = 0; selectionX < selectionCount; selectionX++)
 						for (int selectionY = 0; selectionY < selectionCount; selectionY++)
 						{
-							yield return new object[]
-							{
+							yield return
+							[
 								width,                              // width (in pixels)
 								height,                             // height (in pixels)
 								dpiX,                               // dpiX
@@ -328,7 +328,7 @@ namespace GriffinPlus.Lib.Imaging
 								selectionY,                         // y-coordinate of the selection (in pixels)
 								width - 2 * selectionX,             // width of the selection (in pixels)
 								height - 2 * selectionY             // height of the selection (in pixels)
-							};
+							];
 						}
 					}
 				}
@@ -372,64 +372,61 @@ namespace GriffinPlus.Lib.Imaging
 			// create a bitmap with the specified parameters serving as the bitmap to copy
 			fixed (byte* pOriginalBuffer = &originalBuffer[0])
 			{
-				using (var original = new NativeBitmap( // <- _not_ the constructor to test
-					       (IntPtr)pOriginalBuffer,
-					       originalBuffer.Length,
-					       width,
-					       height,
-					       originalStride,
-					       dpiX,
-					       dpiY,
-					       format,
-					       palette))
+				using var original = new NativeBitmap( // <- _not_ the constructor to test
+					(IntPtr)pOriginalBuffer,
+					originalBuffer.Length,
+					width,
+					height,
+					originalStride,
+					dpiX,
+					dpiY,
+					format,
+					palette);
+
+				// ensure that the properties reflect the correct state
+				Assert.Equal(width, original.PixelWidth);
+				Assert.Equal(height, original.PixelHeight);
+				Assert.Equal(dpiX, original.DpiX);
+				Assert.Equal(dpiY, original.DpiY);
+				Assert.Equal(format, original.Format);
+				Assert.Same(palette, original.Palette);
+				Assert.Equal(originalStride, original.BufferStride);
+				Assert.Equal(originalBufferSize, original.BufferSize);
+				Assert.Equal((IntPtr)pOriginalBuffer, original.UnsafeBufferStart);
+
+				// create a copy of the bitmap
+				using var copy = new NativeBitmap(original);
+				// calculate the expected alignment and stride of the backing buffer
+				CalculateBufferAlignmentAndStride(format, width, out int alignment, out long stride);
+
+				// calculate the expected buffer size
+				// (for simplicity the NativeBitmap always creates buffers that have a last row of the specified stride)
+				long expectedBufferSize = height * stride;
+
+				// check properties of the copy
+				Assert.Equal(width, copy.PixelWidth);
+				Assert.Equal(height, copy.PixelHeight);
+				Assert.Equal(dpiX, copy.DpiX);
+				Assert.Equal(dpiY, copy.DpiY);
+				Assert.Equal(format, copy.Format);
+				Assert.Same(palette, copy.Palette);
+				Assert.Equal(stride, copy.BufferStride);
+				Assert.Equal(expectedBufferSize, copy.BufferSize);
+				Assert.NotEqual(IntPtr.Zero, copy.UnsafeBufferStart);
+				Assert.Equal(0, copy.UnsafeBufferStart.ToInt64() & (alignment - 1));
+
+				// ensure the copied bitmap contains the reference data as well
+				// (compare byte-wise, but skip non-significant bytes)
+				byte* pOriginalRowStart = pOriginalBuffer;
+				byte* pCopyRowStart = (byte*)copy.UnsafeBufferStart;
+				for (int y = 0; y < height; y++)
 				{
-					// ensure that the properties reflect the correct state
-					Assert.Equal(width, original.PixelWidth);
-					Assert.Equal(height, original.PixelHeight);
-					Assert.Equal(dpiX, original.DpiX);
-					Assert.Equal(dpiY, original.DpiY);
-					Assert.Equal(format, original.Format);
-					Assert.Same(palette, original.Palette);
-					Assert.Equal(originalStride, original.BufferStride);
-					Assert.Equal(originalBufferSize, original.BufferSize);
-					Assert.Equal((IntPtr)pOriginalBuffer, original.UnsafeBufferStart);
-
-					// create a copy of the bitmap
-					using (var copy = new NativeBitmap(original)) // <- constructor to test
-					{
-						// calculate the expected alignment and stride of the backing buffer
-						CalculateBufferAlignmentAndStride(format, width, out int alignment, out long stride);
-
-						// calculate the expected buffer size
-						// (for simplicity the NativeBitmap always creates buffers that have a last row of the specified stride)
-						long expectedBufferSize = height * stride;
-
-						// check properties of the copy
-						Assert.Equal(width, copy.PixelWidth);
-						Assert.Equal(height, copy.PixelHeight);
-						Assert.Equal(dpiX, copy.DpiX);
-						Assert.Equal(dpiY, copy.DpiY);
-						Assert.Equal(format, copy.Format);
-						Assert.Same(palette, copy.Palette);
-						Assert.Equal(stride, copy.BufferStride);
-						Assert.Equal(expectedBufferSize, copy.BufferSize);
-						Assert.NotEqual(IntPtr.Zero, copy.UnsafeBufferStart);
-						Assert.Equal(0, copy.UnsafeBufferStart.ToInt64() & (alignment - 1));
-
-						// ensure the copied bitmap contains the reference data as well
-						// (compare byte-wise, but skip non-significant bytes)
-						byte* pOriginalRowStart = pOriginalBuffer;
-						byte* pCopyRowStart = (byte*)copy.UnsafeBufferStart;
-						for (int y = 0; y < height; y++)
-						{
-							byte* pOriginal = pOriginalRowStart;
-							byte* pOriginalEnd = pOriginalRowStart + (width * format.BitsPerPixel + 7) / 8;
-							byte* pCopy = pCopyRowStart;
-							while (pOriginal != pOriginalEnd) Assert.Equal(*pOriginal++, *pCopy++);
-							pOriginalRowStart += originalStride;
-							pCopyRowStart += copy.BufferStride;
-						}
-					}
+					byte* pOriginal = pOriginalRowStart;
+					byte* pOriginalEnd = pOriginalRowStart + (width * format.BitsPerPixel + 7) / 8;
+					byte* pCopy = pCopyRowStart;
+					while (pOriginal != pOriginalEnd) Assert.Equal(*pOriginal++, *pCopy++);
+					pOriginalRowStart += originalStride;
+					pCopyRowStart += copy.BufferStride;
 				}
 			}
 		}
@@ -482,67 +479,63 @@ namespace GriffinPlus.Lib.Imaging
 			// create a bitmap with the specified parameters serving as the bitmap to copy
 			fixed (byte* pOriginalBuffer = &originalBuffer[0])
 			{
-				using (var original = new NativeBitmap( // <- _not_ the constructor to test
-					       (IntPtr)pOriginalBuffer,
-					       originalBuffer.Length,
-					       width,
-					       height,
-					       originalStride,
-					       dpiX,
-					       dpiY,
-					       format,
-					       palette))
+				using var original = new NativeBitmap( // <- _not_ the constructor to test
+					(IntPtr)pOriginalBuffer,
+					originalBuffer.Length,
+					width,
+					height,
+					originalStride,
+					dpiX,
+					dpiY,
+					format,
+					palette);
+				// ensure that the properties reflect the correct state
+				Assert.Equal(width, original.PixelWidth);
+				Assert.Equal(height, original.PixelHeight);
+				Assert.Equal(dpiX, original.DpiX);
+				Assert.Equal(dpiY, original.DpiY);
+				Assert.Equal(format, original.Format);
+				Assert.Same(palette, original.Palette);
+				Assert.Equal(originalStride, original.BufferStride);
+				Assert.Equal(originalBufferSize, original.BufferSize);
+				Assert.Equal((IntPtr)pOriginalBuffer, original.UnsafeBufferStart);
+
+				// create a copy of the bitmap
+				// (the resulting bitmap should be a simple copy with changed resolution)
+				double newDpiX = dpiX + 10.0;
+				double newDpiY = dpiY + 10.0;
+				using var copy = new NativeBitmap(original, newDpiX, newDpiY);
+				// calculate the expected alignment and stride of the backing buffer
+				CalculateBufferAlignmentAndStride(format, width, out int alignment, out long stride);
+
+				// calculate the expected buffer size
+				// (for simplicity the NativeBitmap always creates buffers that have a last row of the specified stride)
+				long expectedBufferSize = height * stride;
+
+				// check properties of the copy
+				Assert.Equal(width, copy.PixelWidth);
+				Assert.Equal(height, copy.PixelHeight);
+				Assert.Equal(newDpiX, copy.DpiX);
+				Assert.Equal(newDpiY, copy.DpiY);
+				Assert.Equal(format, copy.Format);
+				Assert.Same(palette, copy.Palette);
+				Assert.Equal(stride, copy.BufferStride);
+				Assert.Equal(expectedBufferSize, copy.BufferSize);
+				Assert.NotEqual(IntPtr.Zero, copy.UnsafeBufferStart);
+				Assert.Equal(0, copy.UnsafeBufferStart.ToInt64() & (alignment - 1));
+
+				// ensure the copied bitmap contains the reference data as well
+				// (compare byte-wise, but skip non-significant bytes)
+				byte* pOriginalRowStart = pOriginalBuffer;
+				byte* pCopyRowStart = (byte*)copy.UnsafeBufferStart;
+				for (int y = 0; y < height; y++)
 				{
-					// ensure that the properties reflect the correct state
-					Assert.Equal(width, original.PixelWidth);
-					Assert.Equal(height, original.PixelHeight);
-					Assert.Equal(dpiX, original.DpiX);
-					Assert.Equal(dpiY, original.DpiY);
-					Assert.Equal(format, original.Format);
-					Assert.Same(palette, original.Palette);
-					Assert.Equal(originalStride, original.BufferStride);
-					Assert.Equal(originalBufferSize, original.BufferSize);
-					Assert.Equal((IntPtr)pOriginalBuffer, original.UnsafeBufferStart);
-
-					// create a copy of the bitmap
-					// (the resulting bitmap should be a simple copy with changed resolution)
-					double newDpiX = dpiX + 10.0;
-					double newDpiY = dpiY + 10.0;
-					using (var copy = new NativeBitmap(original, newDpiX, newDpiY)) // <- constructor to test
-					{
-						// calculate the expected alignment and stride of the backing buffer
-						CalculateBufferAlignmentAndStride(format, width, out int alignment, out long stride);
-
-						// calculate the expected buffer size
-						// (for simplicity the NativeBitmap always creates buffers that have a last row of the specified stride)
-						long expectedBufferSize = height * stride;
-
-						// check properties of the copy
-						Assert.Equal(width, copy.PixelWidth);
-						Assert.Equal(height, copy.PixelHeight);
-						Assert.Equal(newDpiX, copy.DpiX);
-						Assert.Equal(newDpiY, copy.DpiY);
-						Assert.Equal(format, copy.Format);
-						Assert.Same(palette, copy.Palette);
-						Assert.Equal(stride, copy.BufferStride);
-						Assert.Equal(expectedBufferSize, copy.BufferSize);
-						Assert.NotEqual(IntPtr.Zero, copy.UnsafeBufferStart);
-						Assert.Equal(0, copy.UnsafeBufferStart.ToInt64() & (alignment - 1));
-
-						// ensure the copied bitmap contains the reference data as well
-						// (compare byte-wise, but skip non-significant bytes)
-						byte* pOriginalRowStart = pOriginalBuffer;
-						byte* pCopyRowStart = (byte*)copy.UnsafeBufferStart;
-						for (int y = 0; y < height; y++)
-						{
-							byte* pOriginal = pOriginalRowStart;
-							byte* pOriginalEnd = pOriginalRowStart + (width * format.BitsPerPixel + 7) / 8;
-							byte* pCopy = pCopyRowStart;
-							while (pOriginal != pOriginalEnd) Assert.Equal(*pOriginal++, *pCopy++);
-							pOriginalRowStart += originalStride;
-							pCopyRowStart += copy.BufferStride;
-						}
-					}
+					byte* pOriginal = pOriginalRowStart;
+					byte* pOriginalEnd = pOriginalRowStart + (width * format.BitsPerPixel + 7) / 8;
+					byte* pCopy = pCopyRowStart;
+					while (pOriginal != pOriginalEnd) Assert.Equal(*pOriginal++, *pCopy++);
+					pOriginalRowStart += originalStride;
+					pCopyRowStart += copy.BufferStride;
 				}
 			}
 		}
@@ -589,27 +582,25 @@ namespace GriffinPlus.Lib.Imaging
 			// (for simplicity the NativeBitmap always creates buffers that have a last row of the specified stride)
 			long expectedBufferSize = height * stride;
 
-			using (var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette))
-			{
-				Assert.Equal(width, bitmap.PixelWidth);
-				Assert.Equal(height, bitmap.PixelHeight);
-				Assert.Equal(dpiX, bitmap.DpiX);
-				Assert.Equal(dpiY, bitmap.DpiY);
-				Assert.Equal(format, bitmap.Format);
-				Assert.Same(palette, bitmap.Palette);
-				Assert.Equal(stride, bitmap.BufferStride);
-				Assert.Equal(expectedBufferSize, bitmap.BufferSize);
+			using var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette);
+			Assert.Equal(width, bitmap.PixelWidth);
+			Assert.Equal(height, bitmap.PixelHeight);
+			Assert.Equal(dpiX, bitmap.DpiX);
+			Assert.Equal(dpiY, bitmap.DpiY);
+			Assert.Equal(format, bitmap.Format);
+			Assert.Same(palette, bitmap.Palette);
+			Assert.Equal(stride, bitmap.BufferStride);
+			Assert.Equal(expectedBufferSize, bitmap.BufferSize);
 
-				// the buffer should be aligned as expected
-				byte* pBufferStart = (byte*)bitmap.UnsafeBufferStart;
-				Assert.True(pBufferStart != null);
-				Assert.Equal(0, (long)pBufferStart & (alignment - 1));
+			// the buffer should be aligned as expected
+			byte* pBufferStart = (byte*)bitmap.UnsafeBufferStart;
+			Assert.True(pBufferStart != null);
+			Assert.Equal(0, (long)pBufferStart & (alignment - 1));
 
-				// the buffer should have been cleared
-				byte* pBuffer = pBufferStart;
-				byte* pBufferEnd = pBufferStart + (height - 1) * stride + (width * format.BitsPerPixel + 7) / 8;
-				while (pBuffer != pBufferEnd) Assert.Equal(0, *pBuffer++);
-			}
+			// the buffer should have been cleared
+			byte* pBuffer = pBufferStart;
+			byte* pBufferEnd = pBufferStart + (height - 1) * stride + (width * format.BitsPerPixel + 7) / 8;
+			while (pBuffer != pBufferEnd) Assert.Equal(0, *pBuffer++);
 		}
 
 		/// <summary>
@@ -691,54 +682,52 @@ namespace GriffinPlus.Lib.Imaging
 			// create two bitmap with the specified parameters copying the bitmap stored in the buffer
 			// bitmap 1: same stride as the source buffer (the entire buffer is copied at once)
 			// bitmap 2: slightly greater stride as the source buffer (copying is done row by row)
-			using (var bitmap1 = new NativeBitmap(buffer1, width, height, bufferStride1, dpiX, dpiY, format, palette))
-			using (var bitmap2 = new NativeBitmap(buffer2, width, height, bufferStride2, dpiX, dpiY, format, palette))
+			using var bitmap1 = new NativeBitmap(buffer1, width, height, bufferStride1, dpiX, dpiY, format, palette);
+			using var bitmap2 = new NativeBitmap(buffer2, width, height, bufferStride2, dpiX, dpiY, format, palette);
+			// the buffers should not have been modified by the constructor
+			Assert.Equal(savedBuffer1, buffer1);
+			Assert.Equal(savedBuffer2, buffer2);
+
+			void Test(NativeBitmap bitmap, byte[] buffer, long stride)
 			{
-				// the buffers should not have been modified by the constructor
-				Assert.Equal(savedBuffer1, buffer1);
-				Assert.Equal(savedBuffer2, buffer2);
+				// ensure that the properties of the bitmap reflect the correct state
+				Assert.Equal(width, bitmap.PixelWidth);
+				Assert.Equal(height, bitmap.PixelHeight);
+				Assert.Equal(dpiX, bitmap.DpiX);
+				Assert.Equal(dpiY, bitmap.DpiY);
+				Assert.Equal(format, bitmap.Format);
+				Assert.Same(palette, bitmap.Palette);
+				Assert.Equal(bufferStride1, bitmap.BufferStride); // buffer1 should have the same layout as the created bitmap
+				Assert.Equal(bufferSize1, bitmap.BufferSize);     // buffer1 should have the same layout as the created bitmap
 
-				void Test(NativeBitmap bitmap, byte[] buffer, long stride)
+				// the buffer should be aligned as expected
+				// (buffer1 should have the same layout as the created bitmap)
+				byte* pBufferStart = (byte*)bitmap.UnsafeBufferStart;
+				Assert.True(pBufferStart != null);
+				Assert.Equal(0, (long)pBufferStart & (alignment1 - 1));
+
+				// ensure that the bitmap contains the reference data as well
+				// (compare byte-wise, but skip non-significant bytes)
+
+				fixed (byte* pOriginalBuffer = &buffer[0])
 				{
-					// ensure that the properties of the bitmap reflect the correct state
-					Assert.Equal(width, bitmap.PixelWidth);
-					Assert.Equal(height, bitmap.PixelHeight);
-					Assert.Equal(dpiX, bitmap.DpiX);
-					Assert.Equal(dpiY, bitmap.DpiY);
-					Assert.Equal(format, bitmap.Format);
-					Assert.Same(palette, bitmap.Palette);
-					Assert.Equal(bufferStride1, bitmap.BufferStride); // buffer1 should have the same layout as the created bitmap
-					Assert.Equal(bufferSize1, bitmap.BufferSize);     // buffer1 should have the same layout as the created bitmap
-
-					// the buffer should be aligned as expected
-					// (buffer1 should have the same layout as the created bitmap)
-					byte* pBufferStart = (byte*)bitmap.UnsafeBufferStart;
-					Assert.True(pBufferStart != null);
-					Assert.Equal(0, (long)pBufferStart & (alignment1 - 1));
-
-					// ensure that the bitmap contains the reference data as well
-					// (compare byte-wise, but skip non-significant bytes)
-
-					fixed (byte* pOriginalBuffer = &buffer[0])
+					byte* pOriginalRowStart = pOriginalBuffer;
+					byte* pCopyRowStart = (byte*)bitmap.UnsafeBufferStart;
+					for (int y = 0; y < height; y++)
 					{
-						byte* pOriginalRowStart = pOriginalBuffer;
-						byte* pCopyRowStart = (byte*)bitmap.UnsafeBufferStart;
-						for (int y = 0; y < height; y++)
-						{
-							byte* pOriginal = pOriginalRowStart;
-							byte* pOriginalEnd = pOriginalRowStart + (width * format.BitsPerPixel + 7) / 8;
-							byte* pCopy = pCopyRowStart;
-							while (pOriginal != pOriginalEnd) Assert.Equal(*pOriginal++, *pCopy++);
-							pOriginalRowStart += stride;
-							pCopyRowStart += bitmap.BufferStride;
-						}
+						byte* pOriginal = pOriginalRowStart;
+						byte* pOriginalEnd = pOriginalRowStart + (width * format.BitsPerPixel + 7) / 8;
+						byte* pCopy = pCopyRowStart;
+						while (pOriginal != pOriginalEnd) Assert.Equal(*pOriginal++, *pCopy++);
+						pOriginalRowStart += stride;
+						pCopyRowStart += bitmap.BufferStride;
 					}
 				}
-
-				// check whether the bitmaps have been created as expected
-				Test(bitmap1, buffer1, bufferStride1);
-				Test(bitmap2, buffer2, bufferStride2);
 			}
+
+			// check whether the bitmaps have been created as expected
+			Test(bitmap1, buffer1, bufferStride1);
+			Test(bitmap2, buffer2, bufferStride2);
 		}
 
 		/// <summary>
@@ -995,28 +984,26 @@ namespace GriffinPlus.Lib.Imaging
 			// create a bitmap with the specified parameters on top of the buffer
 			fixed (byte* pBuffer = &buffer[0])
 			{
-				using (var bitmap = new NativeBitmap(
-					       (IntPtr)pBuffer,
-					       buffer.Length,
-					       width,
-					       height,
-					       stride,
-					       dpiX,
-					       dpiY,
-					       format,
-					       palette))
-				{
-					// ensure that the properties reflect the correct state
-					Assert.Equal(width, bitmap.PixelWidth);
-					Assert.Equal(height, bitmap.PixelHeight);
-					Assert.Equal(dpiX, bitmap.DpiX);
-					Assert.Equal(dpiY, bitmap.DpiY);
-					Assert.Equal(format, bitmap.Format);
-					Assert.Same(palette, bitmap.Palette);
-					Assert.Equal(stride, bitmap.BufferStride);
-					Assert.Equal(bufferSize, bitmap.BufferSize);
-					Assert.Equal((IntPtr)pBuffer, bitmap.UnsafeBufferStart);
-				}
+				using var bitmap = new NativeBitmap(
+					(IntPtr)pBuffer,
+					buffer.Length,
+					width,
+					height,
+					stride,
+					dpiX,
+					dpiY,
+					format,
+					palette);
+				// ensure that the properties reflect the correct state
+				Assert.Equal(width, bitmap.PixelWidth);
+				Assert.Equal(height, bitmap.PixelHeight);
+				Assert.Equal(dpiX, bitmap.DpiX);
+				Assert.Equal(dpiY, bitmap.DpiY);
+				Assert.Equal(format, bitmap.Format);
+				Assert.Same(palette, bitmap.Palette);
+				Assert.Equal(stride, bitmap.BufferStride);
+				Assert.Equal(bufferSize, bitmap.BufferSize);
+				Assert.Equal((IntPtr)pBuffer, bitmap.UnsafeBufferStart);
 			}
 		}
 
@@ -1032,10 +1019,10 @@ namespace GriffinPlus.Lib.Imaging
 			int height = 100;
 			double dpi = 100.0;
 			PixelFormat format = PixelFormats.Gray8;
-			var buffer = (IntPtr)0x1; // invalid buffer, but not used anyway
+			IntPtr buffer = (IntPtr)0x1; // invalid buffer, but not used anyway
 			long bufferSize = 1;
 			int stride = 1;
-			ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, bufferSize, width, height, stride, dpi, dpi, format, null));
+			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, bufferSize, width, height, stride, dpi, dpi, format, null));
 			Assert.Equal("width", exception.ParamName);
 		}
 
@@ -1051,10 +1038,10 @@ namespace GriffinPlus.Lib.Imaging
 			int width = 100;
 			double dpi = 100.0;
 			PixelFormat format = PixelFormats.Gray8;
-			var buffer = (IntPtr)0x1; // invalid buffer, but not used anyway
+			IntPtr buffer = (IntPtr)0x1; // invalid buffer, but not used anyway
 			long bufferSize = 1;
 			int stride = 1;
-			ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, bufferSize, width, height, stride, dpi, dpi, format, null));
+			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, bufferSize, width, height, stride, dpi, dpi, format, null));
 			Assert.Equal("height", exception.ParamName);
 		}
 
@@ -1070,10 +1057,10 @@ namespace GriffinPlus.Lib.Imaging
 			const double dpi = 100.0;
 			const long bufferSize = 1;
 			PixelFormat format = PixelFormats.Gray8;
-			var buffer = (IntPtr)0x1; // invalid buffer, but not used anyway
+			IntPtr buffer = (IntPtr)0x1; // invalid buffer, but not used anyway
 			CalculateBufferAlignmentAndStride(format, width, out _, out long stride);
 			stride -= 1;
-			ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, bufferSize, width, height, stride, dpi, dpi, format, null));
+			var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new NativeBitmap(buffer, bufferSize, width, height, stride, dpi, dpi, format, null));
 			Assert.Equal("stride", exception.ParamName);
 		}
 
@@ -1088,10 +1075,10 @@ namespace GriffinPlus.Lib.Imaging
 			int height = 100;
 			double dpi = 100.0;
 			PixelFormat format = PixelFormats.Gray2; // 2 bits per pixel
-			var buffer = (IntPtr)0x1;                // invalid buffer, but not used anyway
+			IntPtr buffer = (IntPtr)0x1;             // invalid buffer, but not used anyway
 			CalculateBufferAlignmentAndStride(format, width, out _, out long stride);
 			long minimumBufferSize = (height - 1) * stride + (width * format.BitsPerPixel + 7) / 8;
-			ArgumentException exception = Assert.Throws<ArgumentException>(() => new NativeBitmap(buffer, minimumBufferSize - 1, width, height, stride, dpi, dpi, format, null));
+			var exception = Assert.Throws<ArgumentException>(() => new NativeBitmap(buffer, minimumBufferSize - 1, width, height, stride, dpi, dpi, format, null));
 			Assert.Equal("bufferSize", exception.ParamName);
 		}
 
@@ -1111,10 +1098,8 @@ namespace GriffinPlus.Lib.Imaging
 			const double dpiY = 400.0;
 			PixelFormat format = PixelFormats.Indexed8;
 			BitmapPalette palette = BitmapPalettes.WebPalette;
-			using (var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette))
-			{
-				Assert.Equal(width, bitmap.PixelWidth);
-			}
+			using var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette);
+			Assert.Equal(width, bitmap.PixelWidth);
 		}
 
 		/// <summary>
@@ -1151,10 +1136,8 @@ namespace GriffinPlus.Lib.Imaging
 			const double dpiY = 400.0;
 			PixelFormat format = PixelFormats.Indexed8;
 			BitmapPalette palette = BitmapPalettes.WebPalette;
-			using (var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette))
-			{
-				Assert.Equal(height, bitmap.PixelHeight);
-			}
+			using var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette);
+			Assert.Equal(height, bitmap.PixelHeight);
 		}
 
 		/// <summary>
@@ -1191,10 +1174,8 @@ namespace GriffinPlus.Lib.Imaging
 			const double dpiY = 400.0;
 			PixelFormat format = PixelFormats.Indexed8;
 			BitmapPalette palette = BitmapPalettes.WebPalette;
-			using (var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette))
-			{
-				Assert.Equal(dpiX, bitmap.DpiX);
-			}
+			using var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette);
+			Assert.Equal(dpiX, bitmap.DpiX);
 		}
 
 		/// <summary>
@@ -1231,10 +1212,8 @@ namespace GriffinPlus.Lib.Imaging
 			const double dpiY = 400.0;
 			PixelFormat format = PixelFormats.Indexed8;
 			BitmapPalette palette = BitmapPalettes.WebPalette;
-			using (var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette))
-			{
-				Assert.Equal(dpiY, bitmap.DpiY);
-			}
+			using var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette);
+			Assert.Equal(dpiY, bitmap.DpiY);
 		}
 
 		/// <summary>
@@ -1271,10 +1250,8 @@ namespace GriffinPlus.Lib.Imaging
 			const double dpiY = 400.0;
 			PixelFormat format = PixelFormats.Indexed8;
 			BitmapPalette palette = BitmapPalettes.WebPalette;
-			using (var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette))
-			{
-				Assert.Equal(format, bitmap.Format);
-			}
+			using var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette);
+			Assert.Equal(format, bitmap.Format);
 		}
 
 		/// <summary>
@@ -1311,10 +1288,8 @@ namespace GriffinPlus.Lib.Imaging
 			const double dpiY = 400.0;
 			PixelFormat format = PixelFormats.Indexed8;
 			BitmapPalette palette = BitmapPalettes.WebPalette;
-			using (var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette))
-			{
-				Assert.Same(palette, bitmap.Palette);
-			}
+			using var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette);
+			Assert.Same(palette, bitmap.Palette);
 		}
 
 		/// <summary>
@@ -1351,10 +1326,8 @@ namespace GriffinPlus.Lib.Imaging
 			const double dpiY = 400.0;
 			PixelFormat format = PixelFormats.Indexed8;
 			BitmapPalette palette = BitmapPalettes.WebPalette;
-			using (var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette))
-			{
-				Assert.NotEqual(IntPtr.Zero, bitmap.UnsafeBufferStart);
-			}
+			using var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette);
+			Assert.NotEqual(IntPtr.Zero, bitmap.UnsafeBufferStart);
 		}
 
 		/// <summary>
@@ -1391,11 +1364,9 @@ namespace GriffinPlus.Lib.Imaging
 			const double dpiY = 400.0;
 			PixelFormat format = PixelFormats.Indexed8;
 			BitmapPalette palette = BitmapPalettes.WebPalette;
-			using (var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette))
-			{
-				CalculateBufferAlignmentAndStride(format, width, out _, out long stride);
-				Assert.Equal(stride, bitmap.BufferStride);
-			}
+			using var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette);
+			CalculateBufferAlignmentAndStride(format, width, out _, out long stride);
+			Assert.Equal(stride, bitmap.BufferStride);
 		}
 
 		/// <summary>
@@ -1432,13 +1403,11 @@ namespace GriffinPlus.Lib.Imaging
 			const double dpiY = 400.0;
 			PixelFormat format = PixelFormats.Indexed8;
 			BitmapPalette palette = BitmapPalettes.WebPalette;
-			using (var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette))
-			{
-				// for simplicity the last row should also be of the same length as other rows
-				CalculateBufferAlignmentAndStride(format, width, out _, out long stride);
-				long bufferSize = height * stride;
-				Assert.Equal(bufferSize, bitmap.BufferSize);
-			}
+			using var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette);
+			// for simplicity the last row should also be of the same length as other rows
+			CalculateBufferAlignmentAndStride(format, width, out _, out long stride);
+			long bufferSize = height * stride;
+			Assert.Equal(bufferSize, bitmap.BufferSize);
 		}
 
 		/// <summary>
@@ -1475,19 +1444,17 @@ namespace GriffinPlus.Lib.Imaging
 			const double dpiY = 400.0;
 			PixelFormat format = PixelFormats.Indexed8;
 			BitmapPalette palette = BitmapPalettes.WebPalette;
-			using (var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette))
-			using (NativeBitmapAccessor accessor = bitmap.GetAccessor())
-			{
-				Assert.Equal(bitmap.PixelWidth, accessor.PixelWidth);
-				Assert.Equal(bitmap.PixelHeight, accessor.PixelHeight);
-				Assert.Equal(bitmap.DpiX, accessor.DpiX);
-				Assert.Equal(bitmap.DpiY, accessor.DpiY);
-				Assert.Equal(bitmap.Format, accessor.Format);
-				Assert.Equal(bitmap.Palette, accessor.Palette);
-				Assert.Equal(bitmap.UnsafeBufferStart, accessor.BufferStart);
-				Assert.Equal(bitmap.BufferStride, accessor.BufferStride);
-				Assert.Equal(bitmap.BufferSize, accessor.BufferSize);
-			}
+			using var bitmap = new NativeBitmap(width, height, dpiX, dpiY, format, palette);
+			using NativeBitmapAccessor accessor = bitmap.GetAccessor();
+			Assert.Equal(bitmap.PixelWidth, accessor.PixelWidth);
+			Assert.Equal(bitmap.PixelHeight, accessor.PixelHeight);
+			Assert.Equal(bitmap.DpiX, accessor.DpiX);
+			Assert.Equal(bitmap.DpiY, accessor.DpiY);
+			Assert.Equal(bitmap.Format, accessor.Format);
+			Assert.Equal(bitmap.Palette, accessor.Palette);
+			Assert.Equal(bitmap.UnsafeBufferStart, accessor.BufferStart);
+			Assert.Equal(bitmap.BufferStride, accessor.BufferStride);
+			Assert.Equal(bitmap.BufferSize, accessor.BufferSize);
 		}
 
 		/// <summary>
@@ -1552,138 +1519,136 @@ namespace GriffinPlus.Lib.Imaging
 			// create a bitmap with the specified parameters on top of the buffer
 			fixed (byte* pBuffer = &buffer[0])
 			{
-				using (var bitmap = new NativeBitmap(
-					       (IntPtr)pBuffer,
-					       buffer.Length,
-					       width,
-					       height,
-					       stride,
-					       dpiX,
-					       dpiY,
-					       format,
-					       palette))
+				using var bitmap = new NativeBitmap(
+					(IntPtr)pBuffer,
+					buffer.Length,
+					width,
+					height,
+					stride,
+					dpiX,
+					dpiY,
+					format,
+					palette);
+				// ensure that the properties reflect the correct state
+				Assert.Equal(width, bitmap.PixelWidth);
+				Assert.Equal(height, bitmap.PixelHeight);
+				Assert.Equal(dpiX, bitmap.DpiX);
+				Assert.Equal(dpiY, bitmap.DpiY);
+				Assert.Equal(format, bitmap.Format);
+				Assert.Same(palette, bitmap.Palette);
+				Assert.Equal(stride, bitmap.BufferStride);
+				Assert.Equal(bitmapBufferSize, bitmap.BufferSize);
+				Assert.Equal((IntPtr)pBuffer, bitmap.UnsafeBufferStart);
+
+				long destinationBufferElementSize = Marshal.SizeOf(bufferType);
+
+				#region Actual Test
+
+				void CreateDestinationArrayAndInvokeCopyPixels(int destinationBufferOffset, long destinationBufferStride)
 				{
-					// ensure that the properties reflect the correct state
-					Assert.Equal(width, bitmap.PixelWidth);
-					Assert.Equal(height, bitmap.PixelHeight);
-					Assert.Equal(dpiX, bitmap.DpiX);
-					Assert.Equal(dpiY, bitmap.DpiY);
-					Assert.Equal(format, bitmap.Format);
-					Assert.Same(palette, bitmap.Palette);
-					Assert.Equal(stride, bitmap.BufferStride);
-					Assert.Equal(bitmapBufferSize, bitmap.BufferSize);
-					Assert.Equal((IntPtr)pBuffer, bitmap.UnsafeBufferStart);
+					// create a new destination array of the requested type
+					long destinationBufferSize = (bitmap.PixelHeight - 1) * destinationBufferStride + (bitmap.PixelWidth * bitmap.Format.BitsPerPixel + 7) / 8;
+					destinationBufferSize = (destinationBufferSize + destinationBufferElementSize - 1) & ~(destinationBufferElementSize - 1);
+					long destinationBufferLength = destinationBufferSize / destinationBufferElementSize + destinationBufferOffset;
+					var destinationBuffer = Array.CreateInstance(bufferType, destinationBufferLength);
 
-					long destinationBufferElementSize = Marshal.SizeOf(bufferType);
+					// let CopyPixel() copy the bitmap into the destination array
+					bitmap.CopyPixels(
+						destinationBuffer,
+						destinationBufferOffset,
+						destinationBufferStride,
+						selectionX,
+						selectionY,
+						selectionWidth,
+						selectionHeight);
 
-					#region Actual Test
-
-					void CreateDestinationArrayAndInvokeCopyPixels(int destinationBufferOffset, long destinationBufferStride)
+					// ensure the data in the array contains the bitmap data as well
+					// (compare byte-wise, but skip non-significant bytes)
+					GCHandle handle = GCHandle.Alloc(destinationBuffer, GCHandleType.Pinned);
+					try
 					{
-						// create a new destination array of the requested type
-						long destinationBufferSize = (bitmap.PixelHeight - 1) * destinationBufferStride + (bitmap.PixelWidth * bitmap.Format.BitsPerPixel + 7) / 8;
-						destinationBufferSize = (destinationBufferSize + destinationBufferElementSize - 1) & ~(destinationBufferElementSize - 1);
-						long destinationBufferLength = destinationBufferSize / destinationBufferElementSize + destinationBufferOffset;
-						var destinationBuffer = Array.CreateInstance(bufferType, destinationBufferLength);
+						byte* pDestinationBuffer = (byte*)Marshal.UnsafeAddrOfPinnedArrayElement(destinationBuffer, destinationBufferOffset);
 
-						// let CopyPixel() copy the bitmap into the destination array
-						bitmap.CopyPixels(
-							destinationBuffer,
-							destinationBufferOffset,
-							destinationBufferStride,
-							selectionX,
-							selectionY,
-							selectionWidth,
-							selectionHeight);
-
-						// ensure the data in the array contains the bitmap data as well
-						// (compare byte-wise, but skip non-significant bytes)
-						GCHandle handle = GCHandle.Alloc(destinationBuffer, GCHandleType.Pinned);
-						try
+						fixed (byte* pBitmapBuffer = &buffer[0])
 						{
-							byte* pDestinationBuffer = (byte*)Marshal.UnsafeAddrOfPinnedArrayElement(destinationBuffer, destinationBufferOffset);
-
-							fixed (byte* pBitmapBuffer = &buffer[0])
+							if (selectionX * format.BitsPerPixel % 8 == 0)
 							{
-								if (selectionX * format.BitsPerPixel % 8 == 0)
+								// selection started at a byte boundary
+								// => no shifting necessary
+								byte* pBitmapSelectionRowStart = pBitmapBuffer + selectionY * stride + selectionX * format.BitsPerPixel / 8;
+								byte* pBitmapSelectionEnd = pBitmapSelectionRowStart + selectionHeight * stride;
+								byte* pDestinationRowStart = pDestinationBuffer;
+								long bytesToComparePerRow = ((long)selectionWidth * format.BitsPerPixel + 7) / 8;
+								while (pBitmapSelectionRowStart != pBitmapSelectionEnd)
 								{
-									// selection started at a byte boundary
-									// => no shifting necessary
-									byte* pBitmapSelectionRowStart = pBitmapBuffer + selectionY * stride + selectionX * format.BitsPerPixel / 8;
-									byte* pBitmapSelectionEnd = pBitmapSelectionRowStart + selectionHeight * stride;
-									byte* pDestinationRowStart = pDestinationBuffer;
-									long bytesToComparePerRow = ((long)selectionWidth * format.BitsPerPixel + 7) / 8;
-									while (pBitmapSelectionRowStart != pBitmapSelectionEnd)
-									{
-										byte* pBitmapSelection = pBitmapSelectionRowStart;
-										byte* pDestination = pDestinationRowStart;
-										byte* pDestinationRowEnd = pDestination + bytesToComparePerRow;
-										while (pDestination != pDestinationRowEnd) Assert.Equal(*pBitmapSelection++, *pDestination++);
-										pBitmapSelectionRowStart += stride;
-										pDestinationRowStart += destinationBufferStride;
-									}
+									byte* pBitmapSelection = pBitmapSelectionRowStart;
+									byte* pDestination = pDestinationRowStart;
+									byte* pDestinationRowEnd = pDestination + bytesToComparePerRow;
+									while (pDestination != pDestinationRowEnd) Assert.Equal(*pBitmapSelection++, *pDestination++);
+									pBitmapSelectionRowStart += stride;
+									pDestinationRowStart += destinationBufferStride;
 								}
-								else
+							}
+							else
+							{
+								// selection did not start at a byte boundary
+								// => pixels need to be shifted appropriately
+								int shift = (int)((long)selectionX * format.BitsPerPixel % 8);
+								int pixelsInFirstBitmapSelectionByte = (8 - shift) / format.BitsPerPixel;
+								byte* pBitmapSelectionRowStart = pBitmapBuffer + selectionY * stride + (long)selectionX * format.BitsPerPixel / 8;
+								byte* pBitmapSelectionEnd = pBitmapSelectionRowStart + selectionHeight * stride;
+								byte* pDestinationRowStart = pDestinationBuffer;
+								byte* pDestinationEnd = pDestinationBuffer + destinationBufferSize;
+								long bitmapSelectionBytesPerRow = 1 + ((long)Math.Max(selectionWidth - pixelsInFirstBitmapSelectionByte, 0) * format.BitsPerPixel + 7) / 8;
+								long destinationBytesPerRow = ((long)selectionWidth * format.BitsPerPixel + 7) / 8;
+								while (pBitmapSelectionRowStart != pBitmapSelectionEnd)
 								{
-									// selection did not start at a byte boundary
-									// => pixels need to be shifted appropriately
-									int shift = (int)((long)selectionX * format.BitsPerPixel % 8);
-									int pixelsInFirstBitmapSelectionByte = (8 - shift) / format.BitsPerPixel;
-									byte* pBitmapSelectionRowStart = pBitmapBuffer + selectionY * stride + (long)selectionX * format.BitsPerPixel / 8;
-									byte* pBitmapSelectionEnd = pBitmapSelectionRowStart + selectionHeight * stride;
-									byte* pDestinationRowStart = pDestinationBuffer;
-									byte* pDestinationEnd = pDestinationBuffer + destinationBufferSize;
-									long bitmapSelectionBytesPerRow = 1 + ((long)Math.Max(selectionWidth - pixelsInFirstBitmapSelectionByte, 0) * format.BitsPerPixel + 7) / 8;
-									long destinationBytesPerRow = ((long)selectionWidth * format.BitsPerPixel + 7) / 8;
-									while (pBitmapSelectionRowStart != pBitmapSelectionEnd)
+									byte* pBitmapSelection = pBitmapSelectionRowStart;
+									byte* pBitmapSelectionRowEnd = pBitmapSelectionRowStart + bitmapSelectionBytesPerRow;
+									byte* pDestination = pDestinationRowStart;
+									byte* pDestinationRowEnd = pDestinationRowStart + destinationBytesPerRow;
+									int accu = *pBitmapSelection++ << shift;
+									while (pBitmapSelection != pBitmapSelectionRowEnd)
 									{
-										byte* pBitmapSelection = pBitmapSelectionRowStart;
-										byte* pBitmapSelectionRowEnd = pBitmapSelectionRowStart + bitmapSelectionBytesPerRow;
-										byte* pDestination = pDestinationRowStart;
-										byte* pDestinationRowEnd = pDestinationRowStart + destinationBytesPerRow;
-										int accu = *pBitmapSelection++ << shift;
-										while (pBitmapSelection != pBitmapSelectionRowEnd)
-										{
-											int next = *pBitmapSelection++;
-											accu |= next >> (8 - shift);
-											Assert.Equal(accu & 0xFF, *pDestination++);
-											accu = next << shift;
-										}
-
-										if (pDestination != pDestinationRowEnd)
-											Assert.Equal(accu & 0xFF, *pDestination++);
-
-										// test padding in destination buffer
-										long bytesToTest = Math.Min(destinationBufferStride, pDestinationEnd - pDestination) - destinationBytesPerRow;
-										for (int i = 0; i < bytesToTest; i++) Assert.Equal(0, *pDestination++);
-
-										// proceed with the next row
-										pBitmapSelectionRowStart += stride;
-										pDestinationRowStart += destinationBufferStride;
+										int next = *pBitmapSelection++;
+										accu |= next >> (8 - shift);
+										Assert.Equal(accu & 0xFF, *pDestination++);
+										accu = next << shift;
 									}
+
+									if (pDestination != pDestinationRowEnd)
+										Assert.Equal(accu & 0xFF, *pDestination++);
+
+									// test padding in destination buffer
+									long bytesToTest = Math.Min(destinationBufferStride, pDestinationEnd - pDestination) - destinationBytesPerRow;
+									for (int i = 0; i < bytesToTest; i++) Assert.Equal(0, *pDestination++);
+
+									// proceed with the next row
+									pBitmapSelectionRowStart += stride;
+									pDestinationRowStart += destinationBufferStride;
 								}
 							}
 						}
-						finally
-						{
-							handle.Free();
-						}
 					}
-
-					#endregion
-
-					// round up the stride to a multiple of the size of an array element to ensure a row contains a full number of array elements
-					long destinationStride = (stride + destinationBufferElementSize - 1) & ~(destinationBufferElementSize - 1);
-
-					// test copying the bitmap into a buffer with the same stride as the original bitmap
-					CreateDestinationArrayAndInvokeCopyPixels(0, destinationStride);
-					CreateDestinationArrayAndInvokeCopyPixels(1, destinationStride);
-
-					// test copying the bitmap into a buffer that has a greater stride
-					// (simply adding one destination buffer element should be enough to enlarge the stride and keep the alignment intact)
-					CreateDestinationArrayAndInvokeCopyPixels(0, destinationStride + destinationBufferElementSize);
-					CreateDestinationArrayAndInvokeCopyPixels(1, destinationStride + destinationBufferElementSize);
+					finally
+					{
+						handle.Free();
+					}
 				}
+
+				#endregion
+
+				// round up the stride to a multiple of the size of an array element to ensure a row contains a full number of array elements
+				long destinationStride = (stride + destinationBufferElementSize - 1) & ~(destinationBufferElementSize - 1);
+
+				// test copying the bitmap into a buffer with the same stride as the original bitmap
+				CreateDestinationArrayAndInvokeCopyPixels(0, destinationStride);
+				CreateDestinationArrayAndInvokeCopyPixels(1, destinationStride);
+
+				// test copying the bitmap into a buffer that has a greater stride
+				// (simply adding one destination buffer element should be enough to enlarge the stride and keep the alignment intact)
+				CreateDestinationArrayAndInvokeCopyPixels(0, destinationStride + destinationBufferElementSize);
+				CreateDestinationArrayAndInvokeCopyPixels(1, destinationStride + destinationBufferElementSize);
 			}
 		}
 
@@ -1776,7 +1741,7 @@ namespace GriffinPlus.Lib.Imaging
 			CopyPixels_RunTestWithError(
 				bitmap =>
 				{
-					// calculate the stride of the destination buffer and the its overall length needed to receive all pixels
+					// calculate the stride of the destination buffer and its overall length needed to receive all pixels
 					int selectionWidth = bitmap.PixelWidth - 2 * selectionMargin;
 					int selectionHeight = bitmap.PixelHeight - 2 * selectionMargin;
 					CalculateBufferAlignmentAndStride(bitmap.Format, selectionWidth, out _, out long destinationStride);
@@ -1857,7 +1822,7 @@ namespace GriffinPlus.Lib.Imaging
 
 		/// <summary>
 		/// Tests the <see cref="NativeBitmap.CopyPixels(Array, int, long, int, int, int, int)"/> method.
-		/// The method should throw an exception if the specified buffer is a multi-dimensional array.
+		/// The method should throw an exception if the specified buffer is a multidimensional array.
 		/// </summary>
 		[Fact]
 		public void CopyPixels_Array_DestinationIsMultiDimensionalArray()
@@ -1865,7 +1830,7 @@ namespace GriffinPlus.Lib.Imaging
 			CopyPixels_RunTestWithError(
 				bitmap =>
 				{
-					// multi-dimensional array of a supported type (unsupported type is handled the same way)
+					// multidimensional array of a supported type (unsupported type is handled the same way)
 					CalculateBufferAlignmentAndStride(bitmap.Format, bitmap.PixelWidth, out _, out long stride);
 					long destinationBufferSize = (bitmap.PixelHeight - 1) * stride + (bitmap.PixelWidth * bitmap.Format.BitsPerPixel + 7) / 8;
 					Array destinationBuffer = new byte[1, destinationBufferSize];
@@ -1992,7 +1957,7 @@ namespace GriffinPlus.Lib.Imaging
 			CopyPixels_RunTestWithError(
 				bitmap =>
 				{
-					// calculate the stride of the destination buffer and the its overall length needed to receive all pixels
+					// calculate the stride of the destination buffer and its overall length needed to receive all pixels
 					int selectionWidth = bitmap.PixelWidth - 2 * selectionMargin;
 					int selectionHeight = bitmap.PixelHeight - 2 * selectionMargin;
 					CalculateBufferAlignmentAndStride(bitmap.Format, selectionWidth, out _, out long destinationStride);
@@ -2236,7 +2201,7 @@ namespace GriffinPlus.Lib.Imaging
 					// selection region is still in valid bounds of the bitmap
 					// => should succeed
 					{
-						// calculate the stride of the destination buffer and the its overall length needed to receive all pixels
+						// calculate the stride of the destination buffer and its overall length needed to receive all pixels
 						int selectionWidth = bitmap.PixelWidth - selectionMargin;
 						int selectionHeight = bitmap.PixelHeight - selectionMargin;
 						CalculateBufferAlignmentAndStride(bitmap.Format, selectionWidth, out _, out long destinationStride);
@@ -2258,7 +2223,7 @@ namespace GriffinPlus.Lib.Imaging
 					// selection region exceeds the width of the bitmap
 					// => exception expected
 					{
-						// calculate the stride of the destination buffer and the its overall length needed to receive all pixels
+						// calculate the stride of the destination buffer and its overall length needed to receive all pixels
 						int selectionWidth = bitmap.PixelWidth - selectionMargin + 1;
 						int selectionHeight = bitmap.PixelHeight - selectionMargin;
 						CalculateBufferAlignmentAndStride(bitmap.Format, selectionWidth, out _, out long destinationStride);
@@ -2306,7 +2271,7 @@ namespace GriffinPlus.Lib.Imaging
 					// selection region is still in valid bounds of the bitmap
 					// => should succeed
 					{
-						// calculate the stride of the destination buffer and the its overall length needed to receive all pixels
+						// calculate the stride of the destination buffer and its overall length needed to receive all pixels
 						int selectionWidth = bitmap.PixelWidth - selectionMargin;
 						int selectionHeight = bitmap.PixelHeight - selectionMargin;
 						CalculateBufferAlignmentAndStride(bitmap.Format, selectionWidth, out _, out long destinationStride);
@@ -2328,7 +2293,7 @@ namespace GriffinPlus.Lib.Imaging
 					// selection region exceeds the height of the bitmap
 					// => exception expected
 					{
-						// calculate the stride of the destination buffer and the its overall length needed to receive all pixels
+						// calculate the stride of the destination buffer and its overall length needed to receive all pixels
 						int selectionWidth = bitmap.PixelWidth - selectionMargin;
 						int selectionHeight = bitmap.PixelHeight - selectionMargin + 1;
 						CalculateBufferAlignmentAndStride(bitmap.Format, selectionWidth, out _, out long destinationStride);
@@ -2397,134 +2362,132 @@ namespace GriffinPlus.Lib.Imaging
 			// create a bitmap with the specified parameters on top of the buffer
 			fixed (byte* pBuffer = &buffer[0])
 			{
-				using (var bitmap = new NativeBitmap(
-					       (IntPtr)pBuffer,
-					       buffer.Length,
-					       width,
-					       height,
-					       stride,
-					       dpiX,
-					       dpiY,
-					       format,
-					       palette))
+				using var bitmap = new NativeBitmap(
+					(IntPtr)pBuffer,
+					buffer.Length,
+					width,
+					height,
+					stride,
+					dpiX,
+					dpiY,
+					format,
+					palette);
+				// ensure that the properties reflect the correct state
+				Assert.Equal(width, bitmap.PixelWidth);
+				Assert.Equal(height, bitmap.PixelHeight);
+				Assert.Equal(dpiX, bitmap.DpiX);
+				Assert.Equal(dpiY, bitmap.DpiY);
+				Assert.Equal(format, bitmap.Format);
+				Assert.Same(palette, bitmap.Palette);
+				Assert.Equal(stride, bitmap.BufferStride);
+				Assert.Equal(bitmapBufferSize, bitmap.BufferSize);
+				Assert.Equal((IntPtr)pBuffer, bitmap.UnsafeBufferStart);
+
+				#region Actual Test
+
+				void CreateDestinationArrayAndInvokeCopyPixels(int destinationBufferOffset, long destinationStride)
 				{
-					// ensure that the properties reflect the correct state
-					Assert.Equal(width, bitmap.PixelWidth);
-					Assert.Equal(height, bitmap.PixelHeight);
-					Assert.Equal(dpiX, bitmap.DpiX);
-					Assert.Equal(dpiY, bitmap.DpiY);
-					Assert.Equal(format, bitmap.Format);
-					Assert.Same(palette, bitmap.Palette);
-					Assert.Equal(stride, bitmap.BufferStride);
-					Assert.Equal(bitmapBufferSize, bitmap.BufferSize);
-					Assert.Equal((IntPtr)pBuffer, bitmap.UnsafeBufferStart);
+					// create a new buffer
+					long destinationBufferSize = (height - 1) * destinationStride + (width * format.BitsPerPixel + 7) / 8 + destinationBufferOffset;
+					byte[] destinationBuffer = new byte[destinationBufferSize];
 
-					#region Actual Test
-
-					void CreateDestinationArrayAndInvokeCopyPixels(int destinationBufferOffset, long destinationStride)
+					// let CopyPixel() copy the bitmap into the destination buffer and
+					// ensure the data in the array contains the bitmap data as well
+					// (compare byte-wise, but skip non-significant bytes)
+					GCHandle handle = GCHandle.Alloc(destinationBuffer, GCHandleType.Pinned);
+					try
 					{
-						// create a new buffer
-						long destinationBufferSize = (height - 1) * destinationStride + (width * format.BitsPerPixel + 7) / 8 + destinationBufferOffset;
-						byte[] destinationBuffer = new byte[destinationBufferSize];
+						byte* pDestinationBufferAtOffset = (byte*)Marshal.UnsafeAddrOfPinnedArrayElement(destinationBuffer, destinationBufferOffset);
 
-						// let CopyPixel() copy the bitmap into the destination buffer and
-						// ensure the data in the array contains the bitmap data as well
-						// (compare byte-wise, but skip non-significant bytes)
-						GCHandle handle = GCHandle.Alloc(destinationBuffer, GCHandleType.Pinned);
-						try
+						// copy pixels into the destination buffer
+						bitmap.CopyPixels(
+							(IntPtr)pDestinationBufferAtOffset,
+							destinationBufferSize - destinationBufferOffset,
+							destinationStride,
+							selectionX,
+							selectionY,
+							selectionWidth,
+							selectionHeight);
+
+						fixed (byte* pBitmapBuffer = &buffer[0])
 						{
-							byte* pDestinationBufferAtOffset = (byte*)Marshal.UnsafeAddrOfPinnedArrayElement(destinationBuffer, destinationBufferOffset);
-
-							// copy pixels into the destination buffer
-							bitmap.CopyPixels(
-								(IntPtr)pDestinationBufferAtOffset,
-								destinationBufferSize - destinationBufferOffset,
-								destinationStride,
-								selectionX,
-								selectionY,
-								selectionWidth,
-								selectionHeight);
-
-							fixed (byte* pBitmapBuffer = &buffer[0])
+							if (selectionX * format.BitsPerPixel % 8 == 0)
 							{
-								if (selectionX * format.BitsPerPixel % 8 == 0)
+								// selection started at a byte boundary
+								// => no shifting necessary
+								byte* pBitmapSelectionRowStart = pBitmapBuffer + selectionY * stride + selectionX * format.BitsPerPixel / 8;
+								byte* pBitmapSelectionEnd = pBitmapSelectionRowStart + selectionHeight * stride;
+								byte* pDestinationRowStart = pDestinationBufferAtOffset;
+								long bytesToComparePerRow = (selectionWidth * format.BitsPerPixel + 7) / 8;
+								while (pBitmapSelectionRowStart != pBitmapSelectionEnd)
 								{
-									// selection started at a byte boundary
-									// => no shifting necessary
-									byte* pBitmapSelectionRowStart = pBitmapBuffer + selectionY * stride + selectionX * format.BitsPerPixel / 8;
-									byte* pBitmapSelectionEnd = pBitmapSelectionRowStart + selectionHeight * stride;
-									byte* pDestinationRowStart = pDestinationBufferAtOffset;
-									long bytesToComparePerRow = (selectionWidth * format.BitsPerPixel + 7) / 8;
-									while (pBitmapSelectionRowStart != pBitmapSelectionEnd)
-									{
-										byte* pBitmapSelection = pBitmapSelectionRowStart;
-										byte* pDestination = pDestinationRowStart;
-										byte* pDestinationRowEnd = pDestination + bytesToComparePerRow;
-										while (pDestination != pDestinationRowEnd) Assert.Equal(*pBitmapSelection++, *pDestination++);
-										pBitmapSelectionRowStart += stride;
-										pDestinationRowStart += destinationStride;
-									}
+									byte* pBitmapSelection = pBitmapSelectionRowStart;
+									byte* pDestination = pDestinationRowStart;
+									byte* pDestinationRowEnd = pDestination + bytesToComparePerRow;
+									while (pDestination != pDestinationRowEnd) Assert.Equal(*pBitmapSelection++, *pDestination++);
+									pBitmapSelectionRowStart += stride;
+									pDestinationRowStart += destinationStride;
 								}
-								else
+							}
+							else
+							{
+								// selection did not start at a byte boundary
+								// => pixels need to be shifted appropriately
+								int shift = (int)((long)selectionX * format.BitsPerPixel % 8);
+								int pixelsInFirstBitmapSelectionByte = (8 - shift) / format.BitsPerPixel;
+								byte* pBitmapSelectionRowStart = pBitmapBuffer + selectionY * stride + (long)selectionX * format.BitsPerPixel / 8;
+								byte* pBitmapSelectionEnd = pBitmapSelectionRowStart + selectionHeight * stride;
+								byte* pDestinationRowStart = pDestinationBufferAtOffset;
+								byte* pDestinationEnd = pDestinationBufferAtOffset + destinationBufferSize;
+								long bitmapSelectionBytesPerRow = 1 + ((long)Math.Max(selectionWidth - pixelsInFirstBitmapSelectionByte, 0) * format.BitsPerPixel + 7) / 8;
+								long destinationBytesPerRow = ((long)selectionWidth * format.BitsPerPixel + 7) / 8;
+								while (pBitmapSelectionRowStart != pBitmapSelectionEnd)
 								{
-									// selection did not start at a byte boundary
-									// => pixels need to be shifted appropriately
-									int shift = (int)((long)selectionX * format.BitsPerPixel % 8);
-									int pixelsInFirstBitmapSelectionByte = (8 - shift) / format.BitsPerPixel;
-									byte* pBitmapSelectionRowStart = pBitmapBuffer + selectionY * stride + (long)selectionX * format.BitsPerPixel / 8;
-									byte* pBitmapSelectionEnd = pBitmapSelectionRowStart + selectionHeight * stride;
-									byte* pDestinationRowStart = pDestinationBufferAtOffset;
-									byte* pDestinationEnd = pDestinationBufferAtOffset + destinationBufferSize;
-									long bitmapSelectionBytesPerRow = 1 + ((long)Math.Max(selectionWidth - pixelsInFirstBitmapSelectionByte, 0) * format.BitsPerPixel + 7) / 8;
-									long destinationBytesPerRow = ((long)selectionWidth * format.BitsPerPixel + 7) / 8;
-									while (pBitmapSelectionRowStart != pBitmapSelectionEnd)
+									byte* pBitmapSelection = pBitmapSelectionRowStart;
+									byte* pBitmapSelectionRowEnd = pBitmapSelectionRowStart + bitmapSelectionBytesPerRow;
+									byte* pDestination = pDestinationRowStart;
+									byte* pDestinationRowEnd = pDestinationRowStart + destinationBytesPerRow;
+									int accu = *pBitmapSelection++ << shift;
+									while (pBitmapSelection != pBitmapSelectionRowEnd)
 									{
-										byte* pBitmapSelection = pBitmapSelectionRowStart;
-										byte* pBitmapSelectionRowEnd = pBitmapSelectionRowStart + bitmapSelectionBytesPerRow;
-										byte* pDestination = pDestinationRowStart;
-										byte* pDestinationRowEnd = pDestinationRowStart + destinationBytesPerRow;
-										int accu = *pBitmapSelection++ << shift;
-										while (pBitmapSelection != pBitmapSelectionRowEnd)
-										{
-											int next = *pBitmapSelection++;
-											accu |= next >> (8 - shift);
-											Assert.Equal(accu & 0xFF, *pDestination++);
-											accu = next << shift;
-										}
-
-										if (pDestination != pDestinationRowEnd)
-											Assert.Equal(accu & 0xFF, *pDestination++);
-
-										// test padding in destination buffer
-										long bytesToTest = Math.Min(destinationStride, pDestinationEnd - pDestination) - destinationBytesPerRow;
-										for (int i = 0; i < bytesToTest; i++) Assert.Equal(0, *pDestination++);
-
-										// proceed with the next row
-										pBitmapSelectionRowStart += stride;
-										pDestinationRowStart += destinationStride;
+										int next = *pBitmapSelection++;
+										accu |= next >> (8 - shift);
+										Assert.Equal(accu & 0xFF, *pDestination++);
+										accu = next << shift;
 									}
+
+									if (pDestination != pDestinationRowEnd)
+										Assert.Equal(accu & 0xFF, *pDestination++);
+
+									// test padding in destination buffer
+									long bytesToTest = Math.Min(destinationStride, pDestinationEnd - pDestination) - destinationBytesPerRow;
+									for (int i = 0; i < bytesToTest; i++) Assert.Equal(0, *pDestination++);
+
+									// proceed with the next row
+									pBitmapSelectionRowStart += stride;
+									pDestinationRowStart += destinationStride;
 								}
 							}
 						}
-						finally
-						{
-							handle.Free();
-						}
 					}
-
-					#endregion
-
-					// test copying the bitmap into a buffer with the same stride as the original bitmap
-					// (starting at index 1 can break the alignment, depending on the pixel format, but it should work as well)
-					CreateDestinationArrayAndInvokeCopyPixels(0, stride);
-					CreateDestinationArrayAndInvokeCopyPixels(1, stride);
-
-					// test copying the bitmap into a buffer that has a greater stride
-					// (starting at index 1 and incrementing the stride by 1 can break the alignment, depending on the pixel format,
-					// but it should work as well)
-					CreateDestinationArrayAndInvokeCopyPixels(0, stride + 1);
-					CreateDestinationArrayAndInvokeCopyPixels(1, stride + 1);
+					finally
+					{
+						handle.Free();
+					}
 				}
+
+				#endregion
+
+				// test copying the bitmap into a buffer with the same stride as the original bitmap
+				// (starting at index 1 can break the alignment, depending on the pixel format, but it should work as well)
+				CreateDestinationArrayAndInvokeCopyPixels(0, stride);
+				CreateDestinationArrayAndInvokeCopyPixels(1, stride);
+
+				// test copying the bitmap into a buffer that has a greater stride
+				// (starting at index 1 and incrementing the stride by 1 can break the alignment, depending on the pixel format,
+				// but it should work as well)
+				CreateDestinationArrayAndInvokeCopyPixels(0, stride + 1);
+				CreateDestinationArrayAndInvokeCopyPixels(1, stride + 1);
 			}
 		}
 
@@ -2697,7 +2660,7 @@ namespace GriffinPlus.Lib.Imaging
 			CopyPixels_RunTestWithError(
 				bitmap =>
 				{
-					// calculate the stride of the destination buffer and the its overall length needed to receive all pixels
+					// calculate the stride of the destination buffer and its overall length needed to receive all pixels
 					int selectionWidth = bitmap.PixelWidth - 2 * selectionMargin;
 					int selectionHeight = bitmap.PixelHeight - 2 * selectionMargin;
 					CalculateBufferAlignmentAndStride(bitmap.Format, selectionWidth, out _, out long destinationStride);
@@ -2963,7 +2926,7 @@ namespace GriffinPlus.Lib.Imaging
 					// selection region is still in valid bounds of the bitmap
 					// => should succeed
 					{
-						// calculate the stride of the destination buffer and the its overall length needed to receive all pixels
+						// calculate the stride of the destination buffer and its overall length needed to receive all pixels
 						int selectionWidth = bitmap.PixelWidth - selectionMargin;
 						int selectionHeight = bitmap.PixelHeight - selectionMargin;
 						CalculateBufferAlignmentAndStride(bitmap.Format, selectionWidth, out _, out long destinationStride);
@@ -2988,7 +2951,7 @@ namespace GriffinPlus.Lib.Imaging
 					// selection region exceeds the width of the bitmap
 					// => exception expected
 					{
-						// calculate the stride of the destination buffer and the its overall length needed to receive all pixels
+						// calculate the stride of the destination buffer and its overall length needed to receive all pixels
 						int selectionWidth = bitmap.PixelWidth - selectionMargin + 1;
 						int selectionHeight = bitmap.PixelHeight - selectionMargin;
 						CalculateBufferAlignmentAndStride(bitmap.Format, selectionWidth, out _, out long destinationStride);
@@ -3039,7 +3002,7 @@ namespace GriffinPlus.Lib.Imaging
 					// selection region is still in valid bounds of the bitmap
 					// => should succeed
 					{
-						// calculate the stride of the destination buffer and the its overall length needed to receive all pixels
+						// calculate the stride of the destination buffer and its overall length needed to receive all pixels
 						int selectionWidth = bitmap.PixelWidth - selectionMargin;
 						int selectionHeight = bitmap.PixelHeight - selectionMargin;
 						CalculateBufferAlignmentAndStride(bitmap.Format, selectionWidth, out _, out long destinationStride);
@@ -3064,7 +3027,7 @@ namespace GriffinPlus.Lib.Imaging
 					// selection region exceeds the width of the bitmap
 					// => exception expected
 					{
-						// calculate the stride of the destination buffer and the its overall length needed to receive all pixels
+						// calculate the stride of the destination buffer and its overall length needed to receive all pixels
 						int selectionWidth = bitmap.PixelWidth - selectionMargin;
 						int selectionHeight = bitmap.PixelHeight - selectionMargin + 1;
 						CalculateBufferAlignmentAndStride(bitmap.Format, selectionWidth, out _, out long destinationStride);
@@ -3132,7 +3095,7 @@ namespace GriffinPlus.Lib.Imaging
 
 		/// <summary>
 		/// Sets up a bitmap to test the CopyPixels() methods with.
-		/// This method should only be used to test throwing exceptions as it only covers only a single
+		/// This method should only be used to test throwing exceptions as it covers only a single
 		/// pixel format and bitmap palette.
 		/// </summary>
 		/// <param name="action">The actual test code working on the <see cref="NativeBitmap"/> instance.</param>
@@ -3156,10 +3119,8 @@ namespace GriffinPlus.Lib.Imaging
 			// create a bitmap with the specified parameters on top of the buffer
 			fixed (byte* pBuffer = &buffer[0])
 			{
-				using (var bitmap = new NativeBitmap((IntPtr)pBuffer, buffer.Length, width, height, stride, dpiX, dpiY, format, palette))
-				{
-					action(bitmap);
-				}
+				using var bitmap = new NativeBitmap((IntPtr)pBuffer, buffer.Length, width, height, stride, dpiX, dpiY, format, palette);
+				action(bitmap);
 			}
 		}
 

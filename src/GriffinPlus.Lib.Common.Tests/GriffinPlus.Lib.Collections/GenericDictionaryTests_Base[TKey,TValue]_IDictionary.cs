@@ -362,7 +362,7 @@ namespace GriffinPlus.Lib.Collections
 			KeyValuePair<TKey, TValue>? last = null;
 			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
-				if (first == null) first = kvp;
+				first ??= kvp;
 				last = kvp;
 				dict.Add(kvp.Key, kvp.Value);
 			}
@@ -597,12 +597,13 @@ namespace GriffinPlus.Lib.Collections
 			Assert.Throws<InvalidOperationException>(() => enumerator.Entry);
 			Assert.Throws<InvalidOperationException>(() => enumerator.Key);
 			Assert.Throws<InvalidOperationException>(() => enumerator.Value);
+			// ReSharper disable once AssignmentInsteadOfDiscard
 			// ReSharper disable once RedundantAssignment
 			_ = enumerator.Current; // should not throw
 
 			// reset the enumerator and try again
 			enumerator.Reset();
-			enumerated = new List<KeyValuePair<TKey, TValue>>();
+			enumerated = [];
 			while (enumerator.MoveNext())
 			{
 				// IEnumerator
@@ -629,6 +630,9 @@ namespace GriffinPlus.Lib.Collections
 			dict[KeyNotInTestData] = ValueNotInTestData;
 			Assert.Throws<InvalidOperationException>(() => enumerator.Reset());
 			Assert.Throws<InvalidOperationException>(() => enumerator.MoveNext());
+
+			// dispose enumerator
+			(enumerator as IDisposable)!.Dispose();
 		}
 
 		#endregion

@@ -45,7 +45,7 @@ namespace GriffinPlus.Lib.Threading
 	[DebuggerTypeProxy(typeof(DefaultAsyncWaitQueue<>.DebugView))]
 	sealed class DefaultAsyncWaitQueue<T> : IAsyncWaitQueue<T>
 	{
-		private readonly Deque<TaskCompletionSource<T>> mQueue = new Deque<TaskCompletionSource<T>>();
+		private readonly Deque<TaskCompletionSource<T>> mQueue = [];
 
 		private int Count => mQueue.Count;
 
@@ -99,22 +99,15 @@ namespace GriffinPlus.Lib.Threading
 		}
 
 		[DebuggerNonUserCode]
-		internal sealed class DebugView
+		internal sealed class DebugView(DefaultAsyncWaitQueue<T> queue)
 		{
-			private readonly DefaultAsyncWaitQueue<T> mQueue;
-
-			public DebugView(DefaultAsyncWaitQueue<T> queue)
-			{
-				mQueue = queue;
-			}
-
 			[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
 			public Task<T>[] Tasks
 			{
 				get
 				{
-					var result = new List<Task<T>>(mQueue.mQueue.Count);
-					foreach (TaskCompletionSource<T> entry in mQueue.mQueue)
+					var result = new List<Task<T>>(queue.mQueue.Count);
+					foreach (TaskCompletionSource<T> entry in queue.mQueue)
 					{
 						result.Add(entry.Task);
 					}

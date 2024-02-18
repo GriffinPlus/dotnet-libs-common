@@ -435,13 +435,13 @@ namespace GriffinPlus.Lib
 		{
 			get
 			{
-				yield return new object[] { long.MinValue, long.MinValue, 0 };
-				yield return new object[] { long.MinValue, long.MinValue + 1, -1 };
-				yield return new object[] { 0L, -1L, 1 };
-				yield return new object[] { 0L, 0L, 0 };
-				yield return new object[] { 0L, 1L, -1 };
-				yield return new object[] { long.MaxValue, long.MaxValue - 1, 1 };
-				yield return new object[] { long.MaxValue, long.MaxValue, 0 };
+				yield return [long.MinValue, long.MinValue, 0];
+				yield return [long.MinValue, long.MinValue + 1, -1];
+				yield return [0L, -1L, 1];
+				yield return [0L, 0L, 0];
+				yield return [0L, 1L, -1];
+				yield return [long.MaxValue, long.MaxValue - 1, 1];
+				yield return [long.MaxValue, long.MaxValue, 0];
 			}
 		}
 
@@ -632,856 +632,856 @@ namespace GriffinPlus.Lib
 				//
 
 				// long metric unit style
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"-9.22 Exabytes"
-				};
+				];
 
 				// short metric unit style
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"-9.22 EB"
-				};
+				];
 
 				// defaults to short metric unit style
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric",
 					"-9.22 EB"
-				};
+				];
 
 				// defaults to short metric unit style
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"",
 					"-9.22 EB"
-				};
+				];
 
 				// long binary unit style
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"-8.00 Exbibytes"
-				};
+				];
 
 				// short binary unit style
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"-8.00 EiB"
-				};
+				];
 
 				// defaults to long binary unit style
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary",
 					"-8.00 EiB"
-				};
+				];
 
 				//
 				// sizes in between, auto-scaling, long metric units
 				//
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"0 Bytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					1L,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"1 Bytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					999L,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"999 Bytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					1000L,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"1.00 Kilobytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(2) - 1,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"999.9 Kilobytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(2),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"1.00 Megabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MV(2),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"1.00 Megabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(3) - 1,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"999.9 Megabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(3),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"1.00 Gigabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MV(3),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"1.00 Gigabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(4) - 1,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"999.9 Gigabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(4),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"1.00 Terabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MV(4),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"1.00 Terabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(5) - 1,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"999.9 Terabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(5),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"1.00 Petabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MV(5),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"1.00 Petabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(6) - 1,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"999.9 Petabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(6),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"1.00 Exabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MV(6),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"1.00 Exabytes"
-				};
+				];
 
 				//
 				// sizes in between, auto-scaling, short metric units
 				//
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"0 B"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					1L,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"1 B"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					999L,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"999 B"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					1000L,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"1.00 KB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(2) - 1,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"999.9 KB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(2),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"1.00 MB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MV(2),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"1.00 MB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(3) - 1,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"999.9 MB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(3),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"1.00 GB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MV(3),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"1.00 GB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(4) - 1,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"999.9 GB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(4),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"1.00 TB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MV(4),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"1.00 TB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(5) - 1,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"999.9 TB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(5),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"1.00 PB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MV(5),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"1.00 PB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(6) - 1,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"999.9 PB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MTP(6),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"1.00 EB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					MV(6),
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"1.00 EB"
-				};
+				];
 
 				//
 				// sizes in between, auto-scaling, long binary units
 				//
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"0 Bytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					1L,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1 Bytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BV(1) - 1,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1023 Bytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BV(1),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1.00 Kibibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(2) - 1,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1023.9 Kibibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(2),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1.00 Mebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BV(2),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1.00 Mebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(3) - 1,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1023.9 Mebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(3),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1.00 Gibibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BV(3),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1.00 Gibibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(4) - 1,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1023.9 Gibibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(4),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1.00 Tebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BV(4),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1.00 Tebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(5) - 1,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1023.9 Tebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(5),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1.00 Pebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BV(5),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1.00 Pebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(6) - 1,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1023.9 Pebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(6),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1.00 Exbibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BV(6),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"1.00 Exbibytes"
-				};
+				];
 
 				//
 				// sizes in between, auto-scaling, short binary units
 				//
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"0 B"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					1L,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1 B"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BV(1) - 1,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1023 B"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BV(1),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1.00 KiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(2) - 1,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1023.9 KiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(2),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1.00 MiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BV(2),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1.00 MiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(3) - 1,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1023.9 MiB"
-				};
-				yield return new object[]
-				{
+				];
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(3),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1.00 GiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BV(3),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1.00 GiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(4) - 1,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1023.9 GiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(4),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1.00 TiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BV(4),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1.00 TiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(5) - 1,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1023.9 TiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(5),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1.00 PiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BV(5),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1.00 PiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(6) - 1,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1023.9 PiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BTP(6),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1.00 EiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					BV(6),
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"1.00 EiB"
-				};
+				];
 
 				//
 				// maximum, auto-scaling, different formats
@@ -1489,81 +1489,81 @@ namespace GriffinPlus.Lib
 				//
 
 				// long metric unit style
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Long,
 					"metric,long",
 					"9.22 Exabytes"
-				};
+				];
 
 				// short metric unit style
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric,short",
 					"9.22 EB"
-				};
+				];
 
 				// default to short metric unit style
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"metric",
 					"9.22 EB"
-				};
+				];
 
 				// default to short metric unit style
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.AutoBase10,
 					DataSizeUnitStyle.Short,
 					"",
 					"9.22 EB"
-				};
+				];
 
 				// long binary unit style
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Long,
 					"binary,long",
 					"8.00 Exbibytes"
-				};
+				];
 
 				// short binary unit style
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary,short",
 					"8.00 EiB"
-				};
+				];
 
 				// default to short binary unit style
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.AutoBase2,
 					DataSizeUnitStyle.Short,
 					"binary",
 					"8.00 EiB"
-				};
+				];
 
 				// -----------------------------------------------------------------------------------------------------------------
 				// fixed scaling
@@ -1574,1183 +1574,1183 @@ namespace GriffinPlus.Lib
 				// (tests the various combinations of metric/binary units with short/long unit styles)
 				//
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Byte,
 					DataSizeUnitStyle.Long,
 					"B,long",
 					"-9223372036854775808 Bytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Byte,
 					DataSizeUnitStyle.Short,
 					"B,short",
 					"-9223372036854775808 B"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Byte,
 					DataSizeUnitStyle.Short,
 					"B",
 					"-9223372036854775808 B"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Kilobyte,
 					DataSizeUnitStyle.Long,
 					"KB,long",
 					"-9223372036854775.8 Kilobytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Kilobyte,
 					DataSizeUnitStyle.Short,
 					"KB,short",
 					"-9223372036854775.8 KB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Kilobyte,
 					DataSizeUnitStyle.Short,
 					"KB",
 					"-9223372036854775.8 KB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Megabyte,
 					DataSizeUnitStyle.Long,
 					"MB,long",
 					"-9223372036854.8 Megabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Megabyte,
 					DataSizeUnitStyle.Short,
 					"MB,short",
 					"-9223372036854.8 MB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Megabyte,
 					DataSizeUnitStyle.Short,
 					"MB",
 					"-9223372036854.8 MB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Gigabyte,
 					DataSizeUnitStyle.Long,
 					"GB,long",
 					"-9223372036.9 Gigabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Gigabyte,
 					DataSizeUnitStyle.Short,
 					"GB,short",
 					"-9223372036.9 GB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Gigabyte,
 					DataSizeUnitStyle.Short,
 					"GB",
 					"-9223372036.9 GB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Terabyte,
 					DataSizeUnitStyle.Long,
 					"TB,long",
 					"-9223372.0 Terabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Terabyte,
 					DataSizeUnitStyle.Short,
 					"TB,short",
 					"-9223372.0 TB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Terabyte,
 					DataSizeUnitStyle.Short,
 					"TB",
 					"-9223372.0 TB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Petabyte,
 					DataSizeUnitStyle.Long,
 					"PB,long",
 					"-9223.4 Petabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Petabyte,
 					DataSizeUnitStyle.Short,
 					"PB,short",
 					"-9223.4 PB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Petabyte,
 					DataSizeUnitStyle.Short,
 					"PB",
 					"-9223.4 PB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Exabyte,
 					DataSizeUnitStyle.Long,
 					"EB,long",
 					"-9.22 Exabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Exabyte,
 					DataSizeUnitStyle.Short,
 					"EB,short",
 					"-9.22 EB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Exabyte,
 					DataSizeUnitStyle.Short,
 					"EB",
 					"-9.22 EB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Kibibyte,
 					DataSizeUnitStyle.Long,
 					"KiB,long",
 					"-9007199254740992.0 Kibibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Kibibyte,
 					DataSizeUnitStyle.Short,
 					"KiB,short",
 					"-9007199254740992.0 KiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Kibibyte,
 					DataSizeUnitStyle.Short,
 					"KiB",
 					"-9007199254740992.0 KiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Mebibyte,
 					DataSizeUnitStyle.Long,
 					"MiB,long",
 					"-8796093022208.0 Mebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Mebibyte,
 					DataSizeUnitStyle.Short,
 					"MiB,short",
 					"-8796093022208.0 MiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Mebibyte,
 					DataSizeUnitStyle.Short,
 					"MiB",
 					"-8796093022208.0 MiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Gibibyte,
 					DataSizeUnitStyle.Long,
 					"GiB,long",
 					"-8589934592.0 Gibibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Gibibyte,
 					DataSizeUnitStyle.Short,
 					"GiB,short",
 					"-8589934592.0 GiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Gibibyte,
 					DataSizeUnitStyle.Short,
 					"GiB",
 					"-8589934592.0 GiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Tebibyte,
 					DataSizeUnitStyle.Long,
 					"TiB,long",
 					"-8388608.0 Tebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Tebibyte,
 					DataSizeUnitStyle.Short,
 					"TiB,short",
 					"-8388608.0 TiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Tebibyte,
 					DataSizeUnitStyle.Short,
 					"TiB",
 					"-8388608.0 TiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Pebibyte,
 					DataSizeUnitStyle.Long,
 					"PiB,long",
 					"-8192.0 Pebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Pebibyte,
 					DataSizeUnitStyle.Short,
 					"PiB,short",
 					"-8192.0 PiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Pebibyte,
 					DataSizeUnitStyle.Short,
 					"PiB",
 					"-8192.0 PiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Exbibyte,
 					DataSizeUnitStyle.Long,
 					"EiB,long",
 					"-8.00 Exbibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Exbibyte,
 					DataSizeUnitStyle.Short,
 					"EiB,short",
 					"-8.00 EiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MinValue,
 					DataSizeUnit.Exbibyte,
 					DataSizeUnitStyle.Short,
 					"EiB",
 					"-8.00 EiB"
-				};
+				];
 
 				//
 				// zero, fixed units, different formats
 				// (tests the various combinations of metric/binary units with short/long unit styles)
 				//
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Byte,
 					DataSizeUnitStyle.Long,
 					"B,long",
 					"0 Bytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Byte,
 					DataSizeUnitStyle.Short,
 					"B,short",
 					"0 B"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Byte,
 					DataSizeUnitStyle.Short,
 					"B",
 					"0 B"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Kilobyte,
 					DataSizeUnitStyle.Long,
 					"KB,long",
 					"0.00 Kilobytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Kilobyte,
 					DataSizeUnitStyle.Short,
 					"KB,short",
 					"0.00 KB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Kilobyte,
 					DataSizeUnitStyle.Short,
 					"KB",
 					"0.00 KB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Megabyte,
 					DataSizeUnitStyle.Long,
 					"MB,long",
 					"0.00 Megabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Megabyte,
 					DataSizeUnitStyle.Short,
 					"MB,short",
 					"0.00 MB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Megabyte,
 					DataSizeUnitStyle.Short,
 					"MB",
 					"0.00 MB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Gigabyte,
 					DataSizeUnitStyle.Long,
 					"GB,long",
 					"0.00 Gigabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Gigabyte,
 					DataSizeUnitStyle.Short,
 					"GB,short",
 					"0.00 GB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Gigabyte,
 					DataSizeUnitStyle.Short,
 					"GB",
 					"0.00 GB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Terabyte,
 					DataSizeUnitStyle.Long,
 					"TB,long",
 					"0.00 Terabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Terabyte,
 					DataSizeUnitStyle.Short,
 					"TB,short",
 					"0.00 TB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Terabyte,
 					DataSizeUnitStyle.Short,
 					"TB",
 					"0.00 TB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Petabyte,
 					DataSizeUnitStyle.Long,
 					"PB,long",
 					"0.00 Petabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Petabyte,
 					DataSizeUnitStyle.Short,
 					"PB,short",
 					"0.00 PB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Petabyte,
 					DataSizeUnitStyle.Short,
 					"PB",
 					"0.00 PB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Exabyte,
 					DataSizeUnitStyle.Long,
 					"EB,long",
 					"0.00 Exabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Exabyte,
 					DataSizeUnitStyle.Short,
 					"EB,short",
 					"0.00 EB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Exabyte,
 					DataSizeUnitStyle.Short,
 					"EB",
 					"0.00 EB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Kibibyte,
 					DataSizeUnitStyle.Long,
 					"KiB,long",
 					"0.00 Kibibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Kibibyte,
 					DataSizeUnitStyle.Short,
 					"KiB,short",
 					"0.00 KiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Kibibyte,
 					DataSizeUnitStyle.Short,
 					"KiB",
 					"0.00 KiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Mebibyte,
 					DataSizeUnitStyle.Long,
 					"MiB,long",
 					"0.00 Mebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Mebibyte,
 					DataSizeUnitStyle.Short,
 					"MiB,short",
 					"0.00 MiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Mebibyte,
 					DataSizeUnitStyle.Short,
 					"MiB",
 					"0.00 MiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Gibibyte,
 					DataSizeUnitStyle.Long,
 					"GiB,long",
 					"0.00 Gibibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Gibibyte,
 					DataSizeUnitStyle.Short,
 					"GiB,short",
 					"0.00 GiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Gibibyte,
 					DataSizeUnitStyle.Short,
 					"GiB",
 					"0.00 GiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Tebibyte,
 					DataSizeUnitStyle.Long,
 					"TiB,long",
 					"0.00 Tebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Tebibyte,
 					DataSizeUnitStyle.Short,
 					"TiB,short",
 					"0.00 TiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Tebibyte,
 					DataSizeUnitStyle.Short,
 					"TiB",
 					"0.00 TiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Pebibyte,
 					DataSizeUnitStyle.Long,
 					"PiB,long",
 					"0.00 Pebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Pebibyte,
 					DataSizeUnitStyle.Short,
 					"PiB,short",
 					"0.00 PiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Pebibyte,
 					DataSizeUnitStyle.Short,
 					"PiB",
 					"0.00 PiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Exbibyte,
 					DataSizeUnitStyle.Long,
 					"EiB,long",
 					"0.00 Exbibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Exbibyte,
 					DataSizeUnitStyle.Short,
 					"EiB,short",
 					"0.00 EiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					0L,
 					DataSizeUnit.Exbibyte,
 					DataSizeUnitStyle.Short,
 					"EiB",
 					"0.00 EiB"
-				};
+				];
 
 				//
 				// maximum, fixed units, different formats
 				// (tests the various combinations of metric/binary units with short/long unit styles)
 				//
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Byte,
 					DataSizeUnitStyle.Long,
 					"B,long",
 					"9223372036854775807 Bytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Byte,
 					DataSizeUnitStyle.Short,
 					"B,short",
 					"9223372036854775807 B"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Byte,
 					DataSizeUnitStyle.Short,
 					"B",
 					"9223372036854775807 B"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Kilobyte,
 					DataSizeUnitStyle.Long,
 					"KB,long",
 					"9223372036854775.8 Kilobytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Kilobyte,
 					DataSizeUnitStyle.Short,
 					"KB,short",
 					"9223372036854775.8 KB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Kilobyte,
 					DataSizeUnitStyle.Short,
 					"KB",
 					"9223372036854775.8 KB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Megabyte,
 					DataSizeUnitStyle.Long,
 					"MB,long",
 					"9223372036854.8 Megabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Megabyte,
 					DataSizeUnitStyle.Short,
 					"MB,short",
 					"9223372036854.8 MB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Megabyte,
 					DataSizeUnitStyle.Short,
 					"MB",
 					"9223372036854.8 MB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Gigabyte,
 					DataSizeUnitStyle.Long,
 					"GB,long",
 					"9223372036.9 Gigabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Gigabyte,
 					DataSizeUnitStyle.Short,
 					"GB,short",
 					"9223372036.9 GB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Gigabyte,
 					DataSizeUnitStyle.Short,
 					"GB",
 					"9223372036.9 GB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Terabyte,
 					DataSizeUnitStyle.Long,
 					"TB,long",
 					"9223372.0 Terabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Terabyte,
 					DataSizeUnitStyle.Short,
 					"TB,short",
 					"9223372.0 TB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Terabyte,
 					DataSizeUnitStyle.Short,
 					"TB",
 					"9223372.0 TB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Petabyte,
 					DataSizeUnitStyle.Long,
 					"PB,long",
 					"9223.4 Petabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Petabyte,
 					DataSizeUnitStyle.Short,
 					"PB,short",
 					"9223.4 PB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Petabyte,
 					DataSizeUnitStyle.Short,
 					"PB",
 					"9223.4 PB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Exabyte,
 					DataSizeUnitStyle.Long,
 					"EB,long",
 					"9.22 Exabytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Exabyte,
 					DataSizeUnitStyle.Short,
 					"EB,short",
 					"9.22 EB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Exabyte,
 					DataSizeUnitStyle.Short,
 					"EB",
 					"9.22 EB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Kibibyte,
 					DataSizeUnitStyle.Long,
 					"KiB,long",
 					"9007199254740992.0 Kibibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Kibibyte,
 					DataSizeUnitStyle.Short,
 					"KiB,short",
 					"9007199254740992.0 KiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Kibibyte,
 					DataSizeUnitStyle.Short,
 					"KiB",
 					"9007199254740992.0 KiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Mebibyte,
 					DataSizeUnitStyle.Long,
 					"MiB,long",
 					"8796093022208.0 Mebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Mebibyte,
 					DataSizeUnitStyle.Short,
 					"MiB,short",
 					"8796093022208.0 MiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Mebibyte,
 					DataSizeUnitStyle.Short,
 					"MiB",
 					"8796093022208.0 MiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Gibibyte,
 					DataSizeUnitStyle.Long,
 					"GiB,long",
 					"8589934592.0 Gibibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Gibibyte,
 					DataSizeUnitStyle.Short,
 					"GiB,short",
 					"8589934592.0 GiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Gibibyte,
 					DataSizeUnitStyle.Short,
 					"GiB",
 					"8589934592.0 GiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Tebibyte,
 					DataSizeUnitStyle.Long,
 					"TiB,long",
 					"8388608.0 Tebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Tebibyte,
 					DataSizeUnitStyle.Short,
 					"TiB,short",
 					"8388608.0 TiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Tebibyte,
 					DataSizeUnitStyle.Short,
 					"TiB",
 					"8388608.0 TiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Pebibyte,
 					DataSizeUnitStyle.Long,
 					"PiB,long",
 					"8192.0 Pebibytes"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Pebibyte,
 					DataSizeUnitStyle.Short,
 					"PiB,short",
 					"8192.0 PiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Pebibyte,
 					DataSizeUnitStyle.Short,
 					"PiB",
 					"8192.0 PiB"
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Exbibyte,
 					DataSizeUnitStyle.Long,
 					"EiB,long",
 					"8.00 Exbibytes"
-				};
-				yield return new object[]
-				{
+				];
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Exbibyte,
 					DataSizeUnitStyle.Short,
 					"EiB,short",
 					"8.00 EiB"
-				};
-				yield return new object[]
-				{
+				];
+				yield return
+				[
 					CultureInfo.InvariantCulture,
 					long.MaxValue,
 					DataSizeUnit.Exbibyte,
 					DataSizeUnitStyle.Short,
 					"EiB",
 					"8.00 EiB"
-				};
+				];
 			}
 		}
 
@@ -2766,12 +2766,12 @@ namespace GriffinPlus.Lib
 					var style = (DataSizeUnitStyle)data[3];
 					if (unit == DataSizeUnit.AutoBase10 && style == DataSizeUnitStyle.Short)
 					{
-						yield return new[]
-						{
+						yield return
+						[
 							data[0], // IFormatProvider
 							data[1], // long, size in bytes
 							data[5]  // string, expected result
-						};
+						];
 					}
 				}
 			}

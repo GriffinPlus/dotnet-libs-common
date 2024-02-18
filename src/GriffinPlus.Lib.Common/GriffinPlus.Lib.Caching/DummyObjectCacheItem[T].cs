@@ -24,7 +24,7 @@ namespace GriffinPlus.Lib.Caching
 		/// <summary>
 		/// Occurs when a property changes.
 		/// The event is raised using the synchronization context of the thread registering the event, if possible.
-		/// Otherwise the event is raised by a worker thread.
+		/// Otherwise, the event is raised by a worker thread.
 		/// </summary>
 		public event PropertyChangedEventHandler PropertyChanged
 		{

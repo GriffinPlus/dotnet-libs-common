@@ -35,6 +35,8 @@ using GriffinPlus.Lib.Tests;
 
 using Xunit;
 
+// ReSharper disable MethodHasAsyncOverload
+
 namespace GriffinPlus.Lib.Threading
 {
 

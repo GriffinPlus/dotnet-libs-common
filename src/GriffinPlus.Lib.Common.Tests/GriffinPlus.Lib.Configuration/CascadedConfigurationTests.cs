@@ -54,83 +54,83 @@ namespace GriffinPlus.Lib.Configuration
 			get
 			{
 				string[][] itemPathsList =
-				{
-					new[] { "/Value" },                                              // single value in the root configuration
-					new[] { "/Child/Value" },                                        // single value in a child configuration
-					new[] { "/Value1", "/Value2" },                                  // multiple values in the root configuration
-					new[] { "/Child/Value1", "/Child/Value2" },                      // multiple values in a child configuration
-					new[] { "/Value1", "/Value2", "/Child/Value1", "/Child/Value2" } // multiple values in the root configuration and a child configuration
-				};
+				[
+					["/Value"],                                              // single value in the root configuration
+					["/Child/Value"],                                        // single value in a child configuration
+					["/Value1", "/Value2"],                                  // multiple values in the root configuration
+					["/Child/Value1", "/Child/Value2"],                      // multiple values in a child configuration
+					["/Value1", "/Value2", "/Child/Value1", "/Child/Value2"] // multiple values in the root configuration and a child configuration
+				];
 
 				foreach (string[] itemPaths in itemPathsList)
 				{
 					// System.SByte
-					yield return new object[] { itemPaths, typeof(sbyte) };
-					yield return new object[] { itemPaths, typeof(sbyte[]) };
+					yield return [itemPaths, typeof(sbyte)];
+					yield return [itemPaths, typeof(sbyte[])];
 
 					// System.Byte
-					yield return new object[] { itemPaths, typeof(byte) };
-					yield return new object[] { itemPaths, typeof(byte[]) };
+					yield return [itemPaths, typeof(byte)];
+					yield return [itemPaths, typeof(byte[])];
 
 					// System.Int16
-					yield return new object[] { itemPaths, typeof(short) };
-					yield return new object[] { itemPaths, typeof(short[]) };
+					yield return [itemPaths, typeof(short)];
+					yield return [itemPaths, typeof(short[])];
 
 					// System.UInt16
-					yield return new object[] { itemPaths, typeof(ushort) };
-					yield return new object[] { itemPaths, typeof(ushort[]) };
+					yield return [itemPaths, typeof(ushort)];
+					yield return [itemPaths, typeof(ushort[])];
 
 					// System.Int32
-					yield return new object[] { itemPaths, typeof(int) };
-					yield return new object[] { itemPaths, typeof(int[]) };
+					yield return [itemPaths, typeof(int)];
+					yield return [itemPaths, typeof(int[])];
 
 					// System.UInt32
-					yield return new object[] { itemPaths, typeof(uint) };
-					yield return new object[] { itemPaths, typeof(uint[]) };
+					yield return [itemPaths, typeof(uint)];
+					yield return [itemPaths, typeof(uint[])];
 
 					// System.Int64
-					yield return new object[] { itemPaths, typeof(long) };
-					yield return new object[] { itemPaths, typeof(long[]) };
+					yield return [itemPaths, typeof(long)];
+					yield return [itemPaths, typeof(long[])];
 
 					// System.UInt64
-					yield return new object[] { itemPaths, typeof(ulong) };
-					yield return new object[] { itemPaths, typeof(ulong[]) };
+					yield return [itemPaths, typeof(ulong)];
+					yield return [itemPaths, typeof(ulong[])];
 
 					// System.Single
-					yield return new object[] { itemPaths, typeof(float) };
-					yield return new object[] { itemPaths, typeof(float[]) };
+					yield return [itemPaths, typeof(float)];
+					yield return [itemPaths, typeof(float[])];
 
 					// System.Double
-					yield return new object[] { itemPaths, typeof(double) };
-					yield return new object[] { itemPaths, typeof(double[]) };
+					yield return [itemPaths, typeof(double)];
+					yield return [itemPaths, typeof(double[])];
 
 					// System.Decimal
-					yield return new object[] { itemPaths, typeof(decimal) };
-					yield return new object[] { itemPaths, typeof(decimal[]) };
+					yield return [itemPaths, typeof(decimal)];
+					yield return [itemPaths, typeof(decimal[])];
 
 					// System.String
-					yield return new object[] { itemPaths, typeof(string) };
-					yield return new object[] { itemPaths, typeof(string[]) };
+					yield return [itemPaths, typeof(string)];
+					yield return [itemPaths, typeof(string[])];
 
 					// Enums
-					yield return new object[] { itemPaths, typeof(TestEnum) };
-					yield return new object[] { itemPaths, typeof(TestEnum[]) };
+					yield return [itemPaths, typeof(TestEnum)];
+					yield return [itemPaths, typeof(TestEnum[])];
 
 					// System.Guid
-					yield return new object[] { itemPaths, typeof(Guid) };
-					yield return new object[] { itemPaths, typeof(Guid[]) };
+					yield return [itemPaths, typeof(Guid)];
+					yield return [itemPaths, typeof(Guid[])];
 
 					// System.DateTime
-					yield return new object[] { itemPaths, typeof(DateTime) };
-					yield return new object[] { itemPaths, typeof(DateTime[]) };
+					yield return [itemPaths, typeof(DateTime)];
+					yield return [itemPaths, typeof(DateTime[])];
 
 					// System.TimeSpan
-					yield return new object[] { itemPaths, typeof(TimeSpan) };
-					yield return new object[] { itemPaths, typeof(TimeSpan[]) };
+					yield return [itemPaths, typeof(TimeSpan)];
+					yield return [itemPaths, typeof(TimeSpan[])];
 
 					// System.Net.IPAddress
-					yield return new object[] { itemPaths, typeof(IPAddress) };
-					yield return new object[] { itemPaths, typeof(IPAddress[]) };
+					yield return [itemPaths, typeof(IPAddress)];
+					yield return [itemPaths, typeof(IPAddress[])];
 				}
 			}
 		}
@@ -143,68 +143,68 @@ namespace GriffinPlus.Lib.Configuration
 			get
 			{
 				string[][] itemPathsList =
-				{
-					new[] { "/Value" },                                              // single value in the root configuration
-					new[] { "/Child/Value" },                                        // single value in a child configuration
-					new[] { "/Value1", "/Value2" },                                  // multiple values in the root configuration
-					new[] { "/Child/Value1", "/Child/Value2" },                      // multiple values in a child configuration
-					new[] { "/Value1", "/Value2", "/Child/Value1", "/Child/Value2" } // multiple values in the root configuration and a child configuration
-				};
+				[
+					["/Value"],                                              // single value in the root configuration
+					["/Child/Value"],                                        // single value in a child configuration
+					["/Value1", "/Value2"],                                  // multiple values in the root configuration
+					["/Child/Value1", "/Child/Value2"],                      // multiple values in a child configuration
+					["/Value1", "/Value2", "/Child/Value1", "/Child/Value2"] // multiple values in the root configuration and a child configuration
+				];
 
 				foreach (string[] itemPaths in itemPathsList)
 				{
 					// System.SByte
-					yield return new object[] { itemPaths, typeof(sbyte), sbyte.MinValue };
-					yield return new object[] { itemPaths, typeof(sbyte), (sbyte)0 };
-					yield return new object[] { itemPaths, typeof(sbyte), sbyte.MaxValue };
-					yield return new object[] { itemPaths, typeof(sbyte[]), new sbyte[] { sbyte.MinValue, 0, sbyte.MaxValue } };
+					yield return [itemPaths, typeof(sbyte), sbyte.MinValue];
+					yield return [itemPaths, typeof(sbyte), (sbyte)0];
+					yield return [itemPaths, typeof(sbyte), sbyte.MaxValue];
+					yield return [itemPaths, typeof(sbyte[]), new sbyte[] { sbyte.MinValue, 0, sbyte.MaxValue }];
 
 					// System.Byte
-					yield return new object[] { itemPaths, typeof(byte), byte.MinValue };
-					yield return new object[] { itemPaths, typeof(byte), byte.MaxValue };
-					yield return new object[] { itemPaths, typeof(byte[]), new byte[] { byte.MinValue, byte.MinValue + 1, 0x02, byte.MaxValue - 1, byte.MaxValue } };
+					yield return [itemPaths, typeof(byte), byte.MinValue];
+					yield return [itemPaths, typeof(byte), byte.MaxValue];
+					yield return [itemPaths, typeof(byte[]), new byte[] { byte.MinValue, byte.MinValue + 1, 0x02, byte.MaxValue - 1, byte.MaxValue }];
 
 					// System.Int16
-					yield return new object[] { itemPaths, typeof(short), short.MinValue };
-					yield return new object[] { itemPaths, typeof(short), (short)0 };
-					yield return new object[] { itemPaths, typeof(short), short.MaxValue };
-					yield return new object[] { itemPaths, typeof(short[]), new short[] { short.MinValue, 0, short.MaxValue } };
+					yield return [itemPaths, typeof(short), short.MinValue];
+					yield return [itemPaths, typeof(short), (short)0];
+					yield return [itemPaths, typeof(short), short.MaxValue];
+					yield return [itemPaths, typeof(short[]), new short[] { short.MinValue, 0, short.MaxValue }];
 
 					// System.UInt16
-					yield return new object[] { itemPaths, typeof(ushort), ushort.MinValue };
-					yield return new object[] { itemPaths, typeof(ushort), ushort.MaxValue };
-					yield return new object[] { itemPaths, typeof(ushort[]), new ushort[] { ushort.MinValue, ushort.MinValue + 1, ushort.MaxValue - 1, ushort.MaxValue } };
+					yield return [itemPaths, typeof(ushort), ushort.MinValue];
+					yield return [itemPaths, typeof(ushort), ushort.MaxValue];
+					yield return [itemPaths, typeof(ushort[]), new ushort[] { ushort.MinValue, ushort.MinValue + 1, ushort.MaxValue - 1, ushort.MaxValue }];
 
 					// System.Int32
-					yield return new object[] { itemPaths, typeof(int), int.MinValue };
-					yield return new object[] { itemPaths, typeof(int), 0 };
-					yield return new object[] { itemPaths, typeof(int), int.MaxValue };
-					yield return new object[] { itemPaths, typeof(int[]), new[] { int.MinValue, 0, int.MaxValue } };
+					yield return [itemPaths, typeof(int), int.MinValue];
+					yield return [itemPaths, typeof(int), 0];
+					yield return [itemPaths, typeof(int), int.MaxValue];
+					yield return [itemPaths, typeof(int[]), new[] { int.MinValue, 0, int.MaxValue }];
 
 					// System.UInt32
-					yield return new object[] { itemPaths, typeof(uint), uint.MinValue };
-					yield return new object[] { itemPaths, typeof(uint), uint.MaxValue };
-					yield return new object[] { itemPaths, typeof(uint[]), new[] { uint.MinValue, uint.MinValue + 1, uint.MaxValue - 1, uint.MaxValue } };
+					yield return [itemPaths, typeof(uint), uint.MinValue];
+					yield return [itemPaths, typeof(uint), uint.MaxValue];
+					yield return [itemPaths, typeof(uint[]), new[] { uint.MinValue, uint.MinValue + 1, uint.MaxValue - 1, uint.MaxValue }];
 
 					// System.Int64
-					yield return new object[] { itemPaths, typeof(long), long.MinValue };
-					yield return new object[] { itemPaths, typeof(long), (long)0 };
-					yield return new object[] { itemPaths, typeof(long), long.MaxValue };
-					yield return new object[] { itemPaths, typeof(long[]), new[] { long.MinValue, 0, long.MaxValue } };
+					yield return [itemPaths, typeof(long), long.MinValue];
+					yield return [itemPaths, typeof(long), (long)0];
+					yield return [itemPaths, typeof(long), long.MaxValue];
+					yield return [itemPaths, typeof(long[]), new[] { long.MinValue, 0, long.MaxValue }];
 
 					// System.UInt64
-					yield return new object[] { itemPaths, typeof(ulong), ulong.MinValue };
-					yield return new object[] { itemPaths, typeof(ulong), ulong.MaxValue };
-					yield return new object[] { itemPaths, typeof(ulong[]), new[] { ulong.MinValue, ulong.MinValue + 1, ulong.MaxValue - 1, ulong.MaxValue } };
+					yield return [itemPaths, typeof(ulong), ulong.MinValue];
+					yield return [itemPaths, typeof(ulong), ulong.MaxValue];
+					yield return [itemPaths, typeof(ulong[]), new[] { ulong.MinValue, ulong.MinValue + 1, ulong.MaxValue - 1, ulong.MaxValue }];
 
 					// System.Single
-					yield return new object[] { itemPaths, typeof(float), float.MinValue };
-					yield return new object[] { itemPaths, typeof(float), 0.0f };
-					yield return new object[] { itemPaths, typeof(float), float.MaxValue };
-					yield return new object[] { itemPaths, typeof(float), float.NegativeInfinity };
-					yield return new object[] { itemPaths, typeof(float), float.PositiveInfinity };
-					yield return new object[]
-					{
+					yield return [itemPaths, typeof(float), float.MinValue];
+					yield return [itemPaths, typeof(float), 0.0f];
+					yield return [itemPaths, typeof(float), float.MaxValue];
+					yield return [itemPaths, typeof(float), float.NegativeInfinity];
+					yield return [itemPaths, typeof(float), float.PositiveInfinity];
+					yield return
+					[
 						itemPaths,
 						typeof(float[]),
 						new[]
@@ -217,16 +217,16 @@ namespace GriffinPlus.Lib.Configuration
 							float.MaxValue,
 							float.PositiveInfinity
 						}
-					};
+					];
 
 					// System.Double
-					yield return new object[] { itemPaths, typeof(double), double.MinValue };
-					yield return new object[] { itemPaths, typeof(double), 0.0 };
-					yield return new object[] { itemPaths, typeof(double), double.MaxValue };
-					yield return new object[] { itemPaths, typeof(double), double.NegativeInfinity };
-					yield return new object[] { itemPaths, typeof(double), double.PositiveInfinity };
-					yield return new object[]
-					{
+					yield return [itemPaths, typeof(double), double.MinValue];
+					yield return [itemPaths, typeof(double), 0.0];
+					yield return [itemPaths, typeof(double), double.MaxValue];
+					yield return [itemPaths, typeof(double), double.NegativeInfinity];
+					yield return [itemPaths, typeof(double), double.PositiveInfinity];
+					yield return
+					[
 						itemPaths,
 						typeof(double[]),
 						new[]
@@ -239,14 +239,14 @@ namespace GriffinPlus.Lib.Configuration
 							double.MaxValue,
 							double.PositiveInfinity
 						}
-					};
+					];
 
 					// System.Decimal
-					yield return new object[] { itemPaths, typeof(decimal), decimal.MinValue };
-					yield return new object[] { itemPaths, typeof(decimal), decimal.Zero };
-					yield return new object[] { itemPaths, typeof(decimal), decimal.MaxValue };
-					yield return new object[]
-					{
+					yield return [itemPaths, typeof(decimal), decimal.MinValue];
+					yield return [itemPaths, typeof(decimal), decimal.Zero];
+					yield return [itemPaths, typeof(decimal), decimal.MaxValue];
+					yield return
+					[
 						itemPaths,
 						typeof(decimal[]),
 						new[]
@@ -257,12 +257,12 @@ namespace GriffinPlus.Lib.Configuration
 							decimal.MaxValue - 1,
 							decimal.MaxValue
 						}
-					};
+					];
 
 					// System.String
-					yield return new object[] { itemPaths, typeof(string), "The quick brown fox jumps over the lazy dog" };
-					yield return new object[]
-					{
+					yield return [itemPaths, typeof(string), "The quick brown fox jumps over the lazy dog"];
+					yield return
+					[
 						itemPaths,
 						typeof(string[]),
 						new[]
@@ -277,17 +277,17 @@ namespace GriffinPlus.Lib.Configuration
 							"lazy",
 							"dog"
 						}
-					};
+					];
 
 					// Enums
-					yield return new object[] { itemPaths, typeof(TestEnum), TestEnum.A }; // 0
-					yield return new object[] { itemPaths, typeof(TestEnum), TestEnum.B }; // 1
-					yield return new object[] { itemPaths, typeof(TestEnum), TestEnum.C }; // 2
+					yield return [itemPaths, typeof(TestEnum), TestEnum.A]; // 0
+					yield return [itemPaths, typeof(TestEnum), TestEnum.B]; // 1
+					yield return [itemPaths, typeof(TestEnum), TestEnum.C]; // 2
 
 					// System.Guid
-					yield return new object[] { itemPaths, typeof(Guid), Guid.Parse("{52F3FBBB-F755-468B-904E-D1B1EDD81368}") };
-					yield return new object[]
-					{
+					yield return [itemPaths, typeof(Guid), Guid.Parse("{52F3FBBB-F755-468B-904E-D1B1EDD81368}")];
+					yield return
+					[
 						itemPaths,
 						typeof(Guid[]),
 						new[]
@@ -296,15 +296,15 @@ namespace GriffinPlus.Lib.Configuration
 							Guid.Parse("{0359E56C-81B0-4874-BF04-1B362A652465}"),
 							Guid.Parse("{196BB94E-1BE3-4295-94C4-B1ED2D17DAE9}")
 						}
-					};
+					];
 
 					// System.DateTime
 					var einsteinsBirthday = new DateTime(1879, 3, 14);
-					yield return new object[] { itemPaths, typeof(DateTime), DateTime.MinValue };
-					yield return new object[] { itemPaths, typeof(DateTime), einsteinsBirthday };
-					yield return new object[] { itemPaths, typeof(DateTime), DateTime.MaxValue };
-					yield return new object[]
-					{
+					yield return [itemPaths, typeof(DateTime), DateTime.MinValue];
+					yield return [itemPaths, typeof(DateTime), einsteinsBirthday];
+					yield return [itemPaths, typeof(DateTime), DateTime.MaxValue];
+					yield return
+					[
 						itemPaths,
 						typeof(DateTime[]),
 						new[]
@@ -313,14 +313,14 @@ namespace GriffinPlus.Lib.Configuration
 							einsteinsBirthday,
 							DateTime.MaxValue
 						}
-					};
+					];
 
 					// System.TimeSpan
-					yield return new object[] { itemPaths, typeof(TimeSpan), TimeSpan.MinValue };
-					yield return new object[] { itemPaths, typeof(TimeSpan), TimeSpan.Zero };
-					yield return new object[] { itemPaths, typeof(TimeSpan), TimeSpan.MaxValue };
-					yield return new object[]
-					{
+					yield return [itemPaths, typeof(TimeSpan), TimeSpan.MinValue];
+					yield return [itemPaths, typeof(TimeSpan), TimeSpan.Zero];
+					yield return [itemPaths, typeof(TimeSpan), TimeSpan.MaxValue];
+					yield return
+					[
 						itemPaths,
 						typeof(TimeSpan[]),
 						new[]
@@ -329,19 +329,19 @@ namespace GriffinPlus.Lib.Configuration
 							TimeSpan.Zero,
 							TimeSpan.MaxValue
 						}
-					};
+					];
 
 					// System.Net.IPAddress
-					yield return new object[] { itemPaths, typeof(IPAddress), IPAddress.Parse("0.0.0.0") };              // IPv4 Any
-					yield return new object[] { itemPaths, typeof(IPAddress), IPAddress.Parse("255.255.255.255") };      // IPv4 Broadcast
-					yield return new object[] { itemPaths, typeof(IPAddress), IPAddress.Parse("127.0.0.1") };            // IPv4 Loopback
-					yield return new object[] { itemPaths, typeof(IPAddress), IPAddress.Parse("192.168.10.20") };        // IPv4 Address (Private Network Range)
-					yield return new object[] { itemPaths, typeof(IPAddress), IPAddress.Parse("::") };                   // IPv6 Any
-					yield return new object[] { itemPaths, typeof(IPAddress), IPAddress.Parse("::0") };                  // IPv6 None
-					yield return new object[] { itemPaths, typeof(IPAddress), IPAddress.Parse("::1") };                  // IPv6 Loopback
-					yield return new object[] { itemPaths, typeof(IPAddress), IPAddress.Parse("fd01:dead:beef::affe") }; // IPv6 Address (ULA range)
-					yield return new object[]
-					{
+					yield return [itemPaths, typeof(IPAddress), IPAddress.Parse("0.0.0.0")];              // IPv4 Any
+					yield return [itemPaths, typeof(IPAddress), IPAddress.Parse("255.255.255.255")];      // IPv4 Broadcast
+					yield return [itemPaths, typeof(IPAddress), IPAddress.Parse("127.0.0.1")];            // IPv4 Loopback
+					yield return [itemPaths, typeof(IPAddress), IPAddress.Parse("192.168.10.20")];        // IPv4 Address (Private Network Range)
+					yield return [itemPaths, typeof(IPAddress), IPAddress.Parse("::")];                   // IPv6 Any
+					yield return [itemPaths, typeof(IPAddress), IPAddress.Parse("::0")];                  // IPv6 None
+					yield return [itemPaths, typeof(IPAddress), IPAddress.Parse("::1")];                  // IPv6 Loopback
+					yield return [itemPaths, typeof(IPAddress), IPAddress.Parse("fd01:dead:beef::affe")]; // IPv6 Address (ULA range)
+					yield return
+					[
 						itemPaths,
 						typeof(IPAddress[]),
 						new[]
@@ -355,7 +355,7 @@ namespace GriffinPlus.Lib.Configuration
 							IPAddress.Parse("::1"),                 // IPv6 Loopback
 							IPAddress.Parse("fd01:dead:beef::affe") // IPv6 Address (ULA range)
 						}
-					};
+					];
 				}
 			}
 		}
@@ -495,7 +495,7 @@ namespace GriffinPlus.Lib.Configuration
 		[InlineData("/Child1/Child2")]
 		public void GetChildConfiguration_NestedConfiguration_WithoutInheritance(string path)
 		{
-			string[] pathTokens = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+			string[] pathTokens = path.Split(sSeparator, StringSplitOptions.RemoveEmptyEntries);
 
 			// create a new root configuration that does not inherit from another configuration
 			string configurationName = "My Configuration";
@@ -613,7 +613,7 @@ namespace GriffinPlus.Lib.Configuration
 			var inheritingRootChildConfigurations = new List<CascadedConfiguration>();
 			foreach (string path in paths)
 			{
-				string[] pathTokens = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+				string[] pathTokens = path.Split(sSeparator, StringSplitOptions.RemoveEmptyEntries);
 
 				// neither the base configuration nor the inheriting configuration should know the child configuration, yet
 				CascadedConfiguration baseChildConfiguration = baseRootConfiguration.GetChildConfiguration(path, false);
@@ -642,7 +642,7 @@ namespace GriffinPlus.Lib.Configuration
 			// check whether the child configuration have been added correctly
 			foreach (string path in paths)
 			{
-				string[] pathTokens = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+				string[] pathTokens = path.Split(sSeparator, StringSplitOptions.RemoveEmptyEntries);
 				string expectedChildConfigurationName = pathTokens.Last();
 
 				// get the configurations created in the previous step
@@ -837,32 +837,32 @@ namespace GriffinPlus.Lib.Configuration
 			get
 			{
 				string[][] childConfigurationPathsList =
-				{
-					Array.Empty<string>(),                                                               // no child configurations at all
-					new[] { "/Child" },                                                                  // one child configuration
-					new[] { "/Child1", "/Child2" },                                                      // two child configurations
-					new[] { "/Child1/Child21", "/Child1/Child22", "/Child2/Child21", "/Child2/Child22" } // mix of configurations
-				};
+				[
+					Array.Empty<string>(),                                                       // no child configurations at all
+					["/Child"],                                                                  // one child configuration
+					["/Child1", "/Child2"],                                                      // two child configurations
+					["/Child1/Child21", "/Child1/Child22", "/Child2/Child21", "/Child2/Child22"] // mix of configurations
+				];
 
 				string[][] itemPathsList =
-				{
-					Array.Empty<string>(),                                                                                 // no items at all
-					new[] { "/Value" },                                                                                    // one item
-					new[] { "/Value1", "/Value2" },                                                                        // two items
-					new[] { "/Child/Value1", "/Child/Value2" },                                                            // item nested in child configuration
-					new[] { "/Value1", "/Child1/Value1", "/Child1/Value2", "/Value2", "/Child2/Value1", "/Child2/Value2" } // mix of items
-				};
+				[
+					Array.Empty<string>(),                                                                         // no items at all
+					["/Value"],                                                                                    // one item
+					["/Value1", "/Value2"],                                                                        // two items
+					["/Child/Value1", "/Child/Value2"],                                                            // item nested in child configuration
+					["/Value1", "/Child1/Value1", "/Child1/Value2", "/Value2", "/Child2/Value1", "/Child2/Value2"] // mix of items
+				];
 
 				foreach (int inheritanceLevels in new[] { 1, 2 })
 				foreach (string[] childConfigurationPaths in childConfigurationPathsList)
 				foreach (string[] itemPaths in itemPathsList)
 				{
-					yield return new object[]
-					{
+					yield return
+					[
 						inheritanceLevels,
 						childConfigurationPaths,
 						itemPaths
-					};
+					];
 				}
 			}
 		}
@@ -967,59 +967,54 @@ namespace GriffinPlus.Lib.Configuration
 			get
 			{
 				string[][][] itemPathsList =
-				{
+				[
 					// no items at all
-					new[]
-					{
+					[
 						Array.Empty<string>(), // configuration content
 						Array.Empty<string>(), // top-level items
 						Array.Empty<string>()  // all items
-					},
+					],
 
 					// one item
-					new[]
-					{
-						new[] { "/Value" }, // configuration content
-						new[] { "/Value" }, // top-level items
-						new[] { "/Value" }  // all items
-					},
+					[
+						["/Value"], // configuration content
+						["/Value"], // top-level items
+						["/Value"]  // all items
+					],
 
 					// two items
-					new[]
-					{
-						new[] { "/Value1", "/Value2" }, // configuration content
-						new[] { "/Value1", "/Value2" }, // top-level items
-						new[] { "/Value1", "/Value2" }  // all items
-					},
+					[
+						["/Value1", "/Value2"], // configuration content
+						["/Value1", "/Value2"], // top-level items
+						["/Value1", "/Value2"]  // all items
+					],
 
 					// item nested in child configuration
-					new[]
-					{
-						new[] { "/Child/Value1", "/Child/Value2" }, // configuration content
-						Array.Empty<string>(),                      // top-level items
-						new[] { "/Child/Value1", "/Child/Value2" }  // all items
-					},
+					[
+						["/Child/Value1", "/Child/Value2"], // configuration content
+						Array.Empty<string>(),              // top-level items
+						["/Child/Value1", "/Child/Value2"]  // all items
+					],
 
 					// mix of items
-					new[]
-					{
-						new[] { "/Value1", "/Child1/Value1", "/Child1/Value2", "/Value2", "/Child2/Value1", "/Child2/Value2" }, // configuration content
-						new[] { "/Value1", "/Value2" },                                                                         // top-level items
-						new[] { "/Value1", "/Child1/Value1", "/Child1/Value2", "/Value2", "/Child2/Value1", "/Child2/Value2" }  // all items
-					}
-				};
+					[
+						["/Value1", "/Child1/Value1", "/Child1/Value2", "/Value2", "/Child2/Value1", "/Child2/Value2"], // configuration content
+						["/Value1", "/Value2"],                                                                         // top-level items
+						["/Value1", "/Child1/Value1", "/Child1/Value2", "/Value2", "/Child2/Value1", "/Child2/Value2"]  // all items
+					]
+				];
 
 				foreach (int inheritanceLevels in new[] { 1, 2 })
 				foreach (bool recursively in new[] { false, true })
 				foreach (string[][] itemPaths in itemPathsList)
 				{
-					yield return new object[]
-					{
+					yield return
+					[
 						inheritanceLevels,
 						recursively,
 						itemPaths[0],
 						itemPaths[recursively ? 2 : 1]
-					};
+					];
 				}
 			}
 		}
@@ -1075,12 +1070,12 @@ namespace GriffinPlus.Lib.Configuration
 				foreach (int inheritanceLevel in new[] { 1, 2 })
 				foreach (object[] data in ItemTestDataWithoutValue)
 				{
-					yield return new[]
-					{
+					yield return
+					[
 						inheritanceLevel,
 						data[0],
 						data[1]
-					};
+					];
 				}
 			}
 		}
@@ -1322,7 +1317,7 @@ namespace GriffinPlus.Lib.Configuration
 			// create items using SetItem<T>()
 			foreach (string itemPath in itemPaths)
 			{
-				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new object[] { itemPath });
+				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, [itemPath]);
 				SetItem_CheckCreatedItemCommon(rootConfiguration, item, itemValueType);
 			}
 
@@ -1363,7 +1358,7 @@ namespace GriffinPlus.Lib.Configuration
 			var newItems = new Queue<ICascadedConfigurationItem>();
 			foreach (string itemPath in itemPaths)
 			{
-				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new object[] { itemPath });
+				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, [itemPath]);
 				SetItem_CheckCreatedItemCommon(rootConfiguration, item, itemValueType);
 				newItems.Enqueue(item);
 			}
@@ -1374,7 +1369,7 @@ namespace GriffinPlus.Lib.Configuration
 			// check whether SetItem<T>() succeeds and returns the same items when calling once again
 			foreach (string itemPath in itemPaths)
 			{
-				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new object[] { itemPath });
+				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, [itemPath]);
 				Assert.Same(newItems.Dequeue(), item);
 			}
 
@@ -1428,7 +1423,7 @@ namespace GriffinPlus.Lib.Configuration
 					Assert.Throws<TargetInvocationException>(
 							() => method.Invoke(
 								rootConfiguration,
-								new object[] { itemPath }))
+								[itemPath]))
 						.InnerException);
 			}
 
@@ -1463,12 +1458,12 @@ namespace GriffinPlus.Lib.Configuration
 				foreach (int inheritanceLevel in new[] { 1, 2 })
 				foreach (object[] data in ItemTestDataWithoutValue)
 				{
-					yield return new[]
-					{
+					yield return
+					[
 						inheritanceLevel,
 						data[0],
 						data[1]
-					};
+					];
 				}
 			}
 		}
@@ -1482,19 +1477,19 @@ namespace GriffinPlus.Lib.Configuration
 			get
 			{
 				string[] itemPathList =
-				{
+				[
 					"/Value",      // single value in the root configuration
 					"/Child/Value" // single value in a child configuration
-				};
+				];
 
 				foreach (int inheritanceLevels in new[] { 1, 2 })
 				foreach (string itemPath in itemPathList)
 				{
-					yield return new object[]
-					{
+					yield return
+					[
 						inheritanceLevels,
 						itemPath
-					};
+					];
 				}
 			}
 		}
@@ -1613,7 +1608,7 @@ namespace GriffinPlus.Lib.Configuration
 				.MakeGenericMethod(typeof(string)); // the value type does not matter as the item does not exist...
 
 			// try to get item using GetItem<T>()
-			var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new object[] { itemPath });
+			var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, [itemPath]);
 			Assert.Null(item);
 
 			// ensure that no configurations/items have been created at all
@@ -1664,7 +1659,7 @@ namespace GriffinPlus.Lib.Configuration
 			foreach (string itemPath in itemPaths)
 			{
 				// get the item using its path
-				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new object[] { itemPath });
+				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, [itemPath]);
 
 				// the item should have the same state as produced by the SetItem() method
 				SetItem_CheckCreatedItemCommon(rootConfiguration, item, itemValueType);
@@ -1720,7 +1715,7 @@ namespace GriffinPlus.Lib.Configuration
 					Assert.Throws<TargetInvocationException>(
 							() => method.Invoke(
 								rootConfiguration,
-								new object[] { itemPath }))
+								[itemPath]))
 						.InnerException);
 			}
 
@@ -1755,13 +1750,13 @@ namespace GriffinPlus.Lib.Configuration
 				foreach (int inheritanceLevel in new[] { 1, 2 })
 				foreach (object[] data in ItemTestDataWithValue)
 				{
-					yield return new[]
-					{
+					yield return
+					[
 						inheritanceLevel,
 						data[0],
 						data[1],
 						data[2]
-					};
+					];
 				}
 			}
 		}
@@ -2019,7 +2014,7 @@ namespace GriffinPlus.Lib.Configuration
 			// create items using SetValue<T>()
 			foreach (string itemPath in itemPaths)
 			{
-				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new[] { itemPath, itemValue });
+				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, [itemPath, itemValue]);
 				SetValue_CheckCreatedItemCommon(rootConfiguration, item, itemValueType, itemValue);
 			}
 
@@ -2076,7 +2071,7 @@ namespace GriffinPlus.Lib.Configuration
 			// check whether SetValue<T>() succeeds
 			foreach (string itemPath in itemPaths)
 			{
-				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, new[] { itemPath, itemValue });
+				var item = (ICascadedConfigurationItem)method.Invoke(rootConfiguration, [itemPath, itemValue]);
 				SetValue_CheckCreatedItemCommon(rootConfiguration, item, itemValueType, itemValue);
 			}
 
@@ -2136,7 +2131,7 @@ namespace GriffinPlus.Lib.Configuration
 					Assert.Throws<TargetInvocationException>(
 							() => method.Invoke(
 								rootConfiguration,
-								new[] { itemPath, itemValue }))
+								[itemPath, itemValue]))
 						.InnerException);
 			}
 
@@ -2175,13 +2170,13 @@ namespace GriffinPlus.Lib.Configuration
 				foreach (int inheritanceLevel in new[] { 1, 2 })
 				foreach (object[] data in ItemTestDataWithValue)
 				{
-					yield return new[]
-					{
+					yield return
+					[
 						inheritanceLevel,
 						data[0],
 						data[1],
 						data[2]
-					};
+					];
 				}
 			}
 		}
@@ -2196,12 +2191,12 @@ namespace GriffinPlus.Lib.Configuration
 				foreach (int inheritanceLevel in new[] { 1, 2 })
 				foreach (object[] data in ItemTestDataWithoutValue)
 				{
-					yield return new[]
-					{
+					yield return
+					[
 						inheritanceLevel,
 						data[0],
 						data[1]
-					};
+					];
 				}
 			}
 		}
@@ -2256,9 +2251,9 @@ namespace GriffinPlus.Lib.Configuration
 			{
 				// values are in the most derived configuration, so the value of 'inherit' should not matter
 				object expectedItemValue = items.Dequeue().Value;
-				object actualItemValue1 = method.Invoke(rootConfiguration, new object[] { itemPath, false });
+				object actualItemValue1 = method.Invoke(rootConfiguration, [itemPath, false]);
 				Assert.Equal(expectedItemValue, actualItemValue1);
-				object actualItemValue2 = method.Invoke(rootConfiguration, new object[] { itemPath, true });
+				object actualItemValue2 = method.Invoke(rootConfiguration, [itemPath, true]);
 				Assert.Equal(expectedItemValue, actualItemValue2);
 			}
 		}
@@ -2307,11 +2302,11 @@ namespace GriffinPlus.Lib.Configuration
 				object expectedItemValue = items.Dequeue();
 
 				// the most derived configuration should not contain the item and therefore no value...
-				var ex = Assert.Throws<TargetInvocationException>(() => method.Invoke(derivedConfiguration, new object[] { itemPath, false }));
+				var ex = Assert.Throws<TargetInvocationException>(() => method.Invoke(derivedConfiguration, [itemPath, false]));
 				Assert.IsType<ConfigurationException>(ex.InnerException);
 
 				// ...but the inherited configuration contains an item with the requested value
-				object actualItemValue2 = method.Invoke(derivedConfiguration, new object[] { itemPath, true });
+				object actualItemValue2 = method.Invoke(derivedConfiguration, [itemPath, true]);
 				Assert.Equal(expectedItemValue, actualItemValue2);
 			}
 		}
@@ -2374,7 +2369,7 @@ namespace GriffinPlus.Lib.Configuration
 					Assert.Throws<TargetInvocationException>(
 							() => method.Invoke(
 								derivedConfiguration,
-								new object[] { itemPath, inherit }))
+								[itemPath, inherit]))
 						.InnerException);
 			}
 		}
@@ -2433,7 +2428,7 @@ namespace GriffinPlus.Lib.Configuration
 					Assert.Throws<TargetInvocationException>(
 							() => method.Invoke(
 								derivedConfiguration,
-								new object[] { itemPath, inherit }))
+								[itemPath, inherit]))
 						.InnerException);
 			}
 		}
@@ -2468,12 +2463,12 @@ namespace GriffinPlus.Lib.Configuration
 				foreach (int inheritanceLevel in new[] { 1, 2 })
 				foreach (object[] data in ItemTestDataWithoutValue)
 				{
-					yield return new[]
-					{
+					yield return
+					[
 						inheritanceLevel,
 						data[0],
 						data[1]
-					};
+					];
 				}
 			}
 		}
@@ -2585,7 +2580,7 @@ namespace GriffinPlus.Lib.Configuration
 		public void ResetItems(bool recursive)
 		{
 			// create a new configuration with no inherited configurations
-			// (resetting does not effect inherited configurations)
+			// (resetting does not affect inherited configurations)
 			CascadedConfiguration rootConfiguration = CreateConfiguration(1);
 
 			// populate configuration with some test data
@@ -2627,110 +2622,112 @@ namespace GriffinPlus.Lib.Configuration
 			get
 			{
 				// remove the only item
-				yield return new object[]
-				{
+				yield return
+				[
 					new[] { "/Value" },   // configuration content
 					new[] { "/Value" },   // item to remove
 					Array.Empty<string>() // configuration content after removing the item
-				};
+				];
 
 				// remove first item of two items
-				yield return new object[]
-				{
+				yield return
+				[
 					new[] { "/Value1", "/Value2" }, // configuration content
 					new[] { "/Value1" },            // item to remove
 					new[] { "/Value2" }             // configuration content after removing the item
-				};
+				];
 
 				// remove second item of two items
-				yield return new object[]
-				{
+				yield return
+				[
 					new[] { "/Value1", "/Value2" }, // configuration content
 					new[] { "/Value2" },            // item to remove
 					new[] { "/Value1" }             // configuration content after removing the item
-				};
+				];
 
 				// remove first item nested in child configuration
-				yield return new object[]
-				{
+				yield return
+				[
 					new[] { "/Child/Value1", "/Child/Value2" }, // configuration content
 					new[] { "/Child/Value1" },                  // item to remove
 					new[] { "/Child/Value2" }                   // configuration content after removing the item
-				};
+				];
 
 				// remove second item nested in child configuration
-				yield return new object[]
-				{
+				yield return
+				[
 					new[] { "/Child/Value1", "/Child/Value2" }, // configuration content
 					new[] { "/Child/Value2" },                  // item to remove
 					new[] { "/Child/Value1" }                   // configuration content after removing the item
-				};
+				];
 
 				// remove first top-level item of a mix of items
-				yield return new object[]
-				{
+				yield return
+				[
 					new[] { "/Value1", "/Child1/Value1", "/Child1/Value2", "/Value2", "/Child2/Value1", "/Child2/Value2" }, // configuration content
 					new[] { "/Value1" },                                                                                    // item to remove
 					new[] { "/Child1/Value1", "/Child1/Value2", "/Value2", "/Child2/Value1", "/Child2/Value2" }             // configuration content after removing the item
-				};
+				];
 
 				// remove second top-level item of a mix of items
-				yield return new object[]
-				{
+				yield return
+				[
 					new[] { "/Value1", "/Child1/Value1", "/Child1/Value2", "/Value2", "/Child2/Value1", "/Child2/Value2" }, // configuration content
 					new[] { "/Value2" },                                                                                    // item to remove
 					new[] { "/Value1", "/Child1/Value1", "/Child1/Value2", "/Child2/Value1", "/Child2/Value2" }             // configuration content after removing the item
-				};
+				];
 
 				// remove first item in the first child configuration of a mix of items
-				yield return new object[]
-				{
+				yield return
+				[
 					new[] { "/Value1", "/Child1/Value1", "/Child1/Value2", "/Value2", "/Child2/Value1", "/Child2/Value2" }, // configuration content
 					new[] { "/Child1/Value1" },                                                                             // item to remove
 					new[] { "/Value1", "/Child1/Value2", "/Value2", "/Child2/Value1", "/Child2/Value2" }                    // configuration content after removing the item
-				};
+				];
 
 				// remove second item in the first child configuration of a mix of items
-				yield return new object[]
-				{
+				yield return
+				[
 					new[] { "/Value1", "/Child1/Value1", "/Child1/Value2", "/Value2", "/Child2/Value1", "/Child2/Value2" }, // configuration content
 					new[] { "/Child1/Value2" },                                                                             // item to remove
 					new[] { "/Value1", "/Child1/Value1", "/Value2", "/Child2/Value1", "/Child2/Value2" }                    // configuration content after removing the item
-				};
+				];
 
 				// remove first item in the second child configuration of a mix of items
-				yield return new object[]
-				{
+				yield return
+				[
 					new[] { "/Value1", "/Child1/Value1", "/Child1/Value2", "/Value2", "/Child2/Value1", "/Child2/Value2" }, // configuration content
 					new[] { "/Child2/Value1" },                                                                             // item to remove
 					new[] { "/Value1", "/Child1/Value1", "/Child1/Value2", "/Value2", "/Child2/Value2" }                    // configuration content after removing the item
-				};
+				];
 
 				// remove second item in the second child configuration of a mix of items
-				yield return new object[]
-				{
+				yield return
+				[
 					new[] { "/Value1", "/Child1/Value1", "/Child1/Value2", "/Value2", "/Child2/Value1", "/Child2/Value2" }, // configuration content
 					new[] { "/Child2/Value2" },                                                                             // item to remove
 					new[] { "/Value1", "/Child1/Value1", "/Child1/Value2", "/Value2", "/Child2/Value1" }                    // configuration content after removing the item
-				};
+				];
 
 				// try to remove top-level item that does not exist
-				yield return new object[]
-				{
+				yield return
+				[
 					new[] { "/Value", "/Child/Value" }, // configuration content
 					new[] { "/DoesNotExist" },          // item to remove
 					new[] { "/Value", "/Child/Value" }  // configuration content after removing the item
-				};
+				];
 
 				// try to remove item in child configuration that does not exist
-				yield return new object[]
-				{
+				yield return
+				[
 					new[] { "/Value", "/Child/Value" },       // configuration content
 					new[] { "/ChildThatDoesNotExist/Value" }, // item to remove
 					new[] { "/Value", "/Child/Value" }        // configuration content after removing the item
-				};
+				];
 			}
 		}
+
+		private static readonly char[] sSeparator = ['/'];
 
 		/// <summary>
 		/// Tests removing items using <see cref="CascadedConfiguration.RemoveItem"/>.

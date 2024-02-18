@@ -13,7 +13,7 @@ namespace GriffinPlus.Lib
 	/// Size of some piece of data, e.g. a file.
 	/// It supports calculations and a very flexible way of formatting the size choosing the optimum unit multiplier.
 	/// The user has the choice of binary prefixes as described by IEEE 1541 (https://en.wikipedia.org/wiki/IEEE_1541-2002)
-	/// or metric (SI) prefixes (https://en.wikipedia.org/wiki/Metric_prefix). The size is backed by a 64 bit integer value, i.e.
+	/// or metric (SI) prefixes (https://en.wikipedia.org/wiki/Metric_prefix). The size is backed by a 64-bit integer value, i.e.
 	/// the supported size range is -9,223,372,036,854,775,808 bytes (-9,2 Exabyte) up to 9,223,372,036,854,775,807 bytes (9,2 Exabyte).<br/>
 	/// <br/>
 	/// The type supports formatting, which can be customized using the following format specifier:<br/>
@@ -123,7 +123,7 @@ namespace GriffinPlus.Lib
 		/// Rules for formatting using metric units.
 		/// </summary>
 		private static readonly Rule[] sMetricFormattingRules =
-		{
+		[
 			new Rule(
 				DataSizeUnit.Byte,
 				1UL * 1000,
@@ -166,13 +166,13 @@ namespace GriffinPlus.Lib
 				1UL * 1000 * 1000 * 1000 * 1000 * 1000 * 1000,
 				"Exabyte",
 				"EB")
-		};
+		];
 
 		/// <summary>
 		/// Rules for formatting using binary units.
 		/// </summary>
 		private static readonly Rule[] sBinaryFormattingRules =
-		{
+		[
 			new Rule(
 				DataSizeUnit.Byte,
 				1UL * 1024,
@@ -215,7 +215,7 @@ namespace GriffinPlus.Lib
 				1UL * 1024 * 1024 * 1024 * 1024 * 1024 * 1024,
 				"Exbibyte",
 				"EiB")
-		};
+		];
 
 		#endregion
 
@@ -786,7 +786,7 @@ namespace GriffinPlus.Lib
 		/// <exception cref="FormatException">The specified <paramref name="format"/> is not supported.</exception>
 		public string ToString(string format, IFormatProvider formatProvider)
 		{
-			if (formatProvider == null) formatProvider = CultureInfo.CurrentCulture;
+			formatProvider ??= CultureInfo.CurrentCulture;
 
 			var unit = DataSizeUnit.AutoBase10;
 			var unitStyle = DataSizeUnitStyle.Short;
@@ -913,7 +913,7 @@ namespace GriffinPlus.Lib
 			DataSizeUnit      unit      = DataSizeUnit.AutoBase10,
 			DataSizeUnitStyle unitStyle = DataSizeUnitStyle.Long)
 		{
-			if (formatProvider == null) formatProvider = CultureInfo.CurrentCulture;
+			formatProvider ??= CultureInfo.CurrentCulture;
 
 			// determine whether the size is negative and strip the sign
 			// (it is considered at the end)

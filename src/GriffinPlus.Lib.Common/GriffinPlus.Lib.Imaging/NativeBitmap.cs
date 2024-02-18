@@ -408,7 +408,7 @@ namespace GriffinPlus.Lib.Imaging
 
 		/// <summary>
 		/// Gets the address of the first pixel in the bitmap.
-		/// The <see cref="NativeBitmap"/> must be kept alive until the underlying buffer is not used any more,
+		/// The <see cref="NativeBitmap"/> must be kept alive until the underlying buffer is not used anymore,
 		/// otherwise access violations can occur due to the buffer getting collected prematurely. This can be
 		/// done by putting a <see cref="GC.KeepAlive"/> at the end of the code using the native buffer.
 		/// It is much safer to use <see cref="GetAccessor"/> to obtain an accessor object that keeps the buffer
@@ -454,7 +454,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// Gets an accessor that can be used to safely access the underlying bitmap buffer.
 		/// The accessor should be used in conjunction with a 'using' statement to work as expected.
 		/// </summary>
-		/// <returns>An <see cref="NativeBufferAccessor"/> providing access to the underlying bitmap buffer.</returns>
+		/// <returns>A <see cref="NativeBufferAccessor"/> providing access to the underlying bitmap buffer.</returns>
 		/// <exception cref="ObjectDisposedException">The instance has been disposed.</exception>
 		public NativeBitmapAccessor GetAccessor()
 		{

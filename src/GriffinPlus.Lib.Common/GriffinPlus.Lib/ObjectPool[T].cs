@@ -15,7 +15,7 @@ namespace GriffinPlus.Lib
 	/// <typeparam name="T">Type of the objects in the pool.</typeparam>
 	public class ObjectPool<T> where T : class
 	{
-		private readonly ConcurrentBag<T> mObjects = new ConcurrentBag<T>();
+		private readonly ConcurrentBag<T> mObjects = [];
 		private readonly Func<T>          mObjectCreator;
 		private readonly Action<T>        mActionOnGet;
 		private readonly Action<T>        mActionOnReturn;
@@ -25,8 +25,8 @@ namespace GriffinPlus.Lib
 		/// creates new instances of pooled objects, if the pool is empty.
 		/// </summary>
 		/// <param name="creator">Function that creates a new object.</param>
-		/// <param name="actionOnGet">Function to call before returning an (may be <c>null</c>).</param>
-		/// <param name="actionOnReturn">Function to call before an object returns to the pool (may be <c>null</c>).</param>
+		/// <param name="actionOnGet">Function to call before returning an object (may also be <c>null</c>).</param>
+		/// <param name="actionOnReturn">Function to call before an object returns to the pool (may also be <c>null</c>).</param>
 		public ObjectPool(Func<T> creator, Action<T> actionOnGet = null, Action<T> actionOnReturn = null)
 		{
 			mObjectCreator = creator ?? throw new ArgumentNullException(nameof(creator));

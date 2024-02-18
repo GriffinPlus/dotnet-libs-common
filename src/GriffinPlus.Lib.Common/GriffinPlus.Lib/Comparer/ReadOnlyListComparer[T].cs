@@ -10,17 +10,17 @@ namespace GriffinPlus.Lib
 {
 
 	/// <summary>
-	/// An generic comparer for <see cref="IReadOnlyList{T}"/>.
+	/// A generic comparer for <see cref="IReadOnlyList{T}"/>.
 	/// The content of the lists are compared first, followed by the length of the arrays.
 	/// </summary>
-	/// <typeparam name="T">Type of a list element.</typeparam>
+	/// <typeparam name="T">List element type (may also be a base type).</typeparam>
 	public class ReadOnlyListComparer<T> : IComparer<IReadOnlyList<T>>
 		where T : IComparable<T>
 	{
 		/// <summary>
 		/// The singleton instance of the comparer.
 		/// </summary>
-		public static readonly ReadOnlyListComparer<T> Instance = new ReadOnlyListComparer<T>();
+		public static readonly ReadOnlyListComparer<T> Instance = new();
 
 		/// <summary>
 		/// Compares two lists and returns a value indicating whether one is less than, equal to, or greater than the other.

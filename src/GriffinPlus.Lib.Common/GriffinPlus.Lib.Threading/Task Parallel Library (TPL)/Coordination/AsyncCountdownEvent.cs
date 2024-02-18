@@ -193,22 +193,13 @@ namespace GriffinPlus.Lib.Threading
 			Signal(1);
 		}
 
-		// ReSharper disable UnusedMember.Local
 		[DebuggerNonUserCode]
-		private sealed class DebugView
+		private sealed class DebugView(AsyncCountdownEvent countdownEvent)
 		{
-			private readonly AsyncCountdownEvent mCountdownEvent;
-
-			public DebugView(AsyncCountdownEvent countdownEvent)
-			{
-				mCountdownEvent = countdownEvent;
-			}
-
-			public int                   Id                    => mCountdownEvent.Id;
-			public long                  CurrentCount          => mCountdownEvent.CurrentCount;
-			public AsyncManualResetEvent AsyncManualResetEvent => mCountdownEvent.mManualResetEvent;
+			public int                   Id                    => countdownEvent.Id;
+			public long                  CurrentCount          => countdownEvent.CurrentCount;
+			public AsyncManualResetEvent AsyncManualResetEvent => countdownEvent.mManualResetEvent;
 		}
-		// ReSharper restore UnusedMember.Local
 	}
 
 }

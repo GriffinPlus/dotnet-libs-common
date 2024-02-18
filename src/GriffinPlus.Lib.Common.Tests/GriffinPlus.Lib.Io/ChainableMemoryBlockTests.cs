@@ -26,7 +26,7 @@ namespace GriffinPlus.Lib.Io
 			{
 				foreach (int capacity in new[] { 0, 1, 10, 100, 1000 })
 				{
-					yield return new object[] { capacity };
+					yield return [capacity];
 				}
 			}
 		}
@@ -42,7 +42,7 @@ namespace GriffinPlus.Lib.Io
 				foreach (bool poolBuffer in new[] { false, true })
 				foreach (bool clearBuffer in new[] { false, true })
 				{
-					yield return new object[] { capacity, poolBuffer, clearBuffer };
+					yield return [capacity, poolBuffer, clearBuffer];
 				}
 			}
 		}

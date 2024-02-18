@@ -19,7 +19,7 @@ namespace GriffinPlus.Lib.Conversion
 		public Converter_Enum()
 		{
 			ObjectToStringConversion = Converter<T>.DefaultObjectToStringConversion;
-			StringToObjectConversion = (s, provider) => (T)Enum.Parse(typeof(T), s);
+			StringToObjectConversion = (s, _) => (T)Enum.Parse(typeof(T), s);
 		}
 
 		/// <summary>

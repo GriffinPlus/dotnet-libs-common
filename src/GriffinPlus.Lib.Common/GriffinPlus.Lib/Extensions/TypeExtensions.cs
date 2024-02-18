@@ -18,7 +18,7 @@ namespace GriffinPlus.Lib
 	/// </summary>
 	public static class TypeExtensions
 	{
-		private static readonly Regex sExtractGenericArgumentTypeRegex = new Regex("^([^`]+)`\\d+$", RegexOptions.Compiled);
+		private static readonly Regex sExtractGenericArgumentTypeRegex = new("^([^`]+)`\\d+$", RegexOptions.Compiled);
 
 		/// <summary>
 		/// Gets all public properties of the specified type.
@@ -40,8 +40,7 @@ namespace GriffinPlus.Lib
 					Type subType = queue.Dequeue();
 					foreach (Type subInterface in subType.GetInterfaces())
 					{
-						if (considered.Contains(subInterface)) continue;
-						considered.Add(subInterface);
+						if (!considered.Add(subInterface)) continue;
 						queue.Enqueue(subInterface);
 					}
 
@@ -76,8 +75,7 @@ namespace GriffinPlus.Lib
 					Type subType = queue.Dequeue();
 					foreach (Type subInterface in subType.GetInterfaces())
 					{
-						if (considered.Contains(subInterface)) continue;
-						considered.Add(subInterface);
+						if (!considered.Add(subInterface)) continue;
 						queue.Enqueue(subInterface);
 					}
 

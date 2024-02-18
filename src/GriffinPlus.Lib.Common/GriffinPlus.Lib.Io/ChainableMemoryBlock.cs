@@ -31,7 +31,7 @@ namespace GriffinPlus.Lib.Io
 		}
 
 		/// <summary>
-		/// Initializes a uninitialized instance of the <see cref="ChainableMemoryBlock"/> class (for internal use only).
+		/// Initializes an uninitialized instance of the <see cref="ChainableMemoryBlock"/> class (for internal use only).
 		/// </summary>
 		/// <param name="pooled"><c>true</c> if the block is in the object pool; otherwise <c>false</c>.</param>
 		private ChainableMemoryBlock(bool pooled)
@@ -143,7 +143,7 @@ namespace GriffinPlus.Lib.Io
 
 		/// <summary>
 		/// Get the array pool the buffer was rented from
-		/// (<c>null</c>, if the the buffer was allocated on the heap).
+		/// (<c>null</c> if the buffer was allocated on the heap).
 		/// </summary>
 		public ArrayPool<byte> BufferPool => mBufferPool;
 
@@ -332,7 +332,7 @@ namespace GriffinPlus.Lib.Io
 
 		/// <summary>
 		/// Gets all data stored in the current memory block and all linked memory blocks
-		/// (limited to memory block chains with a maximum total length of <see cref="int.MaxValue"/>).
+		/// (limited to memory-block chains with a maximum total length of <see cref="int.MaxValue"/>).
 		/// </summary>
 		/// <returns>Data stored in the chain of memory blocks.</returns>
 		public byte[] GetChainData()

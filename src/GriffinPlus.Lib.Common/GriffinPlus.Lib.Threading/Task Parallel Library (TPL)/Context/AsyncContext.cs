@@ -185,12 +185,10 @@ namespace GriffinPlus.Lib.Threading
 		{
 			if (action == null) throw new ArgumentNullException(nameof(action));
 
-			using (var context = new AsyncContext())
-			{
-				Task task = context.mTaskFactory.Run(action);
-				context.Execute();
-				task.WaitAndUnwrapException();
-			}
+			using var context = new AsyncContext();
+			Task task = context.mTaskFactory.Run(action);
+			context.Execute();
+			task.WaitAndUnwrapException();
 		}
 
 		/// <summary>
@@ -204,12 +202,10 @@ namespace GriffinPlus.Lib.Threading
 		{
 			if (action == null) throw new ArgumentNullException(nameof(action));
 
-			using (var context = new AsyncContext())
-			{
-				Task<TResult> task = context.mTaskFactory.Run(action);
-				context.Execute();
-				return task.WaitAndUnwrapException();
-			}
+			using var context = new AsyncContext();
+			Task<TResult> task = context.mTaskFactory.Run(action);
+			context.Execute();
+			return task.WaitAndUnwrapException();
 		}
 
 		/// <summary>
@@ -222,23 +218,21 @@ namespace GriffinPlus.Lib.Threading
 		{
 			if (action == null) throw new ArgumentNullException(nameof(action));
 
-			using (var context = new AsyncContext())
-			{
-				context.OperationStarted();
-				Task task = context.mTaskFactory.Run(action)
-					.ContinueWith(
-						t =>
-						{
-							// ReSharper disable once AccessToDisposedClosure
-							context.OperationCompleted();
-							t.WaitAndUnwrapException();
-						},
-						CancellationToken.None,
-						TaskContinuationOptions.ExecuteSynchronously,
-						context.mTaskScheduler);
-				context.Execute();
-				task.WaitAndUnwrapException();
-			}
+			using var context = new AsyncContext();
+			context.OperationStarted();
+			Task task = context.mTaskFactory.Run(action)
+				.ContinueWith(
+					t =>
+					{
+						// ReSharper disable once AccessToDisposedClosure
+						context.OperationCompleted();
+						t.WaitAndUnwrapException();
+					},
+					CancellationToken.None,
+					TaskContinuationOptions.ExecuteSynchronously,
+					context.mTaskScheduler);
+			context.Execute();
+			task.WaitAndUnwrapException();
 		}
 
 		/// <summary>
@@ -253,23 +247,21 @@ namespace GriffinPlus.Lib.Threading
 			if (action == null)
 				throw new ArgumentNullException(nameof(action));
 
-			using (var context = new AsyncContext())
-			{
-				context.OperationStarted();
-				Task<TResult> task = context.mTaskFactory.Run(action)
-					.ContinueWith(
-						t =>
-						{
-							// ReSharper disable once AccessToDisposedClosure
-							context.OperationCompleted();
-							return t.WaitAndUnwrapException();
-						},
-						CancellationToken.None,
-						TaskContinuationOptions.ExecuteSynchronously,
-						context.mTaskScheduler);
-				context.Execute();
-				return task.WaitAndUnwrapException();
-			}
+			using var context = new AsyncContext();
+			context.OperationStarted();
+			Task<TResult> task = context.mTaskFactory.Run(action)
+				.ContinueWith(
+					t =>
+					{
+						// ReSharper disable once AccessToDisposedClosure
+						context.OperationCompleted();
+						return t.WaitAndUnwrapException();
+					},
+					CancellationToken.None,
+					TaskContinuationOptions.ExecuteSynchronously,
+					context.mTaskScheduler);
+			context.Execute();
+			return task.WaitAndUnwrapException();
 		}
 
 		/// <summary>
@@ -310,16 +302,9 @@ namespace GriffinPlus.Lib.Threading
 		public TaskFactory Factory => mTaskFactory;
 
 		[DebuggerNonUserCode]
-		internal sealed class DebugView
+		internal sealed class DebugView(AsyncContext context)
 		{
-			private readonly AsyncContext mContext;
-
-			public DebugView(AsyncContext context)
-			{
-				mContext = context;
-			}
-
-			public TaskScheduler TaskScheduler => mContext.mTaskScheduler;
+			public TaskScheduler TaskScheduler => context.mTaskScheduler;
 		}
 	}
 

@@ -176,7 +176,7 @@ namespace GriffinPlus.Lib.Configuration
 		/// </summary>
 		/// <remarks>
 		/// This property gets the comment of the current configuration item, if the current configuration item provides a comment.
-		/// If it doesn't inherited configurations in the configuration cascade are queried. Setting the property effects the current
+		/// If it doesn't, inherited configurations in the configuration cascade are queried. Setting the property effects the current
 		/// configuration item only.
 		/// </remarks>
 		public string Comment
@@ -196,7 +196,7 @@ namespace GriffinPlus.Lib.Configuration
 			{
 				lock (Configuration.Sync)
 				{
-					if (Configuration.PersistenceStrategy != null && !Configuration.PersistenceStrategy.SupportsComments)
+					if (Configuration.PersistenceStrategy is { SupportsComments: false })
 						throw new NotSupportedException("The persistence strategy does not support comments.");
 
 					if (!mHasComment || !Equals(mComment, value))

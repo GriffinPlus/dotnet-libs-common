@@ -169,10 +169,8 @@ namespace GriffinPlus.Lib.Threading
 
 		private static async Task DoWaitAsync(Task task, CancellationToken cancellationToken)
 		{
-			using (var cancelTaskSource = new CancellationTokenTaskSource<object>(cancellationToken))
-			{
-				await await Task.WhenAny(task, cancelTaskSource.Task).ConfigureAwait(false);
-			}
+			using var cancelTaskSource = new CancellationTokenTaskSource<object>(cancellationToken);
+			await await Task.WhenAny(task, cancelTaskSource.Task).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -191,10 +189,8 @@ namespace GriffinPlus.Lib.Threading
 
 		private static async Task<TResult> DoWaitAsync<TResult>(Task<TResult> task, CancellationToken cancellationToken)
 		{
-			using (var cancelTaskSource = new CancellationTokenTaskSource<TResult>(cancellationToken))
-			{
-				return await await Task.WhenAny(task, cancelTaskSource.Task).ConfigureAwait(false);
-			}
+			using var cancelTaskSource = new CancellationTokenTaskSource<TResult>(cancellationToken);
+			return await await Task.WhenAny(task, cancelTaskSource.Task).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -242,7 +238,7 @@ namespace GriffinPlus.Lib.Threading
 		}
 
 		/// <summary>
-		/// Asynchronously waits for all of the source tasks to complete.
+		/// Asynchronously waits for all the source tasks to complete.
 		/// </summary>
 		/// <param name="this">The tasks to wait for. May not be <c>null</c>.</param>
 		public static Task WhenAll(this IEnumerable<Task> @this)
@@ -252,7 +248,7 @@ namespace GriffinPlus.Lib.Threading
 		}
 
 		/// <summary>
-		/// Asynchronously waits for all of the source tasks to complete.
+		/// Asynchronously waits for all the source tasks to complete.
 		/// </summary>
 		/// <typeparam name="TResult">The type of the task results.</typeparam>
 		/// <param name="this">The tasks to wait for. May not be <c>null</c>.</param>

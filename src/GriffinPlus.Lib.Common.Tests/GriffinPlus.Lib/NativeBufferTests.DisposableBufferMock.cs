@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 namespace GriffinPlus.Lib
 {
 
+	// ReSharper disable once UnusedMember.Global
 	partial class NativeBufferTests
 	{
 		public class DisposableBufferMock : SafeHandle

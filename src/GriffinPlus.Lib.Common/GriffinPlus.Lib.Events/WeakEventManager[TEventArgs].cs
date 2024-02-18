@@ -37,29 +37,22 @@ namespace GriffinPlus.Lib.Events
 		/// <summary>
 		/// A weak event handler item in the event manager.
 		/// </summary>
-		private readonly struct Item
+		private readonly struct Item(SynchronizationContext context, EventHandler<TEventArgs> handler, bool scheduleAlways)
 		{
-			public readonly SynchronizationContext       SynchronizationContext;
-			public readonly WeakEventHandler<TEventArgs> Handler;
-			public readonly bool                         ScheduleAlways;
-
-			public Item(SynchronizationContext context, EventHandler<TEventArgs> handler, bool scheduleAlways)
-			{
-				SynchronizationContext = context;
-				Handler = new WeakEventHandler<TEventArgs>(handler);
-				ScheduleAlways = scheduleAlways;
-			}
+			public readonly  SynchronizationContext       SynchronizationContext = context;
+			public readonly  bool                         ScheduleAlways         = scheduleAlways;
+			private readonly WeakEventHandler<TEventArgs> mHandler               = new(handler);
 
 			public ItemMatchResult IsHandler(EventHandler<TEventArgs> handler)
 			{
-				if (Handler.Method != handler.Method)
+				if (mHandler.Method != handler.Method)
 				{
 					return ItemMatchResult.NoMatch;
 				}
 
-				if (Handler.Target != null)
+				if (mHandler.Target != null)
 				{
-					object target = Handler.Target.Target;
+					object target = mHandler.Target.Target;
 					if (target == null) return ItemMatchResult.Collected;
 					if (!ReferenceEquals(target, handler.Target)) return ItemMatchResult.NoMatch;
 				}
@@ -67,11 +60,11 @@ namespace GriffinPlus.Lib.Events
 				return ItemMatchResult.Match;
 			}
 
-			public bool IsValid => Handler.IsValid;
+			public bool IsValid => mHandler.IsValid;
 
 			public bool Fire(object sender, TEventArgs e)
 			{
-				return Handler.Invoke(sender, e);
+				return mHandler.Invoke(sender, e);
 			}
 		}
 
@@ -79,10 +72,10 @@ namespace GriffinPlus.Lib.Events
 
 		#region Class Variables
 
-		private static readonly ConditionalWeakTable<object, Dictionary<string, Item[]>> sItemsByObject = new ConditionalWeakTable<object, Dictionary<string, Item[]>>();
+		private static readonly ConditionalWeakTable<object, Dictionary<string, Item[]>> sItemsByObject = new();
 
 		// ReSharper disable once StaticMemberInGenericType
-		private static readonly object sSync = new object();
+		private static readonly object sSync = new();
 
 		#endregion
 
@@ -92,7 +85,7 @@ namespace GriffinPlus.Lib.Events
 		/// <param name="obj">Object providing the event.</param>
 		/// <param name="eventName">Name of the event.</param>
 		/// <param name="handler">Event handler to register.</param>
-		/// <param name="context">Synchronization context to use when calling the event handler (may be null).</param>
+		/// <param name="context">Synchronization context to use when calling the event handler (it may also be <c>null</c>).</param>
 		/// <param name="scheduleAlways">
 		/// If <paramref name="context"/> is set:
 		/// <c>true</c> to always schedule the event handler in the specified synchronization context,
@@ -251,8 +244,8 @@ namespace GriffinPlus.Lib.Events
 		/// <param name="obj">Object providing the event.</param>
 		/// <param name="eventName">Name of the event (<c>null</c> to remove all handlers attached to events of the specified object).</param>
 		/// <returns>
-		/// true, if a least one event handler has been removed;
-		/// false, if no event handler was registered.
+		/// <c>true</c> if at least one event handler has been removed;<br/>
+		/// <c>false</c> if no event handler was registered.
 		/// </returns>
 		public static bool UnregisterEventHandlers(object obj, string eventName)
 		{
@@ -496,18 +489,16 @@ namespace GriffinPlus.Lib.Events
 			for (int i = 0; i < items.Length; i++)
 			{
 				Item item = items[i];
-				if (!item.IsValid)
-				{
-					if (itemsToRemove == null) itemsToRemove = new List<int>();
-					itemsToRemove.Add(i);
-				}
+				if (item.IsValid) continue;
+				itemsToRemove ??= [];
+				itemsToRemove.Add(i);
 			}
 
 			// abort, if all handlers are still valid
 			if (itemsToRemove == null)
 				return items;
 
-			// remove handlers that are not valid any more
+			// remove handlers that are not valid anymore
 			if (itemsToRemove.Count == items.Length)
 			{
 				// all handlers have to be removed

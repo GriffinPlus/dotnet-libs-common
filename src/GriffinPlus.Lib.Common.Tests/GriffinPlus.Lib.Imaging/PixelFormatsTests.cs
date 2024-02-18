@@ -173,7 +173,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// Checks whether the specified <see cref="PixelFormat"/> instance reflects the pixel format appropriately.
 		/// </summary>
 		/// <param name="pixelFormat"><see cref="PixelFormat"/> instance to check.</param>
-		/// <param name="id">Id of the pixel format.</param>
+		/// <param name="id">ID of the pixel format.</param>
 		/// <param name="bitsPerPixel">Number of bits per pixel.</param>
 		/// <param name="hasAlpha"><c>true</c> if the pixel format supports alpha; otherwise <c>false</c>.</param>
 		/// <param name="palettized"><c>true</c> if the pixel format is palettized; otherwise <c>false</c>.</param>

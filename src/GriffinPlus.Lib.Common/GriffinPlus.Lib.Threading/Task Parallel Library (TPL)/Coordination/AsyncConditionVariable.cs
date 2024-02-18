@@ -180,22 +180,13 @@ namespace GriffinPlus.Lib.Threading
 			Wait(CancellationToken.None);
 		}
 
-		// ReSharper disable UnusedMember.Local
 		[DebuggerNonUserCode]
-		private sealed class DebugView
+		private sealed class DebugView(AsyncConditionVariable cv)
 		{
-			private readonly AsyncConditionVariable mCv;
-
-			public DebugView(AsyncConditionVariable cv)
-			{
-				mCv = cv;
-			}
-
-			public int                     Id        => mCv.Id;
-			public AsyncLock               AsyncLock => mCv.mAsyncLock;
-			public IAsyncWaitQueue<object> WaitQueue => mCv.mQueue;
+			public int                     Id        => cv.Id;
+			public AsyncLock               AsyncLock => cv.mAsyncLock;
+			public IAsyncWaitQueue<object> WaitQueue => cv.mQueue;
 		}
-		// ReSharper restore UnusedMember.Local
 	}
 
 }

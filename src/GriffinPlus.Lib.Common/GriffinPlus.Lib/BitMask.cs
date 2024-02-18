@@ -52,12 +52,12 @@ namespace GriffinPlus.Lib
 		/// <summary>
 		/// Gets a bit mask of zero length with '0' padding.
 		/// </summary>
-		public static BitMask Zeros { get; } = new BitMask(0, false, false);
+		public static BitMask Zeros { get; } = new(0, false, false);
 
 		/// <summary>
 		/// Gets a bit mask of zero length with '1' padding.
 		/// </summary>
-		public static BitMask Ones { get; } = new BitMask(0, true, true);
+		public static BitMask Ones { get; } = new(0, true, true);
 
 		/// <summary>
 		/// Gets the size of the bit mask (in bits).

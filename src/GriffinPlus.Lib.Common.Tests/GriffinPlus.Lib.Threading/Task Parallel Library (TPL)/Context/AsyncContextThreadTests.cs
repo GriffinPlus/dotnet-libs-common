@@ -74,11 +74,9 @@ namespace GriffinPlus.Lib.Threading
 		[Fact]
 		public async Task Context_IsCorrectAsyncContext()
 		{
-			using (var thread = new AsyncContextThread())
-			{
-				AsyncContext observedContext = await thread.Factory.Run(() => AsyncContext.Current);
-				Assert.Same(observedContext, thread.Context);
-			}
+			using var thread = new AsyncContextThread();
+			AsyncContext observedContext = await thread.Factory.Run(() => AsyncContext.Current);
+			Assert.Same(observedContext, thread.Context);
 		}
 	}
 

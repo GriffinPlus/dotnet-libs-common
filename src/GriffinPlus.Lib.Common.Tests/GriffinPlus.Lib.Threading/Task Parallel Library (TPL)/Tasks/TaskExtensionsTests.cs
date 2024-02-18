@@ -37,6 +37,8 @@ using Xunit;
 
 #pragma warning disable xUnit1031 // Do not use blocking task operations in test method
 
+// ReSharper disable MethodHasAsyncOverload
+
 namespace GriffinPlus.Lib.Threading
 {
 
@@ -397,11 +399,11 @@ namespace GriffinPlus.Lib.Threading
 			Task<object[]> task = new[] { tcs.Task }.WhenAll();
 			Assert.False(task.IsCompleted);
 
-			object expectedResult = new object();
+			object expectedResult = new();
 			tcs.SetResult(expectedResult);
 
 			object[] result = await task;
-			Assert.Equal(new[] { expectedResult }, result);
+			Assert.Equal([expectedResult], result);
 		}
 
 		[Fact]
@@ -411,7 +413,7 @@ namespace GriffinPlus.Lib.Threading
 			Task task = new Task[] { tcs.Task }.WhenAll();
 			Assert.False(task.IsCompleted);
 
-			object expectedResult = new object();
+			object expectedResult = new();
 			tcs.SetResult(expectedResult);
 
 			await task;

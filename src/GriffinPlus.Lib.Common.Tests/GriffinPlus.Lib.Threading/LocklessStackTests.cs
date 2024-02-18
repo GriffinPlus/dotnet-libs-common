@@ -55,7 +55,7 @@ namespace GriffinPlus.Lib.Threading
 			var ex = Assert.Throws<ArgumentOutOfRangeException>(
 				() =>
 				{
-					var _ = new LocklessStack<int>(initialCapacity, canGrow);
+					_ = new LocklessStack<int>(initialCapacity, canGrow);
 				});
 
 			Assert.Equal("initialCapacity", ex.ParamName);
@@ -135,7 +135,7 @@ namespace GriffinPlus.Lib.Threading
 			PopulateStack(stack, capacity, capacity);
 
 			// pushing another item should fail
-			int[] data = { 42 };
+			int[] data = [42];
 			Assert.False(stack.TryPushMany(data));
 		}
 
@@ -155,7 +155,7 @@ namespace GriffinPlus.Lib.Threading
 			PopulateStack(stack, capacity, capacity);
 
 			// pushing another item should let the stack grow
-			int[] data = { 42 };
+			int[] data = [42];
 			Assert.Equal(capacity, stack.Capacity);
 			Assert.Equal(0, stack.FreeItemCount);
 			Assert.Equal(capacity, stack.UsedItemCount);

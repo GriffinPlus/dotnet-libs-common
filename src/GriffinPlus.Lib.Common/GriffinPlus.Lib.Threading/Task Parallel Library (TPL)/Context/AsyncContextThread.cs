@@ -132,18 +132,10 @@ namespace GriffinPlus.Lib.Threading
 		public TaskFactory Factory => Context.Factory;
 
 		[DebuggerNonUserCode]
-		internal sealed class DebugView
+		internal sealed class DebugView(AsyncContextThread thread)
 		{
-			private readonly AsyncContextThread mThread;
-
-			public DebugView(AsyncContextThread thread)
-			{
-				mThread = thread;
-			}
-
-			public AsyncContext Context => mThread.Context;
-
-			public object Thread => mThread.mThread;
+			public AsyncContext Context => thread.Context;
+			public object       Thread  => thread.mThread;
 		}
 	}
 

@@ -85,7 +85,7 @@ namespace GriffinPlus.Lib.Threading
 		/// Returns a disposable that leaves the monitor when disposed.
 		/// </summary>
 		/// <param name="cancellationToken">
-		/// The cancellation token used to cancel the enter.
+		/// The cancellation token used to cancel entering the monitor.
 		/// If this is already set, then this method will attempt to enter the monitor immediately (succeeding if the monitor is currently available).
 		/// </param>
 		/// <returns>A disposable that leaves the monitor when disposed.</returns>
@@ -110,7 +110,7 @@ namespace GriffinPlus.Lib.Threading
 		/// This method may block the calling thread.
 		/// </summary>
 		/// <param name="cancellationToken">
-		/// The cancellation token used to cancel the enter.
+		/// The cancellation token used to cancel entering the monitor.
 		/// If this is already set, then this method will attempt to enter the monitor immediately (succeeding if the monitor is currently available).
 		/// </param>
 		public IDisposable Enter(CancellationToken cancellationToken)

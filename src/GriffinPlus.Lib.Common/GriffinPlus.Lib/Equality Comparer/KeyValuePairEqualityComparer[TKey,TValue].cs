@@ -27,8 +27,8 @@ namespace GriffinPlus.Lib
 		/// Initializes a new instance of the <see cref="KeyValuePairEqualityComparer{TKey,TValue}"/> class with specific equality comparers
 		/// for keys and values.
 		/// </summary>
-		/// <param name="keyEqualityComparer">Comparer to use for comparing keys (may be <c>null</c> to use the default comparer).</param>
-		/// <param name="valueEqualityComparer">Comparer to use for comparing values (may be <c>null</c> to use the default comparer)</param>
+		/// <param name="keyEqualityComparer">Comparer to use for comparing keys (may also be <c>null</c> to use the default comparer).</param>
+		/// <param name="valueEqualityComparer">Comparer to use for comparing values (may also be <c>null</c> to use the default comparer).</param>
 		public KeyValuePairEqualityComparer(IEqualityComparer<TKey> keyEqualityComparer, IEqualityComparer<TValue> valueEqualityComparer)
 		{
 			mKeyEqualityComparer = keyEqualityComparer ?? EqualityComparer<TKey>.Default;

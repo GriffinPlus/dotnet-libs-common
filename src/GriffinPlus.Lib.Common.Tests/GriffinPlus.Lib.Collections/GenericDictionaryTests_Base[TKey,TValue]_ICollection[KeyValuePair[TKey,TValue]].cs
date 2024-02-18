@@ -94,7 +94,7 @@ namespace GriffinPlus.Lib.Collections
 			KeyValuePair<TKey, TValue>? last = null;
 			foreach (KeyValuePair<TKey, TValue> kvp in data)
 			{
-				if (first == null) first = kvp;
+				first ??= kvp;
 				last = kvp;
 				dict.Add(new KeyValuePair<TKey, TValue>(kvp.Key, kvp.Value));
 			}
@@ -286,7 +286,7 @@ namespace GriffinPlus.Lib.Collections
 		}
 
 		/// <summary>
-		/// Tests the <see cref="ICollection{T}.CopyTo"/> method passing an destination array that is too small to store all elements.
+		/// Tests the <see cref="ICollection{T}.CopyTo"/> method passing a destination array that is too small to store all elements.
 		/// </summary>
 		/// <param name="count">Number of elements to populate the dictionary with before running the test.</param>
 		/// <param name="arraySize">Size of the destination array.</param>

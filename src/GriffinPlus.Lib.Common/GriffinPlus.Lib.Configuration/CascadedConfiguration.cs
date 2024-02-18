@@ -23,7 +23,7 @@ namespace GriffinPlus.Lib.Configuration
 	/// <remarks>
 	/// This class provides everything that is needed to build up a configuration system with multiple levels of inheritance
 	/// by chaining configurations together. The base configuration (i.e. a configuration that does not inherit from any
-	/// other configuration) must always provide a value for each and every configuration item. Therefore it is recommended
+	/// other configuration) must always provide a value for each and every configuration item. Therefore, it is recommended
 	/// to populate the base configuration with default settings. Configurations deriving from the base configuration
 	/// may hide default settings by overwriting configuration items. A query will always return the value of the most specific
 	/// configuration item that provides a value.
@@ -33,9 +33,9 @@ namespace GriffinPlus.Lib.Configuration
 	[DebuggerDisplay("Configuration | Path: {" + nameof(Path) + "}")]
 	public class CascadedConfiguration
 	{
-		private readonly List<CascadedConfiguration>              mChildren                 = new List<CascadedConfiguration>();
-		private readonly List<ICascadedConfigurationItemInternal> mItems                    = new List<ICascadedConfigurationItemInternal>();
-		private readonly List<CascadedConfiguration>              mInheritingConfigurations = new List<CascadedConfiguration>();
+		private readonly List<CascadedConfiguration>              mChildren                 = [];
+		private readonly List<ICascadedConfigurationItemInternal> mItems                    = [];
+		private readonly List<CascadedConfiguration>              mInheritingConfigurations = [];
 		private          bool                                     mIsModified;
 
 		/// <summary>
@@ -70,7 +70,7 @@ namespace GriffinPlus.Lib.Configuration
 		public CascadedConfiguration(CascadedConfiguration configurationToInheritFrom, ICascadedConfigurationPersistenceStrategy persistence)
 		{
 			InheritedConfiguration = configurationToInheritFrom;
-			mInheritingConfigurations = new List<CascadedConfiguration>();
+			mInheritingConfigurations = [];
 			Name = InheritedConfiguration.Name;
 			Sync = InheritedConfiguration.Sync;
 			Path = InheritedConfiguration.Path;
@@ -248,7 +248,7 @@ namespace GriffinPlus.Lib.Configuration
 		/// <typeparam name="T">Type of the value in the configuration item.</typeparam>
 		/// <param name="path">
 		/// Relative path of the configuration item to add. If a path segment contains path delimiters ('/' and '\'),
-		/// escape these characters. Otherwise the segment will be split up. The configuration helper function
+		/// escape these characters. Otherwise, the segment will be split up. The configuration helper function
 		/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 		/// </param>
 		/// <returns>The item at the specified path.</returns>
@@ -271,7 +271,7 @@ namespace GriffinPlus.Lib.Configuration
 					// => dive into the appropriate configuration
 					string childConfigurationPath = string.Join("/", pathSegments, 0, pathSegments.Length - 1);
 					CascadedConfiguration configuration = GetChildConfiguration(childConfigurationPath, true);
-					return configuration.SetItem<T>(pathSegments[pathSegments.Length - 1]);
+					return configuration.SetItem<T>(pathSegments[^1]);
 				}
 
 				CascadedConfigurationItem<T> item;
@@ -313,7 +313,7 @@ namespace GriffinPlus.Lib.Configuration
 		/// <typeparam name="T">Type of the value in the configuration item.</typeparam>
 		/// <param name="path">
 		/// Relative path of the configuration item to add. If a path segment contains path delimiters ('/' and '\'),
-		/// escape these characters. Otherwise the segment will be split up. The configuration helper function
+		/// escape these characters. Otherwise, the segment will be split up. The configuration helper function
 		/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 		/// </param>
 		/// <param name="value">Initial value of the configuration item.</param>
@@ -337,7 +337,7 @@ namespace GriffinPlus.Lib.Configuration
 					// => dive into the appropriate configuration
 					string childConfigurationPath = string.Join("/", pathSegments, 0, pathSegments.Length - 1);
 					CascadedConfiguration configuration = GetChildConfiguration(childConfigurationPath, true);
-					return configuration.SetValue(pathSegments[pathSegments.Length - 1], value);
+					return configuration.SetValue(pathSegments[^1], value);
 				}
 
 				CascadedConfigurationItem<T> item;
@@ -381,7 +381,7 @@ namespace GriffinPlus.Lib.Configuration
 		/// <param name="type">Type of the value in the configuration item.</param>
 		/// <param name="path">
 		/// Relative path of the configuration item to add. If a path segment contains path delimiters ('/' and '\'),
-		/// escape these characters. Otherwise the segment will be split up. The configuration helper function
+		/// escape these characters. Otherwise, the segment will be split up. The configuration helper function
 		/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 		/// </param>
 		/// <returns>The item at the specified path.</returns>
@@ -405,7 +405,7 @@ namespace GriffinPlus.Lib.Configuration
 					// => dive into the appropriate configuration
 					string childConfigurationPath = string.Join("/", pathSegments, 0, pathSegments.Length - 1);
 					CascadedConfiguration configuration = GetChildConfiguration(childConfigurationPath, true);
-					return configuration.SetItem(pathSegments[pathSegments.Length - 1], type);
+					return configuration.SetItem(pathSegments[^1], type);
 				}
 
 				string itemName = CascadedConfigurationPathHelper.UnescapeName(pathSegments[0]);
@@ -446,7 +446,7 @@ namespace GriffinPlus.Lib.Configuration
 		/// </summary>
 		/// <param name="path">
 		/// Relative path of the configuration item to add. If a path segment contains path delimiters ('/' and '\'),
-		/// escape these characters. Otherwise the segment will be split up. The configuration helper function
+		/// escape these characters. Otherwise, the segment will be split up. The configuration helper function
 		/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 		/// </param>
 		/// <param name="type">Type of the value in the configuration item.</param>
@@ -471,7 +471,7 @@ namespace GriffinPlus.Lib.Configuration
 					// => dive into the appropriate configuration
 					string childConfigurationPath = string.Join("/", pathSegments, 0, pathSegments.Length - 1);
 					CascadedConfiguration configuration = GetChildConfiguration(childConfigurationPath, true);
-					return configuration.SetValue(pathSegments[pathSegments.Length - 1], type, value);
+					return configuration.SetValue(pathSegments[^1], type, value);
 				}
 
 				string itemName = CascadedConfigurationPathHelper.UnescapeName(pathSegments[0]);
@@ -515,7 +515,7 @@ namespace GriffinPlus.Lib.Configuration
 		/// </summary>
 		/// <param name="path">
 		/// Relative path of the configuration item to remove. If a path segment contains path delimiters ('/' and '\'),
-		/// escape these characters. Otherwise the segment will be split up. The configuration helper function
+		/// escape these characters. Otherwise, the segment will be split up. The configuration helper function
 		/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 		/// </param>
 		/// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c>.</exception>
@@ -537,7 +537,7 @@ namespace GriffinPlus.Lib.Configuration
 					string childConfigurationPath = string.Join("/", pathSegments, 0, pathSegments.Length - 1);
 					CascadedConfiguration configuration = GetChildConfiguration(childConfigurationPath, false);
 					if (configuration == null) return false;
-					return configuration.RemoveItem(pathSegments[pathSegments.Length - 1]);
+					return configuration.RemoveItem(pathSegments[^1]);
 				}
 
 				string itemName = CascadedConfigurationPathHelper.UnescapeName(pathSegments[0]);
@@ -640,7 +640,7 @@ namespace GriffinPlus.Lib.Configuration
 		/// <typeparam name="T">Type of the value to get.</typeparam>
 		/// <param name="path">
 		/// Relative path of the configuration item. If a path segment contains path delimiters ('/' and '\'),
-		/// escape these characters. Otherwise the segment will be split up. The configuration helper function
+		/// escape these characters. Otherwise, the segment will be split up. The configuration helper function
 		/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 		/// </param>
 		/// <param name="inherit">
@@ -650,7 +650,7 @@ namespace GriffinPlus.Lib.Configuration
 		/// <returns>Value of the configuration value.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c>.</exception>
 		/// <exception cref="ConfigurationException">
-		/// <paramref name="path"/> contains parts that are not supported by the the persistence strategy -or-
+		/// <paramref name="path"/> contains parts that are not supported by the persistence strategy -or-
 		/// The configuration does not contain an item at the specified location -or-
 		/// The configuration contains an item at the specified location, but the item has a different type.
 		/// </exception>
@@ -681,7 +681,7 @@ namespace GriffinPlus.Lib.Configuration
 							path);
 					}
 
-					return configuration.GetValue<T>(pathSegments[pathSegments.Length - 1], inherit);
+					return configuration.GetValue<T>(pathSegments[^1], inherit);
 				}
 
 				string itemName = CascadedConfigurationPathHelper.UnescapeName(pathSegments[0]);
@@ -723,7 +723,7 @@ namespace GriffinPlus.Lib.Configuration
 		/// </summary>
 		/// <param name="path">
 		/// Relative path of the configuration item. If a path segment contains path delimiters ('/' and '\'),
-		/// escape these characters. Otherwise the segment will be split up. The configuration helper function
+		/// escape these characters. Otherwise, the segment will be split up. The configuration helper function
 		/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 		/// </param>
 		/// <param name="inherit">
@@ -736,7 +736,7 @@ namespace GriffinPlus.Lib.Configuration
 		/// </returns>
 		/// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c>.</exception>
 		/// <exception cref="ConfigurationException">
-		/// <paramref name="path"/> contains parts that are not supported by the the persistence strategy.
+		/// <paramref name="path"/> contains parts that are not supported by the persistence strategy.
 		/// </exception>
 		public string GetComment(string path, bool inherit = true)
 		{
@@ -758,7 +758,7 @@ namespace GriffinPlus.Lib.Configuration
 							configuration = InheritedConfiguration.GetChildConfiguration(childConfigurationPath, false);
 					}
 
-					return configuration?.GetComment(pathSegments[pathSegments.Length - 1], inherit);
+					return configuration?.GetComment(pathSegments[^1], inherit);
 				}
 
 				string itemName = CascadedConfigurationPathHelper.UnescapeName(pathSegments[0]);
@@ -787,7 +787,7 @@ namespace GriffinPlus.Lib.Configuration
 		/// <typeparam name="T">Type of the value in the configuration item.</typeparam>
 		/// <param name="path">
 		/// Relative path of the configuration item to get. If a path segment contains path delimiters ('/' and '\'),
-		/// escape these characters. Otherwise the segment will be split up. The configuration helper function
+		/// escape these characters. Otherwise, the segment will be split up. The configuration helper function
 		/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 		/// </param>
 		/// <returns>
@@ -796,7 +796,7 @@ namespace GriffinPlus.Lib.Configuration
 		/// </returns>
 		/// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c>.</exception>
 		/// <exception cref="ConfigurationException">
-		/// <paramref name="path"/> contains parts that are not supported by the the persistence strategy -or-
+		/// <paramref name="path"/> contains parts that are not supported by the persistence strategy -or-
 		/// The configuration contains an item with the specified name, but the item has a different type.
 		/// </exception>
 		public CascadedConfigurationItem<T> GetItem<T>(string path)
@@ -813,7 +813,7 @@ namespace GriffinPlus.Lib.Configuration
 					// => dive into the appropriate configuration
 					string childConfigurationPath = string.Join("/", pathSegments, 0, pathSegments.Length - 1);
 					CascadedConfiguration configuration = GetChildConfiguration(childConfigurationPath, false);
-					return configuration?.GetItem<T>(pathSegments[pathSegments.Length - 1]);
+					return configuration?.GetItem<T>(pathSegments[^1]);
 				}
 
 				string itemName = CascadedConfigurationPathHelper.UnescapeName(pathSegments[0]);
@@ -843,7 +843,7 @@ namespace GriffinPlus.Lib.Configuration
 		/// </summary>
 		/// <param name="path">
 		/// Relative path of the configuration item to get. If a path segment contains path delimiters ('/' and '\'),
-		/// escape these characters. Otherwise the segment will be split up. The configuration helper function
+		/// escape these characters. Otherwise, the segment will be split up. The configuration helper function
 		/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 		/// </param>
 		/// <returns>
@@ -852,7 +852,7 @@ namespace GriffinPlus.Lib.Configuration
 		/// </returns>
 		/// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c>.</exception>
 		/// <exception cref="ConfigurationException">
-		/// <paramref name="path"/> contains parts that are not supported by the the persistence strategy.
+		/// <paramref name="path"/> contains parts that are not supported by the persistence strategy.
 		/// </exception>
 		public ICascadedConfigurationItem GetItem(string path)
 		{
@@ -868,7 +868,7 @@ namespace GriffinPlus.Lib.Configuration
 					// => dive into the appropriate configuration
 					string childConfigurationPath = string.Join("/", pathSegments, 0, pathSegments.Length - 1);
 					CascadedConfiguration configuration = GetChildConfiguration(childConfigurationPath, false);
-					return configuration?.GetItem(pathSegments[pathSegments.Length - 1]);
+					return configuration?.GetItem(pathSegments[^1]);
 				}
 
 				string itemName = CascadedConfigurationPathHelper.UnescapeName(pathSegments[0]);
@@ -886,10 +886,10 @@ namespace GriffinPlus.Lib.Configuration
 
 		/// <summary>
 		/// Gets all configuration items of the configuration and optionally all items of its child configurations
-		/// (does not dive down into the configuration inheriting from, if any).
+		/// (does not dive into the configuration inheriting from, if any).
 		/// </summary>
 		/// <param name="recursively">
-		/// <c>true</c> to get the items of the child configuration as well;
+		/// <c>true</c> to get the items of the child configuration as well;<br/>
 		/// <c>false</c> to get the items of the current configuration only.
 		/// </param>
 		/// <returns>The requested configuration items.</returns>
@@ -920,20 +920,20 @@ namespace GriffinPlus.Lib.Configuration
 		/// </summary>
 		/// <param name="path">
 		/// Relative path of the configuration to get/create. If a path segment contains path delimiters ('/' and '\'),
-		/// escape these characters. Otherwise the segment will be split up. The configuration helper function
+		/// escape these characters. Otherwise, the segment will be split up. The configuration helper function
 		/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 		/// </param>
 		/// <param name="create">
-		/// <c>true</c> to create the child configuration, if it does not exist;
+		/// <c>true</c> to create the child configuration, if it does not exist;<br/>
 		/// <c>false</c> to return <c>null</c>, if the configuration does not exist.
 		/// </param>
 		/// <returns>
-		/// The requested child configuration;
+		/// The requested child configuration;<br/>
 		/// <c>null</c>, if the child configuration at the specified path does not exist and <paramref name="create"/> is <c>false</c>.
 		/// </returns>
 		/// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c>.</exception>
 		/// <exception cref="ConfigurationException">
-		/// <paramref name="path"/> contains parts that are not supported by the the persistence strategy.
+		/// <paramref name="path"/> contains parts that are not supported by the persistence strategy.
 		/// </exception>
 		public CascadedConfiguration GetChildConfiguration(string path, bool create)
 		{
@@ -1062,11 +1062,11 @@ namespace GriffinPlus.Lib.Configuration
 			ConstructorInfo constructor = itemType.GetConstructor(
 				BindingFlags.NonPublic | BindingFlags.Instance,
 				null,
-				new[] { typeof(string), typeof(string) },
+				[typeof(string), typeof(string)],
 				null);
 
 			Debug.Assert(constructor != null, nameof(constructor) + " != null");
-			return (ICascadedConfigurationItemInternal)constructor.Invoke(new object[] { name, path });
+			return (ICascadedConfigurationItemInternal)constructor.Invoke([name, path]);
 		}
 	}
 

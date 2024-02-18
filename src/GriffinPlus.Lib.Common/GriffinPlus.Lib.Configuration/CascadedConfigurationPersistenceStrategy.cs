@@ -16,12 +16,12 @@ namespace GriffinPlus.Lib.Configuration
 	/// </summary>
 	public abstract class CascadedConfigurationPersistenceStrategy : ICascadedConfigurationPersistenceStrategy
 	{
-		private readonly Dictionary<Type, IConverter> mValueConverters = new Dictionary<Type, IConverter>();
+		private readonly Dictionary<Type, IConverter> mValueConverters = new();
 
 		/// <summary>
 		/// Synchronization object used for synchronizing access to the persistence strategy.
 		/// </summary>
-		protected readonly object Sync = new object();
+		protected readonly object Sync = new();
 
 		/// <summary>
 		/// Registers a converter that tells the configuration how to convert an object in the configuration to its
@@ -94,11 +94,11 @@ namespace GriffinPlus.Lib.Configuration
 		/// <param name="type">Type of the value of the configuration item to check.</param>
 		/// <param name="value">Value to check.</param>
 		/// <returns>
-		/// <c>true</c> if the specified value may be assigned to a configuration item of the specified type;
+		/// <c>true</c> if the specified value may be assigned to a configuration item of the specified type;<br/>
 		/// otherwise <c>false</c>.
 		/// </returns>
 		/// <remarks>
-		/// This method always returns <c>true</c>, if the type of the value matches the specified type. Otherwise
+		/// This method always returns <c>true</c>, if the type of the value matches the specified type. Otherwise,
 		/// <c>false</c> is returned. This is useful, if the persistence strategy does not save any type information,
 		/// so the type of the configuration item is the only chance to determine the type to construct when loading
 		/// a configuration item.

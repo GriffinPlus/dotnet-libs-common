@@ -54,7 +54,7 @@ namespace GriffinPlus.Lib.Collections
 		public ObjectCacheCollection(IObjectCache cache)
 		{
 			mCache = cache;
-			mItems = new List<IObjectCacheItem<T>>();
+			mItems = [];
 		}
 
 		/// <summary>
@@ -69,8 +69,8 @@ namespace GriffinPlus.Lib.Collections
 
 			mCache = cache;
 			mPageSize = pageSize;
-			if (mPageSize == 1) mItems = new List<IObjectCacheItem<T>>();
-			else mItemPages = new List<IObjectCacheItem<T[]>>();
+			if (mPageSize == 1) mItems = [];
+			else mItemPages = [];
 		}
 
 		/// <summary>
@@ -392,7 +392,7 @@ namespace GriffinPlus.Lib.Collections
 			if (mItems != null)
 			{
 				// without paging
-				if (handler != null) changedItems = items is List<T> list ? list : new List<T>(items);
+				if (handler != null) changedItems = items as List<T> ?? [..items];
 
 				foreach (T item in items)
 				{
@@ -410,7 +410,7 @@ namespace GriffinPlus.Lib.Collections
 			else
 			{
 				// with paging
-				if (handler != null) changedItems = items is List<T> list ? list : new List<T>(items);
+				if (handler != null) changedItems = items as List<T> ?? [..items];
 
 				T[] currentPage = null;
 				int currentPageIndex = -1;
@@ -501,7 +501,7 @@ namespace GriffinPlus.Lib.Collections
 		public void AddRange<TSource>(IEnumerable<TSource> collection, Func<TSource, T> selector)
 		{
 			NotifyCollectionChangedEventHandler handler = CollectionChanged;
-			List<T> changedItems = handler != null ? new List<T>() : null;
+			List<T> changedItems = handler != null ? [] : null;
 			int startIndex = mCount;
 
 			if (mItems != null)
@@ -510,7 +510,7 @@ namespace GriffinPlus.Lib.Collections
 				foreach (TSource element in collection)
 				{
 					T item = selector(element);
-					if (changedItems != null) changedItems.Add(item);
+					changedItems?.Add(item);
 					IObjectCacheItem<T> oci = mCache.Set(item);
 					mItems.Add(oci);
 					mCount++;
@@ -536,7 +536,7 @@ namespace GriffinPlus.Lib.Collections
 						var page = new T[1];
 						page[0] = item;
 						mItemPages.Add(mCache.Set(page));
-						if (changedItems != null) changedItems.Add(item);
+						changedItems?.Add(item);
 					}
 					else
 					{
@@ -550,13 +550,13 @@ namespace GriffinPlus.Lib.Collections
 
 						page[itemIndex] = item;
 						mItemPages[pageIndex].Value = page;
-						if (changedItems != null) changedItems.Add(item);
+						changedItems?.Add(item);
 					}
 
 					mCount++;
 				}
 
-				if (handler != null && changedItems.Count > 0)
+				if (handler != null && changedItems!.Count > 0)
 				{
 					var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, changedItems, startIndex);
 					OnCollectionChanged(e);

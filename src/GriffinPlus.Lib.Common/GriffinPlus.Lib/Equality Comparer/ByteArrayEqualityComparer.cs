@@ -20,7 +20,7 @@ namespace GriffinPlus.Lib
 		/// <summary>
 		/// Gets the <see cref="ByteArrayEqualityComparer"/> instance.
 		/// </summary>
-		public static readonly ByteArrayEqualityComparer Instance = new ByteArrayEqualityComparer();
+		public static readonly ByteArrayEqualityComparer Instance = new();
 
 		/// <summary>
 		/// Determines whether the specified spans of byte are equal.

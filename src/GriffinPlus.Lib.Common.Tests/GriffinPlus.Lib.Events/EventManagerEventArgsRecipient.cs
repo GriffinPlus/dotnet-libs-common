@@ -13,8 +13,8 @@ namespace GriffinPlus.Lib.Events
 	/// </summary>
 	class EventManagerEventArgsRecipient
 	{
-		private readonly object                 mSync               = new object();
-		private readonly ManualResetEventSlim   mHandlerCalledEvent = new ManualResetEventSlim(false);
+		private readonly object                 mSync               = new();
+		private readonly ManualResetEventSlim   mHandlerCalledEvent = new(false);
 		private          SynchronizationContext mSynchronizationContext;
 		private          string                 mData;
 

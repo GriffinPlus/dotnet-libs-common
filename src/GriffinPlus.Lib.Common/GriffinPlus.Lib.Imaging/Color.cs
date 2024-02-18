@@ -179,19 +179,19 @@ namespace GriffinPlus.Lib.Imaging
 				stringBuilder.AppendFormat(
 					provider,
 					"#{0:X2}",
-					new object[] { mSRgbColor.A });
+					[mSRgbColor.A]);
 				stringBuilder.AppendFormat(
 					provider,
 					"{0:X2}",
-					new object[] { mSRgbColor.R });
+					[mSRgbColor.R]);
 				stringBuilder.AppendFormat(
 					provider,
 					"{0:X2}",
-					new object[] { mSRgbColor.G });
+					[mSRgbColor.G]);
 				stringBuilder.AppendFormat(
 					provider,
 					"{0:X2}",
-					new object[] { mSRgbColor.B });
+					[mSRgbColor.B]);
 			}
 			else
 			{
@@ -467,9 +467,9 @@ namespace GriffinPlus.Lib.Imaging
 		{
 			char numericSeparator = ',';
 
-			// Get the NumberFormatInfo out of the provider, if possible
-			// If the IFormatProvider doesn't not contain a NumberFormatInfo, then
-			// this method returns the current culture's NumberFormatInfo.
+			// Get the NumberFormatInfo out of the provider, if possible.
+			// If the IFormatProvider doesn't contain a NumberFormatInfo,
+			// then this method returns the current culture's NumberFormatInfo.
 			var numberFormat = NumberFormatInfo.GetInstance(provider);
 
 			// use ';' if the decimal separator is the same as the list separator

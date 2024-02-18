@@ -33,6 +33,7 @@ using System.Threading.Tasks;
 
 using Xunit;
 
+// ReSharper disable MethodHasAsyncOverload
 // ReSharper disable UnusedVariable
 
 namespace GriffinPlus.Lib.Threading

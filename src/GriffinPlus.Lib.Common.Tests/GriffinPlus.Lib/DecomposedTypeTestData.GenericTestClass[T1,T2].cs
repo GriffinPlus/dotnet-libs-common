@@ -15,9 +15,9 @@ namespace GriffinPlus.Lib
 	{
 		public class GenericTestClass<T1, T2>
 		{
-			public class NestedTestClass { }
+			public class NestedTestClass;
 
-			public class NestedGenericTestClass<T3, T4> { }
+			public class NestedGenericTestClass<T3, T4>;
 		}
 	}
 

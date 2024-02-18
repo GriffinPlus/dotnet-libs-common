@@ -120,7 +120,7 @@ namespace GriffinPlus.Lib.Io
 		}
 
 		/// <summary>
-		/// Disposes the stream releasing the underlying memory block chain
+		/// Disposes the stream releasing the underlying memory-block chain
 		/// (returns rented buffers to their array pool, if necessary).
 		/// </summary>
 		/// <param name="disposing">
@@ -137,7 +137,7 @@ namespace GriffinPlus.Lib.Io
 
 #if NETSTANDARD2_1 || NET5_0 || NET6_0 || NET7_0 || NET8_0
 		/// <summary>
-		/// Asynchronously disposes the stream releasing the underlying memory block chain
+		/// Asynchronously disposes the stream releasing the underlying memory-block chain
 		/// (returns rented buffers to their array pool, if necessary).
 		/// </summary>
 		public override ValueTask DisposeAsync()
@@ -152,7 +152,7 @@ namespace GriffinPlus.Lib.Io
 #endif
 
 		/// <summary>
-		/// Disposes the stream releasing the underlying memory block chain
+		/// Disposes the stream releasing the underlying memory-block chain
 		/// (returns rented buffers to their array pool, if necessary; for internal use only).
 		/// </summary>
 		private void DisposeInternal()
@@ -1018,7 +1018,7 @@ namespace GriffinPlus.Lib.Io
 				{
 					// allocate a new block
 					ChainableMemoryBlock block = ChainableMemoryBlock.GetPooled(mBlockSize, mArrayPool);
-					if (firstBlock == null) firstBlock = block;
+					firstBlock ??= block;
 					if (previousBlock != null) previousBlock.Next = block;
 
 					// read data into the block
@@ -1095,7 +1095,7 @@ namespace GriffinPlus.Lib.Io
 				{
 					// allocate a new block
 					ChainableMemoryBlock block = ChainableMemoryBlock.GetPooled(mBlockSize, mArrayPool);
-					if (firstBlock == null) firstBlock = block;
+					firstBlock ??= block;
 					if (previousBlock != null) previousBlock.Next = block;
 
 					// read data into the block
@@ -1229,6 +1229,7 @@ namespace GriffinPlus.Lib.Io
 				}
 				else
 				{
+					Debug.Assert(mCurrentBlock != null, nameof(mCurrentBlock) + " != null");
 					if (!AppendNewBuffer()) mCurrentBlock = mCurrentBlock.Next;
 					Debug.Assert(mCurrentBlock != null, nameof(mCurrentBlock) + " != null");
 					bytesToEndOfBlock = mCurrentBlock.Capacity;
@@ -1601,8 +1602,8 @@ namespace GriffinPlus.Lib.Io
 		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		/// <remarks>
 		/// This method allows you to detach the underlying buffer from the stream and use it in another place.
-		/// If blocks contain buffers that have been rented from an array pool, the returned block chain must
-		/// be disposed to return buffers to the pool. The stream is empty afterwards.
+		/// If blocks contain buffers that have been rented from an array pool, the returned memory-block chain must
+		/// be disposed to return buffers to the pool. The stream is empty afterward.
 		/// </remarks>
 		public ChainableMemoryBlock DetachBuffer()
 		{
@@ -1620,8 +1621,8 @@ namespace GriffinPlus.Lib.Io
 		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		/// <remarks>
 		/// This method allows you to detach the underlying buffer from the stream and use it in another place.
-		/// If blocks contain buffers that have been rented from an array pool, the returned block chain must
-		/// be disposed to return buffers to the pool. The stream is empty afterwards.
+		/// If blocks contain buffers that have been rented from an array pool, the returned memory-block chain must
+		/// be disposed to return buffers to the pool. The stream is empty afterward.
 		/// </remarks>
 		public Task<ChainableMemoryBlock> DetachBufferAsync(CancellationToken cancellationToken = default)
 		{
@@ -1639,8 +1640,8 @@ namespace GriffinPlus.Lib.Io
 		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 		/// <remarks>
 		/// This method allows you to detach the underlying buffer from the stream and use it in another place.
-		/// If blocks contain buffers that have been rented from an array pool, the returned block chain must
-		/// be disposed to return buffers to the pool. The stream is empty afterwards.
+		/// If blocks contain buffers that have been rented from an array pool, the returned memory-block chain must
+		/// be disposed to return buffers to the pool. The stream is empty afterward.
 		/// </remarks>
 		private ChainableMemoryBlock DetachBuffer_Internal()
 		{
@@ -1673,7 +1674,7 @@ namespace GriffinPlus.Lib.Io
 		/// </param>
 		/// <param name="advancePosition">
 		/// <c>true</c> to advance the position of the stream to the end of the injected memory block;
-		/// <c>false</c> to keep the position of the stream at it's position.
+		/// <c>false</c> to keep the position of the stream at its position.
 		/// </param>
 		/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <c>null</c>.</exception>
 		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
@@ -1703,7 +1704,7 @@ namespace GriffinPlus.Lib.Io
 		/// </param>
 		/// <param name="advancePosition">
 		/// <c>true</c> to advance the position of the stream to the end of the injected memory block;
-		/// <c>false</c> to keep the position of the stream at it's position.
+		/// <c>false</c> to keep the position of the stream at its position.
 		/// </param>
 		/// <param name="cancellationToken">
 		/// The token to monitor for cancellation requests.
@@ -1746,7 +1747,7 @@ namespace GriffinPlus.Lib.Io
 		/// </param>
 		/// <param name="advancePosition">
 		/// <c>true</c> to advance the position of the stream to the end of the injected memory block;
-		/// <c>false</c> to keep the position of the stream at it's position.
+		/// <c>false</c> to keep the position of the stream at its position.
 		/// </param>
 		/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <c>null</c>.</exception>
 		/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
@@ -1895,7 +1896,7 @@ namespace GriffinPlus.Lib.Io
 							}
 							else
 							{
-								// there is too less data to overwrite existing data from the current position to the end of the block
+								// there is not enough data to overwrite existing data from the current position to the end of the block
 								// => the current block still contains data to keep...
 								ChainableMemoryBlock block = buffer;
 								int offset = indexOfPositionInCurrentBlock;
@@ -2051,7 +2052,7 @@ namespace GriffinPlus.Lib.Io
 				ChainableMemoryBlock previous = block.Previous;
 				if (bytesToRemove == block.Length)
 				{
-					// the block does not contain any data afterwards
+					// the block does not contain any data afterward
 					// => complete block can be removed
 					if (previous != null)
 					{
@@ -2070,7 +2071,7 @@ namespace GriffinPlus.Lib.Io
 				}
 				else
 				{
-					// the block still contains some data afterwards
+					// the block still contains some data afterward
 					// => adjust block buffer
 					Debug.Assert(block.Length > 0);
 					Debug.Assert(bytesToRemove > 0);

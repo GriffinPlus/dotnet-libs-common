@@ -28,7 +28,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <exception cref="T:System.NotSupportedException">
 		/// The <see cref="PixelFormat"/> properties are accessed.
 		/// </exception>
-		public static PixelFormat Default => new PixelFormat(PixelFormatEnum.Default);
+		public static PixelFormat Default => new(PixelFormatEnum.Default);
 
 		/// <summary>
 		/// Gets the pixel format specifying a paletted bitmap with 2 colors.
@@ -36,7 +36,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The pixel format which specifying a paletted bitmap with 2 colors.
 		/// </returns>
-		public static PixelFormat Indexed1 => new PixelFormat(PixelFormatEnum.Indexed1);
+		public static PixelFormat Indexed1 => new(PixelFormatEnum.Indexed1);
 
 		/// <summary>
 		/// Gets the pixel format specifying a paletted bitmap with 4 colors.
@@ -44,7 +44,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The pixel format which specifying a paletted bitmap with 4 colors.
 		/// </returns>
-		public static PixelFormat Indexed2 => new PixelFormat(PixelFormatEnum.Indexed2);
+		public static PixelFormat Indexed2 => new(PixelFormatEnum.Indexed2);
 
 		/// <summary>
 		/// Gets the pixel format specifying a paletted bitmap with 16 colors.
@@ -52,7 +52,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The pixel format which specifying a paletted bitmap with 16 colors.
 		/// </returns>
-		public static PixelFormat Indexed4 => new PixelFormat(PixelFormatEnum.Indexed4);
+		public static PixelFormat Indexed4 => new(PixelFormatEnum.Indexed4);
 
 		/// <summary>
 		/// Gets the pixel format specifying a paletted bitmap with 256 colors.
@@ -60,7 +60,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The pixel format which specifying a paletted bitmap with 256 colors.
 		/// </returns>
-		public static PixelFormat Indexed8 => new PixelFormat(PixelFormatEnum.Indexed8);
+		public static PixelFormat Indexed8 => new(PixelFormatEnum.Indexed8);
 
 		/// <summary>
 		/// Gets the black and white pixel format which displays one bit of data per pixel as either black or white.
@@ -68,7 +68,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The pixel format Black-and-White.
 		/// </returns>
-		public static PixelFormat BlackWhite => new PixelFormat(PixelFormatEnum.BlackWhite);
+		public static PixelFormat BlackWhite => new(PixelFormatEnum.BlackWhite);
 
 		/// <summary>
 		/// Gets the <see cref="Gray2"/> pixel format which displays a 2 bits-per-pixel grayscale channel,
@@ -77,7 +77,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Gray2"/> pixel format.
 		/// </returns>
-		public static PixelFormat Gray2 => new PixelFormat(PixelFormatEnum.Gray2);
+		public static PixelFormat Gray2 => new(PixelFormatEnum.Gray2);
 
 		/// <summary>
 		/// Gets the <see cref="Gray4"/> pixel format which displays a 4 bits-per-pixel grayscale channel,
@@ -86,7 +86,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Gray4"/> pixel format.
 		/// </returns>
-		public static PixelFormat Gray4 => new PixelFormat(PixelFormatEnum.Gray4);
+		public static PixelFormat Gray4 => new(PixelFormatEnum.Gray4);
 
 		/// <summary>
 		/// Gets the <see cref="Gray8"/> pixel format which displays an 8 bits-per-pixel grayscale channel,
@@ -95,7 +95,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Gray8"/> pixel format.
 		/// </returns>
-		public static PixelFormat Gray8 => new PixelFormat(PixelFormatEnum.Gray8);
+		public static PixelFormat Gray8 => new(PixelFormatEnum.Gray8);
 
 		/// <summary>
 		/// Gets the <see cref="Bgr555"/> pixel format.
@@ -105,7 +105,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Bgr555"/> pixel format.
 		/// </returns>
-		public static PixelFormat Bgr555 => new PixelFormat(PixelFormatEnum.Bgr555);
+		public static PixelFormat Bgr555 => new(PixelFormatEnum.Bgr555);
 
 		/// <summary>
 		/// Gets the <see cref="Bgr565"/> pixel format.
@@ -115,7 +115,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Bgr565"/> pixel format.
 		/// </returns>
-		public static PixelFormat Bgr565 => new PixelFormat(PixelFormatEnum.Bgr565);
+		public static PixelFormat Bgr565 => new(PixelFormatEnum.Bgr565);
 
 		/// <summary>
 		/// Gets the <see cref="Rgb128Float"/> pixel format.
@@ -126,7 +126,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Rgb128Float"/> pixel format.
 		/// </returns>
-		public static PixelFormat Rgb128Float => new PixelFormat(PixelFormatEnum.Rgb128Float);
+		public static PixelFormat Rgb128Float => new(PixelFormatEnum.Rgb128Float);
 
 		/// <summary>
 		/// Gets the <see cref="Bgr24"/> pixel format.
@@ -136,7 +136,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Bgr24"/> pixel format.
 		/// </returns>
-		public static PixelFormat Bgr24 => new PixelFormat(PixelFormatEnum.Bgr24);
+		public static PixelFormat Bgr24 => new(PixelFormatEnum.Bgr24);
 
 		/// <summary>
 		/// Gets the <see cref="Rgb24"/> pixel format.
@@ -146,7 +146,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Rgb24"/> pixel format.
 		/// </returns>
-		public static PixelFormat Rgb24 => new PixelFormat(PixelFormatEnum.Rgb24);
+		public static PixelFormat Rgb24 => new(PixelFormatEnum.Rgb24);
 
 		/// <summary>
 		/// Gets the <see cref="Bgr101010"/> pixel format.
@@ -156,7 +156,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Bgr101010"/> pixel format.
 		/// </returns>
-		public static PixelFormat Bgr101010 => new PixelFormat(PixelFormatEnum.Bgr101010);
+		public static PixelFormat Bgr101010 => new(PixelFormatEnum.Bgr101010);
 
 		/// <summary>
 		/// Gets the <see cref="Bgr32"/> pixel format.
@@ -166,7 +166,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Bgr32"/> pixel format.
 		/// </returns>
-		public static PixelFormat Bgr32 => new PixelFormat(PixelFormatEnum.Bgr32);
+		public static PixelFormat Bgr32 => new(PixelFormatEnum.Bgr32);
 
 		/// <summary>
 		/// Gets the <see cref="Bgra32"/> pixel format.
@@ -176,7 +176,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Bgra32"/> pixel format.
 		/// </returns>
-		public static PixelFormat Bgra32 => new PixelFormat(PixelFormatEnum.Bgra32);
+		public static PixelFormat Bgra32 => new(PixelFormatEnum.Bgra32);
 
 		/// <summary>
 		/// Gets the <see cref="Pbgra32"/> pixel format.
@@ -187,7 +187,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Pbgra32"/> pixel format.
 		/// </returns>
-		public static PixelFormat Pbgra32 => new PixelFormat(PixelFormatEnum.Pbgra32);
+		public static PixelFormat Pbgra32 => new(PixelFormatEnum.Pbgra32);
 
 		/// <summary>
 		/// Gets the <see cref="Rgb48"/> pixel format.
@@ -198,7 +198,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Rgb48"/> pixel format.
 		/// </returns>
-		public static PixelFormat Rgb48 => new PixelFormat(PixelFormatEnum.Rgb48);
+		public static PixelFormat Rgb48 => new(PixelFormatEnum.Rgb48);
 
 		/// <summary>
 		/// Gets the <see cref="Rgba64"/> pixel format.
@@ -209,7 +209,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Rgba64"/> pixel format.
 		/// </returns>
-		public static PixelFormat Rgba64 => new PixelFormat(PixelFormatEnum.Rgba64);
+		public static PixelFormat Rgba64 => new(PixelFormatEnum.Rgba64);
 
 		/// <summary>
 		/// Gets the <see cref="Prgba64"/> pixel format.
@@ -221,7 +221,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Prgba64"/> pixel format.
 		/// </returns>
-		public static PixelFormat Prgba64 => new PixelFormat(PixelFormatEnum.Prgba64);
+		public static PixelFormat Prgba64 => new(PixelFormatEnum.Prgba64);
 
 		/// <summary>
 		/// Gets the <see cref="Gray16"/> pixel format which displays a 16 bits-per-pixel grayscale
@@ -230,7 +230,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Gray16"/> pixel format.
 		/// </returns>
-		public static PixelFormat Gray16 => new PixelFormat(PixelFormatEnum.Gray16);
+		public static PixelFormat Gray16 => new(PixelFormatEnum.Gray16);
 
 		/// <summary>
 		/// Gets the <see cref="Gray32Float"/> pixel format.
@@ -240,7 +240,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Gray32Float"/> pixel format.
 		/// </returns>
-		public static PixelFormat Gray32Float => new PixelFormat(PixelFormatEnum.Gray32Float);
+		public static PixelFormat Gray32Float => new(PixelFormatEnum.Gray32Float);
 
 		/// <summary>
 		/// Gets the <see cref="Rgba128Float"/> pixel format.
@@ -251,7 +251,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Rgba128Float"/> pixel format.
 		/// </returns>
-		public static PixelFormat Rgba128Float => new PixelFormat(PixelFormatEnum.Rgba128Float);
+		public static PixelFormat Rgba128Float => new(PixelFormatEnum.Rgba128Float);
 
 		/// <summary>
 		/// Gets the <see cref="Prgba128Float"/> pixel format.
@@ -263,7 +263,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The <see cref="Prgba128Float"/> pixel format.
 		/// </returns>
-		public static PixelFormat Prgba128Float => new PixelFormat(PixelFormatEnum.Prgba128Float);
+		public static PixelFormat Prgba128Float => new(PixelFormatEnum.Prgba128Float);
 
 		/// <summary>
 		/// Gets the <see cref="Cmyk32"/> pixel format which displays 32 bits per pixel (BPP)
@@ -272,7 +272,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// <returns>
 		/// The CMYK32 pixel format.
 		/// </returns>
-		public static PixelFormat Cmyk32 => new PixelFormat(PixelFormatEnum.Cmyk32);
+		public static PixelFormat Cmyk32 => new(PixelFormatEnum.Cmyk32);
 	}
 
 }

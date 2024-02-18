@@ -50,7 +50,7 @@ namespace GriffinPlus.Lib.Threading
 				return Task.FromResult(13);
 			}
 
-			var _ = new AsyncLazy<int>(Func);
+			_ = new AsyncLazy<int>(Func);
 		}
 
 		[Fact]
@@ -145,7 +145,8 @@ namespace GriffinPlus.Lib.Threading
 			Assert.False(task2.IsCompleted);
 			tcs.SetResult(null);
 			int[] results = await Task.WhenAll(task1, task2);
-			Assert.Equal(new[] { 13, 13 }, results);
+			int[] expected = [13, 13];
+			Assert.Equal(expected, results);
 			Assert.Equal(1, invokeCount);
 		}
 

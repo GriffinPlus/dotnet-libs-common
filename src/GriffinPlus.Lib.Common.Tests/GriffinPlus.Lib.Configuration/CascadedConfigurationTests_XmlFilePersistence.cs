@@ -9,9 +9,10 @@ namespace GriffinPlus.Lib.Configuration
 	/// <summary>
 	/// Tests for the <see cref="CascadedConfiguration"/> class using <see cref="XmlFilePersistenceStrategy"/> to persist data.
 	/// </summary>
+	// ReSharper disable once UnusedMember.Global
 	public class CascadedConfigurationTests_XmlFilePersistence : CascadedConfigurationTests
 	{
-		private const string ConfigurationFilePath = @"CascadedXmlFileConfigurationTest.xml";
+		private const string ConfigurationFilePath = "CascadedXmlFileConfigurationTest.xml";
 
 		/// <summary>
 		/// Gets the persistence strategy to test with.

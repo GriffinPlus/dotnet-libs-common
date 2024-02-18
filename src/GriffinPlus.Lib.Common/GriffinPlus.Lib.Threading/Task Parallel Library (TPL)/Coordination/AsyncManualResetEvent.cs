@@ -44,7 +44,7 @@ namespace GriffinPlus.Lib.Threading
 		/// <summary>
 		/// The object used for synchronization.
 		/// </summary>
-		private readonly object mMutex = new object();
+		private readonly object mMutex = new();
 
 		/// <summary>
 		/// The current state of the event.
@@ -172,22 +172,13 @@ namespace GriffinPlus.Lib.Threading
 			}
 		}
 
-		// ReSharper disable UnusedMember.Local
 		[DebuggerNonUserCode]
-		private sealed class DebugView
+		private sealed class DebugView(AsyncManualResetEvent manualResetEvent)
 		{
-			private readonly AsyncManualResetEvent mManualResetEvent;
-
-			public DebugView(AsyncManualResetEvent manualResetEvent)
-			{
-				mManualResetEvent = manualResetEvent;
-			}
-
-			public int  Id          => mManualResetEvent.Id;
-			public bool IsSet       => mManualResetEvent.GetStateForDebugger;
-			public Task CurrentTask => mManualResetEvent.mTcs.Task;
+			public int  Id          => manualResetEvent.Id;
+			public bool IsSet       => manualResetEvent.GetStateForDebugger;
+			public Task CurrentTask => manualResetEvent.mTcs.Task;
 		}
-		// ReSharper restore UnusedMember.Local
 	}
 
 }

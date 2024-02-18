@@ -18,7 +18,7 @@ namespace GriffinPlus.Lib
 		/// <summary>
 		/// Gets the default instance of the comparer.
 		/// </summary>
-		public static IdentityComparer<T> Default { get; } = new IdentityComparer<T>();
+		public static IdentityComparer<T> Default { get; } = new();
 
 		/// <summary>
 		/// Determines whether the specified objects are equal.

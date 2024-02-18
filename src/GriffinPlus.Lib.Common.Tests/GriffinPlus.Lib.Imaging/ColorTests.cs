@@ -26,15 +26,15 @@ namespace GriffinPlus.Lib.Imaging
 		{
 			get
 			{
-				yield return new object[] { 0xFF000000 }; // opaque black
-				yield return new object[] { 0xFF000080 }; // opaque half blue
-				yield return new object[] { 0xFF0000FF }; // opaque full blue
-				yield return new object[] { 0xFF008000 }; // opaque half green
-				yield return new object[] { 0xFF00FF00 }; // opaque full green
-				yield return new object[] { 0xFF800000 }; // opaque half red
-				yield return new object[] { 0xFFFF0000 }; // opaque full red
-				yield return new object[] { 0x00000000 }; // full transparent black
-				yield return new object[] { 0x80000000 }; // half transparent black
+				yield return [0xFF000000]; // opaque black
+				yield return [0xFF000080]; // opaque half blue
+				yield return [0xFF0000FF]; // opaque full blue
+				yield return [0xFF008000]; // opaque half green
+				yield return [0xFF00FF00]; // opaque full green
+				yield return [0xFF800000]; // opaque half red
+				yield return [0xFFFF0000]; // opaque full red
+				yield return [0x00000000]; // full transparent black
+				yield return [0x80000000]; // half transparent black
 			}
 		}
 
@@ -45,13 +45,13 @@ namespace GriffinPlus.Lib.Imaging
 		{
 			get
 			{
-				yield return new object[] { 0xFF000000 }; // opaque black
-				yield return new object[] { 0xFF000080 }; // opaque half blue
-				yield return new object[] { 0xFF0000FF }; // opaque full blue
-				yield return new object[] { 0xFF008000 }; // opaque half green
-				yield return new object[] { 0xFF00FF00 }; // opaque full green
-				yield return new object[] { 0xFF800000 }; // opaque half red
-				yield return new object[] { 0xFFFF0000 }; // opaque full red
+				yield return [0xFF000000]; // opaque black
+				yield return [0xFF000080]; // opaque half blue
+				yield return [0xFF0000FF]; // opaque full blue
+				yield return [0xFF008000]; // opaque half green
+				yield return [0xFF00FF00]; // opaque full green
+				yield return [0xFF800000]; // opaque half red
+				yield return [0xFFFF0000]; // opaque full red
 			}
 		}
 
@@ -62,15 +62,15 @@ namespace GriffinPlus.Lib.Imaging
 		{
 			get
 			{
-				yield return new object[] { 0.0f, 0.0f, 0.0f, 0.0f }; // minimum
+				yield return [0.0f, 0.0f, 0.0f, 0.0f]; // minimum
 
-				yield return new object[] { -0.1f, 0.0f, 0.0f, 0.0f }; // minimum alpha value exceeded, clipped for SRGB calculation
-				yield return new object[] { 1.1f, 0.0f, 0.0f, 0.0f };  // maximum alpha value exceeded, clipped for SRGB calculation
+				yield return [-0.1f, 0.0f, 0.0f, 0.0f]; // minimum alpha value exceeded, clipped for SRGB calculation
+				yield return [1.1f, 0.0f, 0.0f, 0.0f];  // maximum alpha value exceeded, clipped for SRGB calculation
 
-				yield return new object[] { 0.0f, 0031308f, 0031308f, 0031308f }; // value == 0.0031308f, special case for SRGB calculation
-				yield return new object[] { 0.0f, 1.1f, 1.1f, 1.1f };             // maximum RGB values exceeded, clipped for SRGB calculation
+				yield return [0.0f, 0031308f, 0031308f, 0031308f]; // value == 0.0031308f, special case for SRGB calculation
+				yield return [0.0f, 1.1f, 1.1f, 1.1f];             // maximum RGB values exceeded, clipped for SRGB calculation
 
-				yield return new object[] { 1.0f, 1.0f, 1.0f, 1.0f }; // maximum
+				yield return [1.0f, 1.0f, 1.0f, 1.0f]; // maximum
 			}
 		}
 
@@ -81,41 +81,41 @@ namespace GriffinPlus.Lib.Imaging
 		{
 			get
 			{
-				yield return new object[]
-				{
+				yield return
+				[
 					0.0f, 0.0f, 0.0f, 0.0f, // ScARGB (minimum)
 					0.5f, 0.5f, 0.5f, 0.5f  // ScARGB (middle)
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					0.0f, 0.0f, 0.0f, 0.0f, // ScARGB (minimum)
 					1.0f, 1.0f, 1.0f, 1.0f  // ScARGB (maximum)
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					0.0f, 0.0f, 0.0f, 0.0f, // ScARGB (minimum)
 					-0.1f, 0.0f, 0.0f, 0.0f // ScARGB (minimum alpha value exceeded, clipped for SRGB calculation)
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					0.0f, 0.0f, 0.0f, 0.0f, // ScARGB (minimum)
 					1.1f, 0.0f, 0.0f, 0.0f  // ScARGB (maximum alpha value exceeded, clipped for SRGB calculation)
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					0.0f, 0.0f, 0.0f, 0.0f,                  // ScARGB (minimum)
 					0.0f, 0.0031308f, 0.0031308f, 0.0031308f // ScARGB (value == 0.0031308f, special case for SRGB calculation)
-				};
+				];
 
-				yield return new object[]
-				{
+				yield return
+				[
 					0.0f, 0.0f, 0.0f, 0.0f, // ScARGB (minimum)
 					0.0f, 1.1f, 1.1f, 1.1f  // ScARGB (maximum ScRGB values exceeded, values clipped for SRGB calculation)
-				};
+				];
 			}
 		}
 
@@ -127,7 +127,7 @@ namespace GriffinPlus.Lib.Imaging
 			get
 			{
 				uint[] colors =
-				{
+				[
 					0xFF000000, // opaque black
 					0xFF0000FF, // opaque full blue
 					0xFF00FF00, // opaque full green
@@ -136,17 +136,17 @@ namespace GriffinPlus.Lib.Imaging
 					0x000000FF, // transparent full blue
 					0x0000FF00, // transparent full green
 					0x00FF0000  // transparent full red
-				};
+				];
 
 				foreach (uint argb1 in colors)
 				foreach (uint argb2 in colors)
 				{
-					yield return new object[]
-					{
+					yield return
+					[
 						Color.FromUInt32(argb1),
 						Color.FromUInt32(argb2),
 						argb1 == argb2
-					};
+					];
 				}
 			}
 		}
@@ -739,9 +739,9 @@ namespace GriffinPlus.Lib.Imaging
 		{
 			char numericSeparator = ',';
 
-			// Get the NumberFormatInfo out of the provider, if possible
-			// If the IFormatProvider doesn't not contain a NumberFormatInfo, then
-			// this method returns the current culture's NumberFormatInfo.
+			// Get the NumberFormatInfo out of the provider, if possible.
+			// If the IFormatProvider doesn't contain a NumberFormatInfo,
+			// then this method returns the current culture's NumberFormatInfo.
 			var numberFormat = NumberFormatInfo.GetInstance(provider);
 
 			// use ';' if the decimal separator is the same as the list separator

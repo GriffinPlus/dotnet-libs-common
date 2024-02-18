@@ -77,7 +77,7 @@ namespace GriffinPlus.Lib.Threading
 	/// </code>
 	///     <para>
 	///     If we want to replace the blocking operation <c>Thread.Sleep</c> with an asynchronous equivalent, it's not directly possible because
-	///     of the <c>lock</c> block. We cannot <c>await</c> inside of a <c>lock</c>.
+	///     of the <c>lock</c> block. We cannot <c>await</c> inside a <c>lock</c>.
 	///     </para>
 	///     <para>
 	///     So, we use the <c>async</c>-compatible <see cref="AsyncLock"/> instead:
@@ -246,22 +246,13 @@ namespace GriffinPlus.Lib.Threading
 			}
 		}
 
-		// ReSharper disable UnusedMember.Local
 		[DebuggerNonUserCode]
-		private sealed class DebugView
+		private sealed class DebugView(AsyncLock mutex)
 		{
-			private readonly AsyncLock mMutex;
-
-			public DebugView(AsyncLock mutex)
-			{
-				mMutex = mutex;
-			}
-
-			public int                          Id        => mMutex.Id;
-			public bool                         Taken     => mMutex.mTaken;
-			public IAsyncWaitQueue<IDisposable> WaitQueue => mMutex.mQueue;
+			public int                          Id        => mutex.Id;
+			public bool                         Taken     => mutex.mTaken;
+			public IAsyncWaitQueue<IDisposable> WaitQueue => mutex.mQueue;
 		}
-		// ReSharper restore UnusedMember.Local
 	}
 
 }

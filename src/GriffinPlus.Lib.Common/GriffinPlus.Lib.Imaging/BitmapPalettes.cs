@@ -23,13 +23,13 @@ namespace GriffinPlus.Lib.Imaging
 		/// Gets a black-and-white color palette.
 		/// This palette consists of 2 colors total.
 		/// </summary>
-		public static BitmapPalette BlackAndWhite { get; } = new BitmapPalette(Color.FromUInt32(0x00000000u), Color.FromUInt32(0x00FFFFFFu));
+		public static BitmapPalette BlackAndWhite { get; } = new(Color.FromUInt32(0x00000000u), Color.FromUInt32(0x00FFFFFFu));
 
 		/// <summary>
 		/// Gets a color palette that contains 8 primary colors and 16 system colors, with duplicate colors removed.
 		/// There are a total of 16 colors in this palette, which are the same as the system palette.
 		/// </summary>
-		public static BitmapPalette Halftone8 { get; } = new BitmapPalette(
+		public static BitmapPalette Halftone8 { get; } = new(
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF0000FFu),
 			Color.FromUInt32(0xFF00FF00u),
@@ -51,7 +51,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// Gets a color palette that contains 27 primary colors and 16 system colors, with duplicate colors removed.
 		/// There are a total of 35 colors in this palette.
 		/// </summary>
-		public static BitmapPalette Halftone27 { get; } = new BitmapPalette(
+		public static BitmapPalette Halftone27 { get; } = new(
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF000080u),
 			Color.FromUInt32(0xFF0000FFu),
@@ -85,7 +85,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// Gets a color palette that contains 64 primary colors and 16 system colors, with duplicate colors removed.
 		/// There are a total of 72 colors in this palette.
 		/// </summary>
-		public static BitmapPalette Halftone64 { get; } = new BitmapPalette(
+		public static BitmapPalette Halftone64 { get; } = new(
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF000055u),
 			Color.FromUInt32(0xFF0000AAu),
@@ -163,7 +163,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// Gets a color palette that contains 125 primary colors and 16 system colors, with duplicate colors removed.
 		/// There are a total of 133 colors in this palette.
 		/// </summary>
-		public static BitmapPalette Halftone125 { get; } = new BitmapPalette(
+		public static BitmapPalette Halftone125 { get; } = new(
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF000040u),
 			Color.FromUInt32(0xFF000080u),
@@ -295,7 +295,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// Gets a color palette that contains 216 primary colors and 16 system colors, with duplicate colors removed.
 		/// There are a total of 224 colors in this palette.
 		/// </summary>
-		public static BitmapPalette Halftone216 { get; } = new BitmapPalette(
+		public static BitmapPalette Halftone216 { get; } = new(
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF000033u),
 			Color.FromUInt32(0xFF000066u),
@@ -525,7 +525,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// Get a color palette that contains 252 primary colors and 16 system colors, with duplicate colors removed.
 		/// There are a total of 256 colors in this palette.
 		/// </summary>
-		public static BitmapPalette Halftone252 { get; } = new BitmapPalette(
+		public static BitmapPalette Halftone252 { get; } = new(
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF000033u),
 			Color.FromUInt32(0xFF000066u),
@@ -783,7 +783,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// Gets a color palette that contains 256 primary colors and 16 system colors, with duplicate colors removed.
 		/// There are a total of 256 colors in this palette.
 		/// </summary>
-		public static BitmapPalette Halftone256 { get; } = new BitmapPalette(
+		public static BitmapPalette Halftone256 { get; } = new(
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF000055u),
 			Color.FromUInt32(0xFF0000AAu),
@@ -1045,7 +1045,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// Gets a color palette that contains 4 shades of gray, ranging from black to gray to white.
 		/// This palette contains 4 total colors.
 		/// </summary>
-		public static BitmapPalette Gray4 { get; } = new BitmapPalette(
+		public static BitmapPalette Gray4 { get; } = new(
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF555555u),
 			Color.FromUInt32(0xFFAAAAAAu),
@@ -1055,7 +1055,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// Gets a color palette that contains 16 shades of gray. The palette ranges from black to gray to white.
 		/// This palette contains 16 total colors.
 		/// </summary>
-		public static BitmapPalette Gray16 { get; } = new BitmapPalette(
+		public static BitmapPalette Gray16 { get; } = new(
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF111111u),
 			Color.FromUInt32(0xFF222222u),
@@ -1077,7 +1077,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// Gets a color palette that contains 256 shades of gray, ranging from black to gray to white.
 		/// This palette contains 256 total colors.
 		/// </summary>
-		public static BitmapPalette Gray256 { get; } = new BitmapPalette(
+		public static BitmapPalette Gray256 { get; } = new(
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF010101u),
 			Color.FromUInt32(0xFF020202u),
@@ -1339,7 +1339,7 @@ namespace GriffinPlus.Lib.Imaging
 		/// Get a color palette that contains 216 primary colors and 16 system colors, with duplicate colors removed.
 		/// There are a total of 224 colors in this palette.
 		/// </summary>
-		public static BitmapPalette WebPalette { get; } = new BitmapPalette(
+		public static BitmapPalette WebPalette { get; } = new(
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF000033u),
 			Color.FromUInt32(0xFF000066u),
