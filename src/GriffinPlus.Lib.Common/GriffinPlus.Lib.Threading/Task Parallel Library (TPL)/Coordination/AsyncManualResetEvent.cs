@@ -31,154 +31,153 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GriffinPlus.Lib.Threading
+namespace GriffinPlus.Lib.Threading;
+
+/// <summary>
+/// An async-compatible manual-reset event.
+/// </summary>
+[DebuggerDisplay("Id = {Id}, IsSet = {GetStateForDebugger}")]
+[DebuggerTypeProxy(typeof(DebugView))]
+public sealed class AsyncManualResetEvent
 {
+	/// <summary>
+	/// The object used for synchronization.
+	/// </summary>
+	private readonly object mMutex = new();
 
 	/// <summary>
-	/// An async-compatible manual-reset event.
+	/// The current state of the event.
 	/// </summary>
-	[DebuggerDisplay("Id = {Id}, IsSet = {GetStateForDebugger}")]
-	[DebuggerTypeProxy(typeof(DebugView))]
-	public sealed class AsyncManualResetEvent
+	private TaskCompletionSource<object> mTcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
+
+	/// <summary>
+	/// The semi-unique identifier for this instance.
+	/// This is 0 if the id has not yet been created.
+	/// </summary>
+	private int mId;
+
+	[DebuggerNonUserCode]
+	// ReSharper disable once InconsistentlySynchronizedField
+	private bool GetStateForDebugger => mTcs.Task.IsCompleted; // no need for synchronization as mTcs is always initialized and replaced atomically
+
+	/// <summary>
+	/// Creates an async-compatible manual-reset event.
+	/// </summary>
+	/// <param name="set">
+	/// <c>true</c> to create a manual-reset event that is initially set;
+	/// <c>false</c> to create a manual-reset event that is initially unset.
+	/// </param>
+	public AsyncManualResetEvent(bool set)
 	{
-		/// <summary>
-		/// The object used for synchronization.
-		/// </summary>
-		private readonly object mMutex = new();
+		if (set) mTcs.TrySetResult(null);
+	}
 
-		/// <summary>
-		/// The current state of the event.
-		/// </summary>
-		private TaskCompletionSource<object> mTcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
+	/// <summary>
+	/// Creates an async-compatible manual-reset event that is initially unset.
+	/// </summary>
+	public AsyncManualResetEvent()
+		: this(false) { }
 
-		/// <summary>
-		/// The semi-unique identifier for this instance.
-		/// This is 0 if the id has not yet been created.
-		/// </summary>
-		private int mId;
+	/// <summary>
+	/// Gets a semi-unique identifier for this asynchronous manual-reset event.
+	/// </summary>
+	public int Id => IdManager<AsyncManualResetEvent>.GetId(ref mId);
 
-		[DebuggerNonUserCode]
-		// ReSharper disable once InconsistentlySynchronizedField
-		private bool GetStateForDebugger => mTcs.Task.IsCompleted; // no need for synchronization as mTcs is always initialized and replaced atomically
-
-		/// <summary>
-		/// Creates an async-compatible manual-reset event.
-		/// </summary>
-		/// <param name="set">
-		/// <c>true</c> to create a manual-reset event that is initially set;
-		/// <c>false</c> to create a manual-reset event that is initially unset.
-		/// </param>
-		public AsyncManualResetEvent(bool set)
+	/// <summary>
+	/// Whether this event is currently set.
+	/// This member is seldom used; code using this member has a high possibility of race conditions.
+	/// </summary>
+	public bool IsSet
+	{
+		get
 		{
-			if (set) mTcs.TrySetResult(null);
-		}
-
-		/// <summary>
-		/// Creates an async-compatible manual-reset event that is initially unset.
-		/// </summary>
-		public AsyncManualResetEvent()
-			: this(false) { }
-
-		/// <summary>
-		/// Gets a semi-unique identifier for this asynchronous manual-reset event.
-		/// </summary>
-		public int Id => IdManager<AsyncManualResetEvent>.GetId(ref mId);
-
-		/// <summary>
-		/// Whether this event is currently set.
-		/// This member is seldom used; code using this member has a high possibility of race conditions.
-		/// </summary>
-		public bool IsSet
-		{
-			get
-			{
-				lock (mMutex) return mTcs.Task.IsCompleted;
-			}
-		}
-
-		/// <summary>
-		/// Asynchronously waits for this event to be set.
-		/// </summary>
-		public Task WaitAsync()
-		{
-			lock (mMutex)
-			{
-				return mTcs.Task;
-			}
-		}
-
-		/// <summary>
-		/// Asynchronously waits for this event to be set.
-		/// </summary>
-		/// <param name="cancellationToken">
-		/// The cancellation token used to cancel the wait.
-		/// If this token is already canceled, this method will first check whether the event is set.
-		/// </param>
-		public Task WaitAsync(CancellationToken cancellationToken)
-		{
-			Task waitTask;
-			lock (mMutex) waitTask = mTcs.Task;
-			if (waitTask.IsCompleted) return waitTask;
-			return waitTask.WaitAsync(cancellationToken);
-		}
-
-		/// <summary>
-		/// Synchronously waits for this event to be set.
-		/// This method may block the calling thread.
-		/// </summary>
-		public void Wait()
-		{
-			WaitAsync().WaitAndUnwrapException();
-		}
-
-		/// <summary>
-		/// Synchronously waits for this event to be set.
-		/// This method may block the calling thread.
-		/// </summary>
-		/// <param name="cancellationToken">
-		/// The cancellation token used to cancel the wait.
-		/// If this token is already canceled, this method will first check whether the event is set.
-		/// </param>
-		public void Wait(CancellationToken cancellationToken)
-		{
-			Task waitTask;
-			lock (mMutex) waitTask = mTcs.Task;
-			if (waitTask.IsCompleted) return;
-			waitTask.WaitAndUnwrapException(cancellationToken);
-		}
-
-		/// <summary>
-		/// Sets the event, atomically completing every task returned by <see cref="WaitAsync()"/>.
-		/// If the event is already set, this method does nothing.
-		/// </summary>
-		public void Set()
-		{
-			lock (mMutex)
-			{
-				mTcs.TrySetResult(null);
-			}
-		}
-
-		/// <summary>
-		/// Resets the event.
-		/// If the event is already reset, this method does nothing.
-		/// </summary>
-		public void Reset()
-		{
-			lock (mMutex)
-			{
-				if (mTcs.Task.IsCompleted)
-					mTcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
-			}
-		}
-
-		[DebuggerNonUserCode]
-		private sealed class DebugView(AsyncManualResetEvent manualResetEvent)
-		{
-			public int  Id          => manualResetEvent.Id;
-			public bool IsSet       => manualResetEvent.GetStateForDebugger;
-			public Task CurrentTask => manualResetEvent.mTcs.Task;
+			lock (mMutex) return mTcs.Task.IsCompleted;
 		}
 	}
 
+	/// <summary>
+	/// Asynchronously waits for this event to be set.
+	/// </summary>
+	public Task WaitAsync()
+	{
+		lock (mMutex)
+		{
+			return mTcs.Task;
+		}
+	}
+
+	/// <summary>
+	/// Asynchronously waits for this event to be set.
+	/// </summary>
+	/// <param name="cancellationToken">
+	/// The cancellation token used to cancel the wait.
+	/// If this token is already canceled, this method will first check whether the event is set.
+	/// </param>
+	public Task WaitAsync(CancellationToken cancellationToken)
+	{
+		Task waitTask;
+		lock (mMutex) waitTask = mTcs.Task;
+		return waitTask.IsCompleted ? waitTask : waitTask.WaitAsync(cancellationToken);
+	}
+
+	/// <summary>
+	/// Synchronously waits for this event to be set.
+	/// This method may block the calling thread.
+	/// </summary>
+	public void Wait()
+	{
+		WaitAsync().WaitAndUnwrapException();
+	}
+
+	/// <summary>
+	/// Synchronously waits for this event to be set.
+	/// This method may block the calling thread.
+	/// </summary>
+	/// <param name="cancellationToken">
+	/// The cancellation token used to cancel the wait.
+	/// If this token is already canceled, this method will first check whether the event is set.
+	/// </param>
+	public void Wait(CancellationToken cancellationToken)
+	{
+		Task waitTask;
+		lock (mMutex) waitTask = mTcs.Task;
+		if (waitTask.IsCompleted) return;
+		waitTask.WaitAndUnwrapException(cancellationToken);
+	}
+
+	/// <summary>
+	/// Sets the event, atomically completing every task returned by <see cref="WaitAsync()"/>.
+	/// If the event is already set, this method does nothing.
+	/// </summary>
+	public void Set()
+	{
+		lock (mMutex)
+		{
+			mTcs.TrySetResult(null);
+		}
+	}
+
+	/// <summary>
+	/// Resets the event.
+	/// If the event is already reset, this method does nothing.
+	/// </summary>
+	public void Reset()
+	{
+		lock (mMutex)
+		{
+			if (mTcs.Task.IsCompleted)
+				mTcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
+		}
+	}
+
+	[DebuggerNonUserCode]
+	private sealed class DebugView(AsyncManualResetEvent manualResetEvent)
+	{
+		// ReSharper disable UnusedMember.Local
+		public int  Id    => manualResetEvent.Id;
+		public bool IsSet => manualResetEvent.GetStateForDebugger;
+
+		public Task CurrentTask => manualResetEvent.mTcs.Task;
+		// ReSharper restore UnusedMember.Local
+	}
 }

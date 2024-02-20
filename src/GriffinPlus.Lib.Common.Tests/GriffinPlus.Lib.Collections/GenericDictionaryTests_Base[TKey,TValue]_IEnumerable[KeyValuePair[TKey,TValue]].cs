@@ -9,79 +9,76 @@ using System.Linq;
 
 using Xunit;
 
-namespace GriffinPlus.Lib.Collections
+namespace GriffinPlus.Lib.Collections;
+
+public abstract partial class GenericDictionaryTests_Base<TKey, TValue>
 {
+	#region GetEnumerator() - incl. all enumerator functionality
 
-	public abstract partial class GenericDictionaryTests_Base<TKey, TValue>
+	/// <summary>
+	/// Tests enumerating key/value pairs using <see cref="IEnumerable{T}.GetEnumerator"/>.
+	/// </summary>
+	/// <param name="count">Number of elements to populate the dictionary with before running the test.</param>
+	[Theory]
+	[MemberData(nameof(TestDataSetSizes))]
+	public void IEnumerableT_GetEnumerator(int count)
 	{
-		#region GetEnumerator() - incl. all enumerator functionality
+		// get test data and create a new dictionary with it
+		IDictionary<TKey, TValue> data = GetTestData(count);
+		var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
 
-		/// <summary>
-		/// Tests enumerating key/value pairs using <see cref="IEnumerable{T}.GetEnumerator"/>.
-		/// </summary>
-		/// <param name="count">Number of elements to populate the dictionary with before running the test.</param>
-		[Theory]
-		[MemberData(nameof(TestDataSetSizes))]
-		public void IEnumerableT_GetEnumerator(int count)
+		// get an enumerator
+		IEnumerator<KeyValuePair<TKey, TValue>> enumerator = dict.GetEnumerator();
+
+		// the enumerator should point to the position before the first valid element,
+		// but the 'Current' property should not throw an exception
+		KeyValuePair<TKey, TValue> _ = enumerator.Current;
+
+		// enumerate the key/value pairs in the dictionary
+		var enumerated = new List<KeyValuePair<TKey, TValue>>();
+		while (enumerator.MoveNext())
 		{
-			// get test data and create a new dictionary with it
-			IDictionary<TKey, TValue> data = GetTestData(count);
-			var dict = GetDictionary(data) as IDictionary<TKey, TValue>;
-
-			// get an enumerator
-			IEnumerator<KeyValuePair<TKey, TValue>> enumerator = dict.GetEnumerator();
-
-			// the enumerator should point to the position before the first valid element,
-			// but the 'Current' property should not throw an exception
-			KeyValuePair<TKey, TValue> _ = enumerator.Current;
-
-			// enumerate the key/value pairs in the dictionary
-			var enumerated = new List<KeyValuePair<TKey, TValue>>();
-			while (enumerator.MoveNext())
-			{
-				Assert.IsType<KeyValuePair<TKey, TValue>>(enumerator.Current);
-				KeyValuePair<TKey, TValue> current = enumerator.Current;
-				enumerated.Add(current);
-			}
-
-			// compare collection elements with the expected values
-			Assert.Equal(
-				data.OrderBy(x => x.Key, KeyComparer),
-				enumerated.OrderBy(x => x.Key, KeyComparer),
-				KeyValuePairEqualityComparer);
-
-			// the enumerator should point to the position after the last valid element now,
-			// but the 'Current' property should not throw an exception
-			// ReSharper disable once AssignmentInsteadOfDiscard
-			// ReSharper disable once RedundantAssignment
-			_ = enumerator.Current;
-
-			// reset the enumerator and try again
-			enumerator.Reset();
-			enumerated = [];
-			while (enumerator.MoveNext())
-			{
-				Assert.IsType<KeyValuePair<TKey, TValue>>(enumerator.Current);
-				KeyValuePair<TKey, TValue> current = enumerator.Current;
-				enumerated.Add(current);
-			}
-
-			// compare collection elements with the expected values
-			Assert.Equal(
-				data.OrderBy(x => x.Key, KeyComparer),
-				enumerated.OrderBy(x => x.Key, KeyComparer),
-				KeyValuePairEqualityComparer);
-
-			// modify the collection, the enumerator should recognize this
-			dict[KeyNotInTestData] = ValueNotInTestData;
-			Assert.Throws<InvalidOperationException>(() => enumerator.Reset());
-			Assert.Throws<InvalidOperationException>(() => enumerator.MoveNext());
-
-			// dispose the enumerator
-			enumerator.Dispose();
+			Assert.IsType<KeyValuePair<TKey, TValue>>(enumerator.Current);
+			KeyValuePair<TKey, TValue> current = enumerator.Current;
+			enumerated.Add(current);
 		}
 
-		#endregion
+		// compare collection elements with the expected values
+		Assert.Equal(
+			data.OrderBy(x => x.Key, KeyComparer),
+			enumerated.OrderBy(x => x.Key, KeyComparer),
+			KeyValuePairEqualityComparer);
+
+		// the enumerator should point to the position after the last valid element now,
+		// but the 'Current' property should not throw an exception
+		// ReSharper disable once AssignmentInsteadOfDiscard
+		// ReSharper disable once RedundantAssignment
+		_ = enumerator.Current;
+
+		// reset the enumerator and try again
+		enumerator.Reset();
+		enumerated = [];
+		while (enumerator.MoveNext())
+		{
+			Assert.IsType<KeyValuePair<TKey, TValue>>(enumerator.Current);
+			KeyValuePair<TKey, TValue> current = enumerator.Current;
+			enumerated.Add(current);
+		}
+
+		// compare collection elements with the expected values
+		Assert.Equal(
+			data.OrderBy(x => x.Key, KeyComparer),
+			enumerated.OrderBy(x => x.Key, KeyComparer),
+			KeyValuePairEqualityComparer);
+
+		// modify the collection, the enumerator should recognize this
+		dict[KeyNotInTestData] = ValueNotInTestData;
+		Assert.Throws<InvalidOperationException>(() => enumerator.Reset());
+		Assert.Throws<InvalidOperationException>(() => enumerator.MoveNext());
+
+		// dispose the enumerator
+		enumerator.Dispose();
 	}
 
+	#endregion
 }

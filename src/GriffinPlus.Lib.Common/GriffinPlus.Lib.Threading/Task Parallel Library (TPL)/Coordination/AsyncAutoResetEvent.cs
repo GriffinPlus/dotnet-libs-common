@@ -31,161 +31,161 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GriffinPlus.Lib.Threading
+namespace GriffinPlus.Lib.Threading;
+
+/// <summary>
+/// An async-compatible auto-reset event.
+/// </summary>
+[DebuggerDisplay("Id = {Id}, IsSet = {mSet}")]
+[DebuggerTypeProxy(typeof(DebugView))]
+public sealed class AsyncAutoResetEvent
 {
+	/// <summary>
+	/// The queue of TCSs that other tasks are awaiting.
+	/// </summary>
+	private readonly IAsyncWaitQueue<object> mQueue;
 
 	/// <summary>
-	/// An async-compatible auto-reset event.
+	/// The current state of the event.
 	/// </summary>
-	[DebuggerDisplay("Id = {Id}, IsSet = {mSet}")]
-	[DebuggerTypeProxy(typeof(DebugView))]
-	public sealed class AsyncAutoResetEvent
+	private bool mSet;
+
+	/// <summary>
+	/// The semi-unique identifier for this instance.
+	/// This is 0 if the id has not yet been created.
+	/// </summary>
+	private int mId;
+
+	/// <summary>
+	/// The object used for mutual exclusion.
+	/// </summary>
+	private readonly object mMutex;
+
+	/// <summary>
+	/// Creates an async-compatible auto-reset event.
+	/// </summary>
+	/// <param name="set">Whether the auto-reset event is initially set or unset.</param>
+	/// <param name="queue">
+	/// The wait queue used to manage waiters.
+	/// This may be <c>null</c> to use a default (FIFO) queue.
+	/// </param>
+	internal AsyncAutoResetEvent(bool set, IAsyncWaitQueue<object> queue)
 	{
-		/// <summary>
-		/// The queue of TCSs that other tasks are awaiting.
-		/// </summary>
-		private readonly IAsyncWaitQueue<object> mQueue;
+		mQueue = queue ?? new DefaultAsyncWaitQueue<object>();
+		mSet = set;
+		mMutex = new object();
+	}
 
-		/// <summary>
-		/// The current state of the event.
-		/// </summary>
-		private bool mSet;
+	/// <summary>
+	/// Creates an async-compatible auto-reset event.
+	/// </summary>
+	/// <param name="set">
+	/// <c>true</c>, if the auto-reset event is set initially;
+	/// <c>false</c>, if the auto-reset event is not set initially.
+	/// </param>
+	public AsyncAutoResetEvent(bool set)
+		: this(set, null) { }
 
-		/// <summary>
-		/// The semi-unique identifier for this instance.
-		/// This is 0 if the id has not yet been created.
-		/// </summary>
-		private int mId;
+	/// <summary>
+	/// Creates an async-compatible auto-reset event that is initially unset.
+	/// </summary>
+	public AsyncAutoResetEvent()
+		: this(false, null) { }
 
-		/// <summary>
-		/// The object used for mutual exclusion.
-		/// </summary>
-		private readonly object mMutex;
+	/// <summary>
+	/// Gets a semi-unique identifier for this asynchronous auto-reset event.
+	/// </summary>
+	public int Id => IdManager<AsyncAutoResetEvent>.GetId(ref mId);
 
-		/// <summary>
-		/// Creates an async-compatible auto-reset event.
-		/// </summary>
-		/// <param name="set">Whether the auto-reset event is initially set or unset.</param>
-		/// <param name="queue">
-		/// The wait queue used to manage waiters.
-		/// This may be <c>null</c> to use a default (FIFO) queue.
-		/// </param>
-		internal AsyncAutoResetEvent(bool set, IAsyncWaitQueue<object> queue)
+	/// <summary>
+	/// Whether this event is currently set.
+	/// This member is seldom used; code using this member has a high possibility of race conditions.
+	/// </summary>
+	public bool IsSet
+	{
+		get
 		{
-			mQueue = queue ?? new DefaultAsyncWaitQueue<object>();
-			mSet = set;
-			mMutex = new object();
-		}
-
-		/// <summary>
-		/// Creates an async-compatible auto-reset event.
-		/// </summary>
-		/// <param name="set">
-		/// <c>true</c>, if the auto-reset event is set initially;
-		/// <c>false</c>, if the auto-reset event is not set initially.
-		/// </param>
-		public AsyncAutoResetEvent(bool set)
-			: this(set, null) { }
-
-		/// <summary>
-		/// Creates an async-compatible auto-reset event that is initially unset.
-		/// </summary>
-		public AsyncAutoResetEvent()
-			: this(false, null) { }
-
-		/// <summary>
-		/// Gets a semi-unique identifier for this asynchronous auto-reset event.
-		/// </summary>
-		public int Id => IdManager<AsyncAutoResetEvent>.GetId(ref mId);
-
-		/// <summary>
-		/// Whether this event is currently set.
-		/// This member is seldom used; code using this member has a high possibility of race conditions.
-		/// </summary>
-		public bool IsSet
-		{
-			get
-			{
-				lock (mMutex) return mSet;
-			}
-		}
-
-		/// <summary>
-		/// Asynchronously waits for this event to be set.
-		/// If the event is set, this method will auto-reset it and return immediately, even if the cancellation token is already signaled.
-		/// If the wait is canceled, then it will not auto-reset this event.
-		/// </summary>
-		/// <param name="cancellationToken">The cancellation token used to cancel this wait.</param>
-		public Task WaitAsync(CancellationToken cancellationToken)
-		{
-			Task task;
-			lock (mMutex)
-			{
-				if (mSet)
-				{
-					mSet = false;
-					task = TaskConstants.Completed;
-				}
-				else
-				{
-					task = mQueue.Enqueue(mMutex, cancellationToken);
-				}
-			}
-
-			return task;
-		}
-
-		/// <summary>
-		/// Asynchronously waits for this event to be set.
-		/// If the event is set, this method will auto-reset it and return immediately.
-		/// </summary>
-		public Task WaitAsync()
-		{
-			return WaitAsync(CancellationToken.None);
-		}
-
-		/// <summary>
-		/// Synchronously waits for this event to be set.
-		/// If the event is set, this method will auto-reset it and return immediately, even if the cancellation token is already signaled.
-		/// If the wait is canceled, then it will not auto-reset this event.
-		/// This method may block the calling thread.
-		/// </summary>
-		/// <param name="cancellationToken">The cancellation token used to cancel this wait.</param>
-		public void Wait(CancellationToken cancellationToken)
-		{
-			WaitAsync(cancellationToken).WaitAndUnwrapException(cancellationToken);
-		}
-
-		/// <summary>
-		/// Synchronously waits for this event to be set.
-		/// If the event is set, this method will auto-reset it and return immediately.
-		/// This method may block the calling thread.
-		/// </summary>
-		public void Wait()
-		{
-			Wait(CancellationToken.None);
-		}
-
-		/// <summary>
-		/// Sets the event, atomically completing a task returned by <see cref="WaitAsync(CancellationToken)"/>.
-		/// If the event is already set, this method does nothing.
-		/// </summary>
-		public void Set()
-		{
-			lock (mMutex)
-			{
-				if (mQueue.IsEmpty) mSet = true;
-				else mQueue.Dequeue();
-			}
-		}
-
-		[DebuggerNonUserCode]
-		private sealed class DebugView(AsyncAutoResetEvent are)
-		{
-			public int                     Id        => are.Id;
-			public bool                    IsSet     => are.mSet;
-			public IAsyncWaitQueue<object> WaitQueue => are.mQueue;
+			lock (mMutex) return mSet;
 		}
 	}
 
+	/// <summary>
+	/// Asynchronously waits for this event to be set.
+	/// If the event is set, this method will auto-reset it and return immediately, even if the cancellation token is already signaled.
+	/// If the wait is canceled, then it will not auto-reset this event.
+	/// </summary>
+	/// <param name="cancellationToken">The cancellation token used to cancel this wait.</param>
+	public Task WaitAsync(CancellationToken cancellationToken)
+	{
+		Task task;
+		lock (mMutex)
+		{
+			if (mSet)
+			{
+				mSet = false;
+				task = TaskConstants.Completed;
+			}
+			else
+			{
+				task = mQueue.Enqueue(mMutex, cancellationToken);
+			}
+		}
+
+		return task;
+	}
+
+	/// <summary>
+	/// Asynchronously waits for this event to be set.
+	/// If the event is set, this method will auto-reset it and return immediately.
+	/// </summary>
+	public Task WaitAsync()
+	{
+		return WaitAsync(CancellationToken.None);
+	}
+
+	/// <summary>
+	/// Synchronously waits for this event to be set.
+	/// If the event is set, this method will auto-reset it and return immediately, even if the cancellation token is already signaled.
+	/// If the wait is canceled, then it will not auto-reset this event.
+	/// This method may block the calling thread.
+	/// </summary>
+	/// <param name="cancellationToken">The cancellation token used to cancel this wait.</param>
+	public void Wait(CancellationToken cancellationToken)
+	{
+		WaitAsync(cancellationToken).WaitAndUnwrapException(cancellationToken);
+	}
+
+	/// <summary>
+	/// Synchronously waits for this event to be set.
+	/// If the event is set, this method will auto-reset it and return immediately.
+	/// This method may block the calling thread.
+	/// </summary>
+	public void Wait()
+	{
+		Wait(CancellationToken.None);
+	}
+
+	/// <summary>
+	/// Sets the event, atomically completing a task returned by <see cref="WaitAsync(CancellationToken)"/>.
+	/// If the event is already set, this method does nothing.
+	/// </summary>
+	public void Set()
+	{
+		lock (mMutex)
+		{
+			if (mQueue.IsEmpty) mSet = true;
+			else mQueue.Dequeue();
+		}
+	}
+
+	[DebuggerNonUserCode]
+	private sealed class DebugView(AsyncAutoResetEvent are)
+	{
+		// ReSharper disable UnusedMember.Local
+		public int  Id    => are.Id;
+		public bool IsSet => are.mSet;
+
+		public IAsyncWaitQueue<object> WaitQueue => are.mQueue;
+		// ReSharper restore UnusedMember.Local
+	}
 }

@@ -4,31 +4,22 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
+using System.Linq;
 
-namespace GriffinPlus.Lib
+namespace GriffinPlus.Lib;
+
+/// <summary>
+/// Extension methods for enumeration types.
+/// </summary>
+public static class EnumExtensions
 {
-
 	/// <summary>
-	/// Extension methods for enumeration types.
+	/// Converts a flagged enumeration value to an array of enumeration values.
 	/// </summary>
-	public static class EnumExtensions
+	/// <param name="self">The current value.</param>
+	/// <returns>The separated enumeration values.</returns>
+	public static Enum[] ToSeparateFlags(this Enum self)
 	{
-		/// <summary>
-		/// Converts a flagged enumeration value to an array of enumeration values.
-		/// </summary>
-		/// <param name="self">The current value.</param>
-		/// <returns>The separated enumeration values.</returns>
-		public static Enum[] ToSeparateFlags(this Enum self)
-		{
-			var result = new List<Enum>();
-			foreach (Enum flag in Enum.GetValues(self.GetType()))
-			{
-				if (self.HasFlag(flag)) result.Add(flag);
-			}
-
-			return result.ToArray();
-		}
+		return [..Enum.GetValues(self.GetType()).Cast<Enum>().Where(self.HasFlag)];
 	}
-
 }

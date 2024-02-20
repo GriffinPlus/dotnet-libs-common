@@ -32,81 +32,78 @@ using System.Threading.Tasks;
 
 using Xunit;
 
-namespace GriffinPlus.Lib.Threading
+namespace GriffinPlus.Lib.Threading;
+
+public class TaskCompletionSourceExtensionsTests
 {
-
-	public class TaskCompletionSourceExtensionsTests
+	[Fact]
+	public async Task TryCompleteFromCompletedTaskTResult_PropagatesResult()
 	{
-		[Fact]
-		public async Task TryCompleteFromCompletedTaskTResult_PropagatesResult()
-		{
-			var tcs = new TaskCompletionSource<int>();
-			tcs.TryCompleteFromCompletedTask(TaskConstants.Int32NegativeOne);
-			int result = await tcs.Task;
-			Assert.Equal(-1, result);
-		}
-
-		[Fact]
-		public async Task TryCompleteFromCompletedTaskTResult_WithDifferentTResult_PropagatesResult()
-		{
-			var tcs = new TaskCompletionSource<object>();
-			tcs.TryCompleteFromCompletedTask(TaskConstants.Int32NegativeOne);
-			object result = await tcs.Task;
-			Assert.Equal(-1, result);
-		}
-
-		[Fact]
-		public async Task TryCompleteFromCompletedTaskTResult_PropagatesCancellation()
-		{
-			var tcs = new TaskCompletionSource<int>();
-			tcs.TryCompleteFromCompletedTask(TaskConstants<int>.Canceled);
-			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => tcs.Task);
-		}
-
-		[Fact]
-		public async Task TryCompleteFromCompletedTaskTResult_PropagatesException()
-		{
-			var source = new TaskCompletionSource<int>();
-			source.TrySetException(new NotImplementedException());
-
-			var tcs = new TaskCompletionSource<int>();
-			tcs.TryCompleteFromCompletedTask(source.Task);
-			await Assert.ThrowsAsync<NotImplementedException>(() => tcs.Task);
-		}
-
-		[Fact]
-		public async Task TryCompleteFromCompletedTask_PropagatesResult()
-		{
-			var tcs = new TaskCompletionSource<int>();
-			tcs.TryCompleteFromCompletedTask(TaskConstants.Completed, () => -1);
-			int result = await tcs.Task;
-			Assert.Equal(-1, result);
-		}
-
-		[Fact]
-		public async Task TryCompleteFromCompletedTask_PropagatesCancellation()
-		{
-			var tcs = new TaskCompletionSource<int>();
-			tcs.TryCompleteFromCompletedTask(TaskConstants.Canceled, () => -1);
-			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => tcs.Task);
-		}
-
-		[Fact]
-		public async Task TryCompleteFromCompletedTask_PropagatesException()
-		{
-			var tcs = new TaskCompletionSource<int>();
-			tcs.TryCompleteFromCompletedTask(Task.FromException(new NotImplementedException()), () => -1);
-			await Assert.ThrowsAsync<NotImplementedException>(() => tcs.Task);
-		}
-
-		[Fact]
-		public async Task CreateAsyncTaskSource_PermitsCompletingTask()
-		{
-			TaskCompletionSource<object> tcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
-			tcs.SetResult(null);
-
-			await tcs.Task;
-		}
+		var tcs = new TaskCompletionSource<int>();
+		tcs.TryCompleteFromCompletedTask(TaskConstants.Int32NegativeOne);
+		int result = await tcs.Task;
+		Assert.Equal(-1, result);
 	}
 
+	[Fact]
+	public async Task TryCompleteFromCompletedTaskTResult_WithDifferentTResult_PropagatesResult()
+	{
+		var tcs = new TaskCompletionSource<object>();
+		tcs.TryCompleteFromCompletedTask(TaskConstants.Int32NegativeOne);
+		object result = await tcs.Task;
+		Assert.Equal(-1, result);
+	}
+
+	[Fact]
+	public async Task TryCompleteFromCompletedTaskTResult_PropagatesCancellation()
+	{
+		var tcs = new TaskCompletionSource<int>();
+		tcs.TryCompleteFromCompletedTask(TaskConstants<int>.Canceled);
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => tcs.Task);
+	}
+
+	[Fact]
+	public async Task TryCompleteFromCompletedTaskTResult_PropagatesException()
+	{
+		var source = new TaskCompletionSource<int>();
+		source.TrySetException(new NotImplementedException());
+
+		var tcs = new TaskCompletionSource<int>();
+		tcs.TryCompleteFromCompletedTask(source.Task);
+		await Assert.ThrowsAsync<NotImplementedException>(() => tcs.Task);
+	}
+
+	[Fact]
+	public async Task TryCompleteFromCompletedTask_PropagatesResult()
+	{
+		var tcs = new TaskCompletionSource<int>();
+		tcs.TryCompleteFromCompletedTask(TaskConstants.Completed, () => -1);
+		int result = await tcs.Task;
+		Assert.Equal(-1, result);
+	}
+
+	[Fact]
+	public async Task TryCompleteFromCompletedTask_PropagatesCancellation()
+	{
+		var tcs = new TaskCompletionSource<int>();
+		tcs.TryCompleteFromCompletedTask(TaskConstants.Canceled, () => -1);
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => tcs.Task);
+	}
+
+	[Fact]
+	public async Task TryCompleteFromCompletedTask_PropagatesException()
+	{
+		var tcs = new TaskCompletionSource<int>();
+		tcs.TryCompleteFromCompletedTask(Task.FromException(new NotImplementedException()), () => -1);
+		await Assert.ThrowsAsync<NotImplementedException>(() => tcs.Task);
+	}
+
+	[Fact]
+	public async Task CreateAsyncTaskSource_PermitsCompletingTask()
+	{
+		TaskCompletionSource<object> tcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
+		tcs.SetResult(null);
+
+		await tcs.Task;
+	}
 }

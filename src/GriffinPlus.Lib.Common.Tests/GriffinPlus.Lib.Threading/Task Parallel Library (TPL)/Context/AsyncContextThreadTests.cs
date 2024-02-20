@@ -32,52 +32,49 @@ using System.Threading.Tasks;
 
 using Xunit;
 
-namespace GriffinPlus.Lib.Threading
+namespace GriffinPlus.Lib.Threading;
+
+public class AsyncContextThreadTests
 {
-
-	public class AsyncContextThreadTests
+	[Fact]
+	public async Task AsyncContextThread_IsAnIndependentThread()
 	{
-		[Fact]
-		public async Task AsyncContextThread_IsAnIndependentThread()
-		{
-			int testThread = Thread.CurrentThread.ManagedThreadId;
-			var thread = new AsyncContextThread();
-			int contextThread = await thread.Factory.Run(() => Thread.CurrentThread.ManagedThreadId);
-			Assert.NotEqual(testThread, contextThread);
-			await thread.JoinAsync();
-		}
-
-		[Fact]
-		public async Task AsyncDelegate_ResumesOnSameThread()
-		{
-			var thread = new AsyncContextThread();
-			int contextThread = -1, resumeThread = -1;
-			await thread.Factory.Run(
-				async () =>
-				{
-					contextThread = Thread.CurrentThread.ManagedThreadId;
-					await Task.Yield();
-					resumeThread = Thread.CurrentThread.ManagedThreadId;
-				});
-			Assert.Equal(contextThread, resumeThread);
-			await thread.JoinAsync();
-		}
-
-		[Fact]
-		public async Task Join_StopsTask()
-		{
-			var context = new AsyncContextThread();
-			await context.Factory.Run(() => Thread.CurrentThread);
-			await context.JoinAsync();
-		}
-
-		[Fact]
-		public async Task Context_IsCorrectAsyncContext()
-		{
-			using var thread = new AsyncContextThread();
-			AsyncContext observedContext = await thread.Factory.Run(() => AsyncContext.Current);
-			Assert.Same(observedContext, thread.Context);
-		}
+		int testThread = Thread.CurrentThread.ManagedThreadId;
+		var thread = new AsyncContextThread();
+		int contextThread = await thread.Factory.Run(() => Thread.CurrentThread.ManagedThreadId);
+		Assert.NotEqual(testThread, contextThread);
+		await thread.JoinAsync();
 	}
 
+	[Fact]
+	public async Task AsyncDelegate_ResumesOnSameThread()
+	{
+		var thread = new AsyncContextThread();
+		int contextThread = -1, resumeThread = -1;
+		await thread.Factory.Run(
+			async () =>
+			{
+				contextThread = Thread.CurrentThread.ManagedThreadId;
+				await Task.Yield();
+				resumeThread = Thread.CurrentThread.ManagedThreadId;
+			});
+		Assert.Equal(contextThread, resumeThread);
+		await thread.JoinAsync();
+	}
+
+	[Fact]
+	public async Task Join_StopsTask()
+	{
+		var context = new AsyncContextThread();
+		await context.Factory.Run(() => Thread.CurrentThread);
+		await context.JoinAsync();
+	}
+
+	[Fact]
+	public async Task Context_IsCorrectAsyncContext()
+	{
+		using var thread = new AsyncContextThread();
+		AsyncContext observedContext = await thread.Factory.Run(() => AsyncContext.Current);
+		Assert.Same(observedContext, thread.Context);
+	}
 }

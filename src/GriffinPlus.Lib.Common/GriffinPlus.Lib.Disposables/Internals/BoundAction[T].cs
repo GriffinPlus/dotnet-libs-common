@@ -30,86 +30,83 @@
 using System;
 using System.Threading;
 
-namespace GriffinPlus.Lib.Disposables.Internal
+namespace GriffinPlus.Lib.Disposables.Internal;
+
+/// <summary>
+/// A field containing a bound action.
+/// </summary>
+/// <typeparam name="T">The type of context for the action.</typeparam>
+sealed class BoundActionField<T>
 {
+	private BoundAction mField;
 
 	/// <summary>
-	/// A field containing a bound action.
+	/// Initializes the field with the specified action and context.
 	/// </summary>
-	/// <typeparam name="T">The type of context for the action.</typeparam>
-	sealed class BoundActionField<T>
+	/// <param name="action">The action delegate.</param>
+	/// <param name="context">The context.</param>
+	public BoundActionField(Action<T> action, T context)
 	{
-		private BoundAction mField;
+		mField = new BoundAction(action, context);
+	}
 
-		/// <summary>
-		/// Initializes the field with the specified action and context.
-		/// </summary>
-		/// <param name="action">The action delegate.</param>
-		/// <param name="context">The context.</param>
-		public BoundActionField(Action<T> action, T context)
+	/// <summary>
+	/// Whether the field is empty.
+	/// </summary>
+	public bool IsEmpty => Interlocked.CompareExchange(ref mField, null, null) == null;
+
+	/// <summary>
+	/// Atomically retrieves the bound action from the field and sets the field to <c>null</c>.
+	/// May return <c>null</c>.
+	/// </summary>
+	public IBoundAction TryGetAndUnset()
+	{
+		return Interlocked.Exchange(ref mField, null);
+	}
+
+	/// <summary>
+	/// Attempts to update the context of the bound action stored in the field.
+	/// Returns <c>false</c> if the field is <c>null</c>.
+	/// </summary>
+	/// <param name="contextUpdater">
+	/// The function used to update an existing context.
+	/// This may be called more than once, if more than one thread attempts to simultaneously update the context.
+	/// </param>
+	public bool TryUpdateContext(Func<T, T> contextUpdater)
+	{
+		while (true)
 		{
-			mField = new BoundAction(action, context);
-		}
-
-		/// <summary>
-		/// Whether the field is empty.
-		/// </summary>
-		public bool IsEmpty => Interlocked.CompareExchange(ref mField, null, null) == null;
-
-		/// <summary>
-		/// Atomically retrieves the bound action from the field and sets the field to <c>null</c>.
-		/// May return <c>null</c>.
-		/// </summary>
-		public IBoundAction TryGetAndUnset()
-		{
-			return Interlocked.Exchange(ref mField, null);
-		}
-
-		/// <summary>
-		/// Attempts to update the context of the bound action stored in the field.
-		/// Returns <c>false</c> if the field is <c>null</c>.
-		/// </summary>
-		/// <param name="contextUpdater">
-		/// The function used to update an existing context.
-		/// This may be called more than once, if more than one thread attempts to simultaneously update the context.
-		/// </param>
-		public bool TryUpdateContext(Func<T, T> contextUpdater)
-		{
-			while (true)
-			{
-				BoundAction original = Interlocked.CompareExchange(ref mField, mField, mField);
-				if (original == null) return false;
-				var updatedContext = new BoundAction(original, contextUpdater);
-				BoundAction result = Interlocked.CompareExchange(ref mField, updatedContext, original);
-				if (ReferenceEquals(original, result)) return true;
-			}
-		}
-
-		/// <summary>
-		/// An action delegate bound with its context.
-		/// </summary>
-		public interface IBoundAction
-		{
-			/// <summary>
-			/// Executes the action.
-			/// This should only be done after the bound action is retrieved from a field by <see cref="TryGetAndUnset"/>.
-			/// </summary>
-			void Invoke();
-		}
-
-		private sealed class BoundAction(Action<T> action, T context) : IBoundAction
-		{
-			private readonly Action<T> mAction  = action;
-			private readonly T         mContext = context;
-
-			public BoundAction(BoundAction originalBoundAction, Func<T, T> contextUpdater) :
-				this(originalBoundAction.mAction, contextUpdater(originalBoundAction.mContext)) { }
-
-			public void Invoke()
-			{
-				mAction?.Invoke(mContext);
-			}
+			BoundAction original = Interlocked.CompareExchange(ref mField, mField, mField);
+			if (original == null) return false;
+			var updatedContext = new BoundAction(original, contextUpdater);
+			BoundAction result = Interlocked.CompareExchange(ref mField, updatedContext, original);
+			if (ReferenceEquals(original, result)) return true;
 		}
 	}
 
+	/// <summary>
+	/// An action delegate bound with its context.
+	/// </summary>
+	public interface IBoundAction
+	{
+		/// <summary>
+		/// Executes the action.
+		/// This should only be done after the bound action is retrieved from a field by <see cref="TryGetAndUnset"/>.
+		/// </summary>
+		void Invoke();
+	}
+
+	private sealed class BoundAction(Action<T> action, T context) : IBoundAction
+	{
+		private readonly Action<T> mAction  = action;
+		private readonly T         mContext = context;
+
+		public BoundAction(BoundAction originalBoundAction, Func<T, T> contextUpdater) :
+			this(originalBoundAction.mAction, contextUpdater(originalBoundAction.mContext)) { }
+
+		public void Invoke()
+		{
+			mAction?.Invoke(mContext);
+		}
+	}
 }

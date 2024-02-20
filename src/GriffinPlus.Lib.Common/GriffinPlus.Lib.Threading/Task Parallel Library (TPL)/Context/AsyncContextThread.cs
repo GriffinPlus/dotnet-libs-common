@@ -33,110 +33,107 @@ using System.Threading.Tasks;
 
 using GriffinPlus.Lib.Disposables;
 
-namespace GriffinPlus.Lib.Threading
+namespace GriffinPlus.Lib.Threading;
+
+/// <summary>
+/// A thread that executes actions within an <see cref="AsyncContext"/>.
+/// </summary>
+[DebuggerTypeProxy(typeof(DebugView))]
+public sealed class AsyncContextThread : SingleDisposable<AsyncContext>
 {
+	/// <summary>
+	/// The child thread.
+	/// </summary>
+	private readonly Task mThread;
 
 	/// <summary>
-	/// A thread that executes actions within an <see cref="AsyncContext"/>.
+	/// Initializes a new instance of the <see cref="AsyncContextThread"/> class, creating a child thread waiting for commands.
 	/// </summary>
-	[DebuggerTypeProxy(typeof(DebugView))]
-	public sealed class AsyncContextThread : SingleDisposable<AsyncContext>
+	/// <param name="context">The context for this thread.</param>
+	private AsyncContextThread(AsyncContext context)
+		: base(context)
 	{
-		/// <summary>
-		/// The child thread.
-		/// </summary>
-		private readonly Task mThread;
+		Context = context;
+		mThread = Task.Factory.StartNew(
+			Execute,
+			CancellationToken.None,
+			TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach,
+			TaskScheduler.Default);
+	}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="AsyncContextThread"/> class, creating a child thread waiting for commands.
-		/// </summary>
-		/// <param name="context">The context for this thread.</param>
-		private AsyncContextThread(AsyncContext context)
-			: base(context)
+	/// <summary>
+	/// Initializes a new instance of the <see cref="AsyncContextThread"/> class, creating a child thread waiting for commands.
+	/// </summary>
+	public AsyncContextThread()
+		: this(CreateAsyncContext()) { }
+
+	/// <summary>
+	/// Creates a new <see cref="AsyncContext"/> and increments its operation count.
+	/// </summary>
+	private static AsyncContext CreateAsyncContext()
+	{
+		var result = new AsyncContext();
+		result.SynchronizationContext.OperationStarted();
+		return result;
+	}
+
+	/// <summary>
+	/// Gets the <see cref="AsyncContext"/> executed by this thread.
+	/// </summary>
+	public AsyncContext Context { get; }
+
+	private void Execute()
+	{
+		using (Context)
 		{
-			Context = context;
-			mThread = Task.Factory.StartNew(
-				Execute,
-				CancellationToken.None,
-				TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach,
-				TaskScheduler.Default);
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="AsyncContextThread"/> class, creating a child thread waiting for commands.
-		/// </summary>
-		public AsyncContextThread()
-			: this(CreateAsyncContext()) { }
-
-		/// <summary>
-		/// Creates a new <see cref="AsyncContext"/> and increments its operation count.
-		/// </summary>
-		private static AsyncContext CreateAsyncContext()
-		{
-			var result = new AsyncContext();
-			result.SynchronizationContext.OperationStarted();
-			return result;
-		}
-
-		/// <summary>
-		/// Gets the <see cref="AsyncContext"/> executed by this thread.
-		/// </summary>
-		public AsyncContext Context { get; }
-
-		private void Execute()
-		{
-			using (Context)
-			{
-				Context.Execute();
-			}
-		}
-
-		/// <summary>
-		/// Permits the thread to exit, if we have not already done so.
-		/// </summary>
-		private void AllowThreadToExit()
-		{
-			Context.SynchronizationContext.OperationCompleted();
-		}
-
-		/// <summary>
-		/// Requests the thread to exit and returns a task representing the exit of the thread.
-		/// The thread will exit when all outstanding asynchronous operations complete.
-		/// </summary>
-		public Task JoinAsync()
-		{
-			Dispose();
-			return mThread;
-		}
-
-		/// <summary>
-		/// Requests the thread to exit and blocks until the thread exits.
-		/// The thread will exit when all outstanding asynchronous operations complete.
-		/// </summary>
-		public void Join()
-		{
-			JoinAsync().WaitAndUnwrapException();
-		}
-
-		/// <summary>
-		/// Requests the thread to exit.
-		/// </summary>
-		protected override void Dispose(AsyncContext context)
-		{
-			AllowThreadToExit();
-		}
-
-		/// <summary>
-		/// Gets the <see cref="TaskFactory"/> for this thread, which can be used to schedule work to this thread.
-		/// </summary>
-		public TaskFactory Factory => Context.Factory;
-
-		[DebuggerNonUserCode]
-		internal sealed class DebugView(AsyncContextThread thread)
-		{
-			public AsyncContext Context => thread.Context;
-			public object       Thread  => thread.mThread;
+			Context.Execute();
 		}
 	}
 
+	/// <summary>
+	/// Permits the thread to exit, if we have not already done so.
+	/// </summary>
+	private void AllowThreadToExit()
+	{
+		Context.SynchronizationContext.OperationCompleted();
+	}
+
+	/// <summary>
+	/// Requests the thread to exit and returns a task representing the exit of the thread.
+	/// The thread will exit when all outstanding asynchronous operations complete.
+	/// </summary>
+	public Task JoinAsync()
+	{
+		Dispose();
+		return mThread;
+	}
+
+	/// <summary>
+	/// Requests the thread to exit and blocks until the thread exits.
+	/// The thread will exit when all outstanding asynchronous operations complete.
+	/// </summary>
+	public void Join()
+	{
+		JoinAsync().WaitAndUnwrapException();
+	}
+
+	/// <summary>
+	/// Requests the thread to exit.
+	/// </summary>
+	protected override void Dispose(AsyncContext context)
+	{
+		AllowThreadToExit();
+	}
+
+	/// <summary>
+	/// Gets the <see cref="TaskFactory"/> for this thread, which can be used to schedule work to this thread.
+	/// </summary>
+	public TaskFactory Factory => Context.Factory;
+
+	[DebuggerNonUserCode]
+	internal sealed class DebugView(AsyncContextThread thread)
+	{
+		public AsyncContext Context => thread.Context;
+		public object       Thread  => thread.mThread;
+	}
 }

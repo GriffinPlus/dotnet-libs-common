@@ -3,25 +3,22 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace GriffinPlus.Lib.Configuration
+namespace GriffinPlus.Lib.Configuration;
+
+/// <summary>
+/// Tests for the <see cref="CascadedConfiguration"/> class using <see cref="XmlFilePersistenceStrategy"/> to persist data.
+/// </summary>
+// ReSharper disable once UnusedMember.Global
+public class CascadedConfigurationTests_XmlFilePersistence : CascadedConfigurationTests
 {
+	private const string ConfigurationFilePath = "CascadedXmlFileConfigurationTest.xml";
 
 	/// <summary>
-	/// Tests for the <see cref="CascadedConfiguration"/> class using <see cref="XmlFilePersistenceStrategy"/> to persist data.
+	/// Gets the persistence strategy to test with.
 	/// </summary>
-	// ReSharper disable once UnusedMember.Global
-	public class CascadedConfigurationTests_XmlFilePersistence : CascadedConfigurationTests
+	/// <returns>The persistence strategy to test with.</returns>
+	protected override ICascadedConfigurationPersistenceStrategy GetStrategy()
 	{
-		private const string ConfigurationFilePath = "CascadedXmlFileConfigurationTest.xml";
-
-		/// <summary>
-		/// Gets the persistence strategy to test with.
-		/// </summary>
-		/// <returns>The persistence strategy to test with.</returns>
-		protected override ICascadedConfigurationPersistenceStrategy GetStrategy()
-		{
-			return new XmlFilePersistenceStrategy(ConfigurationFilePath);
-		}
+		return new XmlFilePersistenceStrategy(ConfigurationFilePath);
 	}
-
 }

@@ -3,16 +3,13 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace GriffinPlus.Lib.Threading
+namespace GriffinPlus.Lib.Threading;
+
+/// <summary>
+/// Unit tests targeting the <see cref="MonitorSynchronizedEnumerator{T}"/> class.
+/// </summary>
+// ReSharper disable once UnusedMember.Global
+public class MonitorSynchronizedEnumeratorTests
 {
-
-	/// <summary>
-	/// Unit tests targeting the <see cref="MonitorSynchronizedEnumerator{T}"/> class.
-	/// </summary>
-	// ReSharper disable once UnusedMember.Global
-	public class MonitorSynchronizedEnumeratorTests
-	{
-		// TODO
-	}
-
+	// TODO
 }

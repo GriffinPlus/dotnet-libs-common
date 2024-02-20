@@ -32,100 +32,97 @@ using System.Threading;
 
 using GriffinPlus.Lib.Disposables.Internal;
 
-namespace GriffinPlus.Lib.Disposables
+namespace GriffinPlus.Lib.Disposables;
+
+/// <summary>
+/// A base class for disposables that need exactly-once semantics in a thread-safe way.
+/// All disposals of this instance block until the disposal is complete.
+/// </summary>
+/// <typeparam name="T">
+/// The type of "context" for the derived disposable.
+/// Since the context should not be modified, strongly consider making this an immutable type.
+/// </typeparam>
+/// <remarks>
+/// If <see cref="Dispose()"/> is called multiple times, only the first call will execute the disposal code.
+/// Other calls to <see cref="Dispose()"/> will wait for the disposal to complete.
+/// </remarks>
+public abstract class SingleDisposable<T> : IDisposable
 {
+	/// <summary>
+	/// The context.
+	/// This is never <c>null</c>.
+	/// This is empty if this instance has already been disposed (or is being disposed).
+	/// </summary>
+	private readonly BoundActionField<T> mContext;
+
+	private readonly ManualResetEventSlim mDisposingEvent = new();
 
 	/// <summary>
-	/// A base class for disposables that need exactly-once semantics in a thread-safe way.
-	/// All disposals of this instance block until the disposal is complete.
+	/// Initializes a disposable for the specified context.
 	/// </summary>
-	/// <typeparam name="T">
-	/// The type of "context" for the derived disposable.
-	/// Since the context should not be modified, strongly consider making this an immutable type.
-	/// </typeparam>
+	/// <param name="context">The context passed to <see cref="Dispose(T)"/>.</param>
+	protected SingleDisposable(T context)
+	{
+		mContext = new BoundActionField<T>(Dispose, context);
+	}
+
+	/// <summary>
+	/// Gets a value indicating whether this instance is currently disposing or has been disposed.
+	/// </summary>
+	public bool IsDisposeStarted => mContext.IsEmpty;
+
+	/// <summary>
+	/// Gets a value indicating whether this instance is disposed (finished disposing).
+	/// </summary>
+	public bool IsDisposed => mDisposingEvent.IsSet;
+
+	/// <summary>
+	/// Gets a value indicating whether this instance is currently disposing, but not finished yet.
+	/// </summary>
+	public bool IsDisposing => IsDisposeStarted && !IsDisposed;
+
+	/// <summary>
+	/// The actual disposal method, called only once from <see cref="Dispose()"/>.
+	/// </summary>
+	/// <param name="context">The context for the disposal operation.</param>
+	protected abstract void Dispose(T context);
+
+	/// <summary>
+	/// Disposes this instance.
+	/// </summary>
 	/// <remarks>
 	/// If <see cref="Dispose()"/> is called multiple times, only the first call will execute the disposal code.
 	/// Other calls to <see cref="Dispose()"/> will wait for the disposal to complete.
 	/// </remarks>
-	public abstract class SingleDisposable<T> : IDisposable
+	public void Dispose()
 	{
-		/// <summary>
-		/// The context.
-		/// This is never <c>null</c>.
-		/// This is empty if this instance has already been disposed (or is being disposed).
-		/// </summary>
-		private readonly BoundActionField<T> mContext;
-
-		private readonly ManualResetEventSlim mDisposingEvent = new();
-
-		/// <summary>
-		/// Initializes a disposable for the specified context.
-		/// </summary>
-		/// <param name="context">The context passed to <see cref="Dispose(T)"/>.</param>
-		protected SingleDisposable(T context)
+		BoundActionField<T>.IBoundAction context = mContext.TryGetAndUnset();
+		if (context == null)
 		{
-			mContext = new BoundActionField<T>(Dispose, context);
+			mDisposingEvent.Wait();
+			return;
 		}
 
-		/// <summary>
-		/// Gets a value indicating whether this instance is currently disposing or has been disposed.
-		/// </summary>
-		public bool IsDisposeStarted => mContext.IsEmpty;
-
-		/// <summary>
-		/// Gets a value indicating whether this instance is disposed (finished disposing).
-		/// </summary>
-		public bool IsDisposed => mDisposingEvent.IsSet;
-
-		/// <summary>
-		/// Gets a value indicating whether this instance is currently disposing, but not finished yet.
-		/// </summary>
-		public bool IsDisposing => IsDisposeStarted && !IsDisposed;
-
-		/// <summary>
-		/// The actual disposal method, called only once from <see cref="Dispose()"/>.
-		/// </summary>
-		/// <param name="context">The context for the disposal operation.</param>
-		protected abstract void Dispose(T context);
-
-		/// <summary>
-		/// Disposes this instance.
-		/// </summary>
-		/// <remarks>
-		/// If <see cref="Dispose()"/> is called multiple times, only the first call will execute the disposal code.
-		/// Other calls to <see cref="Dispose()"/> will wait for the disposal to complete.
-		/// </remarks>
-		public void Dispose()
+		try
 		{
-			BoundActionField<T>.IBoundAction context = mContext.TryGetAndUnset();
-			if (context == null)
-			{
-				mDisposingEvent.Wait();
-				return;
-			}
-
-			try
-			{
-				context.Invoke();
-			}
-			finally
-			{
-				mDisposingEvent.Set();
-			}
+			context.Invoke();
 		}
-
-		/// <summary>
-		/// Attempts to update the stored context.
-		/// This method returns <c>false</c>, if this instance has already been disposed (or is being disposed).
-		/// </summary>
-		/// <param name="contextUpdater">
-		/// The function used to update an existing context.
-		/// This may be called more than once, if more than one thread attempts to simultaneously update the context.
-		/// </param>
-		protected bool TryUpdateContext(Func<T, T> contextUpdater)
+		finally
 		{
-			return mContext.TryUpdateContext(contextUpdater);
+			mDisposingEvent.Set();
 		}
 	}
 
+	/// <summary>
+	/// Attempts to update the stored context.
+	/// This method returns <c>false</c>, if this instance has already been disposed (or is being disposed).
+	/// </summary>
+	/// <param name="contextUpdater">
+	/// The function used to update an existing context.
+	/// This may be called more than once, if more than one thread attempts to simultaneously update the context.
+	/// </param>
+	protected bool TryUpdateContext(Func<T, T> contextUpdater)
+	{
+		return mContext.TryUpdateContext(contextUpdater);
+	}
 }

@@ -7,50 +7,47 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GriffinPlus.Lib
+namespace GriffinPlus.Lib;
+
+/// <summary>
+/// Utility class that helps with decomposing types.
+/// Generic types are recursively decomposed to generic type definitions and non-generic types.
+/// </summary>
+public static class TypeDecomposer
 {
+	private static volatile Dictionary<Type, DecomposedType> sCache = new(); // immutable, dictionary is exchanged atomically
+	private static readonly object                           sSync  = new();
 
 	/// <summary>
-	/// Utility class that helps with decomposing types.
-	/// Generic types are recursively decomposed to generic type definitions and non-generic types.
+	/// Decomposes the specified type.
+	/// The result contains generic type definitions and non-generic types only.
 	/// </summary>
-	public static class TypeDecomposer
+	/// <param name="type">Type to decompose.</param>
+	/// <returns>Information about the decomposed type.</returns>
+	/// <exception cref="ArgumentNullException">The specified <paramref name="type"/> is <c>null</c>.</exception>
+	public static DecomposedType DecomposeType(Type type)
 	{
-		private static volatile Dictionary<Type, DecomposedType> sCache = new(); // immutable, dictionary is exchanged atomically
-		private static readonly object                           sSync  = new();
+		if (type == null) throw new ArgumentNullException(nameof(type));
 
-		/// <summary>
-		/// Decomposes the specified type.
-		/// The result contains generic type definitions and non-generic types only.
-		/// </summary>
-		/// <param name="type">Type to decompose.</param>
-		/// <returns>Information about the decomposed type.</returns>
-		/// <exception cref="ArgumentNullException">The specified <paramref name="type"/> is <c>null</c>.</exception>
-		public static DecomposedType DecomposeType(Type type)
-		{
-			if (type == null) throw new ArgumentNullException(nameof(type));
-
-			// check whether the cache contains the decomposition already
-			if (sCache.TryGetValue(type, out DecomposedType decomposedType))
-				return decomposedType;
-
-			if (type.IsGenericType && !type.IsGenericTypeDefinition)
-			{
-				// the type is a generic type
-				// => decompose it
-				Type genericTypeDefinition = type.GetGenericTypeDefinition();
-				List<DecomposedType> genericArguments = type.GetGenericArguments().Select(DecomposeType).ToList();
-				decomposedType = new DecomposedType(type, genericTypeDefinition, genericArguments);
-			}
-			else
-			{
-				// a non-generic type or a generic type definition
-				decomposedType = new DecomposedType(type, type, DecomposedType.EmptyTypes);
-			}
-
-			lock (sSync) sCache = new Dictionary<Type, DecomposedType>(sCache) { [type] = decomposedType };
+		// check whether the cache contains the decomposition already
+		if (sCache.TryGetValue(type, out DecomposedType decomposedType))
 			return decomposedType;
-		}
-	}
 
+		if (type.IsGenericType && !type.IsGenericTypeDefinition)
+		{
+			// the type is a generic type
+			// => decompose it
+			Type genericTypeDefinition = type.GetGenericTypeDefinition();
+			List<DecomposedType> genericArguments = type.GetGenericArguments().Select(DecomposeType).ToList();
+			decomposedType = new DecomposedType(type, genericTypeDefinition, genericArguments);
+		}
+		else
+		{
+			// a non-generic type or a generic type definition
+			decomposedType = new DecomposedType(type, type, DecomposedType.EmptyTypes);
+		}
+
+		lock (sSync) sCache = new Dictionary<Type, DecomposedType>(sCache) { [type] = decomposedType };
+		return decomposedType;
+	}
 }

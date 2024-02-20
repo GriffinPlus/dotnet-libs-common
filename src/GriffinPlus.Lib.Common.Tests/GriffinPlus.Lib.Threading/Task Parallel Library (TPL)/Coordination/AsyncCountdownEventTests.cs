@@ -32,167 +32,164 @@ using System.Threading.Tasks;
 
 using Xunit;
 
-namespace GriffinPlus.Lib.Threading
+namespace GriffinPlus.Lib.Threading;
+
+[Collection(nameof(NoParallelizationCollection))]
+public class AsyncCountdownEventTests
 {
-
-	[Collection(nameof(NoParallelizationCollection))]
-	public class AsyncCountdownEventTests
+	[Fact]
+	public Task WaitAsync_Unset_IsNotCompleted()
 	{
-		[Fact]
-		public async Task WaitAsync_Unset_IsNotCompleted()
-		{
-			var ce = new AsyncCountdownEvent(1);
-			Task task = ce.WaitAsync();
+		var ce = new AsyncCountdownEvent(1);
+		Task task = ce.WaitAsync();
 
-			Assert.Equal(1, ce.CurrentCount);
-			Assert.False(task.IsCompleted);
+		Assert.Equal(1, ce.CurrentCount);
+		Assert.False(task.IsCompleted);
 
-			ce.Signal();
-			await task;
-		}
-
-		[Fact]
-		public void WaitAsync_Set_IsCompleted()
-		{
-			var ce = new AsyncCountdownEvent(0);
-			Task task = ce.WaitAsync();
-
-			Assert.Equal(0, ce.CurrentCount);
-			Assert.True(task.IsCompleted);
-		}
-
-		[Fact]
-		public async Task AddCount_IncrementsCount()
-		{
-			var ce = new AsyncCountdownEvent(1);
-			Task task = ce.WaitAsync();
-			Assert.Equal(1, ce.CurrentCount);
-			Assert.False(task.IsCompleted);
-
-			ce.AddCount();
-
-			Assert.Equal(2, ce.CurrentCount);
-			Assert.False(task.IsCompleted);
-
-			ce.Signal(2);
-			await task;
-		}
-
-		[Fact]
-		public async Task Signal_Nonzero_IsNotCompleted()
-		{
-			var ce = new AsyncCountdownEvent(2);
-			Task task = ce.WaitAsync();
-			Assert.False(task.IsCompleted);
-
-			ce.Signal();
-
-			Assert.Equal(1, ce.CurrentCount);
-			Assert.False(task.IsCompleted);
-
-			ce.Signal();
-			await task;
-		}
-
-		[Fact]
-		public void Signal_Zero_SynchronouslyCompletesWaitTask()
-		{
-			var ce = new AsyncCountdownEvent(1);
-			Task task = ce.WaitAsync();
-			Assert.False(task.IsCompleted);
-
-			ce.Signal();
-
-			Assert.Equal(0, ce.CurrentCount);
-			Assert.True(task.IsCompleted);
-		}
-
-		[Fact]
-		public async Task Signal_AfterSet_CountsNegativeAndResetsTask()
-		{
-			var ce = new AsyncCountdownEvent(0);
-			Task originalTask = ce.WaitAsync();
-
-			ce.Signal();
-
-			Task newTask = ce.WaitAsync();
-			Assert.Equal(-1, ce.CurrentCount);
-			Assert.NotSame(originalTask, newTask);
-
-			ce.AddCount();
-			await newTask;
-		}
-
-		[Fact]
-		public async Task AddCount_AfterSet_CountsPositiveAndResetsTask()
-		{
-			var ce = new AsyncCountdownEvent(0);
-			Task originalTask = ce.WaitAsync();
-
-			ce.AddCount();
-			Task newTask = ce.WaitAsync();
-
-			Assert.Equal(1, ce.CurrentCount);
-			Assert.NotSame(originalTask, newTask);
-
-			ce.Signal();
-			await newTask;
-		}
-
-		[Fact]
-		public async Task Signal_PastZero_PulsesTask()
-		{
-			var ce = new AsyncCountdownEvent(1);
-			Task originalTask = ce.WaitAsync();
-
-			ce.Signal(2);
-			await originalTask;
-			Task newTask = ce.WaitAsync();
-
-			Assert.Equal(-1, ce.CurrentCount);
-			Assert.NotSame(originalTask, newTask);
-
-			ce.AddCount();
-			await newTask;
-		}
-
-		[Fact]
-		public async Task AddCount_PastZero_PulsesTask()
-		{
-			var ce = new AsyncCountdownEvent(-1);
-			Task originalTask = ce.WaitAsync();
-
-			ce.AddCount(2);
-			await originalTask;
-			Task newTask = ce.WaitAsync();
-
-			Assert.Equal(1, ce.CurrentCount);
-			Assert.NotSame(originalTask, newTask);
-
-			ce.Signal();
-			await newTask;
-		}
-
-		[Fact]
-		public void AddCount_Overflow_ThrowsException()
-		{
-			var ce = new AsyncCountdownEvent(long.MaxValue);
-			Assert.ThrowsAny<OverflowException>(() => ce.AddCount());
-		}
-
-		[Fact]
-		public void Signal_Underflow_ThrowsException()
-		{
-			var ce = new AsyncCountdownEvent(long.MinValue);
-			Assert.ThrowsAny<OverflowException>(() => ce.Signal());
-		}
-
-		[Fact]
-		public void Id_IsNotZero()
-		{
-			var ce = new AsyncCountdownEvent(0);
-			Assert.NotEqual(0, ce.Id);
-		}
+		ce.Signal();
+		return task;
 	}
 
+	[Fact]
+	public void WaitAsync_Set_IsCompleted()
+	{
+		var ce = new AsyncCountdownEvent(0);
+		Task task = ce.WaitAsync();
+
+		Assert.Equal(0, ce.CurrentCount);
+		Assert.True(task.IsCompleted);
+	}
+
+	[Fact]
+	public Task AddCount_IncrementsCount()
+	{
+		var ce = new AsyncCountdownEvent(1);
+		Task task = ce.WaitAsync();
+		Assert.Equal(1, ce.CurrentCount);
+		Assert.False(task.IsCompleted);
+
+		ce.AddCount();
+
+		Assert.Equal(2, ce.CurrentCount);
+		Assert.False(task.IsCompleted);
+
+		ce.Signal(2);
+		return task;
+	}
+
+	[Fact]
+	public Task Signal_Nonzero_IsNotCompleted()
+	{
+		var ce = new AsyncCountdownEvent(2);
+		Task task = ce.WaitAsync();
+		Assert.False(task.IsCompleted);
+
+		ce.Signal();
+
+		Assert.Equal(1, ce.CurrentCount);
+		Assert.False(task.IsCompleted);
+
+		ce.Signal();
+		return task;
+	}
+
+	[Fact]
+	public void Signal_Zero_SynchronouslyCompletesWaitTask()
+	{
+		var ce = new AsyncCountdownEvent(1);
+		Task task = ce.WaitAsync();
+		Assert.False(task.IsCompleted);
+
+		ce.Signal();
+
+		Assert.Equal(0, ce.CurrentCount);
+		Assert.True(task.IsCompleted);
+	}
+
+	[Fact]
+	public Task Signal_AfterSet_CountsNegativeAndResetsTask()
+	{
+		var ce = new AsyncCountdownEvent(0);
+		Task originalTask = ce.WaitAsync();
+
+		ce.Signal();
+
+		Task newTask = ce.WaitAsync();
+		Assert.Equal(-1, ce.CurrentCount);
+		Assert.NotSame(originalTask, newTask);
+
+		ce.AddCount();
+		return newTask;
+	}
+
+	[Fact]
+	public Task AddCount_AfterSet_CountsPositiveAndResetsTask()
+	{
+		var ce = new AsyncCountdownEvent(0);
+		Task originalTask = ce.WaitAsync();
+
+		ce.AddCount();
+		Task newTask = ce.WaitAsync();
+
+		Assert.Equal(1, ce.CurrentCount);
+		Assert.NotSame(originalTask, newTask);
+
+		ce.Signal();
+		return newTask;
+	}
+
+	[Fact]
+	public async Task Signal_PastZero_PulsesTask()
+	{
+		var ce = new AsyncCountdownEvent(1);
+		Task originalTask = ce.WaitAsync();
+
+		ce.Signal(2);
+		await originalTask;
+		Task newTask = ce.WaitAsync();
+
+		Assert.Equal(-1, ce.CurrentCount);
+		Assert.NotSame(originalTask, newTask);
+
+		ce.AddCount();
+		await newTask;
+	}
+
+	[Fact]
+	public async Task AddCount_PastZero_PulsesTask()
+	{
+		var ce = new AsyncCountdownEvent(-1);
+		Task originalTask = ce.WaitAsync();
+
+		ce.AddCount(2);
+		await originalTask;
+		Task newTask = ce.WaitAsync();
+
+		Assert.Equal(1, ce.CurrentCount);
+		Assert.NotSame(originalTask, newTask);
+
+		ce.Signal();
+		await newTask;
+	}
+
+	[Fact]
+	public void AddCount_Overflow_ThrowsException()
+	{
+		var ce = new AsyncCountdownEvent(long.MaxValue);
+		Assert.ThrowsAny<OverflowException>(() => ce.AddCount());
+	}
+
+	[Fact]
+	public void Signal_Underflow_ThrowsException()
+	{
+		var ce = new AsyncCountdownEvent(long.MinValue);
+		Assert.ThrowsAny<OverflowException>(() => ce.Signal());
+	}
+
+	[Fact]
+	public void Id_IsNotZero()
+	{
+		var ce = new AsyncCountdownEvent(0);
+		Assert.NotEqual(0, ce.Id);
+	}
 }

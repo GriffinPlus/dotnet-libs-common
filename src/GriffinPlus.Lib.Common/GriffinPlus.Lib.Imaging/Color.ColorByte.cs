@@ -11,18 +11,15 @@
 //   Project: https://github.com/dotnet/wpf
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace GriffinPlus.Lib.Imaging
+namespace GriffinPlus.Lib.Imaging;
+
+public partial struct Color
 {
-
-	public partial struct Color
+	private struct ColorByte
 	{
-		private struct ColorByte
-		{
-			public byte A;
-			public byte R;
-			public byte G;
-			public byte B;
-		}
+		public byte A;
+		public byte R;
+		public byte G;
+		public byte B;
 	}
-
 }

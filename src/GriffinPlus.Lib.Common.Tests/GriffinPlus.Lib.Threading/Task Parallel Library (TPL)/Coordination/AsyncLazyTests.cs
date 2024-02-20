@@ -35,191 +35,197 @@ using Xunit;
 
 #pragma warning disable CS0162
 
-namespace GriffinPlus.Lib.Threading
+namespace GriffinPlus.Lib.Threading;
+
+[Collection(nameof(NoParallelizationCollection))]
+public class AsyncLazyTests
 {
-
-	[Collection(nameof(NoParallelizationCollection))]
-	public class AsyncLazyTests
+	[Fact]
+	public void AsyncLazy_NeverAwaited_DoesNotCallFunc()
 	{
-		[Fact]
-		public void AsyncLazy_NeverAwaited_DoesNotCallFunc()
+		_ = new AsyncLazy<int>(Func);
+		return;
+
+		static Task<int> Func()
 		{
-			Task<int> Func()
-			{
-				throw new Exception();
-				return Task.FromResult(13);
-			}
-
-			_ = new AsyncLazy<int>(Func);
-		}
-
-		[Fact]
-		public async Task AsyncLazy_WithCallDirectFlag_CallsFuncDirectly()
-		{
-			int testThread = Thread.CurrentThread.ManagedThreadId;
-			int funcThread = testThread + 1;
-
-			Task<int> Func()
-			{
-				funcThread = Thread.CurrentThread.ManagedThreadId;
-				return Task.FromResult(13);
-			}
-
-			var lazy = new AsyncLazy<int>(Func, AsyncLazyFlags.ExecuteOnCallingThread);
-
-			await lazy;
-
-			Assert.Equal(testThread, funcThread);
-		}
-
-		[Fact]
-		public async Task AsyncLazy_ByDefault_CallsFuncOnThreadPool()
-		{
-			int testThread = Thread.CurrentThread.ManagedThreadId;
-			int funcThread = testThread;
-
-			Task<int> Func()
-			{
-				funcThread = Thread.CurrentThread.ManagedThreadId;
-				return Task.FromResult(13);
-			}
-
-			var lazy = new AsyncLazy<int>(Func);
-
-			await lazy;
-
-			Assert.NotEqual(testThread, funcThread);
-		}
-
-		[Fact]
-		public async Task AsyncLazy_Start_CallsFunc()
-		{
-			TaskCompletionSource<object> tcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
-
-			Task<int> Func()
-			{
-				tcs.SetResult(null);
-				return Task.FromResult(13);
-			}
-
-			var lazy = new AsyncLazy<int>(Func);
-
-			lazy.Start();
-			await tcs.Task;
-		}
-
-		[Fact]
-		public async Task AsyncLazy_Await_ReturnsFuncValue()
-		{
-			async Task<int> Func()
-			{
-				await Task.Yield();
-				return 13;
-			}
-
-			var lazy = new AsyncLazy<int>(Func);
-
-			int result = await lazy;
-			Assert.Equal(13, result);
-		}
-
-		[Fact]
-		public async Task AsyncLazy_MultipleAwaiters_OnlyInvokeFuncOnce()
-		{
-			int invokeCount = 0;
-			TaskCompletionSource<object> tcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
-
-			async Task<int> Func()
-			{
-				Interlocked.Increment(ref invokeCount);
-				await tcs.Task;
-				return 13;
-			}
-
-			var lazy = new AsyncLazy<int>(Func);
-
-			Task<int> task1 = Task.Run(async () => await lazy);
-			Task<int> task2 = Task.Run(async () => await lazy);
-
-			Assert.False(task1.IsCompleted);
-			Assert.False(task2.IsCompleted);
-			tcs.SetResult(null);
-			int[] results = await Task.WhenAll(task1, task2);
-			int[] expected = [13, 13];
-			Assert.Equal(expected, results);
-			Assert.Equal(1, invokeCount);
-		}
-
-		[Fact]
-		public async Task AsyncLazy_FailureCachedByDefault()
-		{
-			int invokeCount = 0;
-
-			async Task<int> Func()
-			{
-				Interlocked.Increment(ref invokeCount);
-				await Task.Yield();
-				if (invokeCount == 1) throw new InvalidOperationException("Not today, punk.");
-				return 13;
-			}
-
-			var lazy = new AsyncLazy<int>(Func);
-			await Assert.ThrowsAsync<InvalidOperationException>(() => lazy.Task);
-
-			await Assert.ThrowsAsync<InvalidOperationException>(() => lazy.Task);
-			Assert.Equal(1, invokeCount);
-		}
-
-		[Fact]
-		public async Task AsyncLazy_WithRetryOnFailure_DoesNotCacheFailure()
-		{
-			int invokeCount = 0;
-
-			async Task<int> Func()
-			{
-				Interlocked.Increment(ref invokeCount);
-				await Task.Yield();
-				if (invokeCount == 1) throw new InvalidOperationException("Not today, punk.");
-				return 13;
-			}
-
-			var lazy = new AsyncLazy<int>(Func, AsyncLazyFlags.RetryOnFailure);
-			await Assert.ThrowsAsync<InvalidOperationException>(() => lazy.Task);
-
-			Assert.Equal(13, await lazy);
-			Assert.Equal(2, invokeCount);
-		}
-
-		[Fact]
-		public async Task AsyncLazy_WithRetryOnFailure_DoesNotRetryOnSuccess()
-		{
-			int invokeCount = 0;
-
-			async Task<int> Func()
-			{
-				Interlocked.Increment(ref invokeCount);
-				await Task.Yield();
-				if (invokeCount == 1)
-					throw new InvalidOperationException("Not today, punk.");
-				return 13;
-			}
-
-			var lazy = new AsyncLazy<int>(Func, AsyncLazyFlags.RetryOnFailure);
-			await Assert.ThrowsAsync<InvalidOperationException>(() => lazy.Task);
-
-			await lazy;
-			await lazy;
-
-			Assert.Equal(13, await lazy);
-			Assert.Equal(2, invokeCount);
-		}
-
-		[Fact]
-		public void Id_IsNotZero()
-		{
-			var lazy = new AsyncLazy<object>(() => Task.FromResult<object>(null));
-			Assert.NotEqual(0, lazy.Id);
+			throw new Exception();
+			return Task.FromResult(13);
 		}
 	}
 
+	[Fact]
+	public async Task AsyncLazy_WithCallDirectFlag_CallsFuncDirectly()
+	{
+		int testThread = Thread.CurrentThread.ManagedThreadId;
+		int funcThread = testThread + 1;
+
+		var lazy = new AsyncLazy<int>(Func, AsyncLazyFlags.ExecuteOnCallingThread);
+
+		await lazy;
+
+		Assert.Equal(testThread, funcThread);
+		return;
+
+		Task<int> Func()
+		{
+			funcThread = Thread.CurrentThread.ManagedThreadId;
+			return Task.FromResult(13);
+		}
+	}
+
+	[Fact]
+	public async Task AsyncLazy_ByDefault_CallsFuncOnThreadPool()
+	{
+		int testThread = Thread.CurrentThread.ManagedThreadId;
+		int funcThread = testThread;
+
+		var lazy = new AsyncLazy<int>(Func);
+
+		await lazy;
+
+		Assert.NotEqual(testThread, funcThread);
+		return;
+
+		Task<int> Func()
+		{
+			funcThread = Thread.CurrentThread.ManagedThreadId;
+			return Task.FromResult(13);
+		}
+	}
+
+	[Fact]
+	public async Task AsyncLazy_Start_CallsFunc()
+	{
+		TaskCompletionSource<object> tcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
+
+		var lazy = new AsyncLazy<int>(Func);
+
+		lazy.Start();
+		await tcs.Task;
+		return;
+
+		Task<int> Func()
+		{
+			tcs.SetResult(null);
+			return Task.FromResult(13);
+		}
+	}
+
+	[Fact]
+	public async Task AsyncLazy_Await_ReturnsFuncValue()
+	{
+		var lazy = new AsyncLazy<int>(Func);
+
+		int result = await lazy;
+		Assert.Equal(13, result);
+		return;
+
+		static async Task<int> Func()
+		{
+			await Task.Yield();
+			return 13;
+		}
+	}
+
+	[Fact]
+	public async Task AsyncLazy_MultipleAwaiters_OnlyInvokeFuncOnce()
+	{
+		int invokeCount = 0;
+		TaskCompletionSource<object> tcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<object>();
+
+		var lazy = new AsyncLazy<int>(Func);
+
+		Task<int> task1 = Task.Run(async () => await lazy);
+		Task<int> task2 = Task.Run(async () => await lazy);
+
+		Assert.False(task1.IsCompleted);
+		Assert.False(task2.IsCompleted);
+		tcs.SetResult(null);
+		int[] results = await Task.WhenAll(task1, task2);
+		int[] expected = [13, 13];
+		Assert.Equal(expected, results);
+		Assert.Equal(1, invokeCount);
+		return;
+
+		async Task<int> Func()
+		{
+			Interlocked.Increment(ref invokeCount);
+			await tcs.Task;
+			return 13;
+		}
+	}
+
+	[Fact]
+	public async Task AsyncLazy_FailureCachedByDefault()
+	{
+		int invokeCount = 0;
+
+		var lazy = new AsyncLazy<int>(Func);
+		await Assert.ThrowsAsync<InvalidOperationException>(() => lazy.Task);
+
+		await Assert.ThrowsAsync<InvalidOperationException>(() => lazy.Task);
+		Assert.Equal(1, invokeCount);
+		return;
+
+		async Task<int> Func()
+		{
+			Interlocked.Increment(ref invokeCount);
+			await Task.Yield();
+			if (invokeCount == 1) throw new InvalidOperationException("Not today, punk.");
+			return 13;
+		}
+	}
+
+	[Fact]
+	public async Task AsyncLazy_WithRetryOnFailure_DoesNotCacheFailure()
+	{
+		int invokeCount = 0;
+
+		var lazy = new AsyncLazy<int>(Func, AsyncLazyFlags.RetryOnFailure);
+		await Assert.ThrowsAsync<InvalidOperationException>(() => lazy.Task);
+
+		Assert.Equal(13, await lazy);
+		Assert.Equal(2, invokeCount);
+		return;
+
+		async Task<int> Func()
+		{
+			Interlocked.Increment(ref invokeCount);
+			await Task.Yield();
+			if (invokeCount == 1) throw new InvalidOperationException("Not today, punk.");
+			return 13;
+		}
+	}
+
+	[Fact]
+	public async Task AsyncLazy_WithRetryOnFailure_DoesNotRetryOnSuccess()
+	{
+		int invokeCount = 0;
+
+		var lazy = new AsyncLazy<int>(Func, AsyncLazyFlags.RetryOnFailure);
+		await Assert.ThrowsAsync<InvalidOperationException>(() => lazy.Task);
+
+		await lazy;
+		await lazy;
+
+		Assert.Equal(13, await lazy);
+		Assert.Equal(2, invokeCount);
+		return;
+
+		async Task<int> Func()
+		{
+			Interlocked.Increment(ref invokeCount);
+			await Task.Yield();
+			if (invokeCount == 1)
+				throw new InvalidOperationException("Not today, punk.");
+			return 13;
+		}
+	}
+
+	[Fact]
+	public void Id_IsNotZero()
+	{
+		var lazy = new AsyncLazy<object>(() => Task.FromResult<object>(null));
+		Assert.NotEqual(0, lazy.Id);
+	}
 }

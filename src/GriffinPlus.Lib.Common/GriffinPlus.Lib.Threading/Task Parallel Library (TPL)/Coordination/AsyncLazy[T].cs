@@ -33,213 +33,209 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace GriffinPlus.Lib.Threading
+namespace GriffinPlus.Lib.Threading;
+
+/// <summary>
+/// Flags controlling the behavior of <see cref="AsyncLazy{T}"/>.
+/// </summary>
+[Flags]
+public enum AsyncLazyFlags
 {
+	/// <summary>
+	/// No special flags.
+	/// The factory method is executed on a thread pool thread, and does not retry initialization on failures (failures are cached).
+	/// </summary>
+	None = 0x0,
 
 	/// <summary>
-	/// Flags controlling the behavior of <see cref="AsyncLazy{T}"/>.
+	/// Execute the factory method on the calling thread.
 	/// </summary>
-	[Flags]
-	public enum AsyncLazyFlags
+	ExecuteOnCallingThread = 0x1,
+
+	/// <summary>
+	/// If the factory method fails, then re-run the factory method the next time instead of caching the failed task.
+	/// </summary>
+	RetryOnFailure = 0x2
+}
+
+/// <summary>
+/// Provides support for asynchronous lazy initialization.
+/// This type is fully thread-safe.
+/// </summary>
+/// <typeparam name="T">The type of object that is being asynchronously initialized.</typeparam>
+[DebuggerDisplay("Id = {Id}, State = {GetStateForDebugger}")]
+[DebuggerTypeProxy(typeof(AsyncLazy<>.DebugView))]
+public sealed class AsyncLazy<T>
+{
+	/// <summary>
+	/// The synchronization object protecting <c>mInstance</c>.
+	/// </summary>
+	private readonly object mMutex;
+
+	/// <summary>
+	/// The factory method to call.
+	/// </summary>
+	private readonly Func<Task<T>> mFactory;
+
+	/// <summary>
+	/// The underlying lazy task.
+	/// </summary>
+	private Lazy<Task<T>> mInstance;
+
+	/// <summary>
+	/// The semi-unique identifier for this instance.
+	/// This is 0 if the id has not yet been created.
+	/// </summary>
+	private int mId;
+
+	[DebuggerNonUserCode]
+	internal LazyState GetStateForDebugger
 	{
-		/// <summary>
-		/// No special flags.
-		/// The factory method is executed on a thread pool thread, and does not retry initialization on failures (failures are cached).
-		/// </summary>
-		None = 0x0,
-
-		/// <summary>
-		/// Execute the factory method on the calling thread.
-		/// </summary>
-		ExecuteOnCallingThread = 0x1,
-
-		/// <summary>
-		/// If the factory method fails, then re-run the factory method the next time instead of caching the failed task.
-		/// </summary>
-		RetryOnFailure = 0x2
+		get
+		{
+			if (!mInstance.IsValueCreated) return LazyState.NotStarted;
+			return mInstance.Value.IsCompleted ? LazyState.Completed : LazyState.Executing;
+		}
 	}
 
 	/// <summary>
-	/// Provides support for asynchronous lazy initialization.
-	/// This type is fully thread-safe.
+	/// Initializes a new instance of the <see cref="AsyncLazy{T}"/> class.
 	/// </summary>
-	/// <typeparam name="T">The type of object that is being asynchronously initialized.</typeparam>
-	[DebuggerDisplay("Id = {Id}, State = {GetStateForDebugger}")]
-	[DebuggerTypeProxy(typeof(AsyncLazy<>.DebugView))]
-	public sealed class AsyncLazy<T>
+	/// <param name="factory">
+	/// The asynchronous delegate that is invoked to produce the value when it is needed.
+	/// May not be <c>null</c>.
+	/// </param>
+	/// <param name="flags">Flags to influence async lazy semantics.</param>
+	public AsyncLazy(Func<Task<T>> factory, AsyncLazyFlags flags = AsyncLazyFlags.None)
 	{
-		/// <summary>
-		/// The synchronization object protecting <c>mInstance</c>.
-		/// </summary>
-		private readonly object mMutex;
+		mFactory = factory ?? throw new ArgumentNullException(nameof(factory));
+		if ((flags & AsyncLazyFlags.RetryOnFailure) == AsyncLazyFlags.RetryOnFailure)
+			mFactory = RetryOnFailure(mFactory);
+		if ((flags & AsyncLazyFlags.ExecuteOnCallingThread) != AsyncLazyFlags.ExecuteOnCallingThread)
+			mFactory = RunOnThreadPool(mFactory);
 
-		/// <summary>
-		/// The factory method to call.
-		/// </summary>
-		private readonly Func<Task<T>> mFactory;
+		mMutex = new object();
+		mInstance = new Lazy<Task<T>>(mFactory);
+	}
 
-		/// <summary>
-		/// The underlying lazy task.
-		/// </summary>
-		private Lazy<Task<T>> mInstance;
+	/// <summary>
+	/// Gets a semi-unique identifier for this asynchronous lazy instance.
+	/// </summary>
+	public int Id => IdManager<AsyncLazy<object>>.GetId(ref mId);
 
-		/// <summary>
-		/// The semi-unique identifier for this instance.
-		/// This is 0 if the id has not yet been created.
-		/// </summary>
-		private int mId;
-
-		[DebuggerNonUserCode]
-		internal LazyState GetStateForDebugger
+	/// <summary>
+	/// Whether the asynchronous factory method has started.
+	/// This is initially <c>false</c> and becomes <c>true</c> when this instance is awaited or after <see cref="Start"/> is called.
+	/// </summary>
+	public bool IsStarted
+	{
+		get
 		{
-			get
+			lock (mMutex)
 			{
-				if (!mInstance.IsValueCreated) return LazyState.NotStarted;
-				if (!mInstance.Value.IsCompleted) return LazyState.Executing;
-				return LazyState.Completed;
-			}
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="AsyncLazy{T}"/> class.
-		/// </summary>
-		/// <param name="factory">
-		/// The asynchronous delegate that is invoked to produce the value when it is needed.
-		/// May not be <c>null</c>.
-		/// </param>
-		/// <param name="flags">Flags to influence async lazy semantics.</param>
-		public AsyncLazy(Func<Task<T>> factory, AsyncLazyFlags flags = AsyncLazyFlags.None)
-		{
-			mFactory = factory ?? throw new ArgumentNullException(nameof(factory));
-			if ((flags & AsyncLazyFlags.RetryOnFailure) == AsyncLazyFlags.RetryOnFailure)
-				mFactory = RetryOnFailure(mFactory);
-			if ((flags & AsyncLazyFlags.ExecuteOnCallingThread) != AsyncLazyFlags.ExecuteOnCallingThread)
-				mFactory = RunOnThreadPool(mFactory);
-
-			mMutex = new object();
-			mInstance = new Lazy<Task<T>>(mFactory);
-		}
-
-		/// <summary>
-		/// Gets a semi-unique identifier for this asynchronous lazy instance.
-		/// </summary>
-		public int Id => IdManager<AsyncLazy<object>>.GetId(ref mId);
-
-		/// <summary>
-		/// Whether the asynchronous factory method has started.
-		/// This is initially <c>false</c> and becomes <c>true</c> when this instance is awaited or after <see cref="Start"/> is called.
-		/// </summary>
-		public bool IsStarted
-		{
-			get
-			{
-				lock (mMutex)
-				{
-					return mInstance.IsValueCreated;
-				}
-			}
-		}
-
-		/// <summary>
-		/// Starts the asynchronous factory method, if it has not already started, and returns the resulting task.
-		/// </summary>
-		public Task<T> Task
-		{
-			get
-			{
-				lock (mMutex)
-				{
-					return mInstance.Value;
-				}
-			}
-		}
-
-		private Func<Task<T>> RetryOnFailure(Func<Task<T>> factory)
-		{
-			return async () =>
-			{
-				try
-				{
-					return await factory().ConfigureAwait(false);
-				}
-				catch
-				{
-					lock (mMutex)
-					{
-						mInstance = new Lazy<Task<T>>(mFactory);
-					}
-
-					throw;
-				}
-			};
-		}
-
-		private Func<Task<T>> RunOnThreadPool(Func<Task<T>> factory)
-		{
-			return () => System.Threading.Tasks.Task.Run(factory);
-		}
-
-		/// <summary>
-		/// Asynchronous infrastructure support.
-		/// This method permits instances of <see cref="AsyncLazy{T}"/> to be awaited.
-		/// </summary>
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public TaskAwaiter<T> GetAwaiter()
-		{
-			return Task.GetAwaiter();
-		}
-
-		/// <summary>
-		/// Asynchronous infrastructure support.
-		/// This method permits instances of <see cref="AsyncLazy{T}"/> to be awaited.
-		/// </summary>
-		public ConfiguredTaskAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
-		{
-			return Task.ConfigureAwait(continueOnCapturedContext);
-		}
-
-		/// <summary>
-		/// Starts the asynchronous initialization, if it has not already started.
-		/// </summary>
-		public void Start()
-		{
-			Task<T> unused = Task;
-		}
-
-		internal enum LazyState
-		{
-			NotStarted,
-			Executing,
-			Completed
-		}
-
-		[DebuggerNonUserCode]
-		internal sealed class DebugView(AsyncLazy<T> lazy)
-		{
-			public LazyState State => lazy.GetStateForDebugger;
-
-			public Task Task
-			{
-				get
-				{
-					if (!lazy.mInstance.IsValueCreated)
-						throw new InvalidOperationException("Not yet created.");
-
-					return lazy.mInstance.Value;
-				}
-			}
-
-			public T Value
-			{
-				get
-				{
-					if (!lazy.mInstance.IsValueCreated || !lazy.mInstance.Value.IsCompleted)
-						throw new InvalidOperationException("Not yet created.");
-
-					return lazy.mInstance.Value.Result;
-				}
+				return mInstance.IsValueCreated;
 			}
 		}
 	}
 
+	/// <summary>
+	/// Starts the asynchronous factory method, if it has not already started, and returns the resulting task.
+	/// </summary>
+	public Task<T> Task
+	{
+		get
+		{
+			lock (mMutex)
+			{
+				return mInstance.Value;
+			}
+		}
+	}
+
+	private Func<Task<T>> RetryOnFailure(Func<Task<T>> factory)
+	{
+		return async () =>
+		{
+			try
+			{
+				return await factory().ConfigureAwait(false);
+			}
+			catch
+			{
+				lock (mMutex)
+				{
+					mInstance = new Lazy<Task<T>>(mFactory);
+				}
+
+				throw;
+			}
+		};
+	}
+
+	private static Func<Task<T>> RunOnThreadPool(Func<Task<T>> factory)
+	{
+		return () => System.Threading.Tasks.Task.Run(factory);
+	}
+
+	/// <summary>
+	/// Asynchronous infrastructure support.
+	/// This method permits instances of <see cref="AsyncLazy{T}"/> to be awaited.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public TaskAwaiter<T> GetAwaiter()
+	{
+		return Task.GetAwaiter();
+	}
+
+	/// <summary>
+	/// Asynchronous infrastructure support.
+	/// This method permits instances of <see cref="AsyncLazy{T}"/> to be awaited.
+	/// </summary>
+	public ConfiguredTaskAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
+	{
+		return Task.ConfigureAwait(continueOnCapturedContext);
+	}
+
+	/// <summary>
+	/// Starts the asynchronous initialization, if it has not already started.
+	/// </summary>
+	public void Start()
+	{
+		Task<T> unused = Task;
+	}
+
+	internal enum LazyState
+	{
+		NotStarted,
+		Executing,
+		Completed
+	}
+
+	[DebuggerNonUserCode]
+	internal sealed class DebugView(AsyncLazy<T> lazy)
+	{
+		public LazyState State => lazy.GetStateForDebugger;
+
+		public Task Task
+		{
+			get
+			{
+				if (!lazy.mInstance.IsValueCreated)
+					throw new InvalidOperationException("Not yet created.");
+
+				return lazy.mInstance.Value;
+			}
+		}
+
+		public T Value
+		{
+			get
+			{
+				if (!lazy.mInstance.IsValueCreated || !lazy.mInstance.Value.IsCompleted)
+					throw new InvalidOperationException("Not yet created.");
+
+				return lazy.mInstance.Value.Result;
+			}
+		}
+	}
 }

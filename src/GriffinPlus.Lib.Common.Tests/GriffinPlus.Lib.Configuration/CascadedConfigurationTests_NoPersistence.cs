@@ -3,23 +3,20 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace GriffinPlus.Lib.Configuration
+namespace GriffinPlus.Lib.Configuration;
+
+/// <summary>
+/// Tests for the <see cref="CascadedConfiguration"/> class without a persistence strategy.
+/// </summary>
+// ReSharper disable once UnusedMember.Global
+public class CascadedConfigurationTests_NoPersistence : CascadedConfigurationTests
 {
-
 	/// <summary>
-	/// Tests for the <see cref="CascadedConfiguration"/> class without a persistence strategy.
+	/// Gets the persistence strategy to test with.
 	/// </summary>
-	// ReSharper disable once UnusedMember.Global
-	public class CascadedConfigurationTests_NoPersistence : CascadedConfigurationTests
+	/// <returns>The persistence strategy to test with.</returns>
+	protected override ICascadedConfigurationPersistenceStrategy GetStrategy()
 	{
-		/// <summary>
-		/// Gets the persistence strategy to test with.
-		/// </summary>
-		/// <returns>The persistence strategy to test with.</returns>
-		protected override ICascadedConfigurationPersistenceStrategy GetStrategy()
-		{
-			return null; // no strategy
-		}
+		return null; // no strategy
 	}
-
 }

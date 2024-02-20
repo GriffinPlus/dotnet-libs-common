@@ -6,39 +6,36 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace GriffinPlus.Lib
+namespace GriffinPlus.Lib;
+
+// ReSharper disable once UnusedMember.Global
+partial class NativeBufferTests
 {
-
-	// ReSharper disable once UnusedMember.Global
-	partial class NativeBufferTests
+	public class DisposableBufferMock : SafeHandle
 	{
-		public class DisposableBufferMock : SafeHandle
+		private GCHandle mGcHandle;
+		public  byte[]   Buffer;
+		public  nint     Address;
+		public  int      Size;
+		public  bool     WasReleased;
+
+		public DisposableBufferMock(int size) : base(IntPtr.Zero, true)
 		{
-			private GCHandle mGcHandle;
-			public  byte[]   Buffer;
-			public  IntPtr   Address;
-			public  int      Size;
-			public  bool     WasReleased;
+			Buffer = new byte[size];
+			mGcHandle = GCHandle.Alloc(Buffer, GCHandleType.Pinned);
+			Address = mGcHandle.AddrOfPinnedObject();
+			Size = Buffer.Length;
+			handle = Address;
+		}
 
-			public DisposableBufferMock(int size) : base(IntPtr.Zero, true)
-			{
-				Buffer = new byte[size];
-				mGcHandle = GCHandle.Alloc(Buffer, GCHandleType.Pinned);
-				Address = mGcHandle.AddrOfPinnedObject();
-				Size = Buffer.Length;
-				handle = Address;
-			}
+		public override bool IsInvalid => WasReleased;
 
-			public override bool IsInvalid => WasReleased;
-
-			protected override bool ReleaseHandle()
-			{
-				if (WasReleased) return true;
-				mGcHandle.Free();
-				WasReleased = true;
-				return true;
-			}
+		protected override bool ReleaseHandle()
+		{
+			if (WasReleased) return true;
+			mGcHandle.Free();
+			WasReleased = true;
+			return true;
 		}
 	}
-
 }

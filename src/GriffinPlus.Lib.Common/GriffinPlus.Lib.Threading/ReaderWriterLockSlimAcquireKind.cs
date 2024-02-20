@@ -3,28 +3,25 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace GriffinPlus.Lib.Threading
+namespace GriffinPlus.Lib.Threading;
+
+/// <summary>
+/// Acquire type determining how to acquire a <see cref="System.Threading.ReaderWriterLockSlim"/>.
+/// </summary>
+public enum ReaderWriterLockSlimAcquireKind
 {
+	/// <summary>
+	/// Acquire the lock for reading only.
+	/// </summary>
+	Read,
 
 	/// <summary>
-	/// Acquire type determining how to acquire a <see cref="System.Threading.ReaderWriterLockSlim"/>.
+	/// Acquire the lock for reading with an option to upgrade to writing while holding the lock.
 	/// </summary>
-	public enum ReaderWriterLockSlimAcquireKind
-	{
-		/// <summary>
-		/// Acquire the lock for reading only.
-		/// </summary>
-		Read,
+	UpgradeableRead,
 
-		/// <summary>
-		/// Acquire the lock for reading with an option to upgrade to writing while holding the lock.
-		/// </summary>
-		UpgradeableRead,
-
-		/// <summary>
-		/// Acquire the lock for reading and writing.
-		/// </summary>
-		ReadWrite
-	}
-
+	/// <summary>
+	/// Acquire the lock for reading and writing.
+	/// </summary>
+	ReadWrite
 }

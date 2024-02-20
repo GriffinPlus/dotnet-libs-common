@@ -3,17 +3,14 @@
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace GriffinPlus.Lib
+namespace GriffinPlus.Lib;
+
+partial class DecomposedTypeTestData
 {
-
-	partial class DecomposedTypeTestData
+	public enum TestEnum
 	{
-		public enum TestEnum
-		{
-			A,
-			B,
-			C
-		}
+		A,
+		B,
+		C
 	}
-
 }

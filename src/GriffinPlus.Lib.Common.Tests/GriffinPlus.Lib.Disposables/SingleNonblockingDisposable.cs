@@ -33,61 +33,58 @@ using System.Threading.Tasks;
 
 using Xunit;
 
-namespace GriffinPlus.Lib.Disposables
+namespace GriffinPlus.Lib.Disposables;
+
+public class SingleNonblockingDisposableUnitTests
 {
-
-	public class SingleNonblockingDisposableUnitTests
+	[Fact]
+	public void ConstructedWithContext_DisposeReceivesThatContext()
 	{
-		[Fact]
-		public void ConstructedWithContext_DisposeReceivesThatContext()
-		{
-			object providedContext = new();
-			object seenContext = null;
-			var disposable = new DelegateSingleDisposable<object>(providedContext, context => { seenContext = context; });
-			disposable.Dispose();
-			Assert.Same(providedContext, seenContext);
-		}
-
-		[Fact]
-		public void DisposeOnlyCalledOnce()
-		{
-			int counter = 0;
-			var disposable = new DelegateSingleDisposable<object>(new object(), _ => { ++counter; });
-			disposable.Dispose();
-			disposable.Dispose();
-			Assert.Equal(1, counter);
-		}
-
-		[Fact]
-		public async Task DisposeIsNonblocking()
-		{
-			var ready = new ManualResetEventSlim();
-			var signal = new ManualResetEventSlim();
-			var disposable = new DelegateSingleDisposable<object>(
-				new object(),
-				_ =>
-				{
-					ready.Set();
-					signal.Wait();
-				});
-
-			Task task1 = Task.Run(() => disposable.Dispose());
-			ready.Wait();
-
-			await Task.Run(() => disposable.Dispose());
-
-			signal.Set();
-			await task1;
-		}
-
-		private sealed class DelegateSingleDisposable<T>(T context, Action<T> callback) : SingleNonBlockingDisposable<T>(context)
-			where T : class
-		{
-			protected override void Dispose(T context)
-			{
-				callback(context);
-			}
-		}
+		object providedContext = new();
+		object seenContext = null;
+		var disposable = new DelegateSingleDisposable<object>(providedContext, context => { seenContext = context; });
+		disposable.Dispose();
+		Assert.Same(providedContext, seenContext);
 	}
 
+	[Fact]
+	public void DisposeOnlyCalledOnce()
+	{
+		int counter = 0;
+		var disposable = new DelegateSingleDisposable<object>(new object(), _ => { ++counter; });
+		disposable.Dispose();
+		disposable.Dispose();
+		Assert.Equal(1, counter);
+	}
+
+	[Fact]
+	public async Task DisposeIsNonblocking()
+	{
+		var ready = new ManualResetEventSlim();
+		var signal = new ManualResetEventSlim();
+		var disposable = new DelegateSingleDisposable<object>(
+			new object(),
+			_ =>
+			{
+				ready.Set();
+				signal.Wait();
+			});
+
+		Task task1 = Task.Run(() => disposable.Dispose());
+		ready.Wait();
+
+		await Task.Run(() => disposable.Dispose());
+
+		signal.Set();
+		await task1;
+	}
+
+	private sealed class DelegateSingleDisposable<T>(T context, Action<T> callback) : SingleNonBlockingDisposable<T>(context)
+		where T : class
+	{
+		protected override void Dispose(T context)
+		{
+			callback(context);
+		}
+	}
 }

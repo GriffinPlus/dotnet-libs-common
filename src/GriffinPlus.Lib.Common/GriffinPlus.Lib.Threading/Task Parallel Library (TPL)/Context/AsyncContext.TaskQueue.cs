@@ -31,94 +31,88 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 
-namespace GriffinPlus.Lib.Threading
-{
+namespace GriffinPlus.Lib.Threading;
 
-	public sealed partial class AsyncContext
+public sealed partial class AsyncContext
+{
+	/// <summary>
+	/// A blocking queue.
+	/// </summary>
+	private sealed class TaskQueue : IDisposable
 	{
 		/// <summary>
-		/// A blocking queue.
+		/// The underlying blocking collection.
 		/// </summary>
-		private sealed class TaskQueue : IDisposable
+		private readonly BlockingCollection<Tuple<Task, bool>> mQueue;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TaskQueue"/> class.
+		/// </summary>
+		public TaskQueue()
 		{
-			/// <summary>
-			/// The underlying blocking collection.
-			/// </summary>
-			private readonly BlockingCollection<Tuple<Task, bool>> mQueue;
+			mQueue = new BlockingCollection<Tuple<Task, bool>>();
+		}
 
-			/// <summary>
-			/// Initializes a new instance of the <see cref="TaskQueue"/> class.
-			/// </summary>
-			public TaskQueue()
+		/// <summary>
+		/// Gets a blocking enumerable that removes items from the queue.
+		/// This enumerable only completes after <see cref="CompleteAdding"/> has been called.
+		/// </summary>
+		/// <returns>A blocking enumerable that removes items from the queue.</returns>
+		public IEnumerable<Tuple<Task, bool>> GetConsumingEnumerable()
+		{
+			return mQueue.GetConsumingEnumerable();
+		}
+
+		/// <summary>
+		/// Generates an enumerable of <see cref="Task"/> instances currently queued to the
+		/// scheduler waiting to be executed.
+		/// </summary>
+		/// <returns>An enumerable that allows traversal of tasks currently queued to this scheduler.</returns>
+		[DebuggerNonUserCode]
+		internal IEnumerable<Task> GetScheduledTasks()
+		{
+			return mQueue.Select(item => item.Item1);
+		}
+
+		/// <summary>
+		/// Attempts to add the item to the queue.
+		/// If the queue has been marked as complete for adding, this method returns <c>false</c>.
+		/// </summary>
+		/// <param name="item">The item to enqueue.</param>
+		/// <param name="propagateExceptions">
+		/// <c>true</c> to propagate exceptions out of the main loop;
+		/// <c>false</c> to discard exceptions.
+		/// </param>
+		public void TryAdd(Task item, bool propagateExceptions)
+		{
+			try
 			{
-				mQueue = new BlockingCollection<Tuple<Task, bool>>();
+				mQueue.TryAdd(Tuple.Create(item, propagateExceptions));
 			}
-
-			/// <summary>
-			/// Gets a blocking enumerable that removes items from the queue.
-			/// This enumerable only completes after <see cref="CompleteAdding"/> has been called.
-			/// </summary>
-			/// <returns>A blocking enumerable that removes items from the queue.</returns>
-			public IEnumerable<Tuple<Task, bool>> GetConsumingEnumerable()
+			catch (InvalidOperationException)
 			{
-				return mQueue.GetConsumingEnumerable();
-			}
-
-			/// <summary>
-			/// Generates an enumerable of <see cref="Task"/> instances currently queued to the
-			/// scheduler waiting to be executed.
-			/// </summary>
-			/// <returns>An enumerable that allows traversal of tasks currently queued to this scheduler.</returns>
-			[DebuggerNonUserCode]
-			internal IEnumerable<Task> GetScheduledTasks()
-			{
-				foreach (Tuple<Task, bool> item in mQueue)
-				{
-					yield return item.Item1;
-				}
-			}
-
-			/// <summary>
-			/// Attempts to add the item to the queue.
-			/// If the queue has been marked as complete for adding, this method returns <c>false</c>.
-			/// </summary>
-			/// <param name="item">The item to enqueue.</param>
-			/// <param name="propagateExceptions">
-			/// <c>true</c> to propagate exceptions out of the main loop;
-			/// <c>false</c> to discard exceptions.
-			/// </param>
-			public bool TryAdd(Task item, bool propagateExceptions)
-			{
-				try
-				{
-					return mQueue.TryAdd(Tuple.Create(item, propagateExceptions));
-				}
-				catch (InvalidOperationException)
-				{
-					// vexing exception
-					return false;
-				}
-			}
-
-			/// <summary>
-			/// Marks the queue as complete for adding, allowing the enumerator returned from <see cref="GetConsumingEnumerable"/>
-			/// to eventually complete. This method may be called several times.
-			/// </summary>
-			public void CompleteAdding()
-			{
-				mQueue.CompleteAdding();
-			}
-
-			/// <summary>
-			/// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-			/// </summary>
-			public void Dispose()
-			{
-				mQueue.Dispose();
+				// vexing exception
 			}
 		}
-	}
 
+		/// <summary>
+		/// Marks the queue as complete for adding, allowing the enumerator returned from <see cref="GetConsumingEnumerable"/>
+		/// to eventually complete. This method may be called several times.
+		/// </summary>
+		public void CompleteAdding()
+		{
+			mQueue.CompleteAdding();
+		}
+
+		/// <summary>
+		/// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+		/// </summary>
+		public void Dispose()
+		{
+			mQueue.Dispose();
+		}
+	}
 }

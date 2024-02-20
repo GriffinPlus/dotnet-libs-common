@@ -29,93 +29,85 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using GriffinPlus.Lib.Collections;
 
-namespace GriffinPlus.Lib.Threading
+namespace GriffinPlus.Lib.Threading;
+
+/// <summary>
+/// The default wait queue implementation, which uses a double-ended queue.
+/// </summary>
+/// <typeparam name="T">The type of the results. If this isn't needed, use <see cref="object"/>.</typeparam>
+[DebuggerDisplay("Count = {" + nameof(Count) + "}")]
+[DebuggerTypeProxy(typeof(DefaultAsyncWaitQueue<>.DebugView))]
+sealed class DefaultAsyncWaitQueue<T> : IAsyncWaitQueue<T>
 {
+	private readonly Deque<TaskCompletionSource<T>> mQueue = [];
 
-	/// <summary>
-	/// The default wait queue implementation, which uses a double-ended queue.
-	/// </summary>
-	/// <typeparam name="T">The type of the results. If this isn't needed, use <see cref="object"/>.</typeparam>
-	[DebuggerDisplay("Count = {Count}")]
-	[DebuggerTypeProxy(typeof(DefaultAsyncWaitQueue<>.DebugView))]
-	sealed class DefaultAsyncWaitQueue<T> : IAsyncWaitQueue<T>
+	private int Count => mQueue.Count;
+
+	bool IAsyncWaitQueue<T>.IsEmpty => Count == 0;
+
+	Task<T> IAsyncWaitQueue<T>.Enqueue()
 	{
-		private readonly Deque<TaskCompletionSource<T>> mQueue = [];
+		TaskCompletionSource<T> tcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<T>();
+		mQueue.AddToBack(tcs);
+		return tcs.Task;
+	}
 
-		private int Count => mQueue.Count;
+	void IAsyncWaitQueue<T>.Dequeue(T result)
+	{
+		mQueue.RemoveFromFront().TrySetResult(result);
+	}
 
-		bool IAsyncWaitQueue<T>.IsEmpty => Count == 0;
-
-		Task<T> IAsyncWaitQueue<T>.Enqueue()
+	void IAsyncWaitQueue<T>.DequeueAll(T result)
+	{
+		foreach (TaskCompletionSource<T> source in mQueue)
 		{
-			TaskCompletionSource<T> tcs = TaskCompletionSourceExtensions.CreateAsyncTaskSource<T>();
-			mQueue.AddToBack(tcs);
-			return tcs.Task;
+			source.TrySetResult(result);
 		}
 
-		void IAsyncWaitQueue<T>.Dequeue(T result)
+		mQueue.Clear();
+	}
+
+	bool IAsyncWaitQueue<T>.TryCancel(Task task, CancellationToken cancellationToken)
+	{
+		for (int i = 0; i != mQueue.Count; ++i)
 		{
-			mQueue.RemoveFromFront().TrySetResult(result);
+			if (mQueue[i].Task != task) continue;
+			mQueue[i].TrySetCanceled(cancellationToken);
+			mQueue.RemoveAt(i);
+			return true;
 		}
 
-		void IAsyncWaitQueue<T>.DequeueAll(T result)
+		return false;
+	}
+
+	void IAsyncWaitQueue<T>.CancelAll(CancellationToken cancellationToken)
+	{
+		foreach (TaskCompletionSource<T> source in mQueue)
 		{
-			foreach (TaskCompletionSource<T> source in mQueue)
+			source.TrySetCanceled(cancellationToken);
+		}
+
+		mQueue.Clear();
+	}
+
+	[DebuggerNonUserCode]
+	internal sealed class DebugView(DefaultAsyncWaitQueue<T> queue)
+	{
+		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+		public Task<T>[] Tasks
+		{
+			get
 			{
-				source.TrySetResult(result);
-			}
-
-			mQueue.Clear();
-		}
-
-		bool IAsyncWaitQueue<T>.TryCancel(Task task, CancellationToken cancellationToken)
-		{
-			for (int i = 0; i != mQueue.Count; ++i)
-			{
-				if (mQueue[i].Task == task)
-				{
-					mQueue[i].TrySetCanceled(cancellationToken);
-					mQueue.RemoveAt(i);
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		void IAsyncWaitQueue<T>.CancelAll(CancellationToken cancellationToken)
-		{
-			foreach (TaskCompletionSource<T> source in mQueue)
-			{
-				source.TrySetCanceled(cancellationToken);
-			}
-
-			mQueue.Clear();
-		}
-
-		[DebuggerNonUserCode]
-		internal sealed class DebugView(DefaultAsyncWaitQueue<T> queue)
-		{
-			[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-			public Task<T>[] Tasks
-			{
-				get
-				{
-					var result = new List<Task<T>>(queue.mQueue.Count);
-					foreach (TaskCompletionSource<T> entry in queue.mQueue)
-					{
-						result.Add(entry.Task);
-					}
-
-					return result.ToArray();
-				}
+				var result = new List<Task<T>>(queue.mQueue.Count);
+				result.AddRange(queue.mQueue.Select(entry => entry.Task));
+				return [.. result];
 			}
 		}
 	}
-
 }

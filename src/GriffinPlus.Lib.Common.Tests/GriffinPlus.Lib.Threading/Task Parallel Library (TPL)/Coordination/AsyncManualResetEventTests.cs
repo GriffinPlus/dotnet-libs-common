@@ -33,144 +33,141 @@ using GriffinPlus.Lib.Tests;
 
 using Xunit;
 
-namespace GriffinPlus.Lib.Threading
+namespace GriffinPlus.Lib.Threading;
+
+[Collection(nameof(NoParallelizationCollection))]
+public class AsyncManualResetEventTests
 {
-
-	[Collection(nameof(NoParallelizationCollection))]
-	public class AsyncManualResetEventTests
+	[Fact]
+	public Task WaitAsync_Unset_IsNotCompleted()
 	{
-		[Fact]
-		public async Task WaitAsync_Unset_IsNotCompleted()
-		{
-			var mre = new AsyncManualResetEvent();
+		var mre = new AsyncManualResetEvent();
 
-			Task task = mre.WaitAsync();
+		Task task = mre.WaitAsync();
 
-			await AsyncAssert.DoesNotCompleteAsync(task);
-		}
-
-		[Fact]
-		public async Task Wait_Unset_IsNotCompleted()
-		{
-			var mre = new AsyncManualResetEvent();
-
-			Task task = Task.Run(() => mre.Wait());
-
-			await AsyncAssert.DoesNotCompleteAsync(task);
-		}
-
-		[Fact]
-		public void WaitAsync_AfterSet_IsCompleted()
-		{
-			var mre = new AsyncManualResetEvent();
-
-			mre.Set();
-			Task task = mre.WaitAsync();
-
-			Assert.True(task.IsCompleted);
-		}
-
-		[Fact]
-		public void Wait_AfterSet_IsCompleted()
-		{
-			var mre = new AsyncManualResetEvent();
-
-			mre.Set();
-			mre.Wait();
-		}
-
-		[Fact]
-		public void WaitAsync_Set_IsCompleted()
-		{
-			var mre = new AsyncManualResetEvent(true);
-
-			Task task = mre.WaitAsync();
-
-			Assert.True(task.IsCompleted);
-		}
-
-		[Fact]
-		public void Wait_Set_IsCompleted()
-		{
-			var mre = new AsyncManualResetEvent(true);
-
-			mre.Wait();
-		}
-
-		[Fact]
-		public void MultipleWaitAsync_AfterSet_IsCompleted()
-		{
-			var mre = new AsyncManualResetEvent();
-
-			mre.Set();
-			Task task1 = mre.WaitAsync();
-			Task task2 = mre.WaitAsync();
-
-			Assert.True(task1.IsCompleted);
-			Assert.True(task2.IsCompleted);
-		}
-
-		[Fact]
-		public void MultipleWait_AfterSet_IsCompleted()
-		{
-			var mre = new AsyncManualResetEvent();
-
-			mre.Set();
-			mre.Wait();
-			mre.Wait();
-		}
-
-		[Fact]
-		public void MultipleWaitAsync_Set_IsCompleted()
-		{
-			var mre = new AsyncManualResetEvent(true);
-
-			Task task1 = mre.WaitAsync();
-			Task task2 = mre.WaitAsync();
-
-			Assert.True(task1.IsCompleted);
-			Assert.True(task2.IsCompleted);
-		}
-
-		[Fact]
-		public void MultipleWait_Set_IsCompleted()
-		{
-			var mre = new AsyncManualResetEvent(true);
-
-			mre.Wait();
-			mre.Wait();
-		}
-
-		[Fact]
-		public async Task WaitAsync_AfterReset_IsNotCompleted()
-		{
-			var mre = new AsyncManualResetEvent();
-
-			mre.Set();
-			mre.Reset();
-			Task task = mre.WaitAsync();
-
-			await AsyncAssert.DoesNotCompleteAsync(task);
-		}
-
-		[Fact]
-		public async Task Wait_AfterReset_IsNotCompleted()
-		{
-			var mre = new AsyncManualResetEvent();
-
-			mre.Set();
-			mre.Reset();
-			Task task = Task.Run(() => mre.Wait());
-
-			await AsyncAssert.DoesNotCompleteAsync(task);
-		}
-
-		[Fact]
-		public void Id_IsNotZero()
-		{
-			var mre = new AsyncManualResetEvent();
-			Assert.NotEqual(0, mre.Id);
-		}
+		return AsyncAssert.DoesNotCompleteAsync(task);
 	}
 
+	[Fact]
+	public Task Wait_Unset_IsNotCompleted()
+	{
+		var mre = new AsyncManualResetEvent();
+
+		Task task = Task.Run(() => mre.Wait());
+
+		return AsyncAssert.DoesNotCompleteAsync(task);
+	}
+
+	[Fact]
+	public void WaitAsync_AfterSet_IsCompleted()
+	{
+		var mre = new AsyncManualResetEvent();
+
+		mre.Set();
+		Task task = mre.WaitAsync();
+
+		Assert.True(task.IsCompleted);
+	}
+
+	[Fact]
+	public void Wait_AfterSet_IsCompleted()
+	{
+		var mre = new AsyncManualResetEvent();
+
+		mre.Set();
+		mre.Wait();
+	}
+
+	[Fact]
+	public void WaitAsync_Set_IsCompleted()
+	{
+		var mre = new AsyncManualResetEvent(true);
+
+		Task task = mre.WaitAsync();
+
+		Assert.True(task.IsCompleted);
+	}
+
+	[Fact]
+	public void Wait_Set_IsCompleted()
+	{
+		var mre = new AsyncManualResetEvent(true);
+
+		mre.Wait();
+	}
+
+	[Fact]
+	public void MultipleWaitAsync_AfterSet_IsCompleted()
+	{
+		var mre = new AsyncManualResetEvent();
+
+		mre.Set();
+		Task task1 = mre.WaitAsync();
+		Task task2 = mre.WaitAsync();
+
+		Assert.True(task1.IsCompleted);
+		Assert.True(task2.IsCompleted);
+	}
+
+	[Fact]
+	public void MultipleWait_AfterSet_IsCompleted()
+	{
+		var mre = new AsyncManualResetEvent();
+
+		mre.Set();
+		mre.Wait();
+		mre.Wait();
+	}
+
+	[Fact]
+	public void MultipleWaitAsync_Set_IsCompleted()
+	{
+		var mre = new AsyncManualResetEvent(true);
+
+		Task task1 = mre.WaitAsync();
+		Task task2 = mre.WaitAsync();
+
+		Assert.True(task1.IsCompleted);
+		Assert.True(task2.IsCompleted);
+	}
+
+	[Fact]
+	public void MultipleWait_Set_IsCompleted()
+	{
+		var mre = new AsyncManualResetEvent(true);
+
+		mre.Wait();
+		mre.Wait();
+	}
+
+	[Fact]
+	public Task WaitAsync_AfterReset_IsNotCompleted()
+	{
+		var mre = new AsyncManualResetEvent();
+
+		mre.Set();
+		mre.Reset();
+		Task task = mre.WaitAsync();
+
+		return AsyncAssert.DoesNotCompleteAsync(task);
+	}
+
+	[Fact]
+	public Task Wait_AfterReset_IsNotCompleted()
+	{
+		var mre = new AsyncManualResetEvent();
+
+		mre.Set();
+		mre.Reset();
+		Task task = Task.Run(() => mre.Wait());
+
+		return AsyncAssert.DoesNotCompleteAsync(task);
+	}
+
+	[Fact]
+	public void Id_IsNotZero()
+	{
+		var mre = new AsyncManualResetEvent();
+		Assert.NotEqual(0, mre.Id);
+	}
 }

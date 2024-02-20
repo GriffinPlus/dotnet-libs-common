@@ -11,30 +11,27 @@
 //   Project: https://github.com/dotnet/wpf
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace GriffinPlus.Lib.Imaging
+namespace GriffinPlus.Lib.Imaging;
+
+public partial struct Color
 {
-
-	public partial struct Color
+	private struct ColorFloat
 	{
-		private struct ColorFloat
-		{
-			public float A;
-			public float R;
-			public float G;
-			public float B;
+		public float A;
+		public float R;
+		public float G;
+		public float B;
 
-			public override int GetHashCode()
+		public override int GetHashCode()
+		{
+			unchecked
 			{
-				unchecked
-				{
-					int hashCode = A.GetHashCode();
-					hashCode = (hashCode * 397) ^ R.GetHashCode();
-					hashCode = (hashCode * 397) ^ G.GetHashCode();
-					hashCode = (hashCode * 397) ^ B.GetHashCode();
-					return hashCode;
-				}
+				int hashCode = A.GetHashCode();
+				hashCode = (hashCode * 397) ^ R.GetHashCode();
+				hashCode = (hashCode * 397) ^ G.GetHashCode();
+				hashCode = (hashCode * 397) ^ B.GetHashCode();
+				return hashCode;
 			}
 		}
 	}
-
 }

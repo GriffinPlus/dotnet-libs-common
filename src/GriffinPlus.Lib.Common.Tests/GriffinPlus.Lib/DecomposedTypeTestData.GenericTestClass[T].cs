@@ -5,17 +5,14 @@
 
 // ReSharper disable UnusedTypeParameter
 
-namespace GriffinPlus.Lib
+namespace GriffinPlus.Lib;
+
+partial class DecomposedTypeTestData
 {
-
-	partial class DecomposedTypeTestData
+	public class GenericTestClass<T>
 	{
-		public class GenericTestClass<T>
-		{
-			public class NestedTestClass;
+		public class NestedTestClass;
 
-			public class NestedGenericTestClass<T2>;
-		}
+		public class NestedGenericTestClass<T2>;
 	}
-
 }

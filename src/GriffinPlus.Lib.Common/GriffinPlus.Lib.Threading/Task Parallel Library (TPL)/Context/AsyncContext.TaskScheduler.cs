@@ -31,83 +31,80 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace GriffinPlus.Lib.Threading
-{
+namespace GriffinPlus.Lib.Threading;
 
-	public sealed partial class AsyncContext
+public sealed partial class AsyncContext
+{
+	/// <summary>
+	/// A task scheduler which schedules tasks to an async context.
+	/// </summary>
+	private sealed class AsyncContextTaskScheduler : TaskScheduler
 	{
 		/// <summary>
-		/// A task scheduler which schedules tasks to an async context.
+		/// The async context for this task scheduler.
 		/// </summary>
-		private sealed class AsyncContextTaskScheduler : TaskScheduler
+		private readonly AsyncContext mContext;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="AsyncContextTaskScheduler"/> class.
+		/// </summary>
+		/// <param name="context">The async context for this task scheduler. May not be <c>null</c>.</param>
+		public AsyncContextTaskScheduler(AsyncContext context)
 		{
-			/// <summary>
-			/// The async context for this task scheduler.
-			/// </summary>
-			private readonly AsyncContext mContext;
+			mContext = context;
+		}
 
-			/// <summary>
-			/// Initializes a new instance of the <see cref="AsyncContextTaskScheduler"/> class.
-			/// </summary>
-			/// <param name="context">The async context for this task scheduler. May not be <c>null</c>.</param>
-			public AsyncContextTaskScheduler(AsyncContext context)
-			{
-				mContext = context;
-			}
+		/// <summary>
+		/// Generates an enumerable of <see cref="Task"/> instances currently queued to the
+		/// scheduler waiting to be executed.
+		/// </summary>
+		/// <returns>An enumerable that allows traversal of tasks currently queued to this scheduler.</returns>
+		[DebuggerNonUserCode]
+		protected override IEnumerable<Task> GetScheduledTasks()
+		{
+			return mContext.mQueue.GetScheduledTasks();
+		}
 
-			/// <summary>
-			/// Generates an enumerable of <see cref="Task"/> instances currently queued to the
-			/// scheduler waiting to be executed.
-			/// </summary>
-			/// <returns>An enumerable that allows traversal of tasks currently queued to this scheduler.</returns>
-			[DebuggerNonUserCode]
-			protected override IEnumerable<Task> GetScheduledTasks()
-			{
-				return mContext.mQueue.GetScheduledTasks();
-			}
+		/// <summary>
+		/// Queues a <see cref="Task"/> to the scheduler.
+		/// If all tasks have been completed and the outstanding asynchronous operation count is zero, then this method has undefined behavior.
+		/// </summary>
+		/// <param name="task">The <see cref="System.Threading.Tasks.Task"/> to be queued.</param>
+		protected override void QueueTask(Task task)
+		{
+			mContext.Enqueue(task, false);
+		}
 
-			/// <summary>
-			/// Queues a <see cref="Task"/> to the scheduler.
-			/// If all tasks have been completed and the outstanding asynchronous operation count is zero, then this method has undefined behavior.
-			/// </summary>
-			/// <param name="task">The <see cref="System.Threading.Tasks.Task"/> to be queued.</param>
-			protected override void QueueTask(Task task)
-			{
-				mContext.Enqueue(task, false);
-			}
+		/// <summary>
+		/// Determines whether the provided <see cref="System.Threading.Tasks.Task"/> can be executed synchronously in
+		/// this call, and if it can, executes it.
+		/// </summary>
+		/// <param name="task">The <see cref="System.Threading.Tasks.Task"/> to be executed.</param>
+		/// <param name="taskWasPreviouslyQueued">
+		/// true, if the task may have been previously queued (scheduled);
+		/// false, if the task is known not to have been queued, and this call is being made in order to execute the task inline without queuing it.
+		/// </param>
+		/// <returns>
+		/// true, if the task was executed inline; otherwise false.
+		/// </returns>
+		/// <exception cref="System.InvalidOperationException">The <paramref name="task"/> was already executed.</exception>
+		protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued)
+		{
+			return AsyncContext.Current == mContext && TryExecuteTask(task);
+		}
 
-			/// <summary>
-			/// Determines whether the provided <see cref="System.Threading.Tasks.Task"/> can be executed synchronously in
-			/// this call, and if it can, executes it.
-			/// </summary>
-			/// <param name="task">The <see cref="System.Threading.Tasks.Task"/> to be executed.</param>
-			/// <param name="taskWasPreviouslyQueued">
-			/// true, if the task may have been previously queued (scheduled);
-			/// false, if the task is known not to have been queued, and this call is being made in order to execute the task inline without queuing it.
-			/// </param>
-			/// <returns>
-			/// true, if the task was executed inline; otherwise false.
-			/// </returns>
-			/// <exception cref="System.InvalidOperationException">The <paramref name="task"/> was already executed.</exception>
-			protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued)
-			{
-				return AsyncContext.Current == mContext && TryExecuteTask(task);
-			}
+		/// <summary>
+		/// Gets the maximum concurrency level this <see cref="TaskScheduler"/> is able to support.
+		/// </summary>
+		public override int MaximumConcurrencyLevel => 1;
 
-			/// <summary>
-			/// Gets the maximum concurrency level this <see cref="TaskScheduler"/> is able to support.
-			/// </summary>
-			public override int MaximumConcurrencyLevel => 1;
-
-			/// <summary>
-			/// Exposes the base <see cref="TaskScheduler.TryExecuteTask"/> method.
-			/// </summary>
-			/// <param name="task">The task to attempt to execute.</param>
-			public void DoTryExecuteTask(Task task)
-			{
-				TryExecuteTask(task);
-			}
+		/// <summary>
+		/// Exposes the base <see cref="TaskScheduler.TryExecuteTask"/> method.
+		/// </summary>
+		/// <param name="task">The task to attempt to execute.</param>
+		public void DoTryExecuteTask(Task task)
+		{
+			TryExecuteTask(task);
 		}
 	}
-
 }

@@ -30,46 +30,43 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GriffinPlus.Lib.Threading
+namespace GriffinPlus.Lib.Threading;
+
+/// <summary>
+/// Provides extension methods for wait queues.
+/// </summary>
+static class AsyncWaitQueueExtensions
 {
-
 	/// <summary>
-	/// Provides extension methods for wait queues.
+	/// Creates a new entry and queues it to this wait queue.
+	/// If the cancellation token is already canceled, this method immediately returns a canceled task without modifying the wait queue.
 	/// </summary>
-	static class AsyncWaitQueueExtensions
+	/// <param name="this">The wait queue.</param>
+	/// <param name="mutex">A synchronization object taken while cancelling the entry.</param>
+	/// <param name="token">The token used to cancel the wait.</param>
+	/// <returns>The queued task.</returns>
+	public static Task<T> Enqueue<T>(this IAsyncWaitQueue<T> @this, object mutex, CancellationToken token)
 	{
-		/// <summary>
-		/// Creates a new entry and queues it to this wait queue.
-		/// If the cancellation token is already canceled, this method immediately returns a canceled task without modifying the wait queue.
-		/// </summary>
-		/// <param name="this">The wait queue.</param>
-		/// <param name="mutex">A synchronization object taken while cancelling the entry.</param>
-		/// <param name="token">The token used to cancel the wait.</param>
-		/// <returns>The queued task.</returns>
-		public static Task<T> Enqueue<T>(this IAsyncWaitQueue<T> @this, object mutex, CancellationToken token)
-		{
-			if (token.IsCancellationRequested)
-				return Task.FromCanceled<T>(token);
+		if (token.IsCancellationRequested)
+			return Task.FromCanceled<T>(token);
 
-			Task<T> task = @this.Enqueue();
-			if (!token.CanBeCanceled)
-				return task;
-
-			CancellationTokenRegistration registration = token.Register(
-				() =>
-				{
-					lock (mutex) @this.TryCancel(task, token);
-				},
-				useSynchronizationContext: false);
-
-			task.ContinueWith(
-				_ => registration.Dispose(),
-				CancellationToken.None,
-				TaskContinuationOptions.ExecuteSynchronously,
-				TaskScheduler.Default);
-
+		Task<T> task = @this.Enqueue();
+		if (!token.CanBeCanceled)
 			return task;
-		}
-	}
 
+		CancellationTokenRegistration registration = token.Register(
+			() =>
+			{
+				lock (mutex) @this.TryCancel(task, token);
+			},
+			false);
+
+		task.ContinueWith(
+			_ => registration.Dispose(),
+			CancellationToken.None,
+			TaskContinuationOptions.ExecuteSynchronously,
+			TaskScheduler.Default);
+
+		return task;
+	}
 }

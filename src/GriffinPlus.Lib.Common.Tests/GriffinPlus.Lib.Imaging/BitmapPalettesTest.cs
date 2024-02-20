@@ -5,28 +5,32 @@
 
 using Xunit;
 
-namespace GriffinPlus.Lib.Imaging
-{
+namespace GriffinPlus.Lib.Imaging;
 
+/// <summary>
+/// Unit tests targeting the <see cref="BitmapPalettes"/> class.
+/// </summary>
+public class BitmapPalettesTests
+{
 	/// <summary>
-	/// Unit tests targeting the <see cref="BitmapPalettes"/> class.
+	/// Tests getting the <see cref="BitmapPalettes.BlackAndWhite"/> property.
 	/// </summary>
-	public class BitmapPalettesTests
+	[Fact]
+	public void BlackAndWhite()
 	{
-		/// <summary>
-		/// Tests getting the <see cref="BitmapPalettes.BlackAndWhite"/> property.
-		/// </summary>
-		[Fact]
-		public void BlackAndWhite() => CheckPalette(
+		CheckPalette(
 			BitmapPalettes.BlackAndWhite,
 			Color.FromUInt32(0x00000000u),
 			Color.FromUInt32(0x00FFFFFFu));
+	}
 
-		/// <summary>
-		/// Tests getting the <see cref="BitmapPalettes.Halftone8"/> property.
-		/// </summary>
-		[Fact]
-		public void Halftone8() => CheckPalette(
+	/// <summary>
+	/// Tests getting the <see cref="BitmapPalettes.Halftone8"/> property.
+	/// </summary>
+	[Fact]
+	public void Halftone8()
+	{
+		CheckPalette(
 			BitmapPalettes.Halftone8,
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF0000FFu),
@@ -44,12 +48,15 @@ namespace GriffinPlus.Lib.Imaging
 			Color.FromUInt32(0xFF808000u),
 			Color.FromUInt32(0xFF800080u),
 			Color.FromUInt32(0xFF008080u));
+	}
 
-		/// <summary>
-		/// Tests getting the <see cref="BitmapPalettes.Halftone27"/> property.
-		/// </summary>
-		[Fact]
-		public void Halftone27() => CheckPalette(
+	/// <summary>
+	/// Tests getting the <see cref="BitmapPalettes.Halftone27"/> property.
+	/// </summary>
+	[Fact]
+	public void Halftone27()
+	{
+		CheckPalette(
 			BitmapPalettes.Halftone27,
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF000080u),
@@ -79,12 +86,15 @@ namespace GriffinPlus.Lib.Imaging
 			Color.FromUInt32(0xFFFFFF80u),
 			Color.FromUInt32(0xFFFFFFFFu),
 			Color.FromUInt32(0xFFC0C0C0u));
+	}
 
-		/// <summary>
-		/// Tests getting the <see cref="BitmapPalettes.Halftone64"/> property.
-		/// </summary>
-		[Fact]
-		public void Halftone64() => CheckPalette(
+	/// <summary>
+	/// Tests getting the <see cref="BitmapPalettes.Halftone64"/> property.
+	/// </summary>
+	[Fact]
+	public void Halftone64()
+	{
+		CheckPalette(
 			BitmapPalettes.Halftone64,
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF000055u),
@@ -158,12 +168,15 @@ namespace GriffinPlus.Lib.Imaging
 			Color.FromUInt32(0xFF808000u),
 			Color.FromUInt32(0xFF800080u),
 			Color.FromUInt32(0xFF008080u));
+	}
 
-		/// <summary>
-		/// Tests getting the <see cref="BitmapPalettes.Halftone125"/> property.
-		/// </summary>
-		[Fact]
-		public void Halftone125() => CheckPalette(
+	/// <summary>
+	/// Tests getting the <see cref="BitmapPalettes.Halftone125"/> property.
+	/// </summary>
+	[Fact]
+	public void Halftone125()
+	{
+		CheckPalette(
 			BitmapPalettes.Halftone125,
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF000040u),
@@ -291,12 +304,15 @@ namespace GriffinPlus.Lib.Imaging
 			Color.FromUInt32(0xFFFFFFBFu),
 			Color.FromUInt32(0xFFFFFFFFu),
 			Color.FromUInt32(0xFFC0C0C0u));
+	}
 
-		/// <summary>
-		/// Tests getting the <see cref="BitmapPalettes.Halftone216"/> property.
-		/// </summary>
-		[Fact]
-		public void Halftone216() => CheckPalette(
+	/// <summary>
+	/// Tests getting the <see cref="BitmapPalettes.Halftone216"/> property.
+	/// </summary>
+	[Fact]
+	public void Halftone216()
+	{
+		CheckPalette(
 			BitmapPalettes.Halftone216,
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF000033u),
@@ -522,12 +538,15 @@ namespace GriffinPlus.Lib.Imaging
 			Color.FromUInt32(0xFF808000u),
 			Color.FromUInt32(0xFF800080u),
 			Color.FromUInt32(0xFF008080u));
+	}
 
-		/// <summary>
-		/// Tests getting the <see cref="BitmapPalettes.Halftone252"/> property.
-		/// </summary>
-		[Fact]
-		public void Halftone252() => CheckPalette(
+	/// <summary>
+	/// Tests getting the <see cref="BitmapPalettes.Halftone252"/> property.
+	/// </summary>
+	[Fact]
+	public void Halftone252()
+	{
+		CheckPalette(
 			BitmapPalettes.Halftone252,
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF000033u),
@@ -781,12 +800,15 @@ namespace GriffinPlus.Lib.Imaging
 			Color.FromUInt32(0xFFFFFF99u),
 			Color.FromUInt32(0xFFFFFFCCu),
 			Color.FromUInt32(0xFFFFFFFFu));
+	}
 
-		/// <summary>
-		/// Tests getting the <see cref="BitmapPalettes.Halftone256"/> property.
-		/// </summary>
-		[Fact]
-		public void Halftone256() => CheckPalette(
+	/// <summary>
+	/// Tests getting the <see cref="BitmapPalettes.Halftone256"/> property.
+	/// </summary>
+	[Fact]
+	public void Halftone256()
+	{
+		CheckPalette(
 			BitmapPalettes.Halftone256,
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF000055u),
@@ -1044,23 +1066,29 @@ namespace GriffinPlus.Lib.Imaging
 			Color.FromUInt32(0xFFFFFF55u),
 			Color.FromUInt32(0xFFFFFFAAu),
 			Color.FromUInt32(0xFFFFFFFFu));
+	}
 
-		/// <summary>
-		/// Tests getting the <see cref="BitmapPalettes.Gray4"/> property.
-		/// </summary>
-		[Fact]
-		public void Gray4() => CheckPalette(
+	/// <summary>
+	/// Tests getting the <see cref="BitmapPalettes.Gray4"/> property.
+	/// </summary>
+	[Fact]
+	public void Gray4()
+	{
+		CheckPalette(
 			BitmapPalettes.Gray4,
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF555555u),
 			Color.FromUInt32(0xFFAAAAAAu),
 			Color.FromUInt32(0xFFFFFFFFu));
+	}
 
-		/// <summary>
-		/// Tests getting the <see cref="BitmapPalettes.Gray16"/> property.
-		/// </summary>
-		[Fact]
-		public void Gray16() => CheckPalette(
+	/// <summary>
+	/// Tests getting the <see cref="BitmapPalettes.Gray16"/> property.
+	/// </summary>
+	[Fact]
+	public void Gray16()
+	{
+		CheckPalette(
 			BitmapPalettes.Gray16,
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF111111u),
@@ -1078,13 +1106,16 @@ namespace GriffinPlus.Lib.Imaging
 			Color.FromUInt32(0xFFDDDDDDu),
 			Color.FromUInt32(0xFFEEEEEEu),
 			Color.FromUInt32(0xFFFFFFFFu));
+	}
 
 
-		/// <summary>
-		/// Tests getting the <see cref="BitmapPalettes.Gray256"/> property.
-		/// </summary>
-		[Fact]
-		public void Gray256() => CheckPalette(
+	/// <summary>
+	/// Tests getting the <see cref="BitmapPalettes.Gray256"/> property.
+	/// </summary>
+	[Fact]
+	public void Gray256()
+	{
+		CheckPalette(
 			BitmapPalettes.Gray256,
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF010101u),
@@ -1342,12 +1373,15 @@ namespace GriffinPlus.Lib.Imaging
 			Color.FromUInt32(0xFFFDFDFDu),
 			Color.FromUInt32(0xFFFEFEFEu),
 			Color.FromUInt32(0xFFFFFFFFu));
+	}
 
-		/// <summary>
-		/// Tests getting the <see cref="BitmapPalettes.WebPalette"/> property.
-		/// </summary>
-		[Fact]
-		public void WebPalette() => CheckPalette(
+	/// <summary>
+	/// Tests getting the <see cref="BitmapPalettes.WebPalette"/> property.
+	/// </summary>
+	[Fact]
+	public void WebPalette()
+	{
+		CheckPalette(
 			BitmapPalettes.WebPalette,
 			Color.FromUInt32(0xFF000000u),
 			Color.FromUInt32(0xFF000033u),
@@ -1573,16 +1607,15 @@ namespace GriffinPlus.Lib.Imaging
 			Color.FromUInt32(0xFF808000u),
 			Color.FromUInt32(0xFF800080u),
 			Color.FromUInt32(0xFF008080u));
-
-		/// <summary>
-		/// Checks whether the specified <see cref="BitmapPalette"/> instance reflects the bitmap palette appropriately.
-		/// </summary>
-		/// <param name="palette"><see cref="BitmapPalette"/> instance to check.</param>
-		/// <param name="colors">Colors expected in the palette.</param>
-		private static void CheckPalette(BitmapPalette palette, params Color[] colors)
-		{
-			Assert.Equal(colors, palette.Colors);
-		}
 	}
 
+	/// <summary>
+	/// Checks whether the specified <see cref="BitmapPalette"/> instance reflects the bitmap palette appropriately.
+	/// </summary>
+	/// <param name="palette"><see cref="BitmapPalette"/> instance to check.</param>
+	/// <param name="colors">Colors expected in the palette.</param>
+	private static void CheckPalette(BitmapPalette palette, params Color[] colors)
+	{
+		Assert.Equal(colors, palette.Colors);
+	}
 }

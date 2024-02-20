@@ -30,74 +30,64 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
-namespace GriffinPlus.Lib.Collections
+namespace GriffinPlus.Lib.Collections;
+
+/// <summary>
+/// Common helpers for custom collections.
+/// </summary>
+public static class CollectionHelpers
 {
-
 	/// <summary>
-	/// Common helpers for custom collections.
+	/// Reifies the specified enumerable as a collection.
 	/// </summary>
-	public static class CollectionHelpers
+	/// <typeparam name="T">Item type.</typeparam>
+	/// <param name="source">Enumerable to reify as a collection.</param>
+	/// <returns>A read-only collection containing the same elements as the specified enumerable.</returns>
+	public static IReadOnlyCollection<T> ReifyCollection<T>(IEnumerable<T> source)
 	{
-		/// <summary>
-		/// Reifies the specified enumerable as a collection.
-		/// </summary>
-		/// <typeparam name="T">Item type.</typeparam>
-		/// <param name="source">Enumerable to reify as a collection.</param>
-		/// <returns>A read-only collection containing the same elements as the specified enumerable.</returns>
-		public static IReadOnlyCollection<T> ReifyCollection<T>(IEnumerable<T> source)
+		return source switch
 		{
-			if (source == null)
-				throw new ArgumentNullException(nameof(source));
+			null                             => throw new ArgumentNullException(nameof(source)),
+			IReadOnlyCollection<T> result    => result,
+			ICollection<T> collection        => new CollectionWrapper<T>(collection),
+			ICollection nonGenericCollection => new NonGenericCollectionWrapper<T>(nonGenericCollection),
+			var _                            => new List<T>(source)
+		};
+	}
 
-			if (source is IReadOnlyCollection<T> result)
-				return result;
+	private sealed class NonGenericCollectionWrapper<T>(ICollection collection) : IReadOnlyCollection<T>
+	{
+		private readonly ICollection mCollection = collection ?? throw new ArgumentNullException(nameof(collection));
 
-			if (source is ICollection<T> collection)
-				return new CollectionWrapper<T>(collection);
+		public int Count => mCollection.Count;
 
-			if (source is ICollection nonGenericCollection)
-				return new NonGenericCollectionWrapper<T>(nonGenericCollection);
-
-			return new List<T>(source);
+		public IEnumerator<T> GetEnumerator()
+		{
+			return mCollection.Cast<T>().GetEnumerator();
 		}
 
-		private sealed class NonGenericCollectionWrapper<T>(ICollection collection) : IReadOnlyCollection<T>
+		IEnumerator IEnumerable.GetEnumerator()
 		{
-			private readonly ICollection mCollection = collection ?? throw new ArgumentNullException(nameof(collection));
-
-			public int Count => mCollection.Count;
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				foreach (T item in mCollection)
-				{
-					yield return item;
-				}
-			}
-
-			IEnumerator IEnumerable.GetEnumerator()
-			{
-				return mCollection.GetEnumerator();
-			}
-		}
-
-		private sealed class CollectionWrapper<T>(ICollection<T> collection) : IReadOnlyCollection<T>
-		{
-			private readonly ICollection<T> mCollection = collection ?? throw new ArgumentNullException(nameof(collection));
-
-			public int Count => mCollection.Count;
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				return mCollection.GetEnumerator();
-			}
-
-			IEnumerator IEnumerable.GetEnumerator()
-			{
-				return mCollection.GetEnumerator();
-			}
+			return mCollection.GetEnumerator();
 		}
 	}
 
+	private sealed class CollectionWrapper<T>(ICollection<T> collection) : IReadOnlyCollection<T>
+	{
+		private readonly ICollection<T> mCollection = collection ?? throw new ArgumentNullException(nameof(collection));
+
+		public int Count => mCollection.Count;
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			return mCollection.GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return mCollection.GetEnumerator();
+		}
+	}
 }

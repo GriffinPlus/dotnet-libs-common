@@ -5,16 +5,13 @@
 
 using System;
 
-namespace GriffinPlus.Lib.Conversion
-{
+namespace GriffinPlus.Lib.Conversion;
 
-	/// <summary>
-	/// Delegate for functions converting a string to an object of a specific type.
-	/// </summary>
-	/// <typeparam name="T">Type of the object the function converts the string to.</typeparam>
-	/// <param name="s">String to parse.</param>
-	/// <param name="provider">Format provider to use.</param>
-	/// <returns>The created object built from the specified string.</returns>
-	public delegate T StringToObjectConversionDelegate<out T>(string s, IFormatProvider provider = null);
-
-}
+/// <summary>
+/// Delegate for functions converting a string to an object of a specific type.
+/// </summary>
+/// <typeparam name="T">Type of the object the function converts the string to.</typeparam>
+/// <param name="s">String to parse.</param>
+/// <param name="provider">Format provider to use.</param>
+/// <returns>The created object built from the specified string.</returns>
+public delegate T StringToObjectConversionDelegate<out T>(string s, IFormatProvider provider = null);

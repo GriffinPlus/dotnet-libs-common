@@ -31,18 +31,15 @@ using System.Threading;
 
 using Xunit;
 
-namespace GriffinPlus.Lib.Threading
+namespace GriffinPlus.Lib.Threading;
+
+public class CancellationTokenTaskSourceTests
 {
-
-	public class CancellationTokenTaskSourceTests
+	[Fact]
+	public void Constructor_AlreadyCanceledToken_TaskReturnsSynchronouslyCanceledTask()
 	{
-		[Fact]
-		public void Constructor_AlreadyCanceledToken_TaskReturnsSynchronouslyCanceledTask()
-		{
-			var token = new CancellationToken(true);
-			using var source = new CancellationTokenTaskSource<object>(token);
-			Assert.True(source.Task.IsCanceled);
-		}
+		var token = new CancellationToken(true);
+		using var source = new CancellationTokenTaskSource<object>(token);
+		Assert.True(source.Task.IsCanceled);
 	}
-
 }

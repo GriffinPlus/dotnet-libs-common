@@ -5,15 +5,12 @@
 
 using System;
 
-namespace GriffinPlus.Lib
-{
+namespace GriffinPlus.Lib;
 
-	/// <summary>
-	/// Indicates that the annotated type is immutable.
-	/// The attribute is evaluated by the <see cref="Immutability"/> class when determining whether a type is immutable.
-	/// The attribute is not inherited, so derived classes must be declared immutable as well, if appropriate.
-	/// </summary>
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
-	public sealed class ImmutableAttribute : Attribute;
-
-}
+/// <summary>
+/// Indicates that the annotated type is immutable.
+/// The attribute is evaluated by the <see cref="Immutability"/> class when determining whether a type is immutable.
+/// The attribute is not inherited, so derived classes must be declared immutable as well, if appropriate.
+/// </summary>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
+public sealed class ImmutableAttribute : Attribute;

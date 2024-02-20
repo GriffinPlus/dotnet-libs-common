@@ -5,12 +5,9 @@
 
 using System;
 
-namespace GriffinPlus.Lib.Events
+namespace GriffinPlus.Lib.Events;
+
+public class EventManagerEventArgs(string myString) : EventArgs
 {
-
-	public class EventManagerEventArgs(string myString) : EventArgs
-	{
-		public string MyString { get; } = myString;
-	}
-
+	public string MyString { get; } = myString;
 }

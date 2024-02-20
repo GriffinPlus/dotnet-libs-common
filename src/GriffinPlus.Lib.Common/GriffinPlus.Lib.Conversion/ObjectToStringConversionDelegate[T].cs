@@ -5,15 +5,12 @@
 
 using System;
 
-namespace GriffinPlus.Lib.Conversion
-{
+namespace GriffinPlus.Lib.Conversion;
 
-	/// <summary>
-	/// Delegate for functions converting an object to its string representation.
-	/// </summary>
-	/// <param name="obj">Object to convert to a string.</param>
-	/// <param name="provider">Format provider to use.</param>
-	/// <returns>The object in its string representation.</returns>
-	public delegate string ObjectToStringConversionDelegate<in T>(T obj, IFormatProvider provider = null);
-
-}
+/// <summary>
+/// Delegate for functions converting an object to its string representation.
+/// </summary>
+/// <param name="obj">Object to convert to a string.</param>
+/// <param name="provider">Format provider to use.</param>
+/// <returns>The object in its string representation.</returns>
+public delegate string ObjectToStringConversionDelegate<in T>(T obj, IFormatProvider provider = null);
