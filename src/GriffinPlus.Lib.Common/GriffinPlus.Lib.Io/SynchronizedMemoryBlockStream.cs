@@ -476,7 +476,7 @@ public sealed class SynchronizedMemoryBlockStream : Stream, IMemoryBlockStream
 	public
 #if NETSTANDARD2_0 || NET461 || NET48
 #elif NETSTANDARD2_1 || NET5_0 || NET6_0 || NET7_0 || NET8_0
-	override
+		override
 #else
 #error Unhandled target framework.
 #endif
@@ -648,7 +648,7 @@ public sealed class SynchronizedMemoryBlockStream : Stream, IMemoryBlockStream
 	public
 #if NETSTANDARD2_0 || NET461 || NET48
 #elif NETSTANDARD2_1 || NET5_0 || NET6_0 || NET7_0 || NET8_0
-	override
+		override
 #else
 #error Unhandled target framework.
 #endif
