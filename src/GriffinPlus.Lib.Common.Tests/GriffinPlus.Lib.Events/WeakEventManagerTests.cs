@@ -4,7 +4,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +15,7 @@ using Xunit;
 namespace GriffinPlus.Lib.Events;
 
 /// <summary>
-/// Unit tests targeting the <see cref="WeakEventManager{T}"/> class.
+/// Unit tests targeting the <see cref="WeakEventManager{TEventArgs}"/> class.
 /// </summary>
 [Collection(nameof(NoParallelizationCollection))]
 public class WeakEventManagerTests : IDisposable
@@ -81,7 +80,7 @@ public class WeakEventManagerTests : IDisposable
 		else
 		{
 			// handler is called synchronously
-			Assert.NotNull(recipient.SynchronizationContext);
+			Assert.True(recipient.HandlerCalledEvent.IsSet, "Handler was not invoked directly");
 			Assert.Same(SynchronizationContext.Current, recipient.SynchronizationContext);
 		}
 
@@ -144,7 +143,7 @@ public class WeakEventManagerTests : IDisposable
 			Assert.Equal(1, regCount);
 
 			// handler is called synchronously
-			Assert.NotNull(recipient.SynchronizationContext);
+			Assert.True(recipient.HandlerCalledEvent.IsSet, "Handler was not invoked directly");
 			Assert.Same(SynchronizationContext.Current, recipient.SynchronizationContext);
 		}
 
@@ -378,7 +377,6 @@ public class WeakEventManagerTests : IDisposable
 	[InlineData(false, true)]
 	[InlineData(true, false)]
 	[InlineData(true, true)]
-	[SuppressMessage("ReSharper", "RedundantAssignment")]
 	public async Task GetEventCallers_WithSynchronizationContext(bool scheduleAlways, bool fireOnSameThread)
 	{
 		var recipient1 = new EventManagerEventArgsRecipient();

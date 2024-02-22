@@ -11,71 +11,20 @@ using System.Threading.Tasks;
 
 // ReSharper disable ForCanBeConvertedToForeach
 // ReSharper disable LoopCanBeConvertedToQuery
+// ReSharper disable StaticMemberInGenericType
 
 namespace GriffinPlus.Lib.Events;
 
 /// <summary>
-/// Event manager that administrates weak event handlers in a central place (for <see cref="EventHandler{TEventArgs}"/>).<br/>
+/// Event manager that administrates weak event handlers in a central place (for events using <see cref="EventHandler{TEventArgs}"/>).<br/>
 /// Objects firing events do not need to implement own event add/remove logic, especially when it comes to firing events
 /// in the context of the thread that registered an event handler.
 /// </summary>
 /// <typeparam name="TEventArgs">Type of the event arguments of the event.</typeparam>
-public static class WeakEventManager<TEventArgs> where TEventArgs : EventArgs
+public static partial class WeakEventManager<TEventArgs> where TEventArgs : EventArgs
 {
-	#region Internal Data Types
-
-	/// <summary>
-	/// Result values indicating whether a handler has matched.
-	/// </summary>
-	private enum ItemMatchResult
-	{
-		Match,
-		NoMatch,
-		Collected
-	}
-
-	/// <summary>
-	/// A weak event handler item in the event manager.
-	/// </summary>
-	private readonly struct Item(SynchronizationContext context, EventHandler<TEventArgs> handler, bool scheduleAlways)
-	{
-		public readonly  SynchronizationContext       SynchronizationContext = context;
-		public readonly  bool                         ScheduleAlways         = scheduleAlways;
-		private readonly WeakEventHandler<TEventArgs> mHandler               = new(handler);
-
-		public ItemMatchResult IsHandler(EventHandler<TEventArgs> handler)
-		{
-			if (mHandler.Method != handler.Method)
-			{
-				return ItemMatchResult.NoMatch;
-			}
-
-			if (mHandler.Target == null)
-				return ItemMatchResult.Match;
-
-			object target = mHandler.Target.Target;
-			if (target == null) return ItemMatchResult.Collected;
-			return ReferenceEquals(target, handler.Target) ? ItemMatchResult.Match : ItemMatchResult.NoMatch;
-		}
-
-		public bool IsValid => mHandler.IsValid;
-
-		public bool Fire(object sender, TEventArgs e)
-		{
-			return mHandler.Invoke(sender, e);
-		}
-	}
-
-	#endregion
-
-	#region Class Variables
-
 	private static readonly ConditionalWeakTable<object, Dictionary<string, Item[]>> sItemsByObject = new();
-
-	// ReSharper disable once StaticMemberInGenericType
-	private static readonly object sSync = new();
-
-	#endregion
+	private static readonly object                                                   sSync          = new();
 
 	/// <summary>
 	/// Registers an event handler for an event associated with the specified object.
@@ -90,7 +39,7 @@ public static class WeakEventManager<TEventArgs> where TEventArgs : EventArgs
 	/// <c>false</c> to schedule the event handler in the specified context only, if the thread firing the event has some other synchronization context.<br/>
 	/// If <paramref name="context"/> is <c>null</c>:<br/>
 	/// <c>true</c> to always schedule the event handler in a worker thread,<br/>
-	/// <c>false</c> to invoke the event handler in the thread that is firing the event (direct call).<br/>
+	/// <c>false</c> to invoke the event handler in the thread that is firing the event (direct call).
 	/// </param>
 	/// <returns>Total number of registered event handlers (including the specified event handler).</returns>
 	public static int RegisterEventHandler(
@@ -100,7 +49,15 @@ public static class WeakEventManager<TEventArgs> where TEventArgs : EventArgs
 		SynchronizationContext   context,
 		bool                     scheduleAlways)
 	{
-		return RegisterEventHandler(obj, eventName, handler, context, scheduleAlways, false, null, null);
+		return RegisterEventHandler(
+			obj,
+			eventName,
+			handler,
+			context,
+			scheduleAlways,
+			false,
+			null,
+			default);
 	}
 
 	/// <summary>
@@ -119,14 +76,14 @@ public static class WeakEventManager<TEventArgs> where TEventArgs : EventArgs
 	/// <c>false</c> to schedule the event handler in the specified context only, if the thread firing the event has some other synchronization context.<br/>
 	/// If <paramref name="context"/> is <c>null</c>:<br/>
 	/// <c>true</c> to always schedule the event handler in a worker thread,<br/>
-	/// <c>false</c> to invoke the event handler in the thread that is firing the event (direct call).<br/>
+	/// <c>false</c> to invoke the event handler in the thread that is firing the event (direct call).
 	/// </param>
 	/// <param name="fireImmediately">
 	/// <c>true</c> to register and fire the event handler immediately after registration;<br/>
 	/// <c>false</c> to register the event handler only.
 	/// </param>
 	/// <param name="sender">Sender object to pass to the event handler that is fired immediately.</param>
-	/// <param name="e">Event arguments to pass to the event handler that is fired immediately.</param>
+	/// <param name="e">Event argument to pass to the event handler that is fired immediately.</param>
 	/// <returns>Total number of registered event handlers (including the specified event handler).</returns>
 	public static int RegisterEventHandler(
 		object                   obj,
@@ -198,11 +155,12 @@ public static class WeakEventManager<TEventArgs> where TEventArgs : EventArgs
 
 		lock (sSync)
 		{
-			if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName) || !itemsByName!.TryGetValue(eventName, out Item[] items))
-				return -1; // specified event handler was not registered
+			// abort if specified event handler was not registered
+			if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName)) return -1;
+			if (!itemsByName!.TryGetValue(eventName, out Item[] items)) return -1;
 
 			// remove specified handler from the handler list and tidy up handlers of collected objects as well
-			var newItems = new List<Item>();
+			List<Item> newItems = null;
 			bool removed = false;
 			for (int i = 0; i < items.Length; i++)
 			{
@@ -215,6 +173,7 @@ public static class WeakEventManager<TEventArgs> where TEventArgs : EventArgs
 						break;
 
 					case ItemMatchResult.NoMatch:
+						newItems ??= new List<Item>(items.Length - i);
 						newItems.Add(item);
 						break;
 
@@ -227,16 +186,17 @@ public static class WeakEventManager<TEventArgs> where TEventArgs : EventArgs
 			}
 
 			// exchange handler list
-			if (newItems.Count == 0)
+			if (newItems != null)
+			{
+				if (newItems.Count == items.Length) return -1;
+				itemsByName[eventName] = [.. newItems];
+				if (removed) return newItems.Count;
+			}
+			else
 			{
 				itemsByName.Remove(eventName);
 				if (itemsByName.Count == 0) sItemsByObject.Remove(obj);
 				if (removed) return 0;
-			}
-			else if (newItems.Count != items.Length)
-			{
-				itemsByName[eventName] = [.. newItems];
-				if (removed) return newItems.Count;
 			}
 
 			// handler was not removed
@@ -262,8 +222,8 @@ public static class WeakEventManager<TEventArgs> where TEventArgs : EventArgs
 				return sItemsByObject.Remove(obj);
 
 			// abort, if there is no event handler attached to the specified event
-			if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName) || !itemsByName!.TryGetValue(eventName, out Item[] _))
-				return false;
+			if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName)) return false;
+			if (!itemsByName!.TryGetValue(eventName, out Item[] _)) return false;
 
 			// remove all handlers attached to the specified event
 			bool removed = itemsByName.Remove(eventName);
@@ -285,38 +245,21 @@ public static class WeakEventManager<TEventArgs> where TEventArgs : EventArgs
 	{
 		lock (sSync)
 		{
-			if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName) || !itemsByName!.TryGetValue(eventName, out Item[] items))
-				return false;
+			if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName)) return false;
+			if (!itemsByName!.TryGetValue(eventName, out Item[] items)) return false;
 
-			bool valid = true;
+			bool registered = false;
+			bool needsCleanup = false;
 			for (int i = 0; i < items.Length; i++)
 			{
-				if (items[i].IsValid) continue;
-				valid = false;
-				break;
+				if (items[i].IsValid) registered = true;
+				else needsCleanup = true;
 			}
 
-			if (valid)
-				return true;
+			if (needsCleanup)
+				Cleanup(obj, eventName);
 
-			// get handlers of vivid objects
-			var newItems = new List<Item>();
-			for (int i = 0; i < items.Length; i++)
-			{
-				if (items[i].IsValid) newItems.Add(items[i]);
-			}
-
-			// exchange handler list
-			if (newItems.Count == 0)
-			{
-				itemsByName.Remove(eventName);
-				if (itemsByName.Count == 0) sItemsByObject.Remove(obj);
-				return false;
-			}
-
-			itemsByName[eventName] = [.. newItems];
-
-			return true;
+			return registered;
 		}
 	}
 
@@ -332,14 +275,13 @@ public static class WeakEventManager<TEventArgs> where TEventArgs : EventArgs
 	/// </returns>
 	public static bool IsHandlerRegistered(object obj, string eventName, EventHandler<TEventArgs> handler)
 	{
-		bool registered = false;
-
 		lock (sSync)
 		{
-			if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName) || !itemsByName!.TryGetValue(eventName, out Item[] items))
-				return false;
+			if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName)) return false;
+			if (!itemsByName!.TryGetValue(eventName, out Item[] items)) return false;
 
-			bool valid = true;
+			bool registered = false;
+			bool needsCleanup = false;
 			for (int i = 0; i < items.Length; i++)
 			{
 				ItemMatchResult match = items[i].IsHandler(handler);
@@ -350,7 +292,7 @@ public static class WeakEventManager<TEventArgs> where TEventArgs : EventArgs
 						break;
 
 					case ItemMatchResult.Collected:
-						valid = false;
+						needsCleanup = true;
 						break;
 
 					case ItemMatchResult.NoMatch:
@@ -361,29 +303,11 @@ public static class WeakEventManager<TEventArgs> where TEventArgs : EventArgs
 				}
 			}
 
-			if (valid)
-				return registered;
+			if (needsCleanup)
+				Cleanup(obj, eventName);
 
-			// get handlers of vivid objects
-			var newItems = new List<Item>();
-			for (int i = 0; i < items.Length; i++)
-			{
-				if (items[i].IsValid)
-					newItems.Add(items[i]);
-			}
-
-			// exchange handler list
-			if (newItems.Count == 0)
-			{
-				itemsByName.Remove(eventName);
-				if (itemsByName.Count == 0) sItemsByObject.Remove(obj);
-				return false;
-			}
-
-			itemsByName[eventName] = [.. newItems];
+			return registered;
 		}
-
-		return registered;
 	}
 
 	/// <summary>
@@ -496,6 +420,40 @@ public static class WeakEventManager<TEventArgs> where TEventArgs : EventArgs
 	}
 
 	/// <summary>
+	/// Removes event handlers of collected objects.
+	/// </summary>
+	/// <param name="obj">Object the event is associated with.</param>
+	/// <param name="eventName">Name of the event.</param>
+	private static void Cleanup(object obj, string eventName)
+	{
+		// get event management information
+		if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName)) return;
+		if (!itemsByName!.TryGetValue(eventName, out Item[] items)) return;
+
+		// get handlers of vivid objects
+		List<Item> newItems = null;
+		for (int i = 0; i < items.Length; i++)
+		{
+			Item item = items[i];
+			if (!item.IsValid) continue;
+			newItems ??= new List<Item>(items.Length - i);
+			newItems.Add(item);
+		}
+
+		// handle that no vivid objects are left
+		if (newItems == null)
+		{
+			itemsByName.Remove(eventName);
+			if (itemsByName.Count == 0) sItemsByObject.Remove(obj);
+			return;
+		}
+
+		// there is at least one vivid object left
+		// => update handler list
+		itemsByName[eventName] = [.. newItems];
+	}
+
+	/// <summary>
 	/// Checks whether registered event handlers are still valid, removes invalid handlers and returns the cleaned up handler items.
 	/// </summary>
 	/// <param name="obj">Object providing the event.</param>
@@ -506,6 +464,7 @@ public static class WeakEventManager<TEventArgs> where TEventArgs : EventArgs
 	/// </returns>
 	private static Item[] CleanupAndGetHandlers(object obj, string eventName)
 	{
+		// get event management information
 		if (!sItemsByObject.TryGetValue(obj, out Dictionary<string, Item[]> itemsByName)) return null;
 		if (!itemsByName!.TryGetValue(eventName, out Item[] items)) return null;
 
