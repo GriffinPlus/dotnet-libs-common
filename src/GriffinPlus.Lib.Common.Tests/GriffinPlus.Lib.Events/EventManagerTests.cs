@@ -82,7 +82,7 @@ public class EventManagerTests : IDisposable
 		else
 		{
 			// handler is called synchronously
-			Assert.NotNull(recipient.SynchronizationContext);
+			Assert.True(recipient.HandlerCalledEvent.IsSet, "Handler was not invoked directly");
 			Assert.Same(SynchronizationContext.Current, recipient.SynchronizationContext);
 		}
 
@@ -144,7 +144,7 @@ public class EventManagerTests : IDisposable
 			Assert.Equal(1, regCount);
 
 			// handler is called synchronously
-			Assert.NotNull(recipient.SynchronizationContext);
+			Assert.True(recipient.HandlerCalledEvent.IsSet, "Handler was not invoked directly");
 			Assert.Same(SynchronizationContext.Current, recipient.SynchronizationContext);
 		}
 
