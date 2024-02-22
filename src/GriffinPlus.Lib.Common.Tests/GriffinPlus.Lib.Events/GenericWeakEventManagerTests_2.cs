@@ -15,19 +15,19 @@ using Xunit;
 namespace GriffinPlus.Lib.Events;
 
 /// <summary>
-/// Unit tests targeting the <see cref="WeakEventManager{TEventArgs}"/> class.
+/// Unit tests targeting the <see cref="GenericWeakEventManager{TArg1,TArg2}"/> class.
 /// </summary>
 [Collection(nameof(NoParallelizationCollection))]
-public class WeakEventManagerTests : IDisposable
+public class GenericWeakEventManagerTests_2 : IDisposable
 {
 	private const string EventName = "MyEvent";
 
 	private AsyncContextThread mThread;
 
 	/// <summary>
-	/// Initializes an instance the <see cref="WeakEventManagerTests"/> class performing common initialization before running a test.
+	/// Initializes an instance the <see cref="GenericWeakEventManagerTests_2"/> class performing common initialization before running a test.
 	/// </summary>
-	public WeakEventManagerTests()
+	public GenericWeakEventManagerTests_2()
 	{
 		mThread = new AsyncContextThread();
 	}
@@ -54,10 +54,11 @@ public class WeakEventManagerTests : IDisposable
 	{
 		var recipient = new EventManagerEventRecipient();
 
-		const string testData = "Test";
+		const string testData1 = "Arg 1";
+		const string testData2 = "Arg 2";
 
 		// register event handler
-		int regCount = WeakEventManager<EventManagerEventArgs>.RegisterEventHandler(
+		int regCount = GenericWeakEventManager<string, string>.RegisterEventHandler(
 			this,
 			EventName,
 			recipient.Handler,
@@ -66,11 +67,16 @@ public class WeakEventManagerTests : IDisposable
 		Assert.Equal(1, regCount);
 
 		// check whether the handler is registered
-		Assert.True(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
-		Assert.True(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
+		Assert.True(GenericWeakEventManager<string, string>.IsHandlerRegistered(this, EventName));
+		Assert.True(GenericWeakEventManager<string, string>.IsHandlerRegistered(this, EventName, recipient.Handler));
 
 		// fire event
-		WeakEventManager<EventManagerEventArgs>.FireEvent(this, EventName, this, new EventManagerEventArgs(testData));
+		GenericWeakEventManager<string, string>.FireEvent(
+			this,
+			EventName,
+			testData1,
+			testData2);
+
 		if (scheduleAlways)
 		{
 			// handler is called asynchronously
@@ -86,15 +92,22 @@ public class WeakEventManagerTests : IDisposable
 		}
 
 		// the event should have received the expected test data
-		Assert.Equal(testData, recipient.Data);
+		Assert.Equal(testData1, recipient.Arg1);
+		Assert.Equal(testData2, recipient.Arg2);
+		Assert.Null(recipient.Arg3);
+		Assert.Null(recipient.Arg4);
+		Assert.Null(recipient.Arg5);
+		Assert.Null(recipient.Arg6);
+		Assert.Null(recipient.Arg7);
+		Assert.Null(recipient.Arg8);
 
 		// unregister event handler
-		regCount = WeakEventManager<EventManagerEventArgs>.UnregisterEventHandler(this, EventName, recipient.Handler);
+		regCount = GenericWeakEventManager<string, string>.UnregisterEventHandler(this, EventName, recipient.Handler);
 		Assert.Equal(0, regCount);
 
 		// check whether the handler is not registered anymore
-		Assert.False(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
-		Assert.False(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
+		Assert.False(GenericWeakEventManager<string, string>.IsHandlerRegistered(this, EventName));
+		Assert.False(GenericWeakEventManager<string, string>.IsHandlerRegistered(this, EventName, recipient.Handler));
 	}
 
 
@@ -108,21 +121,22 @@ public class WeakEventManagerTests : IDisposable
 	{
 		var recipient = new EventManagerEventRecipient();
 
-		const string testData = "Test";
+		const string testData1 = "Arg 1";
+		const string testData2 = "Arg 2";
 
 		int regCount;
 		if (scheduleAlways)
 		{
 			// register event handler and fire it immediately
-			regCount = WeakEventManager<EventManagerEventArgs>.RegisterEventHandler(
+			regCount = GenericWeakEventManager<string, string>.RegisterEventHandler(
 				this,
 				EventName,
 				recipient.Handler,
 				null,
 				true,
 				true,
-				this,
-				new EventManagerEventArgs(testData));
+				testData1,
+				testData2);
 			Assert.Equal(1, regCount);
 
 			// handler is called asynchronously
@@ -133,15 +147,15 @@ public class WeakEventManagerTests : IDisposable
 		else
 		{
 			// register event handler and fire it immediately
-			regCount = WeakEventManager<EventManagerEventArgs>.RegisterEventHandler(
+			regCount = GenericWeakEventManager<string, string>.RegisterEventHandler(
 				this,
 				EventName,
 				recipient.Handler,
 				null,
 				false,
 				true,
-				this,
-				new EventManagerEventArgs(testData));
+				testData1,
+				testData2);
 			Assert.Equal(1, regCount);
 
 			// handler is called synchronously
@@ -150,19 +164,26 @@ public class WeakEventManagerTests : IDisposable
 		}
 
 		// the event should have received the expected test data
-		Assert.Equal(testData, recipient.Data);
+		Assert.Equal(testData1, recipient.Arg1);
+		Assert.Equal(testData2, recipient.Arg2);
+		Assert.Null(recipient.Arg3);
+		Assert.Null(recipient.Arg4);
+		Assert.Null(recipient.Arg5);
+		Assert.Null(recipient.Arg6);
+		Assert.Null(recipient.Arg7);
+		Assert.Null(recipient.Arg8);
 
 		// check whether the handler is registered
-		Assert.True(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
-		Assert.True(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
+		Assert.True(GenericWeakEventManager<string, string>.IsHandlerRegistered(this, EventName));
+		Assert.True(GenericWeakEventManager<string, string>.IsHandlerRegistered(this, EventName, recipient.Handler));
 
 		// unregister event handler
-		regCount = WeakEventManager<EventManagerEventArgs>.UnregisterEventHandler(this, EventName, recipient.Handler);
+		regCount = GenericWeakEventManager<string, string>.UnregisterEventHandler(this, EventName, recipient.Handler);
 		Assert.Equal(0, regCount);
 
 		// check whether the handler is not registered anymore
-		Assert.False(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
-		Assert.False(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
+		Assert.False(GenericWeakEventManager<string, string>.IsHandlerRegistered(this, EventName));
+		Assert.False(GenericWeakEventManager<string, string>.IsHandlerRegistered(this, EventName, recipient.Handler));
 	}
 
 
@@ -178,14 +199,15 @@ public class WeakEventManagerTests : IDisposable
 	{
 		var recipient = new EventManagerEventRecipient();
 
-		const string testData = "Test";
+		const string testData1 = "Arg 1";
+		const string testData2 = "Arg 2";
 
 		// register event handler
 		await mThread.Factory.Run(
 			() =>
 			{
 				Assert.NotNull(SynchronizationContext.Current);
-				int regCount1 = WeakEventManager<EventManagerEventArgs>.RegisterEventHandler(
+				int regCount1 = GenericWeakEventManager<string, string>.RegisterEventHandler(
 					this,
 					EventName,
 					recipient.Handler,
@@ -195,8 +217,8 @@ public class WeakEventManagerTests : IDisposable
 			});
 
 		// check whether the handler is registered
-		Assert.True(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
-		Assert.True(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
+		Assert.True(GenericWeakEventManager<string, string>.IsHandlerRegistered(this, EventName));
+		Assert.True(GenericWeakEventManager<string, string>.IsHandlerRegistered(this, EventName, recipient.Handler));
 
 		if (fireOnSameThread)
 		{
@@ -208,13 +230,26 @@ public class WeakEventManagerTests : IDisposable
 					() =>
 					{
 						Assert.NotNull(SynchronizationContext.Current);
-						WeakEventManager<EventManagerEventArgs>.FireEvent(this, EventName, this, new EventManagerEventArgs(testData));
+
+						GenericWeakEventManager<string, string>.FireEvent(
+							this,
+							EventName,
+							testData1,
+							testData2);
+
 						Assert.False(recipient.HandlerCalledEvent.IsSet, "Handler was invoked directly, should have been scheduled.");
 					});
 
 				Assert.True(recipient.HandlerCalledEvent.Wait(1000));
 				Assert.Same(mThread.Context.SynchronizationContext, recipient.SynchronizationContext);
-				Assert.Equal(testData, recipient.Data);
+				Assert.Equal(testData1, recipient.Arg1);
+				Assert.Equal(testData2, recipient.Arg2);
+				Assert.Null(recipient.Arg3);
+				Assert.Null(recipient.Arg4);
+				Assert.Null(recipient.Arg5);
+				Assert.Null(recipient.Arg6);
+				Assert.Null(recipient.Arg7);
+				Assert.Null(recipient.Arg8);
 			}
 			else
 			{
@@ -224,10 +259,23 @@ public class WeakEventManagerTests : IDisposable
 					() =>
 					{
 						Assert.NotNull(SynchronizationContext.Current);
-						WeakEventManager<EventManagerEventArgs>.FireEvent(this, EventName, this, new EventManagerEventArgs(testData));
+
+						GenericWeakEventManager<string, string>.FireEvent(
+							this,
+							EventName,
+							testData1,
+							testData2);
+
 						Assert.True(recipient.HandlerCalledEvent.IsSet, "Handler was not invoked directly");
 						Assert.Same(SynchronizationContext.Current, recipient.SynchronizationContext);
-						Assert.Equal(testData, recipient.Data);
+						Assert.Equal(testData1, recipient.Arg1);
+						Assert.Equal(testData2, recipient.Arg2);
+						Assert.Null(recipient.Arg3);
+						Assert.Null(recipient.Arg4);
+						Assert.Null(recipient.Arg5);
+						Assert.Null(recipient.Arg6);
+						Assert.Null(recipient.Arg7);
+						Assert.Null(recipient.Arg8);
 					});
 			}
 		}
@@ -235,19 +283,31 @@ public class WeakEventManagerTests : IDisposable
 		{
 			// let the executing thread fire the event (other thread than the one that registered the handler)
 			// => handler should be invoked using the synchronization context of the thread that registered the handler
-			WeakEventManager<EventManagerEventArgs>.FireEvent(this, EventName, this, new EventManagerEventArgs(testData));
+			GenericWeakEventManager<string, string>.FireEvent(
+				this,
+				EventName,
+				testData1,
+				testData2);
+
 			Assert.True(recipient.HandlerCalledEvent.Wait(1000));
 			Assert.Same(mThread.Context.SynchronizationContext, recipient.SynchronizationContext);
-			Assert.Equal(testData, recipient.Data);
+			Assert.Equal(testData1, recipient.Arg1);
+			Assert.Equal(testData2, recipient.Arg2);
+			Assert.Null(recipient.Arg3);
+			Assert.Null(recipient.Arg4);
+			Assert.Null(recipient.Arg5);
+			Assert.Null(recipient.Arg6);
+			Assert.Null(recipient.Arg7);
+			Assert.Null(recipient.Arg8);
 		}
 
 		// unregister event handler
-		int regCount2 = WeakEventManager<EventManagerEventArgs>.UnregisterEventHandler(this, EventName, recipient.Handler);
+		int regCount2 = GenericWeakEventManager<string, string>.UnregisterEventHandler(this, EventName, recipient.Handler);
 		Assert.Equal(0, regCount2);
 
 		// check whether the handler is not registered
-		Assert.False(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
-		Assert.False(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
+		Assert.False(GenericWeakEventManager<string, string>.IsHandlerRegistered(this, EventName));
+		Assert.False(GenericWeakEventManager<string, string>.IsHandlerRegistered(this, EventName, recipient.Handler));
 	}
 
 
@@ -261,7 +321,8 @@ public class WeakEventManagerTests : IDisposable
 	{
 		var recipient = new EventManagerEventRecipient();
 
-		const string testData = "Test";
+		const string testData1 = "Arg 1";
+		const string testData2 = "Arg 2";
 
 		// register event handler and let it fire immediately
 		if (scheduleAlways)
@@ -272,22 +333,29 @@ public class WeakEventManagerTests : IDisposable
 				() =>
 				{
 					Assert.NotNull(SynchronizationContext.Current);
-					int regCount1 = WeakEventManager<EventManagerEventArgs>.RegisterEventHandler(
+					int regCount1 = GenericWeakEventManager<string, string>.RegisterEventHandler(
 						this,
 						EventName,
 						recipient.Handler,
 						SynchronizationContext.Current,
 						true,
 						true,
-						this,
-						new EventManagerEventArgs(testData));
+						testData1,
+						testData2);
 					Assert.Equal(1, regCount1);
 					Assert.False(recipient.HandlerCalledEvent.IsSet, "Handler was invoked directly, should have been scheduled.");
 				});
 
 			Assert.True(recipient.HandlerCalledEvent.Wait(1000));
 			Assert.Same(mThread.Context.SynchronizationContext, recipient.SynchronizationContext);
-			Assert.Equal(testData, recipient.Data);
+			Assert.Equal(testData1, recipient.Arg1);
+			Assert.Equal(testData2, recipient.Arg2);
+			Assert.Null(recipient.Arg3);
+			Assert.Null(recipient.Arg4);
+			Assert.Null(recipient.Arg5);
+			Assert.Null(recipient.Arg6);
+			Assert.Null(recipient.Arg7);
+			Assert.Null(recipient.Arg8);
 		}
 		else
 		{
@@ -296,33 +364,40 @@ public class WeakEventManagerTests : IDisposable
 				() =>
 				{
 					Assert.NotNull(SynchronizationContext.Current);
-					int regCount1 = WeakEventManager<EventManagerEventArgs>.RegisterEventHandler(
+					int regCount1 = GenericWeakEventManager<string, string>.RegisterEventHandler(
 						this,
 						EventName,
 						recipient.Handler,
 						SynchronizationContext.Current,
 						false,
 						true,
-						this,
-						new EventManagerEventArgs(testData));
+						testData1,
+						testData2);
 					Assert.Equal(1, regCount1);
 					Assert.True(recipient.HandlerCalledEvent.IsSet, "Handler was not invoked directly");
 					Assert.Same(SynchronizationContext.Current, recipient.SynchronizationContext);
-					Assert.Equal(testData, recipient.Data);
+					Assert.Equal(testData1, recipient.Arg1);
+					Assert.Equal(testData2, recipient.Arg2);
+					Assert.Null(recipient.Arg3);
+					Assert.Null(recipient.Arg4);
+					Assert.Null(recipient.Arg5);
+					Assert.Null(recipient.Arg6);
+					Assert.Null(recipient.Arg7);
+					Assert.Null(recipient.Arg8);
 				});
 		}
 
 		// check whether the handler is registered
-		Assert.True(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
-		Assert.True(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
+		Assert.True(GenericWeakEventManager<string, string>.IsHandlerRegistered(this, EventName));
+		Assert.True(GenericWeakEventManager<string, string>.IsHandlerRegistered(this, EventName, recipient.Handler));
 
 		// unregister event handler
-		int regCount2 = WeakEventManager<EventManagerEventArgs>.UnregisterEventHandler(this, EventName, recipient.Handler);
+		int regCount2 = GenericWeakEventManager<string, string>.UnregisterEventHandler(this, EventName, recipient.Handler);
 		Assert.Equal(0, regCount2);
 
 		// check whether the handler is not registered
-		Assert.False(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName));
-		Assert.False(WeakEventManager<EventManagerEventArgs>.IsHandlerRegistered(this, EventName, recipient.Handler));
+		Assert.False(GenericWeakEventManager<string, string>.IsHandlerRegistered(this, EventName));
+		Assert.False(GenericWeakEventManager<string, string>.IsHandlerRegistered(this, EventName, recipient.Handler));
 	}
 
 
@@ -337,41 +412,75 @@ public class WeakEventManagerTests : IDisposable
 		var recipient1 = new EventManagerEventRecipient();
 		var recipient2 = new EventManagerEventRecipient();
 
-		const string testData1 = "Test 1";
-		const string testData2 = "Test 2";
+		const string testData11 = "Handler 1, Arg 1";
+		const string testData12 = "Handler 1, Arg 2";
+		const string testData21 = "Handler 2, Arg 1";
+		const string testData22 = "Handler 2, Arg 2";
 
 		// register event handlers
-		WeakEventManager<EventManagerEventArgs>.RegisterEventHandler(this, EventName, recipient1.Handler, null, scheduleAlways);
-		WeakEventManager<EventManagerEventArgs>.RegisterEventHandler(this, EventName, recipient2.Handler, null, scheduleAlways);
+		GenericWeakEventManager<string, string>.RegisterEventHandler(this, EventName, recipient1.Handler, null, scheduleAlways);
+		GenericWeakEventManager<string, string>.RegisterEventHandler(this, EventName, recipient2.Handler, null, scheduleAlways);
 
 		// get event callers
-		EventHandler<EventManagerEventArgs> callers = WeakEventManager<EventManagerEventArgs>.GetEventCallers(this, EventName);
+		Action<string, string> callers = GenericWeakEventManager<string, string>.GetEventCallers(this, EventName);
 		Assert.NotNull(callers);
-		EventHandler<EventManagerEventArgs>[] delegates = callers.GetInvocationList().Cast<EventHandler<EventManagerEventArgs>>().ToArray();
+		Action<string, string>[] delegates = callers.GetInvocationList().Cast<Action<string, string>>().ToArray();
 		Assert.Equal(2, delegates.Length);
 
 		// call handlers
 		if (scheduleAlways)
 		{
-			delegates[0](this, new EventManagerEventArgs(testData1));
-			delegates[1](this, new EventManagerEventArgs(testData2));
+			delegates[0](testData11, testData12);
+			delegates[1](testData21, testData22);
+
 			Assert.True(recipient1.HandlerCalledEvent.Wait(1000));
 			Assert.True(recipient2.HandlerCalledEvent.Wait(1000));
 			Assert.Null(recipient1.SynchronizationContext);
 			Assert.Null(recipient2.SynchronizationContext);
-			Assert.Equal(testData1, recipient1.Data);
-			Assert.Equal(testData2, recipient2.Data);
+
+			Assert.Equal(testData11, recipient1.Arg1);
+			Assert.Equal(testData12, recipient1.Arg2);
+			Assert.Null(recipient1.Arg3);
+			Assert.Null(recipient1.Arg4);
+			Assert.Null(recipient1.Arg5);
+			Assert.Null(recipient1.Arg6);
+			Assert.Null(recipient1.Arg7);
+			Assert.Null(recipient1.Arg8);
+
+			Assert.Equal(testData21, recipient2.Arg1);
+			Assert.Equal(testData22, recipient2.Arg2);
+			Assert.Null(recipient2.Arg3);
+			Assert.Null(recipient2.Arg4);
+			Assert.Null(recipient2.Arg5);
+			Assert.Null(recipient2.Arg6);
+			Assert.Null(recipient2.Arg7);
+			Assert.Null(recipient2.Arg8);
 		}
 		else
 		{
 			// the handlers should be called directly
-			delegates[0](this, new EventManagerEventArgs(testData1));
+			delegates[0](testData11, testData12);
 			Assert.True(recipient1.HandlerCalledEvent.IsSet, "Handler was not invoked directly");
-			Assert.Equal(testData1, recipient1.Data);
 
-			delegates[1](this, new EventManagerEventArgs(testData2));
+			Assert.Equal(testData11, recipient1.Arg1);
+			Assert.Equal(testData12, recipient1.Arg2);
+			Assert.Null(recipient1.Arg3);
+			Assert.Null(recipient1.Arg4);
+			Assert.Null(recipient1.Arg5);
+			Assert.Null(recipient1.Arg6);
+			Assert.Null(recipient1.Arg7);
+			Assert.Null(recipient1.Arg8);
+
+			delegates[1](testData21, testData22);
 			Assert.True(recipient2.HandlerCalledEvent.IsSet, "Handler was not invoked directly");
-			Assert.Equal(testData2, recipient2.Data);
+			Assert.Equal(testData21, recipient2.Arg1);
+			Assert.Equal(testData22, recipient2.Arg2);
+			Assert.Null(recipient2.Arg3);
+			Assert.Null(recipient2.Arg4);
+			Assert.Null(recipient2.Arg5);
+			Assert.Null(recipient2.Arg6);
+			Assert.Null(recipient2.Arg7);
+			Assert.Null(recipient2.Arg8);
 		}
 	}
 
@@ -389,8 +498,10 @@ public class WeakEventManagerTests : IDisposable
 		var recipient1 = new EventManagerEventRecipient();
 		var recipient2 = new EventManagerEventRecipient();
 
-		const string testData1 = "Test 1";
-		const string testData2 = "Test 2";
+		const string testData11 = "Handler 1, Arg 1";
+		const string testData12 = "Handler 1, Arg 2";
+		const string testData21 = "Handler 2, Arg 1";
+		const string testData22 = "Handler 2, Arg 2";
 
 		// register handler 1 only, but do not trigger firing immediately
 		await mThread.Factory.Run(
@@ -398,7 +509,7 @@ public class WeakEventManagerTests : IDisposable
 			{
 				Assert.NotNull(SynchronizationContext.Current);
 
-				WeakEventManager<EventManagerEventArgs>.RegisterEventHandler(
+				GenericWeakEventManager<string, string>.RegisterEventHandler(
 					this,
 					EventName,
 					recipient1.Handler,
@@ -410,7 +521,14 @@ public class WeakEventManagerTests : IDisposable
 
 		// handler 1 should not be called immediately
 		Assert.False(recipient1.HandlerCalledEvent.Wait(1000), "Event handler was scheduled to be called unexpectedly.");
-		Assert.Null(recipient1.Data);
+		Assert.Null(recipient1.Arg1);
+		Assert.Null(recipient1.Arg2);
+		Assert.Null(recipient1.Arg3);
+		Assert.Null(recipient1.Arg4);
+		Assert.Null(recipient1.Arg5);
+		Assert.Null(recipient1.Arg6);
+		Assert.Null(recipient1.Arg7);
+		Assert.Null(recipient1.Arg8);
 
 		if (scheduleAlways)
 		{
@@ -420,15 +538,15 @@ public class WeakEventManagerTests : IDisposable
 				{
 					Assert.NotNull(SynchronizationContext.Current);
 
-					WeakEventManager<EventManagerEventArgs>.RegisterEventHandler(
+					GenericWeakEventManager<string, string>.RegisterEventHandler(
 						this,
 						EventName,
 						recipient2.Handler,
 						SynchronizationContext.Current,
 						true,
 						true,
-						this,
-						new EventManagerEventArgs(testData2));
+						testData21,
+						testData22);
 
 					Assert.False(recipient2.HandlerCalledEvent.IsSet, "Event handler was called immediately, should have been scheduled to be executed...");
 				});
@@ -436,7 +554,14 @@ public class WeakEventManagerTests : IDisposable
 			// handler 2 should have been called after some time
 			Assert.True(recipient2.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
 			Assert.Same(mThread.Context.SynchronizationContext, recipient2.SynchronizationContext);
-			Assert.Equal(testData2, recipient2.Data);
+			Assert.Equal(testData21, recipient2.Arg1);
+			Assert.Equal(testData22, recipient2.Arg2);
+			Assert.Null(recipient2.Arg3);
+			Assert.Null(recipient2.Arg4);
+			Assert.Null(recipient2.Arg5);
+			Assert.Null(recipient2.Arg6);
+			Assert.Null(recipient2.Arg7);
+			Assert.Null(recipient2.Arg8);
 		}
 		else
 		{
@@ -446,28 +571,35 @@ public class WeakEventManagerTests : IDisposable
 				{
 					Assert.NotNull(SynchronizationContext.Current);
 
-					WeakEventManager<EventManagerEventArgs>.RegisterEventHandler(
+					GenericWeakEventManager<string, string>.RegisterEventHandler(
 						this,
 						EventName,
 						recipient2.Handler,
 						SynchronizationContext.Current,
 						false,
 						true,
-						this,
-						new EventManagerEventArgs(testData2));
+						testData21,
+						testData22);
 
 					Assert.True(recipient2.HandlerCalledEvent.IsSet, "Event handler should have been called immediately.");
 				});
 
 			// handler 2 should have been called after some time
 			Assert.Same(mThread.Context.SynchronizationContext, recipient2.SynchronizationContext);
-			Assert.Equal(testData2, recipient2.Data);
+			Assert.Equal(testData21, recipient2.Arg1);
+			Assert.Equal(testData22, recipient2.Arg2);
+			Assert.Null(recipient2.Arg3);
+			Assert.Null(recipient2.Arg4);
+			Assert.Null(recipient2.Arg5);
+			Assert.Null(recipient2.Arg6);
+			Assert.Null(recipient2.Arg7);
+			Assert.Null(recipient2.Arg8);
 		}
 
 		// get delegates invoking the event handlers
-		EventHandler<EventManagerEventArgs> callers = WeakEventManager<EventManagerEventArgs>.GetEventCallers(this, EventName);
+		Action<string, string> callers = GenericWeakEventManager<string, string>.GetEventCallers(this, EventName);
 		Assert.NotNull(callers);
-		EventHandler<EventManagerEventArgs>[] delegates = callers.GetInvocationList().Cast<EventHandler<EventManagerEventArgs>>().ToArray();
+		Action<string, string>[] delegates = callers.GetInvocationList().Cast<Action<string, string>>().ToArray();
 		Assert.Equal(2, delegates.Length);
 
 		// reset event handler data
@@ -485,8 +617,8 @@ public class WeakEventManagerTests : IDisposable
 				await mThread.Factory.Run(
 					() =>
 					{
-						delegates[0](this, new EventManagerEventArgs(testData1));
-						delegates[1](this, new EventManagerEventArgs(testData2));
+						delegates[0](testData11, testData12);
+						delegates[1](testData21, testData22);
 						Assert.False(recipient1.HandlerCalledEvent.IsSet, "Event handler was called unexpectedly.");
 						Assert.False(recipient2.HandlerCalledEvent.IsSet, "Event handler was called unexpectedly.");
 					});
@@ -501,8 +633,8 @@ public class WeakEventManagerTests : IDisposable
 				await mThread.Factory.Run(
 					() =>
 					{
-						delegates[0](this, new EventManagerEventArgs(testData1));
-						delegates[1](this, new EventManagerEventArgs(testData2));
+						delegates[0](testData11, testData12);
+						delegates[1](testData21, testData22);
 						Assert.True(recipient1.HandlerCalledEvent.IsSet, "Event handler should have been called directly.");
 						Assert.True(recipient2.HandlerCalledEvent.IsSet, "Event handler should have been called directly.");
 					});
@@ -512,8 +644,8 @@ public class WeakEventManagerTests : IDisposable
 		{
 			// call handlers on the current thread (different from the thread registering the event)
 			// => handlers should be called in the context of the thread registering the event
-			delegates[0](this, new EventManagerEventArgs(testData1));
-			delegates[1](this, new EventManagerEventArgs(testData2));
+			delegates[0](testData11, testData12);
+			delegates[1](testData21, testData22);
 			Assert.True(recipient1.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
 			Assert.True(recipient2.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
 		}
@@ -521,8 +653,24 @@ public class WeakEventManagerTests : IDisposable
 		// the handlers should have run in the context of the thread that registered them
 		Assert.Same(mThread.Context.SynchronizationContext, recipient1.SynchronizationContext);
 		Assert.Same(mThread.Context.SynchronizationContext, recipient2.SynchronizationContext);
-		Assert.Equal(testData1, recipient1.Data);
-		Assert.Equal(testData2, recipient2.Data);
+
+		Assert.Equal(testData11, recipient1.Arg1);
+		Assert.Equal(testData12, recipient1.Arg2);
+		Assert.Null(recipient1.Arg3);
+		Assert.Null(recipient1.Arg4);
+		Assert.Null(recipient1.Arg5);
+		Assert.Null(recipient1.Arg6);
+		Assert.Null(recipient1.Arg7);
+		Assert.Null(recipient1.Arg8);
+
+		Assert.Equal(testData21, recipient2.Arg1);
+		Assert.Equal(testData22, recipient2.Arg2);
+		Assert.Null(recipient2.Arg3);
+		Assert.Null(recipient2.Arg4);
+		Assert.Null(recipient2.Arg5);
+		Assert.Null(recipient2.Arg6);
+		Assert.Null(recipient2.Arg7);
+		Assert.Null(recipient2.Arg8);
 	}
 
 
@@ -542,8 +690,16 @@ public class WeakEventManagerTests : IDisposable
 			() =>
 			{
 				object provider = new();
-				int regCount = WeakEventManager<EventManagerEventArgs>.RegisterEventHandler(provider, EventName, recipient.Handler, null, scheduleAlways);
+
+				int regCount = GenericWeakEventManager<string, string>.RegisterEventHandler(
+					provider,
+					EventName,
+					recipient.Handler,
+					null,
+					scheduleAlways);
+
 				Assert.Equal(1, regCount);
+
 				return new WeakReference(provider);
 			}).Invoke();
 
@@ -569,7 +725,7 @@ public class WeakEventManagerTests : IDisposable
 			() =>
 			{
 				var recipient = new EventManagerEventRecipient();
-				int regCount = WeakEventManager<EventManagerEventArgs>.RegisterEventHandler(provider, EventName, recipient.Handler, null, scheduleAlways);
+				int regCount = GenericWeakEventManager<string, string>.RegisterEventHandler(provider, EventName, recipient.Handler, null, scheduleAlways);
 				Assert.Equal(1, regCount);
 				return new WeakReference(recipient);
 			}).Invoke();

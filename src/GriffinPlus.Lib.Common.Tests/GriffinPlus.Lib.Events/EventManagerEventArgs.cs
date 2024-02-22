@@ -7,7 +7,7 @@ using System;
 
 namespace GriffinPlus.Lib.Events;
 
-public class EventManagerEventArgs(string myString) : EventArgs
+public class EventManagerEventArgs(string myData) : EventArgs
 {
-	public string MyString { get; } = myString;
+	public string MyData { get; } = myData;
 }

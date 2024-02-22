@@ -53,7 +53,7 @@ public class EventManagerTests : IDisposable
 	[InlineData(true)]
 	public void Complete_WithoutSynchronizationContext(bool scheduleAlways)
 	{
-		var recipient = new EventManagerEventArgsRecipient();
+		var recipient = new EventManagerEventRecipient();
 
 		// register event handler
 		int regCount = EventManager<EventManagerEventArgs>.RegisterEventHandler(
@@ -106,7 +106,7 @@ public class EventManagerTests : IDisposable
 	[InlineData(true)]
 	public void Complete_WithoutSynchronizationContext_FireImmediately(bool scheduleAlways)
 	{
-		var recipient = new EventManagerEventArgsRecipient();
+		var recipient = new EventManagerEventRecipient();
 
 		int regCount;
 		string testData = Guid.NewGuid().ToString("D");
@@ -174,7 +174,7 @@ public class EventManagerTests : IDisposable
 	[InlineData(true, true)]
 	public async Task Complete_WithSynchronizationContext(bool scheduleAlways, bool fireOnSameThread)
 	{
-		var recipient = new EventManagerEventArgsRecipient();
+		var recipient = new EventManagerEventRecipient();
 
 		// register event handler
 		await mThread.Factory.Run(
@@ -255,7 +255,7 @@ public class EventManagerTests : IDisposable
 	[InlineData(true)]
 	public async Task Complete_WithSynchronizationContext_FireImmediately(bool scheduleAlways)
 	{
-		var recipient = new EventManagerEventArgsRecipient();
+		var recipient = new EventManagerEventRecipient();
 
 		// register event handler and let it fire immediately
 		string testData = Guid.NewGuid().ToString("D");
@@ -328,8 +328,8 @@ public class EventManagerTests : IDisposable
 	[InlineData(true)]
 	public void GetEventCallers_WithoutSynchronizationContext(bool scheduleAlways)
 	{
-		var recipient1 = new EventManagerEventArgsRecipient();
-		var recipient2 = new EventManagerEventArgsRecipient();
+		var recipient1 = new EventManagerEventRecipient();
+		var recipient2 = new EventManagerEventRecipient();
 
 		// register event handlers
 		EventManager<EventManagerEventArgs>.RegisterEventHandler(this, EventName, recipient1.Handler, null, scheduleAlways);
@@ -377,8 +377,8 @@ public class EventManagerTests : IDisposable
 	[SuppressMessage("ReSharper", "RedundantAssignment")]
 	public async Task GetEventCallers_WithSynchronizationContext(bool scheduleAlways, bool fireOnSameThread)
 	{
-		var recipient1 = new EventManagerEventArgsRecipient();
-		var recipient2 = new EventManagerEventArgsRecipient();
+		var recipient1 = new EventManagerEventRecipient();
+		var recipient2 = new EventManagerEventRecipient();
 
 		// register handler 1 only, but do not trigger firing immediately
 		await mThread.Factory.Run(
@@ -521,7 +521,7 @@ public class EventManagerTests : IDisposable
 	[InlineData(true)]
 	public void EnsureEventProvidersAreCollectable(bool scheduleAlways)
 	{
-		var recipient = new EventManagerEventArgsRecipient();
+		var recipient = new EventManagerEventRecipient();
 
 		// register an event handler to a dummy event provider object
 		// (must not be done in the same method to allow the object to be collected in the next step)
