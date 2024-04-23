@@ -319,14 +319,16 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 			}
 			else
 			{
-				// the stream will contain less, but at least some data
+				// the stream will contain data up to the capacity of the stream
+				// (the stream might even get longer if the capacity allows that)
 				// => release memory blocks that are not needed any more
 				long remaining = length;
 				long lastBlockStartIndex = 0;
 				ChainableMemoryBlock block = mFirstBlock;
 				while (true)
 				{
-					remaining -= Math.Min(remaining, block.Length);
+					Debug.Assert(block != null, nameof(block) + " != null");
+					remaining -= Math.Min(remaining, block.Next != null ? block.Length : block.Capacity);
 					if (remaining == 0) break;
 					lastBlockStartIndex += block.Length;
 					block = block.Next;
@@ -338,8 +340,9 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 				mLength = length;
 
 				// clear all bytes up to the end of the last block
-				int bytesToClear = (int)(mLastBlock.Capacity - length + lastBlockStartIndex);
-				Array.Clear(mLastBlock.Buffer, (int)(length - lastBlockStartIndex), bytesToClear);
+				int startIndex = Math.Min(mLastBlock.Length, (int)(length - lastBlockStartIndex));
+				int bytesToClear = (mLastBlock.Capacity - startIndex);
+				Array.Clear(mLastBlock.Buffer, startIndex, bytesToClear);
 				mLastBlock.Length = (int)(length - lastBlockStartIndex);
 
 				// adjust stream position, if the position is out of bounds now

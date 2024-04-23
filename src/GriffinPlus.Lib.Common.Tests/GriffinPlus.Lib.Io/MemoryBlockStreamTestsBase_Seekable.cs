@@ -46,6 +46,7 @@ public abstract class MemoryBlockStreamTestsBase_Seekable : MemoryBlockStreamTes
 	[InlineData(1, 1, 1)]                                      // stream with 1 byte, stream length remains as is, position remains unmodified
 	[InlineData(1, 0, 0)]                                      // stream with 1 byte, stream is cleared, position remains unmodified
 	[InlineData(1, 0, 1)]                                      // stream with 1 byte, stream is cleared, position is adjusted
+	[InlineData(1, 2, 0)]                                      // stream with 1 byte, enlarge to 2 bytes (zero), position remains unmodified
 	[InlineData(TestDataSize, 0, 0)]                           // huge stream with multiple blocks, stream is cleared, position remains unmodified
 	[InlineData(TestDataSize, 0, 1)]                           // huge stream with multiple blocks, stream is cleared, position is adjusted
 	[InlineData(TestDataSize, 0, TestDataSize)]                // huge stream with multiple blocks, stream is cleared, position is adjusted
@@ -60,6 +61,7 @@ public abstract class MemoryBlockStreamTestsBase_Seekable : MemoryBlockStreamTes
 	{
 		// create a new stream
 		using MemoryBlockStream stream = CreateStreamToTest();
+
 		// populate the stream with some initial data, if necessary
 		var expectedData = new List<byte>();
 		if (oldLength > 0)
