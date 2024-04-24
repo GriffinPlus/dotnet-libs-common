@@ -33,7 +33,7 @@ namespace GriffinPlus.Lib.Io;
 public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 {
 	/// <summary>
-	/// Default size of block in the stream.
+	/// Default size of block in the stream.<br/>
 	/// 80 kByte is small enough for the regular heap and avoids allocation on the large object heap.
 	/// </summary>
 	internal const int DefaultBlockSize = 80 * 1024;
@@ -52,26 +52,26 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	#region Construction and Disposal
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class.
-	/// Buffers are allocated on the heap.
-	/// The block size defaults to 80 kByte.
+	/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class.<br/>
+	/// Buffers are allocated on the heap.<br/>
+	/// The block size defaults to 80 kByte.<br/>
 	/// The stream is seekable and grows as data is written.
 	/// </summary>
 	public MemoryBlockStream() : this(DefaultBlockSize, null, false) { }
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class.
-	/// Buffers are rented from the specified array pool.
-	/// The block size defaults to 80 kByte.
+	/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class.<br/>
+	/// Buffers are rented from the specified array pool.<br/>
+	/// The block size defaults to 80 kByte.<br/>
 	/// The stream is seekable and grows as data is written.
 	/// </summary>
 	/// <param name="pool">Array pool to use for allocating buffers.</param>
-	/// <exception cref="ArgumentNullException"><paramref name="pool"/> is <c>null</c>.</exception>
+	/// <exception cref="ArgumentNullException"><paramref name="pool"/> is <see langword="null"/>.</exception>
 	public MemoryBlockStream(ArrayPool<byte> pool) : this(DefaultBlockSize, pool, false) { }
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class with a specific block size.
-	/// Buffers are allocated on the heap.
+	/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class with a specific block size.<br/>
+	/// Buffers are allocated on the heap.<br/>
 	/// The stream is seekable and grows as data is written.
 	/// </summary>
 	/// <param name="blockSize">Size of a block in the stream.</param>
@@ -79,8 +79,8 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	public MemoryBlockStream(int blockSize) : this(blockSize, null, false) { }
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class with a specific block size.
-	/// Buffers can be allocated on the heap or rented from the specified array pool.
+	/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class with a specific block size.<br/>
+	/// Buffers can be allocated on the heap or rented from the specified array pool.<br/>
 	/// The stream can be configured to release buffers as data is read (makes the stream unseekable).
 	/// </summary>
 	/// <param name="blockSize">
@@ -88,11 +88,11 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	/// The actual block size may be greater than the specified size, if the buffer is rented from an array pool.
 	/// </param>
 	/// <param name="pool">
-	/// Array pool to rent buffers from (<c>null</c> to allocate buffers on the heap).
+	/// Array pool to rent buffers from (<see langword="null"/> to allocate buffers on the heap).
 	/// </param>
 	/// <param name="releasesReadBlocks">
-	/// <c>true</c> to release memory blocks that have been read (makes the stream unseekable);
-	/// <c>false</c> to keep written memory blocks enabling seeking and changing the length of the stream.
+	/// <see langword="true"/> to release memory blocks that have been read (makes the stream unseekable);<br/>
+	/// <see langword="false"/> to keep written memory blocks enabling seeking and changing the length of the stream.
 	/// </param>
 	/// <exception cref="ArgumentException">The specified block size is less than or equal to 0.</exception>
 	public MemoryBlockStream(
@@ -110,6 +110,7 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 		mArrayPool = pool;
 		mBlockSize = blockSize;
 		ReleasesReadBlocks = releasesReadBlocks;
+		CanWrite = true;
 		CanSeek = !releasesReadBlocks;
 		mFirstBlockOffset = 0;
 		mCurrentBlockStartIndex = 0;
@@ -122,8 +123,8 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	/// (returns rented buffers to their array pool, if necessary).
 	/// </summary>
 	/// <param name="disposing">
-	/// <c>true</c> if the stream is being disposed;
-	/// <c>false</c> if the stream is being finalized.
+	/// <see langword="true"/> if the stream is being disposed;<br/>
+	/// <see langword="false"/> if the stream is being finalized.
 	/// </param>
 	protected override void Dispose(bool disposing)
 	{
@@ -175,14 +176,14 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	#region Stream Capabilities
 
 	/// <summary>
-	/// Gets a value indicating whether the stream supports reading (always true).
+	/// Gets a value indicating whether the stream supports reading (always <see langword="true"/>).
 	/// </summary>
 	public override bool CanRead => true;
 
 	/// <summary>
-	/// Gets a value indicating whether the stream supports writing (always true).
+	/// Gets a value indicating whether the stream supports writing.
 	/// </summary>
-	public override bool CanWrite => true;
+	public override bool CanWrite { get; }
 
 	/// <summary>
 	/// Gets a value indicating whether the stream supports seeking.
@@ -191,7 +192,7 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 
 	#endregion
 
-	#region Position
+	#region long Position
 
 	/// <summary>
 	/// Gets or sets the current position within the stream.
@@ -207,7 +208,7 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 
 	#endregion
 
-	#region Length
+	#region long Length
 
 	/// <summary>
 	/// Gets the length of the current stream.
@@ -217,16 +218,14 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 
 	#endregion
 
-	#region ReleasesReadBlocks
+	#region bool ReleasesReadBlocks
 
-	/// <summary>
-	/// Gets a value indicating whether the stream releases read buffers.
-	/// </summary>
+	/// <inheritdoc/>
 	public bool ReleasesReadBlocks { get; }
 
 	#endregion
 
-	#region SetLength(long length)
+	#region void SetLength(long length)
 
 	/// <summary>
 	/// Sets the length of the stream.
@@ -236,12 +235,16 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	/// <exception cref="NotSupportedException">The stream does not support seeking.</exception>
 	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 	/// <remarks>
-	/// If the specified length is less than the current length of the stream, the stream is truncated. If the current position
-	/// within the stream is past the end of the stream after the truncation, the <see cref="ReadByte"/> method returns -1, the
-	/// 'Read' methods read zero bytes into the provided byte hash, and the 'Write' methods append specified bytes at the end of the
-	/// stream, increasing its length. If the specified value is larger than the current capacity, the capacity is increased, and
-	/// the current position within the stream is unchanged. If the length is increased, the contents of the stream between the old
-	/// and the new length are initialized with zeros.
+	/// If the specified length is less than the current length of the stream, the stream is truncated.<br/>
+	/// If the current position within the stream is past the end of the stream after the truncation:<br/>
+	/// -> <see cref="ReadByte"/> returns -1<br/>
+	/// -> 'Read' methods read zero bytes<br/>
+	/// -> 'Write' methods append specified bytes at the end of the stream, increasing its length<br/>
+	/// If the specified value is larger than the current capacity:<br/>
+	/// -> the capacity is increased<br/>
+	/// -> the current position within the stream is unchanged.<br/>
+	/// If the length is increased:<br/>
+	/// -> the contents of the stream between the old and the new length are initialized with zeros.
 	/// </remarks>
 	public override void SetLength(long length)
 	{
@@ -341,7 +344,7 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 
 				// clear all bytes up to the end of the last block
 				int startIndex = Math.Min(mLastBlock.Length, (int)(length - lastBlockStartIndex));
-				int bytesToClear = (mLastBlock.Capacity - startIndex);
+				int bytesToClear = mLastBlock.Capacity - startIndex;
 				Array.Clear(mLastBlock.Buffer, startIndex, bytesToClear);
 				mLastBlock.Length = (int)(length - lastBlockStartIndex);
 
@@ -655,7 +658,7 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	/// or returns -1 if at the end of the stream.
 	/// </summary>
 	/// <returns>
-	/// The unsigned byte cast to an Int32;
+	/// The unsigned byte cast to <see cref="System.Int32"/>;<br/>
 	/// -1, if at the end of the stream.
 	/// </returns>
 	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
@@ -981,7 +984,7 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	/// </summary>
 	/// <param name="stream">Stream containing data to write.</param>
 	/// <returns>Number of written bytes.</returns>
-	/// <exception cref="ArgumentNullException">Specified stream is a null.</exception>
+	/// <exception cref="ArgumentNullException">Specified stream is <see langword="null"/>.</exception>
 	/// <exception cref="NotSupportedException">The source stream does not support reading.</exception>
 	public long Write(Stream stream)
 	{
@@ -1055,7 +1058,7 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	/// The default value is <see cref="CancellationToken.None"/>.
 	/// </param>
 	/// <returns>Number of written bytes.</returns>
-	/// <exception cref="ArgumentNullException">Specified stream is a null.</exception>
+	/// <exception cref="ArgumentNullException">Specified stream is <see langword="null"/>.</exception>
 	/// <exception cref="NotSupportedException">The source stream does not support reading.</exception>
 	public async ValueTask<long> WriteAsync(Stream stream, CancellationToken cancellationToken = default)
 	{
@@ -1239,8 +1242,8 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	/// Appends a new buffer to the end of the chain.
 	/// </summary>
 	/// <returns>
-	/// true, if the first created new buffer is the first buffer;
-	/// false, if the first created new buffer is not the first buffer.
+	/// <see langword="true"/> if the first created new buffer is the first buffer;<br/>
+	/// <see langword="false"/> if the first created new buffer is not the first buffer.
 	/// </returns>
 	private bool AppendNewBuffer()
 	{
@@ -1396,16 +1399,7 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 
 	#region Appending Buffers
 
-	/// <summary>
-	/// Appends a memory block or chain of memory blocks to the stream.
-	/// </summary>
-	/// <param name="buffer">Memory block to append to the stream.</param>
-	/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <c>null</c>.</exception>
-	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
-	/// <remarks>
-	/// The specified buffer must not be directly accessed after this operation.
-	/// The stream takes care of returning buffers to their array pool, if necessary.
-	/// </remarks>
+	/// <inheritdoc/>
 	public void AppendBuffer(ChainableMemoryBlock buffer)
 	{
 		if (buffer == null)
@@ -1414,20 +1408,7 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 		AppendBuffer_Internal(buffer);
 	}
 
-	/// <summary>
-	/// Appends a memory block or chain of memory blocks to the stream.
-	/// </summary>
-	/// <param name="buffer">Memory block to append to the stream.</param>
-	/// <param name="cancellationToken">
-	/// The token to monitor for cancellation requests.
-	/// The default value is <see cref="CancellationToken.None"/>.
-	/// </param>
-	/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <c>null</c>.</exception>
-	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
-	/// <remarks>
-	/// The specified buffer must not be directly accessed after this operation.
-	/// The stream takes care of returning buffers to their array pool, if necessary.
-	/// </remarks>
+	/// <inheritdoc/>
 	public Task AppendBufferAsync(ChainableMemoryBlock buffer, CancellationToken cancellationToken = default)
 	{
 		if (buffer == null)
@@ -1445,10 +1426,10 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	/// Appends a memory block or chain of memory blocks to the stream (for internal use).
 	/// </summary>
 	/// <param name="buffer">Memory block to append to the stream.</param>
-	/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <c>null</c>.</exception>
+	/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <see langword="null"/>.</exception>
 	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 	/// <remarks>
-	/// The specified buffer must not be directly accessed after this operation.
+	/// The specified buffer must not be directly accessed after this operation.<br/>
 	/// The stream takes care of returning buffers to their array pool, if necessary.
 	/// </remarks>
 	private void AppendBuffer_Internal(ChainableMemoryBlock buffer)
@@ -1499,17 +1480,7 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 
 	#region Attaching Buffers
 
-	/// <summary>
-	/// Attaches a memory block or chain of memory blocks to the stream.
-	/// </summary>
-	/// <param name="buffer">Memory block to attach to the stream (null to clear the stream).</param>
-	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
-	/// <remarks>
-	/// This method allows you to exchange the underlying memory block buffer.
-	/// The stream is reset, so the position is 0 after attaching the new buffer.
-	/// The specified buffer must not be directly accessed after this operation.
-	/// The stream takes care of returning buffers to their array pool, if necessary.
-	/// </remarks>
+	/// <inheritdoc/>
 	public void AttachBuffer(ChainableMemoryBlock buffer)
 	{
 		if (buffer?.Previous != null)
@@ -1518,21 +1489,7 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 		AttachBuffer_Internal(buffer);
 	}
 
-	/// <summary>
-	/// Attaches a memory block or chain of memory blocks to the stream.
-	/// </summary>
-	/// <param name="buffer">Memory block to attach to the stream (null to clear the stream).</param>
-	/// <param name="cancellationToken">
-	/// The token to monitor for cancellation requests.
-	/// The default value is <see cref="CancellationToken.None"/>.
-	/// </param>
-	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
-	/// <remarks>
-	/// This method allows you to exchange the underlying memory block buffer.
-	/// The stream is reset, so the position is 0 after attaching the new buffer.
-	/// The specified buffer must not be directly accessed after this operation.
-	/// The stream takes care of returning buffers to their array pool, if necessary.
-	/// </remarks>
+	/// <inheritdoc/>
 	public Task AttachBufferAsync(ChainableMemoryBlock buffer, CancellationToken cancellationToken = default)
 	{
 		if (buffer?.Previous != null)
@@ -1549,12 +1506,12 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	/// <summary>
 	/// Attaches a memory block or chain of memory blocks to the stream (for internal use).
 	/// </summary>
-	/// <param name="buffer">Memory block to attach to the stream (null to clear the stream).</param>
+	/// <param name="buffer">Memory block to attach to the stream (<see langword="null"/> to clear the stream).</param>
 	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 	/// <remarks>
-	/// This method allows you to exchange the underlying memory block buffer.
-	/// The stream is reset, so the position is 0 after attaching the new buffer.
-	/// The specified buffer must not be directly accessed after this operation.
+	/// This method allows you to exchange the underlying memory block buffer.<br/>
+	/// The stream is reset, so the position is 0 after attaching the new buffer.<br/>
+	/// The specified buffer must not be directly accessed after this operation.<br/>
 	/// The stream takes care of returning buffers to their array pool, if necessary.
 	/// </remarks>
 	private void AttachBuffer_Internal(ChainableMemoryBlock buffer)
@@ -1587,35 +1544,13 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 
 	#region Detaching Buffers
 
-	/// <summary>
-	/// Detaches the underlying memory block buffer from the stream.
-	/// </summary>
-	/// <returns>Underlying memory block buffer (can be a chained with other memory blocks).</returns>
-	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
-	/// <remarks>
-	/// This method allows you to detach the underlying buffer from the stream and use it in another place.
-	/// If blocks contain buffers that have been rented from an array pool, the returned memory-block chain must
-	/// be disposed to return buffers to the pool. The stream is empty afterward.
-	/// </remarks>
+	/// <inheritdoc/>
 	public ChainableMemoryBlock DetachBuffer()
 	{
 		return DetachBuffer_Internal();
 	}
 
-	/// <summary>
-	/// Detaches the underlying memory block buffer from the stream.
-	/// </summary>
-	/// <returns>Underlying memory block buffer (can be a chained with other memory blocks).</returns>
-	/// <param name="cancellationToken">
-	/// The token to monitor for cancellation requests.
-	/// The default value is <see cref="CancellationToken.None"/>.
-	/// </param>
-	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
-	/// <remarks>
-	/// This method allows you to detach the underlying buffer from the stream and use it in another place.
-	/// If blocks contain buffers that have been rented from an array pool, the returned memory-block chain must
-	/// be disposed to return buffers to the pool. The stream is empty afterward.
-	/// </remarks>
+	/// <inheritdoc/>
 	public Task<ChainableMemoryBlock> DetachBufferAsync(CancellationToken cancellationToken = default)
 	{
 		return cancellationToken.IsCancellationRequested
@@ -1629,9 +1564,10 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	/// <returns>Underlying memory block buffer (can be a chained with other memory blocks).</returns>
 	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 	/// <remarks>
-	/// This method allows you to detach the underlying buffer from the stream and use it in another place.
+	/// This method allows you to detach the underlying buffer from the stream and use it in another place.<br/>
 	/// If blocks contain buffers that have been rented from an array pool, the returned memory-block chain must
-	/// be disposed to return buffers to the pool. The stream is empty afterward.
+	/// be disposed to return buffers to the pool.<br/>
+	/// The stream is empty afterward.
 	/// </remarks>
 	private ChainableMemoryBlock DetachBuffer_Internal()
 	{
@@ -1659,17 +1595,17 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	/// </summary>
 	/// <param name="buffer">Memory block to inject into the stream.</param>
 	/// <param name="overwrite">
-	/// <c>true</c> to overwrite existing data in the stream;
-	/// <c>false</c> to insert the specified memory blocks at the current position.
+	/// <see langword="true"/> to overwrite existing data in the stream;<br/>
+	/// <see langword="false"/> to insert the specified memory blocks at the current position.
 	/// </param>
 	/// <param name="advancePosition">
-	/// <c>true</c> to advance the position of the stream to the end of the injected memory block;
-	/// <c>false</c> to keep the position of the stream at its position.
+	/// <see langword="true"/> to advance the position of the stream to the end of the injected memory block;<br/>
+	/// <see langword="false"/> to keep the position of the stream at its position.
 	/// </param>
-	/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <c>null</c>.</exception>
+	/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <see langword="null"/>.</exception>
 	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 	/// <remarks>
-	/// The specified buffer must not be directly accessed after this operation.
+	/// The specified buffer must not be directly accessed after this operation.<br/>
 	/// The stream takes care of returning buffers to their array pool, if necessary.
 	/// </remarks>
 	internal void InjectBufferAtCurrentPosition(ChainableMemoryBlock buffer, bool overwrite, bool advancePosition)
@@ -1689,21 +1625,21 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	/// </summary>
 	/// <param name="buffer">Memory block to inject into the stream.</param>
 	/// <param name="overwrite">
-	/// <c>true</c> to overwrite existing data in the stream;
-	/// <c>false</c> to insert the specified memory blocks at the current position.
+	/// <see langword="true"/> to overwrite existing data in the stream;<br/>
+	/// <see langword="false"/> to insert the specified memory blocks at the current position.
 	/// </param>
 	/// <param name="advancePosition">
-	/// <c>true</c> to advance the position of the stream to the end of the injected memory block;
-	/// <c>false</c> to keep the position of the stream at its position.
+	/// <see langword="true"/> to advance the position of the stream to the end of the injected memory block;<br/>
+	/// <see langword="false"/> to keep the position of the stream at its position.
 	/// </param>
 	/// <param name="cancellationToken">
 	/// The token to monitor for cancellation requests.
 	/// The default value is <see cref="CancellationToken.None"/>.
 	/// </param>
-	/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <c>null</c>.</exception>
+	/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <see langword="null"/>.</exception>
 	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 	/// <remarks>
-	/// The specified buffer must not be directly accessed after this operation.
+	/// The specified buffer must not be directly accessed after this operation.<br/>
 	/// The stream takes care of returning buffers to their array pool, if necessary.
 	/// </remarks>
 	internal Task InjectBufferAtCurrentPositionAsync(
@@ -1732,17 +1668,17 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	/// </summary>
 	/// <param name="buffer">Memory block to inject into the stream.</param>
 	/// <param name="overwrite">
-	/// <c>true</c> to overwrite existing data in the stream;
-	/// <c>false</c> to insert the specified memory blocks at the current position.
+	/// <see langword="true"/> to overwrite existing data in the stream;<br/>
+	/// <see langword="false"/> to insert the specified memory blocks at the current position.
 	/// </param>
 	/// <param name="advancePosition">
-	/// <c>true</c> to advance the position of the stream to the end of the injected memory block;
-	/// <c>false</c> to keep the position of the stream at its position.
+	/// <see langword="true"/> to advance the position of the stream to the end of the injected memory block;<br/>
+	/// <see langword="false"/> to keep the position of the stream at its position.
 	/// </param>
-	/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <c>null</c>.</exception>
+	/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <see langword="null"/>.</exception>
 	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 	/// <remarks>
-	/// The specified buffer must not be directly accessed after this operation.
+	/// The specified buffer must not be directly accessed after this operation.<br/>
 	/// The stream takes care of returning buffers to their array pool, if necessary.
 	/// </remarks>
 	private void InjectBufferAtCurrentPosition_Internal(ChainableMemoryBlock buffer, bool overwrite, bool advancePosition)
@@ -2019,7 +1955,7 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	}
 
 	/// <summary>
-	/// Removes the specified number of bytes starting at byte 0 of the specified memory block.
+	/// Removes the specified number of bytes starting at byte 0 of the specified memory block.<br/>
 	/// Removes multiple blocks from the chain of blocks, if necessary.
 	/// </summary>
 	/// <param name="block">First block of the chain of blocks to remove data from.</param>

@@ -23,10 +23,10 @@ public interface IMemoryBlockStream : IStream
 	/// Appends a memory block or chain of memory blocks to the stream.
 	/// </summary>
 	/// <param name="buffer">Memory block to append to the stream.</param>
-	/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <c>null</c>.</exception>
+	/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <see langword="null"/>.</exception>
 	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 	/// <remarks>
-	/// The specified buffer must not be directly accessed after this operation.
+	/// The specified buffer must not be directly accessed after this operation.<br/>
 	/// The stream takes care of returning buffers to their array pool, if necessary.
 	/// </remarks>
 	void AppendBuffer(ChainableMemoryBlock buffer);
@@ -39,10 +39,10 @@ public interface IMemoryBlockStream : IStream
 	/// The token to monitor for cancellation requests.
 	/// The default value is <see cref="CancellationToken.None"/>.
 	/// </param>
-	/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <c>null</c>.</exception>
+	/// <exception cref="ArgumentNullException">The <paramref name="buffer"/> argument is <see langword="null"/>.</exception>
 	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 	/// <remarks>
-	/// The specified buffer must not be directly accessed after this operation.
+	/// The specified buffer must not be directly accessed after this operation.<br/>
 	/// The stream takes care of returning buffers to their array pool, if necessary.
 	/// </remarks>
 	Task AppendBufferAsync(ChainableMemoryBlock buffer, CancellationToken cancellationToken = default);
@@ -50,12 +50,12 @@ public interface IMemoryBlockStream : IStream
 	/// <summary>
 	/// Attaches a memory block or chain of memory blocks to the stream.
 	/// </summary>
-	/// <param name="buffer">Memory block to attach to the stream (null to clear the stream).</param>
+	/// <param name="buffer">Memory block to attach to the stream (<see langword="null"/> to clear the stream).</param>
 	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 	/// <remarks>
-	/// This method allows you to exchange the underlying memory block buffer.
-	/// The stream is reset, so the position is 0 after attaching the new buffer.
-	/// The specified buffer must not be directly accessed after this operation.
+	/// This method allows you to exchange the underlying memory block buffer.<br/>
+	/// The stream is reset, so the position is 0 after attaching the new buffer.<br/>
+	/// The specified buffer must not be directly accessed after this operation.<br/>
 	/// The stream takes care of returning buffers to their array pool, if necessary.
 	/// </remarks>
 	void AttachBuffer(ChainableMemoryBlock buffer);
@@ -63,16 +63,16 @@ public interface IMemoryBlockStream : IStream
 	/// <summary>
 	/// Attaches a memory block or chain of memory blocks to the stream.
 	/// </summary>
-	/// <param name="buffer">Memory block to attach to the stream (null to clear the stream).</param>
+	/// <param name="buffer">Memory block to attach to the stream (<see langword="null"/> to clear the stream).</param>
 	/// <param name="cancellationToken">
 	/// The token to monitor for cancellation requests.
 	/// The default value is <see cref="CancellationToken.None"/>.
 	/// </param>
 	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 	/// <remarks>
-	/// This method allows you to exchange the underlying memory block buffer.
-	/// The stream is reset, so the position is 0 after attaching the new buffer.
-	/// The specified buffer must not be directly accessed after this operation.
+	/// This method allows you to exchange the underlying memory block buffer.<br/>
+	/// The stream is reset, so the position is 0 after attaching the new buffer.<br/>
+	/// The specified buffer must not be directly accessed after this operation.<br/>
 	/// The stream takes care of returning buffers to their array pool, if necessary.
 	/// </remarks>
 	Task AttachBufferAsync(ChainableMemoryBlock buffer, CancellationToken cancellationToken = default);
@@ -83,9 +83,10 @@ public interface IMemoryBlockStream : IStream
 	/// <returns>Underlying memory block buffer (can be a chained with other memory blocks).</returns>
 	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 	/// <remarks>
-	/// This method allows you to detach the underlying buffer from the stream and use it in another place.
+	/// This method allows you to detach the underlying buffer from the stream and use it in another place.<br/>
 	/// If blocks contain buffers that have been rented from an array pool, the returned memory-block chain must
-	/// be disposed to return buffers to the pool. The stream is empty afterward.
+	/// be disposed to return buffers to the pool.<br/>
+	/// The stream is empty afterward.
 	/// </remarks>
 	ChainableMemoryBlock DetachBuffer();
 
@@ -99,9 +100,10 @@ public interface IMemoryBlockStream : IStream
 	/// </param>
 	/// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
 	/// <remarks>
-	/// This method allows you to detach the underlying buffer from the stream and use it in another place.
+	/// This method allows you to detach the underlying buffer from the stream and use it in another place.<br/>
 	/// If blocks contain buffers that have been rented from an array pool, the returned memory-block chain must
-	/// be disposed to return buffers to the pool. The stream is empty afterward.
+	/// be disposed to return buffers to the pool.<br/>
+	/// The stream is empty afterward.
 	/// </remarks>
 	Task<ChainableMemoryBlock> DetachBufferAsync(CancellationToken cancellationToken = default);
 }
