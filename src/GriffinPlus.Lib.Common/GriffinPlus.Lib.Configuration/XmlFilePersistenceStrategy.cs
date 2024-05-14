@@ -31,45 +31,22 @@ public class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrate
 		mConfigurationFilePath = Path.GetFullPath(Environment.ExpandEnvironmentVariables(path));
 	}
 
-	/// <summary>
-	/// Checks whether the specified name is a valid configuration name.
-	/// </summary>
-	/// <param name="name">Name to check.</param>
-	/// <returns>
-	/// <c>true</c> if the specified configuration name is valid for use with the strategy;
-	/// otherwise <c>false</c>.
-	/// </returns>
+	/// <inheritdoc/>
 	public override bool IsValidConfigurationName(string name)
 	{
 		return true;
 	}
 
-	/// <summary>
-	/// Checks whether the specified name is a valid item name.
-	/// </summary>
-	/// <param name="name">Name to check.</param>
-	/// <returns>
-	/// <c>true</c> if the specified item name is valid for use with the strategy;
-	/// otherwise <c>false</c>.
-	/// </returns>
+	/// <inheritdoc/>
 	public override bool IsValidItemName(string name)
 	{
 		return true;
 	}
 
-	/// <summary>
-	/// Gets a value indicating whether the persistence strategy supports comments.
-	/// </summary>
+	/// <inheritdoc/>
 	public override bool SupportsComments => true;
 
-	/// <summary>
-	/// Checks whether the persistence strategy supports the specified type.
-	/// </summary>
-	/// <param name="type">Type to check.</param>
-	/// <returns>
-	/// <c>true</c> if the persistence strategy supports the specified type;
-	/// otherwise <c>false</c>.
-	/// </returns>
+	/// <inheritdoc/>
 	public override bool SupportsType(Type type)
 	{
 		// check fixed types
@@ -80,13 +57,7 @@ public class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrate
 		return converter != null;
 	}
 
-	/// <summary>
-	/// Updates the specified configuration loading settings from the configuration file.
-	/// </summary>
-	/// <exception cref="InvalidOperationException">
-	/// The configuration is a child configuration (try to load the root configuration instead).
-	/// </exception>
-	/// <exception cref="ConfigurationException">Loading the configuration file failed.</exception>
+	/// <inheritdoc/>
 	public override void Load(CascadedConfiguration configuration)
 	{
 		if (configuration != configuration.RootConfiguration)
@@ -165,10 +136,7 @@ public class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrate
 		}
 	}
 
-	/// <summary>
-	/// Loads the value of the specified configuration item from the persistent storage.
-	/// </summary>
-	/// <param name="item">Item to load.</param>
+	/// <inheritdoc/>
 	public override void LoadItem(ICascadedConfigurationItem item)
 	{
 		CascadedConfiguration configuration = item.Configuration.RootConfiguration;
@@ -267,14 +235,7 @@ public class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrate
 		}
 	}
 
-	/// <summary>
-	/// Saves configuration data from the specified configuration into the backend storage.
-	/// </summary>
-	/// <param name="configuration">Configuration to save.</param>
-	/// <param name="flags">Flags controlling the saving behavior.</param>
-	/// <exception cref="ConfigurationException">
-	/// The configuration is a child configuration (try to load the root configuration instead).
-	/// </exception>
+	/// <inheritdoc/>
 	public override void Save(CascadedConfiguration configuration, CascadedConfigurationSaveFlags flags)
 	{
 		if (mConfigurationFilePath == null)
@@ -396,7 +357,7 @@ public class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrate
 	/// <param name="configuration">Configuration the configuration item is in.</param>
 	/// <param name="itemName">Name of the 'Item' element to add/set.</param>
 	/// <param name="type">Type of the value to set.</param>
-	/// <param name="value">Value of the 'Item' element to add/set (null to remove the item).</param>
+	/// <param name="value">Value of the 'Item' element to add/set (<see langword="null"/> to remove the item).</param>
 	private XmlElement SetItem(
 		XmlNode               parent,
 		CascadedConfiguration configuration,

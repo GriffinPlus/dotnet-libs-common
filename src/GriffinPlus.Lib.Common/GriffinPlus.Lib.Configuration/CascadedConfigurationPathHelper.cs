@@ -42,12 +42,12 @@ public static class CascadedConfigurationPathHelper
 	/// otherwise the segment will be split up).
 	/// </param>
 	/// <param name="isItemPath">
-	/// <c>true</c> if the path is an item path;<br/>
-	/// <c>false</c> if the specified path is a configuration node path.
+	/// <see langword="true"/> if the path is an item path;<br/>
+	/// <see langword="false"/> if the specified path is a configuration node path.
 	/// </param>
 	/// <param name="checkValidity">
-	/// <c>true</c> to check the validity of path segment names using the specified persistence strategy;<br/>
-	/// <c>false</c> to skip checking the validity of path segment names.
+	/// <see langword="true"/> to check the validity of path segment names using the specified persistence strategy;<br/>
+	/// <see langword="false"/> to skip checking the validity of path segment names.
 	/// </param>
 	/// <returns>The resulting list of path segments.</returns>
 	/// <exception cref="ConfigurationException">
@@ -122,8 +122,8 @@ public static class CascadedConfigurationPathHelper
 	}
 
 	/// <summary>
-	/// Checks whether the persistence strategy supports assigning the specified value to an item of the specified type;
-	/// throws an exception, if it can not.
+	/// Checks whether the persistence strategy supports assigning the specified value to an item of the specified type.<br/>
+	/// Throws an exception, if it can not.
 	/// </summary>
 	/// <param name="strategy">The persistence strategy that is used.</param>
 	/// <param name="itemType">Item type to check.</param>
@@ -149,8 +149,8 @@ public static class CascadedConfigurationPathHelper
 	/// </summary>
 	/// <param name="s">String to check.</param>
 	/// <returns>
-	/// <c>true</c> if the specified strings contains a path separator;
-	/// otherwise <c>false</c>.
+	/// <see langword="true"/> if the specified strings contains a path separator;<br/>
+	/// otherwise <see langword="false"/>.
 	/// </returns>
 	public static bool ContainsPathSeparator(string s)
 	{

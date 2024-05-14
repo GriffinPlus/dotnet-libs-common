@@ -25,8 +25,8 @@ namespace GriffinPlus.Lib.Configuration;
 /// other configuration) must always provide a value for each and every configuration item. Therefore, it is recommended
 /// to populate the base configuration with default settings. Configurations deriving from the base configuration
 /// may hide default settings by overwriting configuration items. A query will always return the value of the most specific
-/// configuration item that provides a value.
-/// 
+/// configuration item that provides a value.<br/>
+/// <br/>
 /// Any configuration can have multiple child configurations that allow to create hierarchical configurations.
 /// </remarks>
 [DebuggerDisplay("Configuration | Path: {" + nameof(Path) + "}")]
@@ -43,8 +43,8 @@ public class CascadedConfiguration
 	/// </summary>
 	/// <param name="name">Name of the configuration.</param>
 	/// <param name="persistence">
-	/// A persistence strategy that is responsible for persisting configuration items
-	/// (<c>null</c>, if persistence is not needed).
+	/// A persistence strategy that is responsible for persisting configuration items;<br/>
+	/// <see langword="null"/> if persistence is not needed.
 	/// </param>
 	public CascadedConfiguration(string name, ICascadedConfigurationPersistenceStrategy persistence)
 	{
@@ -63,8 +63,8 @@ public class CascadedConfiguration
 	/// a value for a configuration item.
 	/// </param>
 	/// <param name="persistence">
-	/// A persistence strategy that is responsible for persisting configuration items
-	/// (<c>null</c>, if persistence is not needed).
+	/// A persistence strategy that is responsible for persisting configuration items;<br/>
+	/// <see langword="null"/> if persistence is not needed.
 	/// </param>
 	public CascadedConfiguration(CascadedConfiguration configurationToInheritFrom, ICascadedConfigurationPersistenceStrategy persistence)
 	{
@@ -166,14 +166,14 @@ public class CascadedConfiguration
 	}
 
 	/// <summary>
-	/// Gets the configuration the current configuration inherits from.
-	/// (<c>null</c>, if the current configuration does not inherit from another configuration).
+	/// Gets the configuration the current configuration inherits from
+	/// (<see langword="null"/> if the current configuration does not inherit from another configuration).
 	/// </summary>
 	public CascadedConfiguration InheritedConfiguration { get; private set; }
 
 	/// <summary>
 	/// Gets the parent of the configuration
-	/// (<c>null</c>, if the current configuration is a root configuration).
+	/// (<see langword="null"/> if the current configuration is a root configuration).
 	/// </summary>
 	public CascadedConfiguration Parent { get; private set; }
 
@@ -242,9 +242,10 @@ public class CascadedConfiguration
 	/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
 	/// <returns>The item at the specified path.</returns>
-	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c>.</exception>
+	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
 	/// <exception cref="ConfigurationException">
-	/// The configuration already contains an item with the specified name, but with a different type -or-
+	/// The configuration already contains an item with the specified name, but with a different type.<br/>
+	/// -or-<br/>
 	/// The specified item type or value is not supported by the persistence strategy.
 	/// </exception>
 	public CascadedConfigurationItem<T> SetItem<T>(string path)
@@ -307,9 +308,10 @@ public class CascadedConfiguration
 	/// </param>
 	/// <param name="value">Initial value of the configuration item.</param>
 	/// <returns>The item at the specified path.</returns>
-	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c>.</exception>
+	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
 	/// <exception cref="ConfigurationException">
-	/// The configuration already contains an item with the specified name, but with a different type -or-
+	/// The configuration already contains an item with the specified name, but with a different type.<br/>
+	/// -or-<br/>
 	/// The specified item type or value is not supported by the persistence strategy.
 	/// </exception>
 	public CascadedConfigurationItem<T> SetValue<T>(string path, T value)
@@ -375,9 +377,10 @@ public class CascadedConfiguration
 	/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
 	/// <returns>The item at the specified path.</returns>
-	/// <exception cref="ArgumentNullException"><paramref name="path"/> or <paramref name="type"/> is <c>null</c>.</exception>
+	/// <exception cref="ArgumentNullException"><paramref name="path"/> or <paramref name="type"/> is <see langword="null"/>.</exception>
 	/// <exception cref="ConfigurationException">
-	/// The configuration already contains an item with the specified name, but with a different type -or-
+	/// The configuration already contains an item with the specified name, but with a different type.<br/>
+	/// -or-<br/>
 	/// The specified item type is not supported by the persistence strategy.
 	/// </exception>
 	public ICascadedConfigurationItem SetItem(string path, Type type)
@@ -440,9 +443,10 @@ public class CascadedConfiguration
 	/// </param>
 	/// <param name="type">Type of the value in the configuration item.</param>
 	/// <param name="value">Initial value of the configuration item.</param>
-	/// <exception cref="ArgumentNullException"><paramref name="path"/> or <paramref name="type"/> is <c>null</c>.</exception>
+	/// <exception cref="ArgumentNullException"><paramref name="path"/> or <paramref name="type"/> is <see langword="null"/>.</exception>
 	/// <exception cref="ConfigurationException">
-	/// The configuration already contains an item with the specified name, but with a different type -or-
+	/// The configuration already contains an item with the specified name, but with a different type.<br/>
+	/// -or-<br/>
 	/// The specified item type or value is not supported by the persistence strategy.
 	/// </exception>
 	public ICascadedConfigurationItem SetValue(string path, Type type, object value)
@@ -508,7 +512,7 @@ public class CascadedConfiguration
 	/// escape these characters. Otherwise, the segment will be split up. The configuration helper function
 	/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
-	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c>.</exception>
+	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
 	/// <exception cref="ConfigurationException">
 	/// <paramref name="path"/> contains parts that are not supported by the persistence strategy.
 	/// </exception>
@@ -595,8 +599,8 @@ public class CascadedConfiguration
 	/// so inherited item values become visible.
 	/// </summary>
 	/// <param name="recursively">
-	/// <c>true</c> to reset items of child configurations as well;
-	/// <c>false</c> to reset items of the current configuration.
+	/// <see langword="true"/> to reset items of child configurations as well;<br/>
+	/// <see langword="false"/> to reset items of the current configuration.
 	/// </param>
 	public void ResetItems(bool recursively = false)
 	{
@@ -627,14 +631,16 @@ public class CascadedConfiguration
 	/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
 	/// <param name="inherit">
-	/// <c>true</c> to try to retrieve the value from the current configuration first, then check inherited configurations;
-	/// <c>false</c> to try to retrieve the value from the current configuration only.
+	/// <see langword="true"/> to try to retrieve the value from the current configuration first, then check inherited configurations;<br/>
+	/// <see langword="false"/> to try to retrieve the value from the current configuration only.
 	/// </param>
 	/// <returns>Value of the configuration value.</returns>
-	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c>.</exception>
+	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
 	/// <exception cref="ConfigurationException">
-	/// <paramref name="path"/> contains parts that are not supported by the persistence strategy -or-
-	/// The configuration does not contain an item at the specified location -or-
+	/// <paramref name="path"/> contains parts that are not supported by the persistence strategy.<br/>
+	/// -or-<br/>
+	/// The configuration does not contain an item at the specified location.<br/>
+	/// -or-<br/>
 	/// The configuration contains an item at the specified location, but the item has a different type.
 	/// </exception>
 	public T GetValue<T>(string path, bool inherit = true)
@@ -711,14 +717,14 @@ public class CascadedConfiguration
 	/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
 	/// <param name="inherit">
-	/// <c>true</c> to try to retrieve the comment from an item in the current configuration first, then check inherited configurations;
-	/// <c>false</c> to try to retrieve the comment from the current configuration only.
+	/// <see langword="true"/> to try to retrieve the comment from an item in the current configuration first, then check inherited configurations;<br/>
+	/// <see langword="false"/> to try to retrieve the comment from the current configuration only.
 	/// </param>
 	/// <returns>
-	/// Comment of the configuration item;
-	/// <c>null</c> if the item does not exist or does not have a comment.
+	/// Comment of the configuration item;<br/>
+	/// <see langword="null"/> if the item does not exist or does not have a comment.
 	/// </returns>
-	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c>.</exception>
+	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
 	/// <exception cref="ConfigurationException">
 	/// <paramref name="path"/> contains parts that are not supported by the persistence strategy.
 	/// </exception>
@@ -767,12 +773,13 @@ public class CascadedConfiguration
 	/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
 	/// <returns>
-	/// The configuration item at the specified path;
-	/// <c>null</c>, if the configuration does not contain a configuration item with the specified name.
+	/// The configuration item at the specified path;<br/>
+	/// <see langword="null"/> if the configuration does not contain a configuration item with the specified name.
 	/// </returns>
-	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c>.</exception>
+	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
 	/// <exception cref="ConfigurationException">
-	/// <paramref name="path"/> contains parts that are not supported by the persistence strategy -or-
+	/// <paramref name="path"/> contains parts that are not supported by the persistence strategy.<br/>
+	/// -or-<br/>
 	/// The configuration contains an item with the specified name, but the item has a different type.
 	/// </exception>
 	public CascadedConfigurationItem<T> GetItem<T>(string path)
@@ -823,10 +830,10 @@ public class CascadedConfiguration
 	/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
 	/// <returns>
-	/// The configuration item at the specified location;
-	/// <c>null</c>, if the configuration does not contain a configuration item at the specified location.
+	/// The configuration item at the specified location;<br/>
+	/// <see langword="null"/> if the configuration does not contain a configuration item at the specified location.
 	/// </returns>
-	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c>.</exception>
+	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
 	/// <exception cref="ConfigurationException">
 	/// <paramref name="path"/> contains parts that are not supported by the persistence strategy.
 	/// </exception>
@@ -865,8 +872,8 @@ public class CascadedConfiguration
 	/// (does not dive into the configuration inheriting from, if any).
 	/// </summary>
 	/// <param name="recursively">
-	/// <c>true</c> to get the items of the child configuration as well;<br/>
-	/// <c>false</c> to get the items of the current configuration only.
+	/// <see langword="true"/> to get the items of the child configuration as well;<br/>
+	/// <see langword="false"/> to get the items of the current configuration only.
 	/// </param>
 	/// <returns>The requested configuration items.</returns>
 	public ICascadedConfigurationItem[] GetAllItems(bool recursively)
@@ -900,14 +907,14 @@ public class CascadedConfiguration
 	/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
 	/// <param name="create">
-	/// <c>true</c> to create the child configuration, if it does not exist;<br/>
-	/// <c>false</c> to return <c>null</c>, if the configuration does not exist.
+	/// <see langword="true"/> to create the child configuration, if it does not exist;<br/>
+	/// <see langword="false"/> to return <see langword="null"/> if the configuration does not exist.
 	/// </param>
 	/// <returns>
 	/// The requested child configuration;<br/>
-	/// <c>null</c>, if the child configuration at the specified path does not exist and <paramref name="create"/> is <c>false</c>.
+	/// <see langword="null"/> if the child configuration at the specified path does not exist and <paramref name="create"/> is <see langword="false"/>.
 	/// </returns>
-	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c>.</exception>
+	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
 	/// <exception cref="ConfigurationException">
 	/// <paramref name="path"/> contains parts that are not supported by the persistence strategy.
 	/// </exception>
@@ -938,8 +945,8 @@ public class CascadedConfiguration
 	}
 
 	/// <summary>
-	/// Creates new instance of the <see cref="CascadedConfiguration"/> class for use as a child configuration of the current configuration
-	/// (the caller will do the integration of the object into the configuration).
+	/// Creates new instance of the <see cref="CascadedConfiguration"/> class for use as a child configuration of the current configuration.
+	/// The caller will do the integration of the object into the configuration.
 	/// </summary>
 	/// <param name="name">Name of the configuration to create.</param>
 	/// <returns>The created child configuration.</returns>

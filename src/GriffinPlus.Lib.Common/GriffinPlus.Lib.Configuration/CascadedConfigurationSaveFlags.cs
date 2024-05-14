@@ -19,7 +19,7 @@ public enum CascadedConfigurationSaveFlags
 	None = 0x0,
 
 	/// <summary>
-	/// Save inherited settings, if a configuration item does not have an own value.
+	/// Save inherited settings, if a configuration item does not have an own value.<br/>
 	/// If this flag is omitted only configuration items that have a value are saved.
 	/// </summary>
 	SaveInheritedSettings = 0x1

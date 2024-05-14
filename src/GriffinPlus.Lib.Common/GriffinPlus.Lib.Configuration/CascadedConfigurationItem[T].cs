@@ -27,8 +27,8 @@ public sealed class CascadedConfigurationItem<T> : ICascadedConfigurationItemInt
 	private          bool   mHasComment;
 
 	/// <summary>
-	/// Occurs when the value of a property changes (directly or indirectly).
-	/// When the event is raised, the handler is scheduled using the synchronization context of the registering thread.
+	/// Occurs when the value of a property changes (directly or indirectly).<br/>
+	/// When the event is raised, the handler is scheduled using the synchronization context of the registering thread.<br/>
 	/// If the thread does not have a synchronization context, the handler is scheduled on a worker thread.
 	/// </summary>
 	public event PropertyChangedEventHandler PropertyChanged
@@ -109,8 +109,8 @@ public sealed class CascadedConfigurationItem<T> : ICascadedConfigurationItemInt
 	/// </summary>
 	/// <exception cref="ConfigurationException">The configuration item does not have a value.</exception>
 	/// <remarks>
-	/// This property gets the value of the current configuration item, if the current configuration item provides
-	/// a value for it. If it doesn't, inherited configurations in the configuration cascade are queried.
+	/// This property gets the value of the current configuration item, if the current configuration item provides a value for it.<br/>
+	/// If it doesn't, inherited configurations in the configuration cascade are queried.<br/>
 	/// Setting the property effects the current configuration item only.
 	/// </remarks>
 	public T Value
@@ -171,9 +171,9 @@ public sealed class CascadedConfigurationItem<T> : ICascadedConfigurationItemInt
 	/// Gets or sets the comment describing the configuration item.
 	/// </summary>
 	/// <remarks>
-	/// This property gets the comment of the current configuration item, if the current configuration item provides a comment.
-	/// If it doesn't, inherited configurations in the configuration cascade are queried. Setting the property effects the current
-	/// configuration item only.
+	/// This property gets the comment of the current configuration item, if the current configuration item provides a comment.<br/>
+	/// If it doesn't, inherited configurations in the configuration cascade are queried.<br/>
+	/// Setting the property effects the current configuration item only.
 	/// </remarks>
 	public string Comment
 	{
