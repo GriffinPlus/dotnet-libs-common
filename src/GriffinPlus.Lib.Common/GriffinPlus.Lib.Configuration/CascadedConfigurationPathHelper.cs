@@ -31,14 +31,14 @@ public static class CascadedConfigurationPathHelper
 		return basePath + string.Join("/", pathSegments);
 	}
 
-	private static readonly Regex sPathSplitterRegex = new(@"(?:(?<![\\])[/])|(?:(?<![\\])[\\](?![\\]))", RegexOptions.Compiled);
+	private static readonly Regex sPathSplitterRegex = new(@"(?<![\\])[/]", RegexOptions.Compiled);
 
 	/// <summary>
-	/// Splits up the specified path into a list of path segments using '/' and '\' as delimiters.
+	/// Splits up the specified path into a list of path segments using '/' as delimiter.
 	/// </summary>
 	/// <param name="strategy">The persistence strategy that is used.</param>
 	/// <param name="path">
-	/// Path to split (path delimiter are '/' and '\', escape these characters, if a path segment contains one of them,
+	/// Path to split (path delimiter is '/', escape these characters, if a path segment contains one of them,
 	/// otherwise the segment will be split up).
 	/// </param>
 	/// <param name="isItemPath">
@@ -157,7 +157,7 @@ public static class CascadedConfigurationPathHelper
 		return sPathSplitterRegex.IsMatch(s);
 	}
 
-	private static readonly Regex sEscapeRegex = new(@"(?<sep>[\\/])", RegexOptions.Compiled);
+	private static readonly Regex sEscapeRegex = new(@"(?<sep>[/])", RegexOptions.Compiled);
 
 	/// <summary>
 	/// Escapes the specified name for use in the configuration (avoid splitting up path segments unintentionally).
@@ -169,7 +169,7 @@ public static class CascadedConfigurationPathHelper
 		return sEscapeRegex.Replace(s, "\\${sep}");
 	}
 
-	private static readonly Regex sUnescapeRegex = new(@"[\\](?<sep>[\\/])", RegexOptions.Compiled);
+	private static readonly Regex sUnescapeRegex = new(@"[\\](?<sep>[/])", RegexOptions.Compiled);
 
 	/// <summary>
 	/// Removes path delimiter escaping from the specified string.

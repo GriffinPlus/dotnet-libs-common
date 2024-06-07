@@ -17,14 +17,13 @@ namespace GriffinPlus.Lib.Configuration;
 /// An item in the <see cref="CascadedConfiguration"/>.
 /// </summary>
 [DebuggerDisplay("{" + nameof(DebugOutput) + "}")]
-public sealed class CascadedConfigurationItem<T> : ICascadedConfigurationItemInternal
+public sealed class CascadedConfigurationItem<T> : ICascadedConfigurationItem
 {
 	private readonly string mName;
 	private readonly string mPath;
 	private          T      mValue;
 	private          string mComment;
 	private          bool   mHasValue;
-	private          bool   mHasComment;
 
 	/// <summary>
 	/// Occurs when the value of a property changes (directly or indirectly).<br/>
@@ -40,25 +39,47 @@ public sealed class CascadedConfigurationItem<T> : ICascadedConfigurationItemInt
 	/// <summary>
 	/// Initializes a new instance of the <see cref="CascadedConfigurationItem{T}"/> class.
 	/// </summary>
+	/// <param name="configuration">Configuration the item belongs to.</param>
 	/// <param name="name">Name of the configuration item.</param>
 	/// <param name="path">Path of the configuration item in the configuration hierarchy.</param>
-	internal CascadedConfigurationItem(string name, string path)
+	internal CascadedConfigurationItem(CascadedConfigurationBase configuration, string name, string path)
 	{
+		Configuration = configuration;
+		InheritedItem = configuration.InheritedConfiguration?.GetItem<T>(CascadedConfigurationPathHelper.EscapeName(name));
 		mName = name;
 		mValue = default;
 		mHasValue = false;
-		mHasComment = false;
 		mPath = path;
 	}
 
 	/// <summary>
-	/// Gets the configuration the current item is in.
+	/// Initializes a new instance of the <see cref="CascadedConfigurationItem{T}"/> class.
 	/// </summary>
-	public CascadedConfiguration Configuration { get; internal set; }
+	/// <param name="configuration">Configuration the item belongs to.</param>
+	/// <param name="name">Name of the configuration item.</param>
+	/// <param name="path">Path of the configuration item in the configuration hierarchy.</param>
+	/// <param name="value">Value of the configuration item.</param>
+	internal CascadedConfigurationItem(
+		CascadedConfigurationBase configuration,
+		string                    name,
+		string                    path,
+		T                         value)
+	{
+		Configuration = configuration;
+		InheritedItem = configuration.InheritedConfiguration?.GetItem<T>(CascadedConfigurationPathHelper.EscapeName(name));
+		mName = name;
+		mValue = value;
+		mHasValue = true;
+		mPath = path;
+	}
 
-	/// <summary>
-	/// Gets the name of the configuration item.
-	/// </summary>
+	/// <inheritdoc/>
+	public CascadedConfigurationBase Configuration { get; internal set; }
+
+	/// <inheritdoc cref="ICascadedConfigurationItem.InheritedItem"/>
+	public CascadedConfigurationItem<T> InheritedItem { get; internal set; }
+
+	/// <inheritdoc/>
 	public string Name
 	{
 		get
@@ -70,9 +91,7 @@ public sealed class CascadedConfigurationItem<T> : ICascadedConfigurationItemInt
 		}
 	}
 
-	/// <summary>
-	/// Gets the path of the configuration item in the configuration hierarchy.
-	/// </summary>
+	/// <inheritdoc/>
 	public string Path
 	{
 		get
@@ -84,15 +103,10 @@ public sealed class CascadedConfigurationItem<T> : ICascadedConfigurationItemInt
 		}
 	}
 
-	/// <summary>
-	/// Gets the type of the value in the configuration item
-	/// (the type of the actual value may be the type or a type deriving from this type).
-	/// </summary>
+	/// <inheritdoc/>
 	public Type Type => typeof(T); // immutable part => no synchronization necessary
 
-	/// <summary>
-	/// Gets a value indicating whether the configuration item contains a valid value.
-	/// </summary>
+	/// <inheritdoc/>
 	public bool HasValue
 	{
 		get
@@ -104,22 +118,17 @@ public sealed class CascadedConfigurationItem<T> : ICascadedConfigurationItemInt
 		}
 	}
 
-	/// <summary>
-	/// Gets or sets the value of the configuration item.
-	/// </summary>
-	/// <exception cref="ConfigurationException">The configuration item does not have a value.</exception>
-	/// <remarks>
-	/// This property gets the value of the current configuration item, if the current configuration item provides a value for it.<br/>
-	/// If it doesn't, inherited configurations in the configuration cascade are queried.<br/>
-	/// Setting the property effects the current configuration item only.
-	/// </remarks>
+	/// <inheritdoc cref="ICascadedConfigurationItem.Value"/>
 	public T Value
 	{
 		get
 		{
 			lock (Configuration.Sync)
 			{
-				return mHasValue ? mValue : Configuration.GetValue<T>(mName);
+				if (mHasValue) return mValue;
+				bool found = Configuration.TryGetValue(mName, true, out T value);
+				Debug.Assert(found);
+				return value;
 			}
 		}
 
@@ -148,40 +157,31 @@ public sealed class CascadedConfigurationItem<T> : ICascadedConfigurationItemInt
 		}
 	}
 
-	/// <summary>
-	/// Gets a value indicating whether the configuration item contains a comment.
-	/// </summary>
+	/// <inheritdoc/>
 	public bool HasComment
 	{
 		get
 		{
 			lock (Configuration.Sync)
 			{
-				return mHasComment;
+				return mComment != null;
 			}
 		}
 	}
 
-	/// <summary>
-	/// Gets a value indicating whether the configuration supports comments.
-	/// </summary>
+	/// <inheritdoc/>
 	public bool SupportsComments => Configuration.PersistenceStrategy == null || Configuration.PersistenceStrategy.SupportsComments;
 
-	/// <summary>
-	/// Gets or sets the comment describing the configuration item.
-	/// </summary>
-	/// <remarks>
-	/// This property gets the comment of the current configuration item, if the current configuration item provides a comment.<br/>
-	/// If it doesn't, inherited configurations in the configuration cascade are queried.<br/>
-	/// Setting the property effects the current configuration item only.
-	/// </remarks>
+	/// <inheritdoc/>
 	public string Comment
 	{
 		get
 		{
 			lock (Configuration.Sync)
 			{
-				return mHasComment ? mComment : Configuration.GetComment(mName);
+				if (mComment != null) return mComment;
+				Configuration.TryGetComment(mName, true, out string comment);
+				return comment;
 			}
 		}
 
@@ -192,11 +192,10 @@ public sealed class CascadedConfigurationItem<T> : ICascadedConfigurationItemInt
 				if (Configuration.PersistenceStrategy is { SupportsComments: false })
 					throw new NotSupportedException("The persistence strategy does not support comments.");
 
-				if (mHasComment && Equals(mComment, value))
+				if (Equals(mComment, value))
 					return;
 
 				mComment = value;
-				mHasComment = true;
 				OnPropertyChanged();
 				Configuration.NotifyItemCommentChanged(this);
 			}
@@ -242,37 +241,14 @@ public sealed class CascadedConfigurationItem<T> : ICascadedConfigurationItemInt
 		}
 	}
 
-	/// <summary>
-	/// Resets the comment of the configuration item, so an inherited configuration value is returned by the <see cref="Comment"/> property.
-	/// </summary>
-	public void ResetComment()
-	{
-		lock (Configuration.Sync)
-		{
-			if (!mHasComment) return;
-			mHasComment = false;
-			mComment = null;
-			OnPropertyChanged(nameof(Comment));
-			Configuration.NotifyItemCommentChanged(this);
-		}
-	}
+	/// <inheritdoc/>
+	ICascadedConfigurationItem ICascadedConfigurationItem.InheritedItem => InheritedItem;
 
-	/// <summary>
-	/// Gets or sets the value of the configuration item.
-	/// </summary>
+	/// <inheritdoc/>
 	object ICascadedConfigurationItem.Value
 	{
 		get => Value;
 		set => Value = (T)value;
-	}
-
-	/// <summary>
-	/// Sets the configuration the current item is in.
-	/// </summary>
-	/// <param name="configuration">Configuration to set.</param>
-	void ICascadedConfigurationItemInternal.SetConfiguration(CascadedConfiguration configuration)
-	{
-		Configuration = configuration;
 	}
 
 	/// <summary>

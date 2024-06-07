@@ -7,7 +7,6 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Xml;
 
 using GriffinPlus.Lib.Conversion;
@@ -102,8 +101,8 @@ public class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrate
 			{
 				if (configurationElement.SelectSingleNode($"Item[@name='{item.Name}']") is XmlElement itemElement)
 				{
-					object value = GetValueFromXmlElement(itemElement, item.Name, item.Type);
-					item.Value = value;
+					item.Value = GetValueFromXmlElement(itemElement, item.Name, item.Type);
+					item.Comment = GetCommentFromXmlElement(itemElement);
 				}
 				else
 				{
@@ -116,19 +115,6 @@ public class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrate
 			{
 				LoadInternal(child, configurationElement);
 			}
-
-			// add configurations that do not exist, yet
-			// (items are not mapped, since items are typed and the file does not contain any type information)
-			Debug.Assert(configurationElement != null, nameof(configurationElement) + " != null");
-			foreach (XmlElement element in configurationElement.SelectNodes("Configuration[@name]")!)
-			{
-				string name = element.Attributes["name"]?.Value;
-				if (name == null) continue;
-				CascadedConfiguration child = configuration.Children.FirstOrDefault(x => x.Name == name);
-				if (child != null) continue;
-				child = configuration.GetChildConfiguration(CascadedConfigurationPathHelper.EscapeName(name), true);
-				LoadInternal(child, configurationElement);
-			}
 		}
 		else
 		{
@@ -139,7 +125,7 @@ public class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrate
 	/// <inheritdoc/>
 	public override void LoadItem(ICascadedConfigurationItem item)
 	{
-		CascadedConfiguration configuration = item.Configuration.RootConfiguration;
+		CascadedConfigurationBase configuration = item.Configuration.RootConfiguration;
 		lock (configuration.Sync)
 		{
 			if (mXmlDocument?.SelectSingleNode("//ConfigurationFile") is not XmlElement root) return;
@@ -175,12 +161,39 @@ public class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrate
 			else
 			{
 				if (parent.SelectSingleNode($"Item[@name='{item.Name}']") is not XmlElement itemElement) return;
-				object value = GetValueFromXmlElement(itemElement, item.Name, item.Type);
-				item.Value = value;
+				item.Value = GetValueFromXmlElement(itemElement, item.Name, item.Type);
+				item.Comment = GetCommentFromXmlElement(itemElement);
 			}
 
 			break;
 		}
+	}
+
+	/// <summary>
+	/// Reads the comment preceding the specified element.
+	/// </summary>
+	/// <param name="element">XML element containing the inner text to read.</param>
+	/// <returns>
+	/// The inner text of the comment node preceding the item node;<br/>
+	/// <see langword="null"/> there is no comment.
+	/// </returns>
+	private static string GetCommentFromXmlElement(XmlElement element)
+	{
+		// read comment, if any
+		if (element.ParentNode != null)
+		{
+			for (int i = 0; i < element.ParentNode.ChildNodes.Count; i++)
+			{
+				if (element.ParentNode.ChildNodes[i] != element)
+					continue;
+
+				if (i <= 0) continue;
+				if (element.ParentNode.ChildNodes[i - 1] is XmlComment commentNode)
+					return commentNode.InnerText;
+			}
+		}
+
+		return null;
 	}
 
 	/// <summary>
