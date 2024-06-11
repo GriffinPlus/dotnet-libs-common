@@ -165,16 +165,29 @@ public class CascadedConfiguration : CascadedConfigurationBase
 	/// <returns>The item at the specified path.</returns>
 	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
 	/// <exception cref="ConfigurationException">
-	/// The configuration contains an item with the specified name, but with a different type.<br/>
+	/// The configuration does not contain an item at the specified path.<br/>
+	/// -or-<br/>
+	/// The configuration contains an item at the specified path, but with a different type.<br/>
 	/// -or-<br/>
 	/// The specified item type not supported by the persistence strategy or <paramref name="value"/> is not assignable to it.
 	/// </exception>
 	public CascadedConfigurationItem<T> SetValue<T>(string path, T value)
 	{
-		CascadedConfigurationItem<T> item = GetItem<T>(path);
-		if (item == null) throw new ConfigurationException($"The configuration does not contain an item at the specified path ({path}).");
-		item.Value = value;
-		return item;
+		if (!TryGetItem(path, out ICascadedConfigurationItem item))
+			throw new ConfigurationException($"The configuration does not contain an item at the specified path ({path}).");
+
+		if (typeof(T) != item.Type)
+		{
+			throw new ConfigurationException(
+				"The configuration contains an item at the specified path ({0}), but with a different type (configuration item: {1}, specified: {2}).",
+				item.Path,
+				item.Type.FullName,
+				typeof(T).FullName);
+		}
+
+		var item2 = (CascadedConfigurationItem<T>)item;
+		item2.Value = value;
+		return item2;
 	}
 
 	#endregion
@@ -193,12 +206,38 @@ public class CascadedConfiguration : CascadedConfigurationBase
 	/// <param name="value">Value to set.</param>
 	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
 	/// <exception cref="ConfigurationException">
-	/// The configuration contains an item with the specified name, the <paramref name="value"/> is not assignable to it.
+	/// The configuration does not contain an item at the specified path.<br/>
+	/// -or-<br/>
+	/// The configuration contains an item at the specified path, but <paramref name="value"/> is not assignable to it.
 	/// </exception>
 	public ICascadedConfigurationItem SetValue(string path, object value)
 	{
-		ICascadedConfigurationItem item = GetItem(path);
-		if (item == null) throw new ConfigurationException($"The configuration does not contain an item at the specified path ({path}).");
+		if (!TryGetItem(path, out ICascadedConfigurationItem item))
+			throw new ConfigurationException($"The configuration does not contain an item at the specified path ({path}).");
+
+		if (value != null)
+		{
+			Type type = value.GetType();
+			if (!item.Type.IsAssignableFrom(type))
+			{
+				throw new ConfigurationException(
+					"The configuration contains an item at the specified path ({0}), but the specified value is not assignable to it (configuration item: {1}, specified: {2}).",
+					item.Path,
+					item.Type.FullName,
+					type.FullName);
+			}
+		}
+		else
+		{
+			if (item.Type.IsValueType)
+			{
+				throw new ConfigurationException(
+					"The configuration contains an item at the specified path ({0}), but the specified value is not assignable to it (configuration item: {1}, specified: null).",
+					item.Path,
+					item.Type.FullName);
+			}
+		}
+
 		item.Value = value;
 		return item;
 	}
