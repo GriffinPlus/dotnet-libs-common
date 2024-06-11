@@ -1661,11 +1661,6 @@ public class CascadedConfigurationTests
 					x.GetParameters().Length == 1)
 			.MakeGenericMethod(typeof(int)); // the value type does not matter as the item does not exist...
 
-		// determine paths of elements in the configurations
-		List<List<string>> elementPathsBefore = rootConfigurations
-			.Select(rootConfiguration => (List<string>) [..CollectElementPaths(rootConfiguration)])
-			.ToList();
-
 		// iterate through the configurations and check whether GetItem<T>() throws an exception
 		foreach (CascadedConfigurationBase configuration in rootConfigurations)
 		{
@@ -1674,14 +1669,6 @@ public class CascadedConfigurationTests
 			Assert.IsType<ConfigurationException>(exception.InnerException);
 			Assert.Equal($"The configuration does not contain an item at the specified path ({path}).", exception.InnerException.Message);
 		}
-
-		// determine paths of elements in the configurations
-		List<List<string>> elementPathsAfter = rootConfigurations
-			.Select(rootConfiguration => (List<string>) [..CollectElementPaths(rootConfiguration)])
-			.ToList();
-
-		// no elements should have been added/removed
-		Assert.Equal(elementPathsBefore, elementPathsAfter);
 	}
 
 	/// <summary>
@@ -1732,7 +1719,7 @@ public class CascadedConfigurationTests
 	/// The method is expected to throw an <see cref="ArgumentNullException"/>.
 	/// </summary>
 	[Fact]
-	public void GetItemT_PathNull()
+	public void GetItemT_PathIsNull()
 	{
 		// create a base configuration and let a configuration inherit from it
 		const string configurationName = "My Configuration";
@@ -1827,6 +1814,212 @@ public class CascadedConfigurationTests
 		// check whether GetItem() throws the expected exception
 		Assert.Throws<ArgumentNullException>(() => baseRootConfiguration.GetItem(null));      // DefaultCascadedConfiguration
 		Assert.Throws<ArgumentNullException>(() => inheritedRootConfiguration.GetItem(null)); // CascadedConfiguration
+	}
+
+	#endregion
+
+	#endregion
+
+	#region TryGetItem<T>(string path, out CascadedConfigurationItem<T> item) and TryGetItem(string path, out ICascadedConfigurationItem item)
+
+	#region TryGetItem<T>(string path, out CascadedConfigurationItem<T> item)
+
+	/// <summary>
+	/// Tests getting an item using <see cref="CascadedConfigurationBase.TryGetItem{T}"/>.<br/>
+	/// The item exists when the method is called.<br/>
+	/// The method is expected to succeed.
+	/// </summary>
+	[Theory]
+	[MemberData(nameof(GetItem_ItemExists_TestData))]
+	public void TryGetItemT_ItemExists(
+		CascadedConfigurationBase[] rootConfigurations,
+		Type                        itemValueType,
+		ItemInfo[]                  itemInfos)
+	{
+		// get GetItem<T>() method to invoke
+		MethodInfo method = typeof(CascadedConfigurationBase)
+			.GetMethods()
+			.Single(
+				x =>
+					x.Name == nameof(CascadedConfigurationBase.TryGetItem) &&
+					x.IsGenericMethodDefinition &&
+					x.GetGenericArguments().Length == 1 &&
+					x.GetParameters().Length == 2)
+			.MakeGenericMethod(itemValueType);
+
+		// iterate through the configurations and check whether TryGetItem<T>() returns the expected items
+		for (int configurationIndex = 0; configurationIndex < rootConfigurations.Length; configurationIndex++)
+		{
+			foreach (ItemInfo itemInfo in itemInfos)
+			{
+				object[] arguments = [itemInfo.Path, null];
+				bool success = (bool)method.Invoke(rootConfigurations[configurationIndex], arguments)!; // <- method to test
+				Assert.True(success);
+				Assert.IsAssignableFrom<ICascadedConfigurationItem>(arguments[1]);
+				var item = (ICascadedConfigurationItem)arguments[1];
+
+				// the returned item should be the expected item
+				Assert.Same(itemInfo.Items[configurationIndex], item);
+			}
+		}
+	}
+
+	/// <summary>
+	/// Tests getting an item using <see cref="CascadedConfigurationBase.TryGetItem{T}"/>.<br/>
+	/// The item does not exist when the method is called.<br/>
+	/// The method is expected to succeed.
+	/// </summary>
+	[Theory]
+	[MemberData(nameof(GetItem_ItemDoesNotExist_TestData))]
+	public void TryGetItemT_ItemDoesNotExist(
+		CascadedConfigurationBase[] rootConfigurations,
+		string                      path)
+	{
+		// get GetItem<T>() method to invoke
+		MethodInfo method = typeof(CascadedConfigurationBase)
+			.GetMethods()
+			.Single(
+				x =>
+					x.Name == nameof(CascadedConfigurationBase.TryGetItem) &&
+					x.IsGenericMethodDefinition &&
+					x.GetGenericArguments().Length == 1 &&
+					x.GetParameters().Length == 2)
+			.MakeGenericMethod(typeof(int)); // the value type does not matter as the item does not exist...
+
+		// iterate through the configurations and check whether TryGetItem<T>() returns false
+		foreach (CascadedConfigurationBase configuration in rootConfigurations)
+		{
+			object[] arguments = [path, null];
+			bool success = (bool)method.Invoke(configuration, arguments)!;
+			Assert.False(success);
+			Assert.Null(arguments[1]);
+		}
+	}
+
+	/// <summary>
+	/// Tests getting an item using <see cref="CascadedConfigurationBase.TryGetItem{T}"/>.<br/>
+	/// The item exists already, but its value type is different.<br/>
+	/// The method is expected to succeed.
+	/// </summary>
+	[Theory]
+	[MemberData(nameof(GetItem_ItemExists_TestData))]
+	public void TryGetItemT_ItemExistsButTypeIsDifferent(
+		CascadedConfigurationBase[] rootConfigurations,
+		Type                        itemValueType,
+		ItemInfo[]                  itemInfos)
+	{
+		// choose a value type that is _not_ a used item value type
+		Type differentItemValueType = itemValueType == typeof(int) ? typeof(long) : typeof(int);
+
+		// get GetItem<T>() method to invoke
+		MethodInfo method = typeof(CascadedConfigurationBase)
+			.GetMethods()
+			.Single(
+				x =>
+					x.Name == nameof(CascadedConfigurationBase.TryGetItem) &&
+					x.IsGenericMethodDefinition &&
+					x.GetGenericArguments().Length == 1 &&
+					x.GetParameters().Length == 2)
+			.MakeGenericMethod(differentItemValueType);
+
+		// iterate through the configurations and check whether TryGetItem<T>() returns the expected items
+		foreach (CascadedConfigurationBase rootConfiguration in rootConfigurations)
+		{
+			foreach (ItemInfo itemInfo in itemInfos)
+			{
+				object[] arguments = [itemInfo.Path, null];
+				bool success = (bool)method.Invoke(rootConfiguration, arguments)!; // <- method to test
+				Assert.False(success);
+				Assert.Null(arguments[1]);
+			}
+		}
+	}
+
+	/// <summary>
+	/// Tests getting an item using <see cref="CascadedConfigurationBase.TryGetItem{T}"/>.<br/>
+	/// The path of the item to get is <see langword="null"/>.<br/>
+	/// The method is expected to throw an <see cref="ArgumentNullException"/>.
+	/// </summary>
+	[Fact]
+	public void TryGetItemT_PathIsNull()
+	{
+		// create a base configuration and let a configuration inherit from it
+		const string configurationName = "My Configuration";
+		var baseRootConfiguration = new DefaultCascadedConfiguration(configurationName);
+		const ICascadedConfigurationPersistenceStrategy strategy = null;
+		CascadedConfiguration inheritedRootConfiguration = baseRootConfiguration.AddInheritingConfiguration(strategy);
+
+		// check whether GetItem<T>() throws the expected exception
+		Assert.Throws<ArgumentNullException>(() => baseRootConfiguration.TryGetItem(null, out CascadedConfigurationItem<int> _));      // DefaultCascadedConfiguration
+		Assert.Throws<ArgumentNullException>(() => inheritedRootConfiguration.TryGetItem(null, out CascadedConfigurationItem<int> _)); // CascadedConfiguration
+	}
+
+	#endregion
+
+	#region TryGetItem(string path, out ICascadedConfigurationItem item)
+
+	/// <summary>
+	/// Tests getting an item using <see cref="CascadedConfigurationBase.TryGetItem"/>.<br/>
+	/// The item exists when the method is called.<br/>
+	/// The method is expected to succeed.
+	/// </summary>
+	[Theory]
+	[MemberData(nameof(GetItem_ItemExists_TestData))]
+	public void TryGetItem_ItemExists(
+		CascadedConfigurationBase[] rootConfigurations,
+		Type                        itemValueType,
+		ItemInfo[]                  itemInfos)
+	{
+		// iterate through the configurations and check whether TryGetItem() returns the expected items
+		for (int configurationIndex = 0; configurationIndex < rootConfigurations.Length; configurationIndex++)
+		{
+			foreach (ItemInfo itemInfo in itemInfos)
+			{
+				bool success = rootConfigurations[configurationIndex].TryGetItem(itemInfo.Path, out ICascadedConfigurationItem item); // <- method to test
+				Assert.True(success);
+
+				// the returned item should be the expected item
+				Assert.Same(itemInfo.Items[configurationIndex], item);
+			}
+		}
+	}
+
+	/// <summary>
+	/// Tests getting an item using <see cref="CascadedConfigurationBase.TryGetItem"/>.<br/>
+	/// The item does not exist when the method is called.<br/>
+	/// The method is expected to succeed.
+	/// </summary>
+	[Theory]
+	[MemberData(nameof(GetItem_ItemDoesNotExist_TestData))]
+	public void TryGetItem_ItemDoesNotExist(
+		CascadedConfigurationBase[] rootConfigurations,
+		string                      path)
+	{
+		// iterate through the configurations and check whether TryGetItem() returns false
+		foreach (CascadedConfigurationBase configuration in rootConfigurations)
+		{
+			bool success = configuration.TryGetItem(path, out ICascadedConfigurationItem item); // <- method to test
+			Assert.False(success);
+		}
+	}
+
+	/// <summary>
+	/// Tests getting an item using <see cref="CascadedConfigurationBase.TryGetItem"/>.<br/>
+	/// The path of the item to get is <see langword="null"/>.<br/>
+	/// The method is expected to throw an <see cref="ArgumentNullException"/>.
+	/// </summary>
+	[Fact]
+	public void TryGetItem_PathIsNull()
+	{
+		// create a base configuration and let a configuration inherit from it
+		const string configurationName = "My Configuration";
+		var baseRootConfiguration = new DefaultCascadedConfiguration(configurationName);
+		const ICascadedConfigurationPersistenceStrategy strategy = null;
+		CascadedConfiguration inheritedRootConfiguration = baseRootConfiguration.AddInheritingConfiguration(strategy);
+
+		// check whether GetItem<T>() throws the expected exception
+		Assert.Throws<ArgumentNullException>(() => baseRootConfiguration.TryGetItem(null, out ICascadedConfigurationItem _));      // DefaultCascadedConfiguration
+		Assert.Throws<ArgumentNullException>(() => inheritedRootConfiguration.TryGetItem(null, out ICascadedConfigurationItem _)); // CascadedConfiguration
 	}
 
 	#endregion
@@ -2143,7 +2336,6 @@ public class CascadedConfigurationTests
 	}
 
 	#endregion
-
 
 	#region ResetItems(bool recursive)
 

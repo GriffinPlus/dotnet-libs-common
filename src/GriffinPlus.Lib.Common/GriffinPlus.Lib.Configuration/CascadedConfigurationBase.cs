@@ -539,14 +539,16 @@ public abstract class CascadedConfigurationBase
 
 	#region Getting a Configuration Item (Generic)
 
+	#region CascadedConfigurationItem<T> GetItem<T>(string path)
+
 	/// <summary>
 	/// Gets the configuration item at the specified location.
 	/// </summary>
 	/// <typeparam name="T">Type of the value in the configuration item.</typeparam>
 	/// <param name="path">
-	/// Relative path of the configuration item to get.
-	/// If a path segment contains path delimiters ('/'), escape these characters.
-	/// Otherwise, the segment will be split up.
+	/// Relative path of the configuration item to get.<br/>
+	/// If a path segment contains path delimiters ('/'), escape these characters.<br/>
+	/// Otherwise, the segment will be split up.<br/>
 	/// The configuration helper function <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
 	/// <returns>The configuration item at the specified path.</returns>
@@ -623,7 +625,89 @@ public abstract class CascadedConfigurationBase
 
 	#endregion
 
+	#region bool TryGetItem<T>(string path, out CascadedConfigurationItem<T> item)
+
+	/// <summary>
+	/// Tries to get the configuration item at the specified location.
+	/// </summary>
+	/// <typeparam name="T">Type of the value in the configuration item.</typeparam>
+	/// <param name="path">
+	/// Relative path of the configuration item to get.<br/>
+	/// If a path segment contains path delimiters ('/'), escape these characters.<br/>
+	/// Otherwise, the segment will be split up.<br/>
+	/// The configuration helper function <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
+	/// </param>
+	/// <param name="item">
+	/// Receives the configuration item at the specified path;<br/>
+	/// <see langword="null"/> if the item does not exist or has a different type.
+	/// </param>
+	/// <returns>
+	/// <see langword="true"/> if the item at the specified path exists and its value type is <typeparamref name="T"/>;<br/>
+	/// otherwise <see langword="false"/>.
+	/// </returns>
+	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
+	/// <remarks>
+	/// Due to performance reasons this method does not validate the specified path as it is just used
+	/// to look up existing items. So you should not expect that the method throws an exception when passing
+	/// invalid paths.
+	/// </remarks>
+	public bool TryGetItem<T>(string path, out CascadedConfigurationItem<T> item)
+	{
+		if (path == null) throw new ArgumentNullException(nameof(path));
+
+		// split the item path into path segments
+		string[] pathSegments = CascadedConfigurationPathHelper.SplitPath(
+			PersistenceStrategy,
+			path,
+			isItemPath: true,
+			checkValidity: false);
+
+		lock (Sync)
+		{
+			return TryGetItemInternal(pathSegments, 0, out item);
+		}
+	}
+
+	private bool TryGetItemInternal<T>(string[] pathSegments, int startIndex, out CascadedConfigurationItem<T> item)
+	{
+		Debug.Assert(Monitor.IsEntered(Sync), "The configuration is expected to be locked.");
+
+		item = null;
+
+		if (startIndex + 1 < pathSegments.Length)
+		{
+			// the path contains child configurations
+			// => dive into the appropriate configuration
+			string[] configurationPathSegments = new string[pathSegments.Length - 1];
+			Array.Copy(pathSegments, 0, configurationPathSegments, 0, configurationPathSegments.Length);
+			CascadedConfigurationBase configuration = GetChildConfigurationInternal(configurationPathSegments, false);
+			return configuration != null && configuration.TryGetItemInternal(pathSegments, pathSegments.Length - 1, out item);
+		}
+
+		string itemName = CascadedConfigurationPathHelper.UnescapeName(pathSegments[startIndex]);
+
+		for (int i = 0; i < mItems.Count; i++)
+		{
+			if (mItems[i].Name != itemName)
+				continue;
+
+			if (mItems[i].Type != typeof(T))
+				return false;
+
+			item = (CascadedConfigurationItem<T>)mItems[i];
+			return true;
+		}
+
+		return false;
+	}
+
+	#endregion
+
+	#endregion
+
 	#region Getting a Configuration Item (Dynamic)
+
+	#region ICascadedConfigurationItem GetItem(string path)
 
 	/// <summary>
 	/// Gets the configuration item at the specified location.
@@ -693,6 +777,50 @@ public abstract class CascadedConfigurationBase
 			CascadedConfigurationPathHelper.CombinePath("/", pathSegments));
 	}
 
+	#endregion
+
+	#region bool TryGetItem(string path, out ICascadedConfigurationItem item)
+
+	/// <summary>
+	/// Tries to get the configuration item at the specified location.
+	/// </summary>
+	/// <param name="path">
+	/// Relative path of the configuration item to get.<br/>
+	/// If a path segment contains path delimiters ('/'), escape these characters.<br/>
+	/// Otherwise, the segment will be split up.<br/>
+	/// The configuration helper function <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
+	/// </param>
+	/// <param name="item">
+	/// Receives the configuration item at the specified path;<br/>
+	/// <see langword="null"/> if the item does not exist or has a different type.
+	/// </param>
+	/// <returns>
+	/// <see langword="true"/> if the item at the specified path exists;<br/>
+	/// otherwise <see langword="false"/>.
+	/// </returns>
+	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
+	/// <remarks>
+	/// Due to performance reasons this method does not validate the specified path as it is just used
+	/// to look up existing items. So you should not expect that the method throws an exception when passing
+	/// invalid paths.
+	/// </remarks>
+	public bool TryGetItem(string path, out ICascadedConfigurationItem item)
+	{
+		if (path == null) throw new ArgumentNullException(nameof(path));
+
+		// split the item path into path segments
+		string[] pathSegments = CascadedConfigurationPathHelper.SplitPath(
+			PersistenceStrategy,
+			path,
+			isItemPath: true,
+			checkValidity: false);
+
+		lock (Sync)
+		{
+			return TryGetItemInternal(pathSegments, 0, out item);
+		}
+	}
+
 	internal bool TryGetItemInternal(string[] pathSegments, int startIndex, out ICascadedConfigurationItem item)
 	{
 		Debug.Assert(Monitor.IsEntered(Sync), "The configuration is expected to be locked.");
@@ -722,6 +850,8 @@ public abstract class CascadedConfigurationBase
 
 		return false;
 	}
+
+	#endregion
 
 	#endregion
 
