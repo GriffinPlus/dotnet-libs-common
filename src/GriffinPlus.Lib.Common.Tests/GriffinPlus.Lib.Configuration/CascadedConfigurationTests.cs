@@ -1967,7 +1967,7 @@ public class CascadedConfigurationTests
 	[MemberData(nameof(GetItem_ItemExists_TestData))]
 	public void TryGetItem_ItemExists(
 		CascadedConfigurationBase[] rootConfigurations,
-		Type                        itemValueType,
+		Type                        _,
 		ItemInfo[]                  itemInfos)
 	{
 		// iterate through the configurations and check whether TryGetItem() returns the expected items
