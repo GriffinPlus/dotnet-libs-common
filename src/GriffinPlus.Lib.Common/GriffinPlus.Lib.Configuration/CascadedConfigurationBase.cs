@@ -490,7 +490,6 @@ public abstract class CascadedConfigurationBase
 
 		// add configuration item in the current configuration
 		var item = new CascadedConfigurationItem<T>(this, itemName, CascadedConfigurationPathHelper.CombinePath(Path, pathSegments[^1]));
-		PersistenceStrategy?.LoadItem(item);
 		InsertItemHonoringOrderInternal(item);
 
 		// add corresponding configuration items in inheriting configurations
@@ -498,6 +497,9 @@ public abstract class CascadedConfigurationBase
 		{
 			mInheritingConfigurations[i].AddItemInternal<T>(pathSegments, startIndex);
 		}
+
+		// load the value of the item, if available
+		PersistenceStrategy?.LoadItem(item);
 
 		return item;
 	}
@@ -551,7 +553,6 @@ public abstract class CascadedConfigurationBase
 
 		// add configuration item in the current configuration
 		ICascadedConfigurationItem item = CreateItem(itemName, CascadedConfigurationPathHelper.CombinePath(Path, pathSegments[^1]), type);
-		PersistenceStrategy?.LoadItem(item);
 		InsertItemHonoringOrderInternal(item);
 
 		// add corresponding configuration items in inheriting configurations
@@ -559,6 +560,9 @@ public abstract class CascadedConfigurationBase
 		{
 			mInheritingConfigurations[i].AddItemInternal(pathSegments, startIndex, type);
 		}
+
+		// load the value of the item, if available
+		PersistenceStrategy?.LoadItem(item);
 
 		return item;
 	}
