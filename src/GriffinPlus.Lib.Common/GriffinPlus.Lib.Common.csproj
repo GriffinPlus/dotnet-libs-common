@@ -18,7 +18,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="GriffinPlus.Lib.Logging.Interface" Version="1.1.1" />
+		<PackageReference Include="GriffinPlus.Lib.Logging.Interface" Version="1.1.2" />
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
 		<PackageReference Include="PolySharp" Version="1.14.1">
 			<PrivateAssets>all</PrivateAssets>
