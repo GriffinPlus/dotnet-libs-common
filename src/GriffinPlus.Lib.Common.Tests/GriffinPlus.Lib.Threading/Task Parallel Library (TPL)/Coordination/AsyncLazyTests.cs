@@ -60,7 +60,6 @@ public class AsyncLazyTests
 		int funcThread = testThread + 1;
 
 		var lazy = new AsyncLazy<int>(Func, AsyncLazyFlags.ExecuteOnCallingThread);
-
 		await lazy;
 
 		Assert.Equal(testThread, funcThread);
@@ -79,11 +78,20 @@ public class AsyncLazyTests
 		int testThread = Thread.CurrentThread.ManagedThreadId;
 		int funcThread = testThread;
 
+		// let a pool thread run the factory function
 		var lazy = new AsyncLazy<int>(Func);
 
+		// give the TPL some time to schedule the factory function
+		// (otherwise the following 'await lazy' will execute the factory function synchronously)
+		while (lazy.Task.Status == TaskStatus.WaitingForActivation)
+			Thread.Sleep(50);
+
+		// wait for the factory callback to complete
 		await lazy;
 
+		// the test thread should be some other thread than the thread calling the factory function
 		Assert.NotEqual(testThread, funcThread);
+
 		return;
 
 		Task<int> Func()
