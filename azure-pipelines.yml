@@ -127,7 +127,7 @@ stages:
         script: |
           New-Item -ItemType Directory -Force -Path '$(Pipeline.Workspace)/variables'
           Set-Location -Path '$(Pipeline.Workspace)/variables'
-          '$(GitVersion.NuGetVersion)' | Out-File GitVersion.NuGetVersion -NoNewLine
+          '$(GitVersion.SemVer)' | Out-File GitVersion.SemVer -NoNewLine
     - task: PublishPipelineArtifact@1
       displayName: 'Publish Pipeline Artifacts'
       inputs:
@@ -319,7 +319,7 @@ stages:
               "$($file.FullName)" `
               -Symbols `
               -SymbolPackageFormat snupkg `
-              -Properties version=$(GitVersion.NuGetVersion) `
+              -Properties version=$(GitVersion.SemVer) `
               -OutputDirectory "$(Build.ArtifactStagingDirectory)" `
               -Verbosity detailed
             if ($lastexitcode -ne 0) { throw("Creating nuget package failed.") }
