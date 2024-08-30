@@ -132,8 +132,15 @@ public static partial class WeakEventManager<TEventArgs> where TEventArgs : Even
 		}
 		else
 		{
-			if (scheduleAlways) Task.Run(() => handler(sender, e));
-			else handler(sender, e);
+			if (scheduleAlways)
+			{
+				while (!ThreadPool.QueueUserWorkItem(_ => handler(sender, e)))
+					Thread.Sleep(50);
+			}
+			else
+			{
+				handler(sender, e);
+			}
 		}
 
 		return newItems.Length;
@@ -356,8 +363,15 @@ public static partial class WeakEventManager<TEventArgs> where TEventArgs : Even
 			{
 				// synchronization context was not specified at registration
 				// => schedule handler in worker thread or invoke it directly
-				if (item.ScheduleAlways) Task.Run(() => item.Fire(sender, e));
-				else item.Fire(sender, e);
+				if (item.ScheduleAlways)
+				{
+					while (!ThreadPool.QueueUserWorkItem(_ => item.Fire(sender, e)))
+						Thread.Sleep(50);
+				}
+				else
+				{
+					item.Fire(sender, e);
+				}
 			}
 		}
 	}
@@ -410,8 +424,15 @@ public static partial class WeakEventManager<TEventArgs> where TEventArgs : Even
 				Item itemCopy = item;
 				handlers += (sender, e) =>
 				{
-					if (itemCopy.ScheduleAlways) Task.Run(() => itemCopy.Fire(sender, e));
-					else itemCopy.Fire(sender, e);
+					if (itemCopy.ScheduleAlways)
+					{
+						while (!ThreadPool.QueueUserWorkItem(_ => itemCopy.Fire(sender, e)))
+							Thread.Sleep(50);
+					}
+					else
+					{
+						itemCopy.Fire(sender, e);
+					}
 				};
 			}
 		}

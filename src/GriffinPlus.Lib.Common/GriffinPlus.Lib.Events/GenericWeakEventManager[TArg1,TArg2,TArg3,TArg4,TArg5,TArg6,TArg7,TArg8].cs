@@ -159,8 +159,15 @@ public static partial class GenericWeakEventManager<TArg1, TArg2, TArg3, TArg4, 
 		}
 		else
 		{
-			if (scheduleAlways) Task.Run(() => handler(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
-			else handler(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+			if (scheduleAlways)
+			{
+				while(!ThreadPool.QueueUserWorkItem(_ => handler(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)))
+					Thread.Sleep(50);
+			}
+			else
+			{
+				handler(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+			}
 		}
 
 		return newItems.Length;
@@ -401,8 +408,15 @@ public static partial class GenericWeakEventManager<TArg1, TArg2, TArg3, TArg4, 
 			{
 				// synchronization context was not specified at registration
 				// => schedule handler in worker thread or invoke it directly
-				if (item.ScheduleAlways) Task.Run(() => item.Fire(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
-				else item.Fire(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+				if (item.ScheduleAlways)
+				{
+					while (!ThreadPool.QueueUserWorkItem(_ => item.Fire(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)))
+						Thread.Sleep(50);
+				}
+				else
+				{
+					item.Fire(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+				}
 			}
 		}
 	}
@@ -471,8 +485,15 @@ public static partial class GenericWeakEventManager<TArg1, TArg2, TArg3, TArg4, 
 					arg7,
 					arg8) =>
 				{
-					if (itemCopy.ScheduleAlways) Task.Run(() => itemCopy.Fire(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
-					else itemCopy.Fire(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+					if (itemCopy.ScheduleAlways)
+					{
+						while (!ThreadPool.QueueUserWorkItem(_ => itemCopy.Fire(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)))
+							Thread.Sleep(50);
+					}
+					else
+					{
+						itemCopy.Fire(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+					}
 				};
 			}
 		}

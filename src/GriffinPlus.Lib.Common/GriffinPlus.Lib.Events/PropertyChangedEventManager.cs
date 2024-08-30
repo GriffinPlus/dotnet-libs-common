@@ -133,14 +133,20 @@ public static class PropertyChangedEventManager
 
 		if (context != null)
 		{
-			if (scheduleAlways)
-				context.Post(_ => handler(sender, new PropertyChangedEventArgs(propertyName)), null);
+			if (scheduleAlways) context.Post(_ => handler(sender, new PropertyChangedEventArgs(propertyName)), null);
 			else handler(sender, new PropertyChangedEventArgs(propertyName));
 		}
 		else
 		{
-			if (scheduleAlways) Task.Run(() => handler(sender, new PropertyChangedEventArgs(propertyName)));
-			else handler(sender, new PropertyChangedEventArgs(propertyName));
+			if (scheduleAlways)
+			{
+				while (!ThreadPool.QueueUserWorkItem(_ => handler(sender, new PropertyChangedEventArgs(propertyName))))
+					Thread.Sleep(50);
+			}
+			else
+			{
+				handler(sender, new PropertyChangedEventArgs(propertyName));
+			}
 		}
 
 		return newItems.Length;
@@ -263,8 +269,15 @@ public static class PropertyChangedEventManager
 			{
 				// synchronization context was not specified at registration
 				// => schedule handler in worker thread or invoke it directly
-				if (item.ScheduleAlways) Task.Run(() => item.Handler(obj, e));
-				else item.Handler(obj, e);
+				if (item.ScheduleAlways)
+				{
+					while (!ThreadPool.QueueUserWorkItem(_ => item.Handler(obj, e)))
+						Thread.Sleep(50);
+				}
+				else
+				{
+					item.Handler(obj, e);
+				}
 			}
 		}
 	}
@@ -317,8 +330,15 @@ public static class PropertyChangedEventManager
 			{
 				// synchronization context was not specified at registration
 				// => schedule handler in worker thread or invoke it directly
-				if (item.ScheduleAlways) Task.Run(() => item.Handler(obj, e));
-				else item.Handler(obj, e);
+				if (item.ScheduleAlways)
+				{
+					while (!ThreadPool.QueueUserWorkItem(_ => item.Handler(obj, e)))
+						Thread.Sleep(50);
+				}
+				else
+				{
+					item.Handler(obj, e);
+				}
 			}
 		}
 
@@ -370,8 +390,15 @@ public static class PropertyChangedEventManager
 				{
 					// synchronization context was not specified at registration
 					// => schedule handler in worker thread or invoke it directly
-					if (itemCopy.ScheduleAlways) Task.Run(() => itemCopy.Handler(sender, e));
-					else itemCopy.Handler(sender, e);
+					if (itemCopy.ScheduleAlways)
+					{
+						while (!ThreadPool.QueueUserWorkItem(_ => itemCopy.Handler(sender, e)))
+							Thread.Sleep(50);
+					}
+					else
+					{
+						itemCopy.Handler(sender, e);
+					}
 				};
 			}
 		}

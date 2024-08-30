@@ -134,8 +134,15 @@ public static class EventManager<TEventArgs> where TEventArgs : EventArgs
 		}
 		else
 		{
-			if (scheduleAlways) Task.Run(() => handler(sender, e));
-			else handler(sender, e);
+			if (scheduleAlways)
+			{
+				while(!ThreadPool.QueueUserWorkItem(_ => handler(sender, e)))
+					Thread.Sleep(50);
+			}
+			else
+			{
+				handler(sender, e);
+			}
 		}
 
 		return newItems.Length;
@@ -300,8 +307,15 @@ public static class EventManager<TEventArgs> where TEventArgs : EventArgs
 			{
 				// synchronization context was not specified at registration
 				// => schedule handler in worker thread or invoke it directly
-				if (item.ScheduleAlways) Task.Run(() => item.Handler(sender, e));
-				else item.Handler(sender, e);
+				if (item.ScheduleAlways)
+				{
+					while(!ThreadPool.QueueUserWorkItem(_ => item.Handler(sender, e)))
+						Thread.Sleep(50);
+				}
+				else
+				{
+					item.Handler(sender, e);
+				}
 			}
 		}
 	}
@@ -352,8 +366,15 @@ public static class EventManager<TEventArgs> where TEventArgs : EventArgs
 				{
 					// synchronization context was not specified at registration
 					// => schedule handler in worker thread or invoke it directly
-					if (itemCopy.ScheduleAlways) Task.Run(() => itemCopy.Handler(sender, e));
-					else itemCopy.Handler(sender, e);
+					if (itemCopy.ScheduleAlways)
+					{
+						while(!ThreadPool.QueueUserWorkItem(_ => itemCopy.Handler(sender, e)))
+							Thread.Sleep(50);
+					}
+					else
+					{
+						itemCopy.Handler(sender, e);
+					}
 				};
 			}
 		}
