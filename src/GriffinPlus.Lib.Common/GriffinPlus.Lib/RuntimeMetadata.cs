@@ -12,8 +12,13 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 
 using GriffinPlus.Lib.Logging;
+using GriffinPlus.Lib.Threading;
+
+using Exception = System.Exception;
+
 #if !NET461
 using System.Runtime.InteropServices;
 #endif
@@ -40,10 +45,12 @@ public static class RuntimeMetadata
 {
 	private static readonly LogWriter                                 sLog                                        = LogWriter.Get(typeof(RuntimeMetadata));
 	private static readonly ReaderWriterLockSlim                      sLock                                       = new(LockRecursionPolicy.NoRecursion);
+	private static readonly AsyncManualResetEvent                     sScanningFinishedEvent                      = new();
 	private static readonly Type                                      sAssemblyLoadContextType                    = Type.GetType("System.Runtime.Loader.AssemblyLoadContext");
 	private static readonly MethodInfo                                sGetLoadContextMethod                       = null;
 	private static readonly object                                    sDefaultAssemblyLoadContext                 = null;
 	private static readonly bool                                      sIsNetFramework                             = false;
+	private static readonly object                                    sInitializedSync                            = new();
 	private static          bool                                      sInitialized                                = false;
 	private static readonly ConcurrentQueue<Assembly>                 sAssembliesToScan                           = new();
 	private static readonly object                                    sLoadAssembliesSync                         = new();
@@ -57,6 +64,18 @@ public static class RuntimeMetadata
 	private static          Dictionary<string, IReadOnlyList<Type>>   sExportedTypesByFullName                    = new();
 
 	/// <summary>
+	/// Occurs when an assembly has been scanned by the <see cref="RuntimeMetadata"/> class,
+	/// so its runtime metadata is available via the following properties:<br/>
+	/// - <see cref="AssembliesByFullName"/><br/>
+	/// - <see cref="ExportedTypesByAssembly"/><br/>
+	/// - <see cref="ExportedTypesByFullName"/><br/>
+	/// - <see cref="TypesByAssembly"/><br/>
+	/// - <see cref="TypesByFullName"/><br/>
+	/// This event is raised asynchronously, so you should take care of proper synchronization.
+	/// </summary>
+	public static event EventHandler<AssemblyScannedEventArgs> AssemblyScanned;
+
+	/// <summary>
 	/// Initializes the <see cref="RuntimeMetadata"/> class.
 	/// </summary>
 	static RuntimeMetadata()
@@ -66,7 +85,7 @@ public static class RuntimeMetadata
 		sDefaultAssemblyLoadContext = sAssemblyLoadContextType
 			?.GetProperty("Default")
 			?.GetMethod
-			?.Invoke(null, Array.Empty<object>());
+			?.Invoke(null, []);
 
 		// .NET Core 2/3 and .NET 5+ only:
 		// get the method to retrieve the load context an assembly is associated with
@@ -93,12 +112,15 @@ public static class RuntimeMetadata
 		if (sInitialized)
 			return;
 
-		sLock.EnterWriteLock();
-		try
+		lock (sInitializedSync)
 		{
 			// abort, if the class is already initialized
 			if (sInitialized)
 				return;
+
+			// there should not have been any scan before...
+			Debug.Assert(sAssembliesToScan.IsEmpty);
+			Debug.Assert(!sScanningFinishedEvent.IsSet);
 
 			// hook up the event that is raised when an assembly is loaded into the application domain
 			AppDomain.CurrentDomain.AssemblyLoad += HandleAssemblyLoaded;
@@ -111,26 +133,17 @@ public static class RuntimeMetadata
 				if (assembly.ReflectionOnly)
 					continue;
 
-				// get all types from the assembly to trigger loading dependent assemblies
-				// (assemblies will be put into sAssembliesToScan, so these assemblies are scanned first)
-				try { assembly.GetTypes(); }
-				catch (ReflectionTypeLoadException)
-				{
-					// swallow
-				}
-
 				sAssembliesToScan.Enqueue(assembly);
 			}
 
-			// indicate that initialization has completed
-			sInitialized = true;
-
 			// start worker thread to scan these assemblies
 			TriggerUpdate();
-		}
-		finally
-		{
-			sLock.ExitWriteLock();
+
+			// wait for scanning assemblies to complete
+			sScanningFinishedEvent.Wait();
+
+			// indicate that initialization has completed
+			sInitialized = true;
 		}
 	}
 
@@ -146,31 +159,14 @@ public static class RuntimeMetadata
 				Init();
 
 			// get current copy of the dictionary
-			// if there are no assemblies scheduled to be scanned
-			if (sAssembliesToScan.IsEmpty)
-			{
-				sLock.EnterReadLock();
-				try
-				{
-					return sAssembliesByFullName;
-				}
-				finally
-				{
-					sLock.ExitReadLock();
-				}
-			}
-
-			// there are assemblies scheduled to be scanned
-			// => scan and return the updated dictionary
-			sLock.EnterWriteLock();
+			sLock.EnterReadLock();
 			try
 			{
-				ScanScheduledAssemblies();
 				return sAssembliesByFullName;
 			}
 			finally
 			{
-				sLock.ExitWriteLock();
+				sLock.ExitReadLock();
 			}
 		}
 	}
@@ -188,31 +184,14 @@ public static class RuntimeMetadata
 				Init();
 
 			// get current copy of the dictionary
-			// if there are no assemblies scheduled to be scanned
-			if (sAssembliesToScan.IsEmpty)
-			{
-				sLock.EnterReadLock();
-				try
-				{
-					return sTypesByAssembly;
-				}
-				finally
-				{
-					sLock.ExitReadLock();
-				}
-			}
-
-			// there are assemblies scheduled to be scanned
-			// => scan and return the updated dictionary
-			sLock.EnterWriteLock();
+			sLock.EnterReadLock();
 			try
 			{
-				ScanScheduledAssemblies();
 				return sTypesByAssembly;
 			}
 			finally
 			{
-				sLock.ExitWriteLock();
+				sLock.ExitReadLock();
 			}
 		}
 	}
@@ -230,31 +209,14 @@ public static class RuntimeMetadata
 				Init();
 
 			// get current copy of the dictionary
-			// if there are no assemblies scheduled to be scanned
-			if (sAssembliesToScan.IsEmpty)
-			{
-				sLock.EnterReadLock();
-				try
-				{
-					return sExportedTypesByAssembly;
-				}
-				finally
-				{
-					sLock.ExitReadLock();
-				}
-			}
-
-			// there are assemblies scheduled to be scanned
-			// => scan and return the updated dictionary
-			sLock.EnterWriteLock();
+			sLock.EnterReadLock();
 			try
 			{
-				ScanScheduledAssemblies();
 				return sExportedTypesByAssembly;
 			}
 			finally
 			{
-				sLock.ExitWriteLock();
+				sLock.ExitReadLock();
 			}
 		}
 	}
@@ -273,31 +235,14 @@ public static class RuntimeMetadata
 				Init();
 
 			// get current copy of the dictionary
-			// if there are no assemblies scheduled to be scanned
-			if (sAssembliesToScan.IsEmpty)
-			{
-				sLock.EnterReadLock();
-				try
-				{
-					return sTypesByFullName;
-				}
-				finally
-				{
-					sLock.ExitReadLock();
-				}
-			}
-
-			// there are assemblies scheduled to be scanned
-			// => scan and return the updated dictionary
-			sLock.EnterWriteLock();
+			sLock.EnterReadLock();
 			try
 			{
-				ScanScheduledAssemblies();
 				return sTypesByFullName;
 			}
 			finally
 			{
-				sLock.ExitWriteLock();
+				sLock.ExitReadLock();
 			}
 		}
 	}
@@ -316,44 +261,69 @@ public static class RuntimeMetadata
 				Init();
 
 			// get current copy of the dictionary
-			// if there are no assemblies scheduled to be scanned
-			if (sAssembliesToScan.IsEmpty)
-			{
-				sLock.EnterReadLock();
-				try
-				{
-					return sExportedTypesByFullName;
-				}
-				finally
-				{
-					sLock.ExitReadLock();
-				}
-			}
-
-			// there are assemblies scheduled to be scanned
-			// => scan and return the updated dictionary
-			sLock.EnterWriteLock();
+			sLock.EnterReadLock();
 			try
 			{
-				ScanScheduledAssemblies();
 				return sExportedTypesByFullName;
 			}
 			finally
 			{
-				sLock.ExitWriteLock();
+				sLock.ExitReadLock();
 			}
 		}
+	}
+
+	/// <summary>
+	/// Synchronously waits for scanning scheduled assemblies to complete.
+	/// </summary>
+	/// <param name="timeout">Timeout (in ms, -1 to wait infinitely).</param>
+	/// <returns>
+	/// <c>true</c> if scanning completed within the specified time;<br/>
+	/// otherwise <c>false</c>.
+	/// </returns>
+	public static bool WaitForScanningToComplete(int timeout = Timeout.Infinite)
+	{
+		using var cts = new CancellationTokenSource(timeout);
+		try
+		{
+			sScanningFinishedEvent.Wait(cts.Token);
+			return true;
+		}
+		catch (OperationCanceledException)
+		{
+			return false;
+		}
+	}
+
+	/// <summary>
+	/// Synchronously waits for scanning scheduled assemblies to complete.
+	/// </summary>
+	/// <param name="cancellationToken">Cancellation token that can be signalled to cancel the operation.</param>
+	/// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> has been signalled.</exception>
+	public static void WaitForScanningToComplete(CancellationToken cancellationToken)
+	{
+		sScanningFinishedEvent.Wait(cancellationToken);
+	}
+
+	/// <summary>
+	/// Asynchronously waits for scanning scheduled assemblies to complete.
+	/// </summary>
+	/// <param name="cancellationToken">Cancellation token that can be signalled to cancel the operation.</param>
+	/// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> has been signalled.</exception>
+	public static Task WaitForScanningToCompleteAsync(CancellationToken cancellationToken)
+	{
+		return sScanningFinishedEvent.WaitAsync(cancellationToken);
 	}
 
 	/// <summary>
 	/// Loads all assemblies in the application's base directory.
 	/// This is done the first time the method is called only.
 	/// </summary>
-	/// <param name="scanImmediately">
-	/// <c>true</c> to scan loaded assemblies immediately;<br/>
-	/// <c>false</c> to scan loaded assemblies asynchronously.
+	/// <param name="waitForScanningToComplete">
+	/// <c>true</c> to schedule assemblies to be scanned and wait for the scan to complete;<br/>
+	/// <c>false</c> to return immediately after scheduling assemblies to be scanned.
 	/// </param>
-	public static void LoadAssembliesInApplicationBaseDirectory(bool scanImmediately = false)
+	public static void LoadAssembliesInApplicationBaseDirectory(bool waitForScanningToComplete)
 	{
 		// initialize the class if necessary
 		if (!sInitialized)
@@ -370,7 +340,11 @@ public static class RuntimeMetadata
 			if (sLoadedAssembliesInApplicationBaseDirectory)
 				return;
 
+			// signal that scanning has not finished, yet
+			sScanningFinishedEvent.Reset();
+
 			// suppress triggering asynchronous updates
+			// that might occur due to assemblies to be loaded
 			int asynchronousUpdatePendingState = Interlocked.Exchange(ref sAsynchronousUpdatePending, 1);
 
 			// load all assemblies in the application's base directory recursively
@@ -400,24 +374,10 @@ public static class RuntimeMetadata
 			if (asynchronousUpdatePendingState == 0)
 				Interlocked.Exchange(ref sAsynchronousUpdatePending, 0);
 
-			// scan new loaded assemblies immediately, if requested;
-			// otherwise trigger updating asynchronously
-			if (scanImmediately)
-			{
-				sLock.EnterWriteLock();
-				try
-				{
-					ScanScheduledAssemblies();
-				}
-				finally
-				{
-					sLock.ExitWriteLock();
-				}
-			}
-			else
-			{
-				TriggerUpdate();
-			}
+			// trigger updating asynchronously and
+			// wait for scanning to complete, if requested
+			TriggerUpdate();
+			if (waitForScanningToComplete) sScanningFinishedEvent.Wait();
 		}
 	}
 
@@ -425,11 +385,11 @@ public static class RuntimeMetadata
 	/// Loads all assemblies in the application's base directory and referenced assemblies recursively.
 	/// This is done the first time the method is called only.
 	/// </summary>
-	/// <param name="scanImmediately">
-	/// <c>true</c> to scan loaded assemblies immediately;<br/>
-	/// <c>false</c> to scan loaded assemblies asynchronously.
+	/// <param name="waitForScanningToComplete">
+	/// <c>true</c> to schedule assemblies to be scanned and wait for the scan to complete;<br/>
+	/// <c>false</c> to return immediately after scheduling assemblies to be scanned.
 	/// </param>
-	public static void LoadAllAssemblies(bool scanImmediately = false)
+	public static void LoadAllAssemblies(bool waitForScanningToComplete)
 	{
 		// initialize the class if necessary
 		if (!sInitialized)
@@ -446,7 +406,11 @@ public static class RuntimeMetadata
 			if (sLoadedAllAssemblies)
 				return;
 
+			// signal that scanning has not finished, yet
+			sScanningFinishedEvent.Reset();
+
 			// suppress triggering asynchronous updates
+			// that might occur due to assemblies to be loaded
 			int asynchronousUpdatePendingState = Interlocked.Exchange(ref sAsynchronousUpdatePending, 1);
 
 			// load all assemblies in the application's base directory recursively
@@ -488,24 +452,10 @@ public static class RuntimeMetadata
 			if (asynchronousUpdatePendingState == 0)
 				Interlocked.Exchange(ref sAsynchronousUpdatePending, 0);
 
-			// scan new loaded assemblies immediately, if requested;
-			// otherwise trigger updating asynchronously
-			if (scanImmediately)
-			{
-				sLock.EnterWriteLock();
-				try
-				{
-					ScanScheduledAssemblies();
-				}
-				finally
-				{
-					sLock.ExitWriteLock();
-				}
-			}
-			else
-			{
-				TriggerUpdate();
-			}
+			// trigger updating asynchronously and
+			// wait for scanning to complete, if requested
+			TriggerUpdate();
+			if (waitForScanningToComplete) sScanningFinishedEvent.Wait();
 		}
 	}
 
@@ -553,15 +503,8 @@ public static class RuntimeMetadata
 		if (args.LoadedAssembly.ReflectionOnly)
 			return;
 
-		// get all types from the loaded assembly to trigger loading dependent assemblies
-		// (assemblies will be put into sAssembliesToScan, so these assemblies are scanned first)
-		try { args.LoadedAssembly.GetTypes(); }
-		catch (ReflectionTypeLoadException)
-		{
-			// swallow
-		}
-
 		// add the loaded assembly to the set of assemblies to scan and trigger updating asynchronously
+		sScanningFinishedEvent.Reset();
 		sAssembliesToScan.Enqueue(args.LoadedAssembly);
 		TriggerUpdate();
 	}
@@ -586,17 +529,41 @@ public static class RuntimeMetadata
 		// worker method for updating asynchronously
 		static void Work(object obj)
 		{
+			List<Assembly> scannedAssemblies;
+
 			sLock.EnterWriteLock();
 			try
 			{
-				if (Interlocked.CompareExchange(ref sAsynchronousUpdatePending, 0, 1) == 1)
-				{
-					ScanScheduledAssemblies();
-				}
+				// abort, if there are no asynchronous updates pending
+				if (Interlocked.CompareExchange(ref sAsynchronousUpdatePending, 0, 1) == 0)
+					return;
+
+				// scan the scheduled assemblies
+				ScanScheduledAssemblies(out scannedAssemblies);
+				sScanningFinishedEvent.Set();
 			}
 			finally
 			{
 				sLock.ExitWriteLock();
+			}
+
+			// notify clients of the class about the scanned assemblies
+			foreach (Assembly assembly in scannedAssemblies)
+			{
+				try
+				{
+					EventHandler<AssemblyScannedEventArgs> handler = AssemblyScanned;
+					handler?.Invoke(null, new AssemblyScannedEventArgs(assembly));
+				}
+				catch (Exception ex)
+				{
+					sLog.Write(
+						LogLevel.Alert,
+						"The event handler of the {0}.{1} event threw an unhandled exception. Exception:\n{2}",
+						nameof(RuntimeMetadata),
+						nameof(AssemblyScanned),
+						ex);
+				}
 			}
 		}
 	}
@@ -604,11 +571,13 @@ public static class RuntimeMetadata
 	/// <summary>
 	/// Scans currently scheduled assemblies.
 	/// </summary>
-	private static void ScanScheduledAssemblies()
+	/// <param name="scannedAssemblies">Receives a list of scanned assemblies.</param>
+	private static void ScanScheduledAssemblies(out List<Assembly> scannedAssemblies)
 	{
 		Debug.Assert(sLock.IsWriteLockHeld);
 
 		// abort if there are no scheduled assemblies...
+		scannedAssemblies = [];
 		if (sAssembliesToScan.IsEmpty)
 			return;
 
@@ -695,14 +664,14 @@ public static class RuntimeMetadata
 			object setupInformation = typeof(AppDomain)
 				.GetProperty("SetupInformation")
 				?.GetMethod
-				?.Invoke(AppDomain.CurrentDomain, Array.Empty<object>());
+				?.Invoke(AppDomain.CurrentDomain, []);
 
 			// get the private bin paths of the current application domain
 			string[] privateBinPaths = (setupInformation
 				                            ?.GetType()
 				                            .GetProperty("PrivateBinPath")
 				                            ?.GetMethod
-				                            ?.Invoke(setupInformation, Array.Empty<object>()) as string)?.Split(';');
+				                            ?.Invoke(setupInformation, []) as string)?.Split(';');
 
 			if (privateBinPaths != null)
 			{
@@ -749,6 +718,9 @@ public static class RuntimeMetadata
 				exportedTypesByAssembly,
 				typesByFullName,
 				exportedTypesByFullName);
+
+			// store the assembly for notifying clients about the scanned assembly
+			scannedAssemblies.Add(assembly);
 		}
 
 		// replace exposed dictionaries
