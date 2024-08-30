@@ -625,6 +625,10 @@ public static class RuntimeMetadata
 		{
 			Debug.Assert(assembly.FullName != null, "assembly.FullName != null");
 
+			// skip, if assembly has already been inspected...
+			if (sTypesByAssembly.ContainsKey(assembly))
+				continue;
+
 			// log that the assembly was loaded
 			sLog.Write(LogLevel.Debug, "Scanning assembly ({0})...", assembly.FullName);
 
