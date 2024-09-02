@@ -1,4 +1,5 @@
-﻿.\GriffinPlus.Lib.Common.dll
+﻿.msCoverageSourceRootsMapping_GriffinPlus.Lib.Common.Tests
+.\GriffinPlus.Lib.Common.dll
 .\GriffinPlus.Lib.Common.pdb
 .\GriffinPlus.Lib.Common.Tests.deps.json
 .\GriffinPlus.Lib.Common.Tests.dll
@@ -16,7 +17,6 @@
 .\Microsoft.VisualStudio.TestPlatform.Common.dll
 .\Microsoft.VisualStudio.TestPlatform.ObjectModel.dll
 .\Newtonsoft.Json.dll
-.\NuGet.Frameworks.dll
 .\testhost.dll
 .\testhost.exe
 .\xunit.abstractions.dll
@@ -25,7 +25,7 @@
 .\xunit.execution.dotnet.dll
 .\xunit.runner.reporters.netcoreapp10.dll
 .\xunit.runner.utility.netcoreapp10.dll
-.\xunit.runner.visualstudio.dotnetcore.testadapter.dll
+.\xunit.runner.visualstudio.testadapter.dll
 .\cs\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
 .\cs\Microsoft.TestPlatform.CoreUtilities.resources.dll
 .\cs\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
