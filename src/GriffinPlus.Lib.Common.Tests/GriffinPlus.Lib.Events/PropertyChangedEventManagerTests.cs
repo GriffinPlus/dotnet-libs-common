@@ -510,6 +510,8 @@ public class PropertyChangedEventManagerTests : IDisposable
 
 		// kick object out of memory
 		GC.Collect();
+		GC.WaitForPendingFinalizers();
+		GC.Collect();
 
 		// the event provider should now be collected
 		Assert.False(weakReferenceProvider.IsAlive);

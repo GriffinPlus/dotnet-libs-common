@@ -797,6 +797,8 @@ public class GenericWeakEventManagerTests_7 : IDisposable
 
 		// kick object out of memory
 		GC.Collect();
+		GC.WaitForPendingFinalizers();
+		GC.Collect();
 
 		// the event provider should now be collected
 		Assert.False(weakReferenceProvider.IsAlive);
@@ -831,6 +833,8 @@ public class GenericWeakEventManagerTests_7 : IDisposable
 			}).Invoke();
 
 		// kick event recipient out of memory
+		GC.Collect();
+		GC.WaitForPendingFinalizers();
 		GC.Collect();
 
 		// the event recipient should now be collected
