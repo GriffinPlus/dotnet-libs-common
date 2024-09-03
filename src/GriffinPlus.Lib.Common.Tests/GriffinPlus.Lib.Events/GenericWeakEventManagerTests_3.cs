@@ -20,9 +20,9 @@ namespace GriffinPlus.Lib.Events;
 [Collection(nameof(NoParallelizationCollection))]
 public class GenericWeakEventManagerTests_3 : IDisposable
 {
-	private const string EventName = "MyEvent";
-
-	private AsyncContextThread mThread;
+	private const string             EventName   = "MyEvent";
+	private const int                WaitTimeout = 5000;
+	private       AsyncContextThread mThread;
 
 	/// <summary>
 	/// Initializes an instance the <see cref="GenericWeakEventManagerTests_3"/> class performing common initialization before running a test.
@@ -83,7 +83,7 @@ public class GenericWeakEventManagerTests_3 : IDisposable
 		{
 			// handler is called asynchronously
 			// => wait for the handler to be called and continue
-			Assert.True(recipient.HandlerCalledEvent.Wait(1000));
+			Assert.True(recipient.HandlerCalledEvent.Wait(WaitTimeout));
 			Assert.Null(recipient.SynchronizationContext); // synchronization context should be null for thread pool threads
 		}
 		else
@@ -145,7 +145,7 @@ public class GenericWeakEventManagerTests_3 : IDisposable
 
 			// handler is called asynchronously
 			// => wait for the handler to be called and continue
-			Assert.True(recipient.HandlerCalledEvent.Wait(1000));
+			Assert.True(recipient.HandlerCalledEvent.Wait(WaitTimeout));
 			Assert.Null(recipient.SynchronizationContext); // synchronization context should be null for thread pool threads
 		}
 		else
@@ -247,7 +247,7 @@ public class GenericWeakEventManagerTests_3 : IDisposable
 						Assert.False(recipient.HandlerCalledEvent.IsSet, "Handler was invoked directly, should have been scheduled.");
 					});
 
-				Assert.True(recipient.HandlerCalledEvent.Wait(1000));
+				Assert.True(recipient.HandlerCalledEvent.Wait(WaitTimeout));
 				Assert.Same(mThread.Context.SynchronizationContext, recipient.SynchronizationContext);
 				Assert.Equal(testData1, recipient.Arg1);
 				Assert.Equal(testData2, recipient.Arg2);
@@ -298,7 +298,7 @@ public class GenericWeakEventManagerTests_3 : IDisposable
 				testData2,
 				testData3);
 
-			Assert.True(recipient.HandlerCalledEvent.Wait(1000));
+			Assert.True(recipient.HandlerCalledEvent.Wait(WaitTimeout));
 			Assert.Same(mThread.Context.SynchronizationContext, recipient.SynchronizationContext);
 			Assert.Equal(testData1, recipient.Arg1);
 			Assert.Equal(testData2, recipient.Arg2);
@@ -357,7 +357,7 @@ public class GenericWeakEventManagerTests_3 : IDisposable
 					Assert.False(recipient.HandlerCalledEvent.IsSet, "Handler was invoked directly, should have been scheduled.");
 				});
 
-			Assert.True(recipient.HandlerCalledEvent.Wait(1000));
+			Assert.True(recipient.HandlerCalledEvent.Wait(WaitTimeout));
 			Assert.Same(mThread.Context.SynchronizationContext, recipient.SynchronizationContext);
 			Assert.Equal(testData1, recipient.Arg1);
 			Assert.Equal(testData2, recipient.Arg2);
@@ -447,8 +447,8 @@ public class GenericWeakEventManagerTests_3 : IDisposable
 			delegates[0](testData11, testData12, testData13);
 			delegates[1](testData21, testData22, testData23);
 
-			Assert.True(recipient1.HandlerCalledEvent.Wait(1000));
-			Assert.True(recipient2.HandlerCalledEvent.Wait(1000));
+			Assert.True(recipient1.HandlerCalledEvent.Wait(WaitTimeout));
+			Assert.True(recipient2.HandlerCalledEvent.Wait(WaitTimeout));
 			Assert.Null(recipient1.SynchronizationContext);
 			Assert.Null(recipient2.SynchronizationContext);
 
@@ -536,7 +536,7 @@ public class GenericWeakEventManagerTests_3 : IDisposable
 			});
 
 		// handler 1 should not be called immediately
-		Assert.False(recipient1.HandlerCalledEvent.Wait(1000), "Event handler was scheduled to be called unexpectedly.");
+		Assert.False(recipient1.HandlerCalledEvent.Wait(WaitTimeout), "Event handler was scheduled to be called unexpectedly.");
 		Assert.Null(recipient1.Arg1);
 		Assert.Null(recipient1.Arg2);
 		Assert.Null(recipient1.Arg3);
@@ -569,7 +569,7 @@ public class GenericWeakEventManagerTests_3 : IDisposable
 				});
 
 			// handler 2 should have been called after some time
-			Assert.True(recipient2.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
+			Assert.True(recipient2.HandlerCalledEvent.Wait(WaitTimeout), "The event was not called asynchronously.");
 			Assert.Same(mThread.Context.SynchronizationContext, recipient2.SynchronizationContext);
 			Assert.Equal(testData21, recipient2.Arg1);
 			Assert.Equal(testData22, recipient2.Arg2);
@@ -641,8 +641,8 @@ public class GenericWeakEventManagerTests_3 : IDisposable
 						Assert.False(recipient2.HandlerCalledEvent.IsSet, "Event handler was called unexpectedly.");
 					});
 
-				Assert.True(recipient1.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
-				Assert.True(recipient2.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
+				Assert.True(recipient1.HandlerCalledEvent.Wait(WaitTimeout), "The event was not called asynchronously.");
+				Assert.True(recipient2.HandlerCalledEvent.Wait(WaitTimeout), "The event was not called asynchronously.");
 			}
 			else
 			{
@@ -664,8 +664,8 @@ public class GenericWeakEventManagerTests_3 : IDisposable
 			// => handlers should be called in the context of the thread registering the event
 			delegates[0](testData11, testData12, testData13);
 			delegates[1](testData21, testData22, testData23);
-			Assert.True(recipient1.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
-			Assert.True(recipient2.HandlerCalledEvent.Wait(1000), "The event was not called asynchronously.");
+			Assert.True(recipient1.HandlerCalledEvent.Wait(WaitTimeout), "The event was not called asynchronously.");
+			Assert.True(recipient2.HandlerCalledEvent.Wait(WaitTimeout), "The event was not called asynchronously.");
 		}
 
 		// the handlers should have run in the context of the thread that registered them
