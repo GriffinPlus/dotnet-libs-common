@@ -19,7 +19,7 @@ namespace GriffinPlus.Lib.Configuration;
 /// The base of a cascadable configuration hierarchy containing items with default values.<br/>
 /// This configuration does not have any persistence strategy.
 /// </summary>
-[DebuggerDisplay("Default | Path: {" + nameof(Name) + "}")]
+[DebuggerDisplay("Default | Path: {" + nameof(Path) + "}")]
 public class DefaultCascadedConfiguration : CascadedConfigurationBase
 {
 	/// <summary>
@@ -175,6 +175,74 @@ public class DefaultCascadedConfiguration : CascadedConfigurationBase
 		}
 	}
 
+	/// <summary>
+	/// Adds a configuration item with the specified type and default value at the specified location,
+	/// if there is an inheriting configuration that provides a value for it (for rare edge cases).
+	/// </summary>
+	/// <typeparam name="T">Type of the value in the configuration item.</typeparam>
+	/// <param name="path">
+	/// Relative path of the configuration item to add. If a path segment contains path delimiters ('/'),
+	/// escape them. Otherwise, the segment will be split up. The configuration helper function
+	/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
+	/// </param>
+	/// <param name="defaultValue">The value of the item in the current configuration.</param>
+	/// <returns>
+	/// The added configuration item if there is an inheriting configuration providing a value for it;<br/>
+	/// otherwise <c>null</c>.
+	/// </returns>
+	/// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
+	/// <exception cref="ArgumentException">The configuration already contains an item at the specified path.</exception>
+	/// <exception cref="ConfigurationException">
+	/// <paramref name="path"/> contains a part that is not supported by the persistence strategy of an inheriting configuration.<br/>
+	/// -or-<br/>
+	/// <typeparamref name="T"/> is not supported by the persistence strategy of an inheriting configuration.
+	/// </exception>
+	public CascadedConfigurationItem<T> AddItemIfInheritingConfigurationContainsValue<T>(string path, T defaultValue)
+	{
+		if (path == null) throw new ArgumentNullException(nameof(path));
+
+		lock (Sync)
+		{
+			// ensure that the persistence strategy of the current configuration and inheriting configurations can handle the type
+			EnsureThatPersistenceStrategyCanHandleValueType(typeof(T)); // can throw ConfigurationException
+
+			// split the item path into path segments (can throw ConfigurationException)
+			string[] pathSegments = CascadedConfigurationPathHelper.SplitPath(
+				PersistenceStrategy,
+				path,
+				isItemPath: true,
+				checkValidity: true);
+
+			// ensure that the item does not exist, yet
+			if (TryGetItemInternal(pathSegments, 0, out ICascadedConfigurationItem _))
+			{
+				string relativePath = string.Join("/", pathSegments);
+				throw new ArgumentException(
+					$"The configuration already contains an item at the specified path ({relativePath}).",
+					nameof(path));
+			}
+
+			// determine whether an inheriting configuration has a value for the item at the specified path
+			bool valueExists = false;
+			for (int i = 0; !valueExists && i < mInheritingConfigurations.Count; i++)
+			{
+				valueExists = mInheritingConfigurations[i]
+					.ContainsValueAtPathInternal(
+						pathSegments,
+						startIndex: 0,
+						considerInheritingConfigurations: true);
+			}
+
+			// abort if no inheriting configuration could provide a value for the item
+			if (!valueExists)
+				return null;
+
+			// add the configuration item in the current configuration (with value) and in all inheriting configurations (without value)
+			// (the inheriting configuration(s) that have a persistence strategy will fill their item with the appropriate value)
+			return AddItemInternal(pathSegments, 0, defaultValue);
+		}
+	}
+
 	private CascadedConfigurationItem<T> AddItemInternal<T>(string[] pathSegments, int startIndex, T defaultValue)
 	{
 		Debug.Assert(Monitor.IsEntered(Sync), "The configuration is expected to be locked.");
@@ -262,11 +330,84 @@ public class DefaultCascadedConfiguration : CascadedConfigurationBase
 			}
 
 			// add the configuration item in the current configuration (with value) and in all inheriting configurations (without value)
-			return AddItemInternal(pathSegments, 0, type, defaultValue);
+			return AddItemDynamicallyInternal(pathSegments, 0, type, defaultValue);
 		}
 	}
 
-	private ICascadedConfigurationItem AddItemInternal(string[] pathSegments, int startIndex, Type type, object defaultValue)
+	/// <summary>
+	/// Adds a configuration item with the specified type and default value at the specified location,
+	/// if there is an inheriting configuration that provides a value for it (for rare edge cases).
+	/// </summary>
+	/// <param name="path">
+	/// Relative path of the configuration item to add. If a path segment contains path delimiters ('/'),
+	/// escape them. Otherwise, the segment will be split up. The configuration helper function
+	/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
+	/// </param>
+	/// <param name="type">Type of the value in the configuration item.</param>
+	/// <param name="defaultValue">The value of the item in the current configuration.</param>
+	/// <returns>
+	/// The added configuration item if there is an inheriting configuration providing a value for it;<br/>
+	/// otherwise <c>null</c>.
+	/// </returns>
+	/// <exception cref="ArgumentNullException"><paramref name="path"/> or <paramref name="type"/> is <see langword="null"/>.</exception>
+	/// <exception cref="ArgumentException">The configuration already contains an item at the specified path.</exception>
+	/// <exception cref="ConfigurationException">
+	/// <paramref name="path"/> contains a part that is not supported by the persistence strategy of an inheriting configuration.<br/>
+	/// -or-<br/>
+	/// <paramref name="type"/> is not supported by the persistence strategy of an inheriting configuration.
+	/// </exception>
+	public ICascadedConfigurationItem AddItemDynamicallyIfInheritingConfigurationContainsValue(string path, Type type, object defaultValue)
+	{
+		if (path == null) throw new ArgumentNullException(nameof(path));
+		if (type == null) throw new ArgumentNullException(nameof(type));
+
+		lock (Sync)
+		{
+			// ensure that the persistence strategy of the current configuration and inheriting configurations can handle the type
+			EnsureThatPersistenceStrategyCanHandleValueType(type); // can throw ConfigurationException
+
+			// split the item path into path segments (can throw ConfigurationException)
+			string[] pathSegments = CascadedConfigurationPathHelper.SplitPath(
+				PersistenceStrategy,
+				path,
+				isItemPath: true,
+				checkValidity: true);
+
+			// ensure that the item does not exist, yet
+			if (TryGetItemInternal(pathSegments, 0, out ICascadedConfigurationItem _))
+			{
+				string relativePath = string.Join("/", pathSegments);
+				throw new ArgumentException(
+					$"The configuration already contains an item at the specified path ({relativePath}).",
+					nameof(path));
+			}
+
+			// determine whether an inheriting configuration has a value for the item at the specified path
+			bool valueExists = false;
+			for (int i = 0; !valueExists && i < mInheritingConfigurations.Count; i++)
+			{
+				valueExists = mInheritingConfigurations[i]
+					.ContainsValueAtPathInternal(
+						pathSegments,
+						startIndex: 0,
+						considerInheritingConfigurations: true);
+			}
+
+			// abort if no inheriting configuration could provide a value for the item
+			if (!valueExists)
+				return null;
+
+			// add the configuration item in the current configuration (with value) and in all inheriting configurations (without value)
+			// (the inheriting configuration(s) that have a persistence strategy will fill their item with the appropriate value)
+			return AddItemDynamicallyInternal(pathSegments, 0, type, defaultValue);
+		}
+	}
+
+	private ICascadedConfigurationItem AddItemDynamicallyInternal(
+		string[] pathSegments,
+		int      startIndex,
+		Type     type,
+		object   defaultValue)
 	{
 		Debug.Assert(Monitor.IsEntered(Sync), "The configuration is expected to be locked.");
 		Debug.Assert(pathSegments is { Length: > 0 });
@@ -282,7 +423,7 @@ public class DefaultCascadedConfiguration : CascadedConfigurationBase
 				count: pathSegments.Length - startIndex - 1,
 				create: true);
 
-			return configuration.AddItemInternal(pathSegments, pathSegments.Length - 1, type, defaultValue);
+			return configuration.AddItemDynamicallyInternal(pathSegments, pathSegments.Length - 1, type, defaultValue);
 		}
 
 		Debug.Assert(startIndex == pathSegments.Length - 1);

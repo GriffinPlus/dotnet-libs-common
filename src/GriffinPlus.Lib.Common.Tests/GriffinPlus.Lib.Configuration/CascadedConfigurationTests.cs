@@ -27,6 +27,8 @@ public class CascadedConfigurationTests
 {
 	private static readonly char[] sSeparator               = ['/'];
 	private const           string XmlConfigurationFilePath = "CascadedXmlFileConfigurationTest.xml";
+	private const           string PersistentItemName       = "ItemWithPersistedValue";
+	private const           string VolatileItemName         = "ItemWithVolatileValue";
 
 	#region Types for Testing Purposes
 
@@ -67,6 +69,13 @@ public class CascadedConfigurationTests
 		/// Value of the item in the base configuration (default value).
 		/// </summary>
 		public object DefaultValue = defaultValue;
+
+		/// <summary>
+		/// Values of the item in a prepared configuration:<br/>
+		/// - index = 0: item in the base configuration<br/>
+		/// - index &gt; 0: item in a derived configuration (the greater the index, the more derived is the configuration the item is in).
+		/// </summary>
+		public List<object> ItemValues = [defaultValue];
 
 		/// <summary>
 		/// Associated item objects in a prepared configuration:<br/>
@@ -658,6 +667,7 @@ public class CascadedConfigurationTests
 					var itemInfo = new ItemInfo(path, testType.ValueType, testType.DefaultValue, null);
 					for (int configurationIndex = 1; configurationIndex < rootConfigurations.Count; configurationIndex++)
 					{
+						itemInfo.ItemValues.Add(null);
 						itemInfo.Items.Add(null);
 					}
 
@@ -896,6 +906,519 @@ public class CascadedConfigurationTests
 
 	#endregion
 
+	#region DefaultCascadedConfiguration only: AddItemIfInheritingConfigurationContainsValue<T>(string path, T defaultValue) and AddItemDynamicallyIfInheritingConfigurationContainsValue(string path, Type type, object defaultValue)
+
+	#region Test Data
+
+	/// <summary>
+	/// Test data for test methods targeting <see cref="DefaultCascadedConfiguration.AddItemIfInheritingConfigurationContainsValue{T}(string,T)"/>
+	/// and <see cref="DefaultCascadedConfiguration.AddItemDynamicallyIfInheritingConfigurationContainsValue(string,Type,object)"/>.
+	/// </summary>
+	public static IEnumerable<object[]> AddItemIfInheritingConfigurationContainsValue_TestData
+	{
+		get
+		{
+			//////////////////////////////////////////////////////////////////////////////////////////////////////////
+			// check whether the configuration behaves as expected when adding items
+			// (the type is not significant here, supported types are tested below...)
+			//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+			string[][] itemPathsList =
+			[
+				[$"/{PersistentItemName}"],                                       // one top-level item
+				[$"/{VolatileItemName}"],                                         // one top-level item
+				[$"/Child/{PersistentItemName}"],                                 // one child-level item
+				[$"/Child/{VolatileItemName}"],                                   // one child-level item
+				[$"/{PersistentItemName}", $"/{VolatileItemName}"],               // two top-level items
+				[$"/Child/{PersistentItemName}", $"/Child/{VolatileItemName}"],   // two items in same child configuration
+				[$"/Child1/{PersistentItemName}", $"/Child2/{VolatileItemName}"], // two items in different child configurations
+				[                                                                 // mixed
+					$"/{PersistentItemName}",
+					$"/{VolatileItemName}",
+					$"/Child1/{PersistentItemName}",
+					$"/Child1/{VolatileItemName}",
+					$"/Child2/{PersistentItemName}",
+					$"/Child2/{VolatileItemName}"
+				]
+			];
+
+			foreach (ICascadedConfigurationPersistenceStrategy[] strategies in sInheritedConfigurationPersistenceStrategies)
+			foreach (string[] itemPaths in itemPathsList)
+			{
+				Type valueType = typeof(int);
+				object defaultValue = 1;
+				object savedValue = 2;
+
+				yield return CreateTestData(
+					strategies,
+					itemPaths,
+					new ValueTypeAndDefaultValue(valueType, defaultValue),
+					savedValue);
+			}
+
+			//////////////////////////////////////////////////////////////////////////////////////////////////////////
+			// check whether adding items with specific value types is working as expected
+			// (it is sufficient to add a value at the root of the configuration, child configurations behave the same)
+			//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+			itemPathsList =
+			[
+				["/Item"]
+			];
+
+			foreach (ICascadedConfigurationPersistenceStrategy[] strategies in sInheritedConfigurationPersistenceStrategies)
+			foreach (string[] itemPaths in itemPathsList)
+			foreach (ValueTypeAndDefaultValue testType in ItemTypesWithDefaultValues)
+			{
+				yield return CreateTestData(
+					strategies,
+					itemPaths,
+					testType,
+					testType.DefaultValue);
+			}
+
+			yield break;
+
+			static object[] CreateTestData(
+				IReadOnlyList<ICascadedConfigurationPersistenceStrategy> strategies,
+				string[]                                                 itemPaths,
+				ValueTypeAndDefaultValue                                 testType,
+				object                                                   testValue)
+			{
+				// create a new configuration with the specified number of inheritance levels,
+				// add items that should be persisted using a strategy to the base configuration
+				// and let persistent configurations save them
+				{
+					List<CascadedConfigurationBase> rootConfigurations = CreateConfigurationsWithPersistenceStrategies(strategies);
+					var defaultRootConfiguration = (DefaultCascadedConfiguration)rootConfigurations[0];
+					foreach (string path in itemPaths)
+					{
+						if (path.EndsWith($"/{PersistentItemName}", StringComparison.Ordinal))
+						{
+							defaultRootConfiguration.AddItemDynamically(path, testType.ValueType, testValue);
+						}
+					}
+
+					foreach (CascadedConfiguration inheritedConfiguration in rootConfigurations.Skip(1).Cast<CascadedConfiguration>())
+					{
+						if (inheritedConfiguration.PersistenceStrategy != null)
+						{
+							inheritedConfiguration.Save(CascadedConfigurationSaveFlags.SaveInheritedSettings);
+						}
+					}
+				}
+
+				// create a new configuration with the specified number of inheritance levels,
+				// load persistent configurations saved above, prepare item infos,
+				// but do not add any items to the configuration, yet...
+				{
+					List<CascadedConfigurationBase> rootConfigurations = CreateConfigurationsWithPersistenceStrategies(strategies);
+					foreach (CascadedConfiguration inheritedConfiguration in rootConfigurations.Skip(1).Cast<CascadedConfiguration>())
+					{
+						if (inheritedConfiguration.PersistenceStrategy != null)
+						{
+							inheritedConfiguration.Load();
+						}
+					}
+
+					var itemInfos = new List<ItemInfo>();
+					foreach (string path in itemPaths)
+					{
+						var itemInfo = new ItemInfo(path, testType.ValueType, testType.DefaultValue, null);
+						for (int configurationIndex = 1; configurationIndex < rootConfigurations.Count; configurationIndex++)
+						{
+							itemInfo.ItemValues.Add(testValue);
+							itemInfo.Items.Add(null);
+						}
+
+						itemInfos.Add(itemInfo);
+					}
+
+					// pass prepared configuration to the test
+					return
+					[
+						rootConfigurations,
+						itemInfos
+					];
+				}
+			}
+		}
+	}
+
+	#endregion
+
+	#region AddItemIfInheritingConfigurationContainsValue<T>(string path, T defaultValue)
+
+	/// <summary>
+	/// Tests adding an item using <see cref="DefaultCascadedConfiguration.AddItemIfInheritingConfigurationContainsValue{T}"/>.<br/>
+	/// The item does not exist when the method is called.<br/>
+	/// The method is expected to succeed.
+	/// </summary>
+	[Theory]
+	[MemberData(nameof(AddItemIfInheritingConfigurationContainsValue_TestData))]
+	public void AddItemIfInheritingConfigurationContainsValueT(
+		List<CascadedConfigurationBase> rootConfigurations,
+		List<ItemInfo>                  itemInfos)
+	{
+		var baseRootConfiguration = (DefaultCascadedConfiguration)rootConfigurations[0];
+
+		// determine inheriting configurations that can (and have) persisted their items
+		List<CascadedConfiguration> persistedConfigurations = rootConfigurations
+			.Skip(1)
+			.Cast<CascadedConfiguration>()
+			.Where(strategy => strategy.PersistenceStrategy != null)
+			.ToList();
+
+		foreach (ItemInfo itemInfo in itemInfos)
+		{
+			// add item to the default root configuration
+			MethodInfo method = typeof(DefaultCascadedConfiguration)
+				.GetMethods()
+				.Single(
+					x =>
+						x.Name == nameof(DefaultCascadedConfiguration.AddItemIfInheritingConfigurationContainsValue) &&
+						x.IsGenericMethodDefinition &&
+						x.GetGenericArguments().Length == 1 &&
+						x.GetParameters().Length == 2)
+				.MakeGenericMethod(itemInfo.Type);
+
+			var addedDefaultItem = (ICascadedConfigurationItem)method.Invoke(
+				baseRootConfiguration,
+				[
+					itemInfo.Path,
+					itemInfo.DefaultValue
+				]);
+
+			// check the result
+			if (persistedConfigurations.Count > 0 && itemInfo.Path.EndsWith($"/{PersistentItemName}", StringComparison.Ordinal))
+			{
+				// the configuration stack contains an inherited configuration with a persistence strategy
+				// that can provide a value for the item to add
+				// => method should add the item as expected
+
+				// check base configuration
+				Assert.NotNull(addedDefaultItem);
+				Assert.Equal(itemInfo.Path, addedDefaultItem.Path);
+				Assert.Equal(itemInfo.Type, addedDefaultItem.Type);
+				Assert.True(addedDefaultItem.HasValue);
+				Assert.Equal(itemInfo.DefaultValue, addedDefaultItem.Value);
+				Assert.False(addedDefaultItem.HasComment);
+				Assert.Null(addedDefaultItem.Comment);
+
+				// check persisting configurations
+				foreach (CascadedConfiguration configuration in persistedConfigurations)
+				{
+					int configurationIndex = rootConfigurations.FindIndex(x => x == configuration);
+					Assert.True(configuration.TryGetItem(itemInfo.Path, out ICascadedConfigurationItem inheritingItem));
+					Assert.Equal(itemInfo.Path, inheritingItem.Path);
+					Assert.Equal(itemInfo.Type, inheritingItem.Type);
+					Assert.True(inheritingItem.HasValue);
+					Assert.Equal(itemInfo.ItemValues[configurationIndex], inheritingItem.Value);
+					Assert.False(inheritingItem.HasComment);
+					Assert.Null(inheritingItem.Comment);
+				}
+			}
+			else
+			{
+				// (a) the configuration stack does not contain an inherited configuration with a persistence strategy
+				//    that can provide a value for the item to add
+				// (b) the item value was not persisted before
+				// ----------------------------------------------------------------------------------------------------
+				// => method should not add an item
+				Assert.Null(addedDefaultItem);
+			}
+		}
+
+		// check whether the items were added to the base configuration and inheriting configurations as expected
+		AddItemIfInheritingConfigurationContainsValue_CheckAssertions(rootConfigurations, itemInfos);
+	}
+
+	/// <summary>
+	/// Tests adding an item using <see cref="DefaultCascadedConfiguration.AddItemIfInheritingConfigurationContainsValue{T}"/>.<br/>
+	/// The path of the item to add is <see langword="null"/>.<br/>
+	/// The method is expected to throw an <see cref="ArgumentNullException"/>.
+	/// </summary>
+	[Fact]
+	public void AddItemIfInheritingConfigurationContainsValueT_PathIsNull()
+	{
+		var baseRootConfiguration = new DefaultCascadedConfiguration("My Configuration");
+		Assert.Throws<ArgumentNullException>(() => baseRootConfiguration.AddItemIfInheritingConfigurationContainsValue(null, 0));
+	}
+
+	/// <summary>
+	/// Tests adding an item using <see cref="DefaultCascadedConfiguration.AddItemIfInheritingConfigurationContainsValue{T}"/>.<br/>
+	/// An item with the same name exists already when the method is called.<br/>
+	/// The method is expected to throw a <see cref="ArgumentException"/>.
+	/// </summary>
+	[Theory]
+	[InlineData("Item")]
+	[InlineData("Child/Item")]
+	public void AddItemIfInheritingConfigurationContainsValueT_ItemAtSamePathExistsAlready(string path)
+	{
+		const int defaultValue = 0;
+
+		// create a base configuration
+		var baseRootConfiguration = new DefaultCascadedConfiguration("My Configuration");
+
+		// add an item at the specified path (should succeed)
+		baseRootConfiguration.AddItem(path, defaultValue);
+
+		// try to add another item at the same path (should fail)
+		var exception = Assert.Throws<ArgumentException>(() => baseRootConfiguration.AddItemIfInheritingConfigurationContainsValue(path, defaultValue));
+		Assert.StartsWith($"The configuration already contains an item at the specified path ({path}).", exception.Message);
+		Assert.Equal("path", exception.ParamName);
+	}
+
+	#endregion
+
+	#region AddItemDynamicallyIfInheritingConfigurationContainsValue(string path, Type type, object defaultValue)
+
+	/// <summary>
+	/// Tests adding an item using <see cref="DefaultCascadedConfiguration.AddItemDynamicallyIfInheritingConfigurationContainsValue"/>.<br/>
+	/// The item does not exist when the method is called.<br/>
+	/// The method is expected to succeed.
+	/// </summary>
+	[Theory]
+	[MemberData(nameof(AddItemIfInheritingConfigurationContainsValue_TestData))]
+	public void AddItemDynamicallyIfInheritingConfigurationContainsValue(
+		List<CascadedConfigurationBase> rootConfigurations,
+		List<ItemInfo>                  itemInfos)
+	{
+		var baseRootConfiguration = (DefaultCascadedConfiguration)rootConfigurations[0];
+
+		// determine inheriting configurations that can (and have) persisted their items
+		List<CascadedConfiguration> persistedConfigurations = rootConfigurations
+			.Skip(1)
+			.Cast<CascadedConfiguration>()
+			.Where(strategy => strategy.PersistenceStrategy != null)
+			.ToList();
+
+		foreach (ItemInfo itemInfo in itemInfos)
+		{
+			// add item to the default root configuration
+			ICascadedConfigurationItem addedDefaultItem = baseRootConfiguration.AddItemDynamicallyIfInheritingConfigurationContainsValue(
+				itemInfo.Path,
+				itemInfo.Type,
+				itemInfo.DefaultValue);
+
+			// check the result
+			if (persistedConfigurations.Count > 0 && itemInfo.Path.EndsWith($"/{PersistentItemName}", StringComparison.Ordinal))
+			{
+				// the configuration stack contains an inherited configuration with a persistence strategy
+				// that can provide a value for the item to add
+				// => method should add the item as expected
+
+				// check base configuration
+				Assert.NotNull(addedDefaultItem);
+				Assert.Equal(itemInfo.Path, addedDefaultItem.Path);
+				Assert.Equal(itemInfo.Type, addedDefaultItem.Type);
+				Assert.True(addedDefaultItem.HasValue);
+				Assert.Equal(itemInfo.DefaultValue, addedDefaultItem.Value);
+				Assert.False(addedDefaultItem.HasComment);
+				Assert.Null(addedDefaultItem.Comment);
+
+				// check persisting configurations
+				foreach (CascadedConfiguration configuration in persistedConfigurations)
+				{
+					int configurationIndex = rootConfigurations.FindIndex(x => x == configuration);
+					Assert.True(configuration.TryGetItem(itemInfo.Path, out ICascadedConfigurationItem inheritingItem));
+					Assert.Equal(itemInfo.Path, inheritingItem.Path);
+					Assert.Equal(itemInfo.Type, inheritingItem.Type);
+					Assert.True(inheritingItem.HasValue);
+					Assert.Equal(itemInfo.ItemValues[configurationIndex], inheritingItem.Value);
+					Assert.False(inheritingItem.HasComment);
+					Assert.Null(inheritingItem.Comment);
+				}
+			}
+			else
+			{
+				// (a) the configuration stack does not contain an inherited configuration with a persistence strategy
+				//    that can provide a value for the item to add
+				// (b) the item value was not persisted before
+				// ----------------------------------------------------------------------------------------------------
+				// => method should not add an item
+				Assert.Null(addedDefaultItem);
+			}
+		}
+
+		// check whether the items were added to the base configuration and inheriting configurations as expected
+		AddItemIfInheritingConfigurationContainsValue_CheckAssertions(rootConfigurations, itemInfos);
+	}
+
+	/// <summary>
+	/// Tests adding an item using <see cref="DefaultCascadedConfiguration.AddItemDynamicallyIfInheritingConfigurationContainsValue"/>.<br/>
+	/// The path of the item to add is <see langword="null"/>.<br/>
+	/// The method is expected to throw an <see cref="ArgumentNullException"/>.
+	/// </summary>
+	[Fact]
+	public void AddItemDynamicallyIfInheritingConfigurationContainsValue_PathNull()
+	{
+		var baseRootConfiguration = new DefaultCascadedConfiguration("My Configuration");
+		Assert.Throws<ArgumentNullException>(() => baseRootConfiguration.AddItemDynamicallyIfInheritingConfigurationContainsValue(null, typeof(int), 0));
+	}
+
+	/// <summary>
+	/// Tests adding an item using <see cref="DefaultCascadedConfiguration.AddItemDynamicallyIfInheritingConfigurationContainsValue"/>.<br/>
+	/// The type of the item to add is <see langword="null"/>.<br/>
+	/// The method is expected to throw an <see cref="ArgumentNullException"/>.
+	/// </summary>
+	[Fact]
+	public void AddItemDynamicallyIfInheritingConfigurationContainsValue_TypeIsNull()
+	{
+		var baseRootConfiguration = new DefaultCascadedConfiguration("My Configuration");
+		Assert.Throws<ArgumentNullException>(() => baseRootConfiguration.AddItemDynamicallyIfInheritingConfigurationContainsValue("Item", null, 0));
+	}
+
+	/// <summary>
+	/// Tests adding an item using <see cref="DefaultCascadedConfiguration.AddItemDynamicallyIfInheritingConfigurationContainsValue"/>.<br/>
+	/// An item with the same name exists already when the method is called.<br/>
+	/// The method is expected to throw a <see cref="ArgumentException"/>.
+	/// </summary>
+	[Theory]
+	[InlineData("Item")]
+	[InlineData("Child/Item")]
+	public void AddItemDynamicallyIfInheritingConfigurationContainsValue_ItemAtSamePathExistsAlready(string path)
+	{
+		const int defaultValue = 0;
+
+		// create a base configuration
+		var baseRootConfiguration = new DefaultCascadedConfiguration("My Configuration");
+
+		// add an item at the specified path (should succeed)
+		baseRootConfiguration.AddItemDynamically(path, typeof(int), defaultValue);
+
+		// try to add another item at the same path (should fail)
+		var exception = Assert.Throws<ArgumentException>(() => baseRootConfiguration.AddItemDynamicallyIfInheritingConfigurationContainsValue(path, typeof(int), defaultValue));
+		Assert.StartsWith($"The configuration already contains an item at the specified path ({path}).", exception.Message);
+		Assert.Equal("path", exception.ParamName);
+	}
+
+	#endregion
+
+	#region Helper
+
+	/// <summary>
+	/// Checks whether the items have been added to the configuration as expected.
+	/// </summary>
+	/// <param name="rootConfigurations">The configuration stack (index 0 = base configuration, index &gt; 0 = inheriting configurations).</param>
+	/// <param name="itemInfos">Some information about the added items (references to items are set during the check).</param>
+	private static void AddItemIfInheritingConfigurationContainsValue_CheckAssertions(
+		List<CascadedConfigurationBase> rootConfigurations,
+		List<ItemInfo>                  itemInfos)
+	{
+		// check whether all items have been added correctly
+		// (warning: item infos do not contain references to added items as they have not been set up as part of the test data set!!!)
+
+		// determine whether the configuration stack contains configurations that can (and have) persisted their items
+		bool usingPersistingConfigurations = rootConfigurations
+			.Skip(1)
+			.Cast<CascadedConfiguration>()
+			.Any(x => x.PersistenceStrategy != null);
+
+		// determine infos of items that should exist in case of everything going right
+		ItemInfo[] expectedItemInfos = usingPersistingConfigurations
+			                               ? itemInfos
+				                               .Where(x => x.Path.EndsWith($"/{PersistentItemName}", StringComparison.Ordinal))
+				                               .OrderBy(itemInfo => itemInfo.Path, StringComparer.InvariantCulture)
+				                               .ToArray()
+			                               : [];
+
+		// determine the path of expected items
+		string[] expectedItemPaths = expectedItemInfos
+			.Select(itemInfo => itemInfo.Path)
+			.ToArray();
+
+		// determine the actual items in the configuration stack
+		List<ICascadedConfigurationItem[]> actualItemsByConfigurationIndex = [];
+		for (int configurationIndex = 0; configurationIndex < rootConfigurations.Count; configurationIndex++)
+		{
+			// get all items in the configuration sorted by their path (uses enumerators only, items are already sorted by their path)
+			actualItemsByConfigurationIndex.Add(CollectAllItemsInConfiguration(rootConfigurations[configurationIndex]).ToArray());
+		}
+
+		for (int configurationIndex = 0; configurationIndex < rootConfigurations.Count; configurationIndex++)
+		{
+			ICascadedConfigurationItem[] actualItems = actualItemsByConfigurationIndex[configurationIndex];
+
+			// check whether all added items are in the configuration
+			string[] actualItemPaths = actualItems.Select(item => item.Path).ToArray();
+			Assert.Equal(expectedItemPaths, actualItemPaths);
+
+			for (int itemIndex = 0; itemIndex < expectedItemInfos.Length; itemIndex++)
+			{
+				ItemInfo expectedItemInfo = expectedItemInfos[itemIndex];
+				string expectedItemName = expectedItemInfo.Path[(expectedItemInfo.Path.LastIndexOf('/') + 1)..];
+				string expectedConfigurationPath = expectedItemInfo.Path[..expectedItemInfo.Path.LastIndexOf('/')];
+				CascadedConfigurationBase expectedConfiguration = GetConfiguration(rootConfigurations[configurationIndex], expectedConfigurationPath); // uses enumerators only
+				ICascadedConfigurationItem actualItem = actualItems[itemIndex];
+
+				// set item reference to the item in test data
+				// (needed for checking the InheritedItem property later on)
+				Assert.Null(expectedItemInfo.Items[configurationIndex]);
+				expectedItemInfo.Items[configurationIndex] = actualItem;
+
+				// check whether the item state is as expected
+				Assert.Equal(expectedItemName, actualItem.Name);
+				Assert.Equal(expectedItemInfo.Path, actualItem.Path);
+				Assert.Equal(expectedItemInfo.Type, actualItem.Type);
+				Assert.Same(expectedConfiguration, actualItem.Configuration);
+				Assert.True(actualItem.SupportsComments);
+				Assert.Null(actualItem.Comment);
+
+				if (configurationIndex == 0)
+				{
+					// base configuration
+					Assert.Null(actualItem.InheritedItem);
+
+					// the value is in the item itself
+					Assert.True(actualItem.HasValue);
+					Assert.Equal(expectedItemInfo.DefaultValue, actualItem.Value);
+				}
+				else
+				{
+					// inheriting configuration
+					Assert.Same(expectedItemInfo.Items[configurationIndex - 1], actualItem.InheritedItem);
+
+					if (rootConfigurations[configurationIndex].PersistenceStrategy != null)
+					{
+						// the configuration provides its own value for the item
+						Assert.True(actualItem.HasValue);
+						Assert.Equal(expectedItemInfo.ItemValues[configurationIndex], actualItem.Value);
+					}
+					else
+					{
+						// the value is inherited from the item in the base configuration
+						// => the item should not have a value itself, but inherit one from the next
+						//    configuration with a persistence strategy or the base configuration
+						Assert.False(actualItem.HasValue);
+
+						// determine the inherited value
+						object expectedValue = null;
+						bool foundItem = false;
+						for (int j = configurationIndex - 1; j >= 0; j--)
+						{
+							ICascadedConfigurationItem item = actualItemsByConfigurationIndex[j][itemIndex];
+							if (item.HasValue)
+							{
+								foundItem = true;
+								expectedValue = item.Value;
+								break;
+							}
+						}
+
+						// check whether an inherited value was found and whether it is correct
+						Assert.True(foundItem);
+						Assert.Equal(expectedValue, actualItem.Value);
+					}
+				}
+			}
+		}
+	}
+
+	#endregion
+
+	#endregion
+
 	#region Children { get; }
 
 	/// <summary>
@@ -954,7 +1477,7 @@ public class CascadedConfigurationTests
 				List<CascadedConfigurationBase> rootConfigurations = CreateConfigurationsWithPersistenceStrategies(strategies);
 				var baseRootConfiguration = (DefaultCascadedConfiguration)rootConfigurations[0];
 
-				// create configurations using DefaultConfiguration.GetChildConfiguration(string path, bool create)
+				// create configurations using DefaultCascadedConfiguration.GetChildConfiguration(string path, bool create)
 				// note: yes, this method is subject to other tests, but it is the only way to add configurations...
 				foreach (string configurationPath in pathsToTest[0])
 				{
@@ -1428,6 +1951,7 @@ public class CascadedConfigurationTests
 					{
 						ICascadedConfigurationItem inheritingItem = GetItemOfConfiguration(rootConfigurations[configurationIndex], itemInfo.Path);
 						itemInfo.Items.Add(inheritingItem);
+						itemInfo.ItemValues.Add(value);
 					}
 					allItemInfos.Add(itemInfo);
 				}
@@ -1545,6 +2069,7 @@ public class CascadedConfigurationTests
 					{
 						ICascadedConfigurationItem inheritingItem = GetItemOfConfiguration(rootConfigurations[configurationIndex], itemInfo.Path);
 						itemInfo.Items.Add(inheritingItem);
+						itemInfo.ItemValues.Add(value);
 					}
 
 					itemInfos.Add(itemInfo);
@@ -1998,7 +2523,7 @@ public class CascadedConfigurationTests
 		// iterate through the configurations and check whether TryGetItem() returns false
 		foreach (CascadedConfigurationBase configuration in rootConfigurations)
 		{
-			bool success = configuration.TryGetItem(path, out ICascadedConfigurationItem item); // <- method to test
+			bool success = configuration.TryGetItem(path, out ICascadedConfigurationItem _); // <- method to test
 			Assert.False(success);
 		}
 	}

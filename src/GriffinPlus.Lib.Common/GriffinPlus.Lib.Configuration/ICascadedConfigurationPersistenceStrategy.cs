@@ -72,9 +72,15 @@ public interface ICascadedConfigurationPersistenceStrategy
 	/// <param name="type">Type of the value of the configuration item to check.</param>
 	/// <param name="value">Value to check.</param>
 	/// <returns>
-	/// <see langword="true"/> if the specified value may be assigned to a configuration item with the specified type;<br/>
+	/// <see langword="true"/> if the specified value may be assigned to a configuration item of the specified type;<br/>
 	/// otherwise <see langword="false"/>.
 	/// </returns>
+	/// <remarks>
+	/// This method always returns <see langword="true"/> if the type of the value matches the specified type.
+	/// Otherwise, <see langword="false"/> is returned.<br/>
+	/// This is useful, if the persistence strategy does not save any type information, so the type of the configuration
+	/// item is the only chance to determine the type to construct when loading a configuration item.
+	/// </remarks>
 	bool IsAssignable(Type type, object value);
 
 	/// <summary>
@@ -82,13 +88,35 @@ public interface ICascadedConfigurationPersistenceStrategy
 	/// </summary>
 	/// <param name="configuration">Configuration to update.</param>
 	/// <exception cref="ConfigurationException">Loading the configuration failed (reason depends on the persistence strategy).</exception>
+	/// <exception cref="InvalidOperationException">
+	/// The configuration is a child configuration (try to load the root configuration instead).
+	/// </exception>
 	void Load(CascadedConfiguration configuration);
 
 	/// <summary>
 	/// Loads the value of the specified configuration item from the persistent storage.
 	/// </summary>
 	/// <param name="item">Item to load.</param>
+	/// <exception cref="ConfigurationException">Loading the configuration failed (reason depends on the persistence strategy).</exception>
 	void LoadItem(ICascadedConfigurationItem item);
+
+	/// <summary>
+	/// Tries to get the value and the comment of an item at the specified path.
+	/// </summary>
+	/// <param name="path">Path of the item to peek.</param>
+	/// <param name="itemType">Type of the item to peek.</param>
+	/// <param name="value">Receives the value of the item at the specified path.</param>
+	/// <param name="comment">Received the comment of the item at the specified path.</param>
+	/// <returns>
+	/// <c>true</c> if there is an item at the specified path;<br/>
+	/// otherwise <c>false</c>.
+	/// </returns>
+	/// <exception cref="ConfigurationException">Saving the configuration failed (reason depends on the persistence strategy).</exception>
+	bool PeekItem(
+		string     path,
+		Type       itemType,
+		out object value,
+		out string comment);
 
 	/// <summary>
 	/// Saves configuration data from the specified configuration into the backend storage.

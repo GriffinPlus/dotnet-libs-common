@@ -1273,7 +1273,7 @@ public abstract class CascadedConfigurationBase
 
 	#endregion
 
-	#region Argument Check Helpers
+	#region Internal Helpers
 
 	/// <summary>
 	/// Throws an exception if the specified item value type cannot be handled by the persistence strategy
@@ -1293,6 +1293,67 @@ public abstract class CascadedConfigurationBase
 		{
 			mInheritingConfigurations[i].EnsureThatPersistenceStrategyCanHandleValueType(type);
 		}
+	}
+
+	/// <summary>
+	/// Determines whether the current configuration or optionally an inheriting configuration contains a value at the specified path.<br/>
+	/// The item DOES NOT need to be part of the configuration.
+	/// </summary>
+	/// <param name="pathSegments">
+	/// Path segments of the relative path of the configuration to get/create.<br/>
+	/// If a path segment contains path delimiters ('/' and '\'), escape these characters.<br/>
+	/// Otherwise, the segment will be split up.<br/>
+	/// The configuration helper function <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
+	/// </param>
+	/// <param name="startIndex">Index in <paramref name="pathSegments"/> to start at.</param>
+	/// <param name="considerInheritingConfigurations">
+	/// <c>true</c> to consider the current configuration and configurations inheriting from it as well;<br/>
+	/// <c>false</c> to consider the current configuration only.
+	/// </param>
+	/// <returns>
+	/// <c>true</c> if there is an item at the specified path in the current configuration or <br/>
+	/// - if <paramref name="considerInheritingConfigurations"/> is <c>true</c> - in an inheriting configuration.
+	/// </returns>
+	internal bool ContainsValueAtPathInternal(
+		string[] pathSegments,
+		int      startIndex,
+		bool     considerInheritingConfigurations)
+	{
+		Debug.Assert(Monitor.IsEntered(Sync), "The configuration is expected to be locked.");
+
+		bool exists;
+
+		if (PersistenceStrategy != null)
+		{
+			// try to get the value of an item via the configuration's persistence strategy
+			// (string[] is always a feasible choice, independent of the actual type, as
+			// scalar values should be handled as an array with 1 element)
+			exists = PersistenceStrategy.PeekItem(
+				CascadedConfigurationPathHelper.CombinePath(Path, pathSegments),
+				typeof(string[]),
+				out object value,
+				out string comment);
+
+			if (exists)
+				return true;
+		}
+
+		if (considerInheritingConfigurations)
+		{
+			for (int i = 0; i < mInheritingConfigurations.Count; i++)
+			{
+				exists = mInheritingConfigurations[i]
+					.ContainsValueAtPathInternal(
+						pathSegments,
+						startIndex: startIndex,
+						considerInheritingConfigurations: true);
+
+				if (exists)
+					return true;
+			}
+		}
+
+		return false;
 	}
 
 	#endregion
