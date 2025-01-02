@@ -14,6 +14,8 @@ using Xunit;
 
 using Type = System.Type;
 
+// ReSharper disable NotAccessedField.Local
+
 namespace GriffinPlus.Lib.Configuration;
 
 /// <summary>
@@ -92,7 +94,7 @@ public class CascadedConfigurationTests
 	/// <summary>
 	/// Helper property that assists with building test data. It only creates a <see cref="XmlFilePersistenceStrategy"/> instance.
 	/// </summary>
-	private static XmlFilePersistenceStrategy Persistence => new("Temp.xml");
+	private static XmlFilePersistenceStrategy Persistence => new(path: "Temp.xml");
 
 	/// <summary>
 	/// Examples for configuration stacks with different depths and persistence strategies.<br/>
@@ -122,6 +124,23 @@ public class CascadedConfigurationTests
 	{
 		public readonly Type   ValueType    = type;
 		public readonly object DefaultValue = defaultValue;
+	}
+
+	private struct ComplexStruct
+	{
+		public string FirstName;
+		public string LastName;
+		public string Title;
+		public int    Amount;
+	}
+
+	private sealed class ComplexClass
+	{
+		public string       FirstName;
+		public string       LastName;
+		public string       Title;
+		public int          Amount;
+		public ComplexClass ReferencedComplexClass;
 	}
 
 	/// <summary>
@@ -202,6 +221,45 @@ public class CascadedConfigurationTests
 			IPAddress ipAddress = IPAddress.Parse("1.2.3.4");
 			yield return new ValueTypeAndDefaultValue(typeof(IPAddress), ipAddress);
 			yield return new ValueTypeAndDefaultValue(typeof(IPAddress[]), new[] { ipAddress });
+
+			// complex type: struct
+			var complexStruct = new ComplexStruct
+			{
+				FirstName = "Douglas",
+				LastName = "Adams",
+				Title = "The Hitchhiker's Guide to the Galaxy",
+				Amount = 42
+			};
+			yield return new ValueTypeAndDefaultValue(typeof(ComplexStruct), complexStruct);
+
+			// complex type: class (without complex type inside)
+			var complexClass1 = new ComplexClass
+			{
+				FirstName = "Douglas",
+				LastName = "Adams",
+				Title = "The Hitchhiker's Guide to the Galaxy",
+				Amount = 10,
+				ReferencedComplexClass = null
+			};
+			yield return new ValueTypeAndDefaultValue(typeof(ComplexClass), complexClass1);
+
+			// complex type: class (with complex type inside)
+			var complexClass2 = new ComplexClass
+			{
+				FirstName = "Douglas",
+				LastName = "Adams",
+				Title = "The Restaurant at the End of the Universe",
+				Amount = 20,
+				ReferencedComplexClass = new ComplexClass
+				{
+					FirstName = "Douglas",
+					LastName = "Adams",
+					Title = "The Hitchhiker's Guide to the Galaxy",
+					Amount = 1,
+					ReferencedComplexClass = null
+				}
+			};
+			yield return new ValueTypeAndDefaultValue(typeof(ComplexClass), complexClass2);
 		}
 	}
 
@@ -458,6 +516,45 @@ public class CascadedConfigurationTests
 						IPAddress.Parse("fd01:dead:beef::affe") // IPv6 Address (ULA range)
 					}
 				];
+
+				// complex type: struct
+				var complexStruct = new ComplexStruct
+				{
+					FirstName = "Douglas",
+					LastName = "Adams",
+					Title = "The Hitchhiker's Guide to the Galaxy",
+					Amount = 10
+				};
+				yield return [itemPaths, typeof(ComplexStruct), complexStruct];
+
+				// complex type: class (without complex type inside)
+				var complexClass1 = new ComplexClass
+				{
+					FirstName = "Douglas",
+					LastName = "Adams",
+					Title = "The Hitchhiker's Guide to the Galaxy",
+					Amount = 10,
+					ReferencedComplexClass = null
+				};
+				yield return [itemPaths, typeof(ComplexClass), complexClass1];
+
+				// complex type: class (with complex type inside)
+				var complexClass2 = new ComplexClass
+				{
+					FirstName = "Douglas",
+					LastName = "Adams",
+					Title = "The Restaurant at the End of the Universe",
+					Amount = 20,
+					ReferencedComplexClass = new ComplexClass
+					{
+						FirstName = "Douglas",
+						LastName = "Adams",
+						Title = "The Hitchhiker's Guide to the Galaxy",
+						Amount = 1,
+						ReferencedComplexClass = null
+					}
+				};
+				yield return [itemPaths, typeof(ComplexClass), complexClass2];
 			}
 		}
 	}
@@ -2607,6 +2704,14 @@ public class CascadedConfigurationTests
 		}
 	}
 
+	/// <summary>
+	/// Tests <see cref="CascadedConfiguration.Save"/> and <see cref="CascadedConfiguration.Load"/>.<br/>
+	/// Items are added to a configuration BEFORE the configuration is loaded.<br/>
+	/// It is expected that the items are populated with the values from the file.<br/>
+	/// This test works with <see cref="int"/> only, which is sufficient to test the targeted behavior.
+	/// </summary>
+	/// <param name="flags">The save flags to test with.</param>
+	/// <param name="itemPaths">Item paths to put test items to.</param>
 	[Theory]
 	[MemberData(nameof(SaveAndLoad_TestData))]
 	public void SaveAndLoad_AddItemsBeforeLoad(CascadedConfigurationSaveFlags flags, string[] itemPaths)
@@ -2743,6 +2848,14 @@ public class CascadedConfigurationTests
 		}
 	}
 
+	/// <summary>
+	/// Tests <see cref="CascadedConfiguration.Save"/> and <see cref="CascadedConfiguration.Load"/>.<br/>
+	/// Items are added to a configuration AFTER the configuration has been loaded.<br/>
+	/// It is expected that the items are populated with the values from the file.<br/>
+	/// This test works with <see cref="int"/> only, which is sufficient to test the targeted behavior.
+	/// </summary>
+	/// <param name="flags">The save flags to test with.</param>
+	/// <param name="itemPaths">Item paths to put test items to.</param>
 	[Theory]
 	[MemberData(nameof(SaveAndLoad_TestData))]
 	public void SaveAndLoad_AddItemsAfterLoad(CascadedConfigurationSaveFlags flags, string[] itemPaths)
@@ -2858,6 +2971,71 @@ public class CascadedConfigurationTests
 				}
 			}
 		}
+	}
+
+	/// <summary>
+	/// Tests <see cref="CascadedConfiguration.Save"/> and <see cref="CascadedConfiguration.Load"/>.<br/>
+	/// Items with different types are added to a configuration BEFORE the configuration is loaded.<br/>
+	/// It is expected that the items are populated with the values from the file.<br/>
+	/// This test tests all kinds of supported types.
+	/// </summary>
+	/// <param name="itemPaths">Item paths to put test items to.</param>
+	/// <param name="type">Type of the item value.</param>
+	/// <param name="value">The item value.</param>
+	[Theory]
+	[MemberData(nameof(ItemTestDataWithValue))]
+	public void SaveAndLoad_AllTypes(string[] itemPaths, Type type, object value)
+	{
+		const string configurationName = "My Configuration";
+
+		// set up the configuration to test
+		File.Delete(XmlConfigurationFilePath); // avoid merging with existing configuration file
+		var baseRootConfiguration = new DefaultCascadedConfiguration(configurationName);
+		CascadedConfiguration inheritingRootConfiguration = baseRootConfiguration.AddInheritingConfiguration(new XmlFilePersistenceStrategy(XmlConfigurationFilePath));
+
+		// add item to the base configuration and the inheriting configuration
+		// (avoids including the inheritance mechanism in the test)
+		int totalItemsCount = 0;
+		foreach (string itemPath in itemPaths)
+		{
+			baseRootConfiguration.AddItemDynamically(itemPath, type, value);
+			inheritingRootConfiguration.GetItem(itemPath).Value = value;
+			totalItemsCount++;
+		}
+
+		// save the inheriting configuration
+		inheritingRootConfiguration.Save(CascadedConfigurationSaveFlags.None);
+
+		// set up the same configuration once again, but without items at first, then load the configuration
+		// and add items afterward
+		var loadedBaseRootConfiguration = new DefaultCascadedConfiguration(configurationName);
+		CascadedConfiguration loadedInheritingRootConfiguration = loadedBaseRootConfiguration.AddInheritingConfiguration(new XmlFilePersistenceStrategy(XmlConfigurationFilePath));
+		loadedInheritingRootConfiguration.Load();
+		foreach (string itemPath in itemPaths)
+		{
+			loadedBaseRootConfiguration.AddItemDynamically(itemPath, type, value);
+			loadedInheritingRootConfiguration.GetItem(itemPath).Value = value;
+		}
+
+		// check whether the loaded configuration contains the expected items
+		ICascadedConfigurationItem[] savedBaseItems = CollectAllItemsInConfiguration(baseRootConfiguration);                    // uses enumerators only, sorted by path in ascending order
+		ICascadedConfigurationItem[] savedInheritingItems = CollectAllItemsInConfiguration(inheritingRootConfiguration);        // uses enumerators only, sorted by path in ascending order
+		ICascadedConfigurationItem[] loadedInheritingItems = CollectAllItemsInConfiguration(loadedInheritingRootConfiguration); // uses enumerators only, sorted by path in ascending order
+		Assert.Equal(totalItemsCount, savedBaseItems.Length);
+		Assert.Equal(totalItemsCount, savedInheritingItems.Length);
+		Assert.Equal(totalItemsCount, loadedInheritingItems.Length);
+		for (int i = 0; i < itemPaths.Length; i++)
+		{
+			string itemPath = savedBaseItems[i].Path;
+			Assert.Equal(itemPath, savedInheritingItems[i].Path);
+			Assert.Equal(itemPath, loadedInheritingItems[i].Path);
+
+			// value
+			Assert.True(loadedInheritingItems[i].HasValue);
+			Assert.Equal(savedInheritingItems[i].Value, loadedInheritingItems[i].Value);
+		}
+
+		loadedInheritingRootConfiguration.Save(CascadedConfigurationSaveFlags.None);
 	}
 
 	#endregion
@@ -2988,7 +3166,7 @@ public class CascadedConfigurationTests
 	{
 		string[] pathSegments = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries); // does not support escaping...
 		if (pathSegments.Length == 0) return configuration;
-		DefaultCascadedConfiguration child = configuration.Children.FirstOrDefault(x => x.Name == pathSegments[0]);
+		DefaultCascadedConfiguration child = configuration.Children.FirstOrDefault(x => x.Name == CascadedConfigurationPathHelper.UnescapeName(pathSegments[0]));
 		Assert.NotNull(child);
 		return GetConfiguration(child, string.Join("/", pathSegments.Skip(1)));
 	}
@@ -2997,7 +3175,7 @@ public class CascadedConfigurationTests
 	{
 		string[] pathSegments = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries); // does not support escaping...
 		if (pathSegments.Length == 0) return configuration;
-		CascadedConfigurationBase child = configuration.Children.FirstOrDefault(x => x.Name == pathSegments[0]);
+		CascadedConfigurationBase child = configuration.Children.FirstOrDefault(x => x.Name == CascadedConfigurationPathHelper.UnescapeName(pathSegments[0]));
 		Assert.NotNull(child);
 		return GetConfiguration(child, string.Join("/", pathSegments.Skip(1)));
 	}
@@ -3025,12 +3203,12 @@ public class CascadedConfigurationTests
 
 		if (pathSegments.Length > 1)
 		{
-			CascadedConfigurationBase child = configuration.Children.FirstOrDefault(x => x.Name == pathSegments[0]);
+			CascadedConfigurationBase child = configuration.Children.FirstOrDefault(x => x.Name == CascadedConfigurationPathHelper.UnescapeName(pathSegments[0]));
 			Assert.NotNull(child);
 			return GetItemOfConfiguration(child, string.Join("/", pathSegments.Skip(1)));
 		}
 
-		ICascadedConfigurationItem item = configuration.Items.FirstOrDefault(x => x.Name == pathSegments[0]);
+		ICascadedConfigurationItem item = configuration.Items.FirstOrDefault(x => x.Name == CascadedConfigurationPathHelper.UnescapeName(pathSegments[0]));
 		Assert.NotNull(item);
 		return item;
 	}

@@ -4,22 +4,31 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
 using System.Xml;
 
 using GriffinPlus.Lib.Conversion;
+using GriffinPlus.Lib.Threading;
+
+using BindingFlags = System.Reflection.BindingFlags;
 
 namespace GriffinPlus.Lib.Configuration;
 
 /// <summary>
 /// A persistence strategy that enables a <see cref="CascadedConfiguration"/> to persist its data in an XML file.
 /// </summary>
-public class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrategy
+public partial class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrategy
 {
-	private readonly string      mConfigurationFilePath;
-	private          XmlDocument mXmlDocument;
+	private static readonly ReaderWriterLockSlim        sSupportedComplexTypesLock = new(LockRecursionPolicy.SupportsRecursion);
+	private static readonly Dictionary<Type, CacheItem> sSupportedComplexTypes     = new();
+	private readonly        string                      mConfigurationFilePath;
+	private                 XmlDocument                 mXmlDocument;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="XmlFilePersistenceStrategy"/> class.
@@ -45,15 +54,140 @@ public class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrate
 	/// <inheritdoc/>
 	public override bool SupportsComments => true;
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Checks whether the persistence strategy supports the specified type.<br/>
+	/// The persistence strategy supports the following types:<br/>
+	/// - all types supported by <see cref="Converters.GlobalConverters"/>
+	/// - all types supported by converters that have been registered using <see cref="CascadedConfigurationPersistenceStrategy.RegisterValueConverter"/>
+	/// <br/>
+	/// - all enumeration types<br/>
+	/// - all classes/structs with a default constructor and public fields/properties of a type listed above<br/>
+	/// - one-dimensional arrays of one of the types listed above
+	/// </summary>
+	/// <param name="type">Type to check.</param>
+	/// <returns>
+	/// <see langword="true"/> if the persistence strategy supports the specified type;<br/>
+	/// otherwise <see langword="false"/>.
+	/// </returns>
 	public override bool SupportsType(Type type)
 	{
 		// check fixed types
 		if (type.IsArray && type.GetArrayRank() == 1 && SupportsType(type.GetElementType())) return true;
 		if (type.IsEnum) return true;
 
-		IConverter converter = GetValueConverter(type) ?? Converters.GetGlobalConverter(type);
-		return converter != null;
+		// check whether there is a converter for the specified type
+		// that can convert from the type to string and vice versa
+		if ((GetValueConverter(type) ?? Converters.GetGlobalConverter(type)) != null)
+			return true;
+
+		// check whether the specified type is a class/struct with a default constructor and public fields and/or properties
+		if (type.IsClass || type.IsValueType)
+		{
+			// query cached type analysis results
+			using (new ReaderWriterLockSlimAutoLock(sSupportedComplexTypesLock, ReaderWriterLockSlimAcquireKind.Read))
+			{
+				if (sSupportedComplexTypes.TryGetValue(type, out CacheItem cacheItem))
+					return cacheItem.IsSupported;
+			}
+
+			// type has not been analyzed, yet
+			// => analyze it and cache the result...
+
+			using (new ReaderWriterLockSlimAutoLock(sSupportedComplexTypesLock, ReaderWriterLockSlimAcquireKind.ReadWrite))
+			{
+				var complexTypeInfoByType = new Dictionary<Type, CacheItem>();
+				if (AnalyzeComplexType(type, complexTypeInfoByType))
+				{
+					// type is supported
+					Debug.Assert(complexTypeInfoByType.ContainsKey(type));
+					sSupportedComplexTypes.Add(type, complexTypeInfoByType[type]);
+					return true;
+				}
+
+				// type is not supported
+				sSupportedComplexTypes.Add(type, new CacheItem(type, isSupported: false, constructor: null, fields: null, properties: null));
+				return false;
+			}
+		}
+
+		// the type is not supported by the persistence strategy
+		return false;
+	}
+
+	private bool AnalyzeComplexType(Type type, Dictionary<Type, CacheItem> complexTypeInfoByType)
+	{
+		// check fixed types
+		if (type.IsArray && type.GetArrayRank() == 1 && AnalyzeComplexType(type.GetElementType(), complexTypeInfoByType)) return true;
+		if (type.IsEnum) return true;
+
+		// check whether there is a converter for the specified type
+		// that can convert from the type to string and vice versa
+		if ((GetValueConverter(type) ?? Converters.GetGlobalConverter(type)) != null)
+			return true;
+
+		// check whether the specified type is a class/struct with a default constructor and public fields and/or properties
+		if (type.IsClass || type.IsValueType)
+		{
+			// abort if the specified type is under analysis at the moment (cacheItem == null)
+			// or if it has been analyzed to be supported...
+			if (complexTypeInfoByType.TryGetValue(type, out CacheItem cacheItem))
+			{
+				return cacheItem == null || cacheItem.IsSupported;
+			}
+
+			// type has not been analyzed, yet
+			// => analyze it and cache the result...
+
+			// try to get the default constructor
+			// - classes may have an explicit or compiler-generated parameterless constructor
+			// - structs may have an explicit parameterless constructor only
+			ConstructorInfo constructor = type.GetConstructor(
+				bindingAttr: BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+				Type.DefaultBinder,
+				Type.EmptyTypes,
+				modifiers: null);
+
+			// abort if the specified type does not have a parameterless constructor
+			// (structs are always instantiable using a parameterless constructor)
+			if (constructor == null && !type.IsValueType)
+			{
+				complexTypeInfoByType.Add(type, new CacheItem(type, isSupported: false, constructor: null, fields: null, properties: null));
+				return false;
+			}
+
+			// pretend that the type is supported to break recursive lookups of field/property types
+			// and adjust the cache item afterward
+			complexTypeInfoByType.Add(type, null);
+
+			// get public fields and public properties with both a get accessor and a set accessor and supported types
+			// (the get/set accessor may be non-public)
+			FieldInfo[] fields = type
+				.GetFields(bindingAttr: BindingFlags.Instance | BindingFlags.Public)
+				.Where(field => AnalyzeComplexType(field.FieldType, complexTypeInfoByType))
+				.ToArray();
+			PropertyInfo[] properties = type
+				.GetProperties(bindingAttr: BindingFlags.Instance | BindingFlags.Public)
+				.Where(property => property.CanRead && property.CanWrite && AnalyzeComplexType(property.PropertyType, complexTypeInfoByType))
+				.ToArray();
+
+			// remove cache item added to pretend the type is supported
+			complexTypeInfoByType.Remove(type);
+
+			// abort if there are neither fields nor properties that can be serialized/deserialized
+			if (fields.Length == 0 && properties.Length == 0)
+			{
+				complexTypeInfoByType.Add(type, new CacheItem(type, isSupported: false, constructor: null, fields: null, properties: null));
+				return false;
+			}
+
+			// the class/struct is serializable using the persistence strategy
+			// (at least the fields/properties that are declared public, other fields/properties keep their default value)
+			complexTypeInfoByType.Add(type, new CacheItem(type, isSupported: true, constructor: constructor, fields, properties));
+			return true;
+		}
+
+		// the type is not supported by the persistence strategy
+		return false;
 	}
 
 	/// <inheritdoc/>
@@ -214,7 +348,7 @@ public class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrate
 	{
 		if (type.IsArray && type.GetArrayRank() == 1)
 		{
-			// a hash value is stored using nested 'Item' elements
+			// an item value is stored using nested 'Item' elements
 			Type elementType = type.GetElementType();
 			XmlNodeList nodeList = element.SelectNodes("Item");
 			Debug.Assert(elementType != null, nameof(elementType) + " != null");
@@ -230,28 +364,85 @@ public class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrate
 			return array;
 		}
 
-		// try to get a converter that has been registered with the configuration
+		// try to convert the string to the corresponding value using a converter
 		IConverter converter = GetValueConverter(type) ?? Converters.GetGlobalConverter(type);
-		if (converter == null)
+		if (converter != null)
 		{
-			throw new ConfigurationException(
-				"The configuration contains an item the persistence strategy cannot make persistent (item: {0}, item type: {1}).",
-				itemPath,
-				type.FullName);
+			try
+			{
+				return converter.ConvertStringToObject(element.InnerText, CultureInfo.InvariantCulture);
+			}
+			catch (Exception)
+			{
+				throw new ConfigurationException(
+					"Parsing configuration item failed (item: {0}, item type: {1}).",
+					itemPath,
+					type.FullName);
+			}
 		}
 
-		// convert the string to the corresponding value
-		try
+		// try to read a complex type
+		using (new ReaderWriterLockSlimAutoLock(sSupportedComplexTypesLock, ReaderWriterLockSlimAcquireKind.Read))
 		{
-			return converter.ConvertStringToObject(element.InnerText, CultureInfo.InvariantCulture);
+			if (sSupportedComplexTypes.TryGetValue(type, out CacheItem cacheItem))
+			{
+				if (!cacheItem.IsSupported)
+				{
+					throw new ConfigurationException(
+						"The configuration contains an item with a complex type the persistence strategy cannot make persistent (item: {0}, item type: {1}).",
+						itemPath,
+						type.FullName);
+				}
+
+				// read the complex object
+				object complexObject = type.IsValueType
+					                       ? Activator.CreateInstance(type)
+					                       : cacheItem.ParameterlessConstructor.Invoke(null);
+				for (int i = 0; i < element.ChildNodes.Count; i++)
+				{
+					if (element.ChildNodes[i] is XmlElement { Name: "Field" } childElement)
+					{
+						string fieldName = childElement.GetAttribute("name");
+
+						if (!string.IsNullOrEmpty(fieldName))
+						{
+							bool found = false;
+							foreach (FieldInfo field in cacheItem.Fields)
+							{
+								if (field.Name != fieldName)
+									continue;
+
+								object value = GetValueFromXmlElement(childElement, itemPath, field.FieldType);
+								field.SetValue(complexObject, value);
+								found = true;
+								break;
+							}
+
+							if (found)
+								continue;
+
+							foreach (PropertyInfo property in cacheItem.Properties)
+							{
+								if (property.Name != fieldName)
+									continue;
+
+								object value = GetValueFromXmlElement(childElement, itemPath, property.PropertyType);
+								property.SetValue(complexObject, value);
+								// found = true;
+								break;
+							}
+						}
+					}
+				}
+
+				return complexObject;
+			}
 		}
-		catch (Exception)
-		{
-			throw new ConfigurationException(
-				"Parsing configuration item failed (item: {0}, item type: {1}).",
-				itemPath,
-				type.FullName);
-		}
+
+		throw new ConfigurationException(
+			"The configuration contains an item the persistence strategy cannot make persistent (item: {0}, item type: {1}).",
+			itemPath,
+			type.FullName);
 	}
 
 	/// <inheritdoc/>
@@ -334,7 +525,6 @@ public class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrate
 		return false;
 	}
 
-
 	/// <inheritdoc/>
 	public override void Save(CascadedConfiguration configuration, CascadedConfigurationSaveFlags flags)
 	{
@@ -401,11 +591,30 @@ public class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrate
 			parent.AppendChild(configurationElement);
 		}
 
+		// add configuration items
 		foreach (ICascadedConfigurationItem item in configuration.Items)
 		{
 			if (item.HasValue || flags.HasFlag(CascadedConfigurationSaveFlags.SaveInheritedSettings))
 			{
-				XmlElement itemElement = SetItem(configurationElement, configuration, item.Name, item.Type, item.Value);
+				// clean up old 'Item' element or add a new one
+				// (this ensures that the 'Item' element is edited in-place, if possible)
+				if (configurationElement.SelectSingleNode($"Item[@name='{item.Name}']") is XmlElement itemElement)
+				{
+					itemElement.RemoveAll(); // removes children + attributes
+				}
+				else
+				{
+					itemElement = parent.OwnerDocument!.CreateElement(name: "Item");
+					configurationElement.AppendChild(itemElement);
+				}
+
+				// attach the 'name' attribute to the 'Item' element
+				XmlAttribute nameAttribute = parent.OwnerDocument!.CreateAttribute(name: "name");
+				nameAttribute.InnerText = item.Name;
+				itemElement.Attributes.Append(nameAttribute);
+
+				// put the value of the item into the 'Item' element
+				PopulateItemValue(itemElement, configuration, item.Name, item.Type, item.Value);
 
 				// remove all comment nodes before the node
 				for (int i = 0; i < configurationElement.ChildNodes.Count; i++)
@@ -450,92 +659,89 @@ public class XmlFilePersistenceStrategy : CascadedConfigurationPersistenceStrate
 	}
 
 	/// <summary>
-	/// Adds/sets an XML element ('Item') with the specified name in the 'name' attribute and the specified value
-	/// as inner text of the 'Item' element.
+	/// Populates the specified 'Item' element with the specified value.
 	/// </summary>
-	/// <param name="parent">The parent XML element of the 'Item' element to add/set.</param>
+	/// <param name="parent">The parent XML element of the 'Item' element to populate.</param>
 	/// <param name="configuration">Configuration the configuration item is in.</param>
 	/// <param name="itemName">Name of the 'Item' element to add/set.</param>
 	/// <param name="type">Type of the value to set.</param>
 	/// <param name="value">Value of the 'Item' element to add/set (<see langword="null"/> to remove the item).</param>
-	private XmlElement SetItem(
-		XmlNode               parent,
+	private void PopulateItemValue(
+		XmlElement            parent,
 		CascadedConfiguration configuration,
 		string                itemName,
 		Type                  type,
 		object                value)
 	{
+		// handle one-dimensional item arrays separately using nested 'Item' elements
 		if (type.IsArray && type.GetArrayRank() == 1)
 		{
-			// a hash value is stored using nested 'Item' elements
-			Type elementType = type.GetElementType();
+			// add new xml elements, one for each array element
 			var array = (Array)value;
-			XmlElement arrayElement = SetItem(parent, itemName, null);
-
-			// remove all old xml elements representing a hash element
-			foreach (XmlNode node in arrayElement.SelectNodes("Item")!)
-			{
-				arrayElement.RemoveChild(node);
-			}
-
-			// add new xml elements, one for each hash element
+			Type elementType = type.GetElementType();
 			for (int i = 0; i < array.Length; i++)
 			{
-				object obj = array.GetValue(i);
-				SetItem(arrayElement, configuration, null, elementType, obj);
+				XmlElement itemElement = parent.OwnerDocument!.CreateElement(name: "Item");
+				parent.AppendChild(itemElement);
+				PopulateItemValue(itemElement, configuration, itemName, elementType, array.GetValue(i));
 			}
 
-			return arrayElement;
+			return;
 		}
 
 		// try to get a converter that has been registered with the configuration
 		IConverter converter = GetValueConverter(type) ?? Converters.GetGlobalConverter(type);
-		if (converter == null)
+		if (converter != null)
 		{
-			throw new ConfigurationException(
-				"The configuration contains an item the persistence strategy cannot make persistent (configuration: {0}, item: {1}, item type: {2}).",
-				configuration.Name,
-				itemName,
-				type.FullName);
+			// found converter, write configuration item into the xml document
+			string s = converter.ConvertObjectToString(value, CultureInfo.InvariantCulture);
+			if (value != null) parent.InnerText = s;
+			return;
 		}
 
-		// found converter, write configuration item into the xml document
-		string s = converter.ConvertObjectToString(value, CultureInfo.InvariantCulture);
-		return SetItem(parent, itemName, s);
-	}
-
-	/// <summary>
-	/// Adds/sets an XML element ('Item') of the configuration item.
-	/// </summary>
-	/// <param name="configurationElement">XML element representing the configuration.</param>
-	/// <param name="name">Name of the 'Item' element to add/set.</param>
-	/// <param name="value">String representation of the value to add/set.</param>
-	/// <returns>The added/set 'Item' element.</returns>
-	private static XmlElement SetItem(XmlNode configurationElement, string name, string value)
-	{
-		// convert the object to a string and put it into the xml document
-		if (configurationElement.SelectSingleNode($"Item[@name='{name}']") is XmlElement itemElement)
+		// try to serialize the object using its public fields and properties
+		using (new ReaderWriterLockSlimAutoLock(sSupportedComplexTypesLock, ReaderWriterLockSlimAcquireKind.Read))
 		{
-			if (value != null) itemElement.InnerText = value;
-		}
-		else
-		{
-			itemElement = configurationElement.OwnerDocument!.CreateElement("Item");
-
-			if (name != null)
+			bool isCached = sSupportedComplexTypes.TryGetValue(type, out CacheItem cacheItem);
+			Debug.Assert(isCached, message: "The analysis should have been done already when adding an item.");
+			if (cacheItem.IsSupported)
 			{
-				XmlAttribute nameAttribute = configurationElement.OwnerDocument.CreateAttribute("name");
-				nameAttribute.InnerText = name;
-				itemElement.Attributes.Append(nameAttribute);
+				// abort if there is nothing to write
+				if (value == null)
+					return;
+
+				// write fields
+				foreach (FieldInfo field in cacheItem.Fields)
+				{
+					// add 'Field' element with a 'name' attribute to the parent element
+					XmlElement fieldElement = parent.OwnerDocument!.CreateElement(name: "Field");
+					XmlAttribute nameAttribute = parent.OwnerDocument!.CreateAttribute(name: "name");
+					nameAttribute.InnerText = field.Name;
+					fieldElement.Attributes.Append(nameAttribute);
+					parent.AppendChild(fieldElement);
+					PopulateItemValue(fieldElement, configuration, itemName, field.FieldType, field.GetValue(value));
+				}
+
+				// write properties
+				foreach (PropertyInfo property in cacheItem.Properties)
+				{
+					// add 'Field' element with a 'name' attribute to the 'Item' element
+					XmlElement fieldElement = parent.OwnerDocument!.CreateElement(name: "Field");
+					XmlAttribute nameAttribute = parent.OwnerDocument!.CreateAttribute(name: "name");
+					nameAttribute.InnerText = property.Name;
+					fieldElement.Attributes.Append(nameAttribute);
+					parent.AppendChild(fieldElement);
+					PopulateItemValue(fieldElement, configuration, itemName, property.PropertyType, property.GetValue(value));
+				}
+
+				return;
 			}
-
-			if (value != null)
-				itemElement.InnerText = value;
-
-			configurationElement.AppendChild(itemElement);
 		}
 
-		return itemElement;
+		throw new ConfigurationException(
+			format: "The configuration contains an item the persistence strategy cannot make persistent (item: {0}, item type: {1}).",
+			CascadedConfigurationPathHelper.CombinePath(configuration.Path, CascadedConfigurationPathHelper.EscapeName(itemName)),
+			type.FullName);
 	}
 
 	/// <summary>
