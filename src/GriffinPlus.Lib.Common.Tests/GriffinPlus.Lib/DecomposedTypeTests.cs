@@ -123,10 +123,9 @@ public class DecomposedTypeTests
 		var decomposedTypeDiff3 = new DecomposedType(
 			typeof(int),
 			typeof(int),
-			new[]
-			{
+			[
 				new DecomposedType(typeof(int), typeof(int), DecomposedType.EmptyTypes)
-			});
+			]);
 		Assert.False(decomposedTypeReference.Equals(decomposedTypeDiff3));
 		Assert.False(decomposedTypeReference.Equals((object)decomposedTypeDiff3));
 		Assert.NotEqual(referenceHashCode, decomposedTypeDiff3.GetHashCode());

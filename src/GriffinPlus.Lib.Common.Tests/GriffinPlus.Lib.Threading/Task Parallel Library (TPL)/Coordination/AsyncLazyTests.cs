@@ -84,7 +84,9 @@ public class AsyncLazyTests
 		// give the TPL some time to schedule the factory function
 		// (otherwise the following 'await lazy' will execute the factory function synchronously)
 		while (lazy.Task.Status == TaskStatus.WaitingForActivation)
+		{
 			Thread.Sleep(50);
+		}
 
 		// wait for the factory callback to complete
 		await lazy;

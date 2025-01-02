@@ -419,7 +419,7 @@ public class ReadOnlyStreamTests
 
 	#region void CopyTo(Stream,int)
 
- #if !NETCOREAPP2_2 && !NET461 && !NET48
+#if !NETCOREAPP2_2 && !NET461 && !NET48
 
 	/// <summary>
 	/// Tests copying the stream to another stream using <see cref="ReadOnlyStream.CopyTo(Stream,int)"/>.

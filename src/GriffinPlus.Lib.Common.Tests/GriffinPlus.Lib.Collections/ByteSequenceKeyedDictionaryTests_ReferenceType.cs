@@ -52,7 +52,7 @@ public class ByteSequenceKeyedDictionaryTests_ReferenceType : ByteSequenceKeyedD
 	/// <summary>
 	/// Gets a key that is guaranteed to be not in the generated test data set.
 	/// </summary>
-	protected override IReadOnlyList<byte> KeyNotInTestData => new byte[] { 0xff }; // 0xff is not in any of the generated keys
+	protected override IReadOnlyList<byte> KeyNotInTestData => [0xff]; // 0xff is not in any of the generated keys
 
 	/// <summary>
 	/// Gets a value that is guaranteed to be not in the generated test data set.

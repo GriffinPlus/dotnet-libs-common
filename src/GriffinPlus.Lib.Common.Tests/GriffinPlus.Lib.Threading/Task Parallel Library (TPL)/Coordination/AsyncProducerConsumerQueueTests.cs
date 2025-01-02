@@ -58,13 +58,13 @@ public class AsyncProducerConsumerQueueTests
 	[Fact]
 	public void ConstructorWithMaxCountSmallerThanCollectionCount_Throws()
 	{
-		Assert.Throws<ArgumentException>(() => new AsyncProducerConsumerQueue<int>(new[] { 3, 5 }, 1));
+		Assert.Throws<ArgumentException>(() => new AsyncProducerConsumerQueue<int>([3, 5], 1));
 	}
 
 	[Fact]
 	public async Task ConstructorWithCollection_AddsItems()
 	{
-		var queue = new AsyncProducerConsumerQueue<int>(new[] { 3, 5, 7 });
+		var queue = new AsyncProducerConsumerQueue<int>([3, 5, 7]);
 
 		int result1 = await queue.DequeueAsync();
 		int result2 = await queue.DequeueAsync();
@@ -141,7 +141,7 @@ public class AsyncProducerConsumerQueueTests
 	[Fact]
 	public Task EnqueueAsync_Full_DoesNotComplete()
 	{
-		var queue = new AsyncProducerConsumerQueue<int>(new[] { 13 }, 1);
+		var queue = new AsyncProducerConsumerQueue<int>([13], 1);
 
 		Task task = queue.EnqueueAsync(7);
 
@@ -151,7 +151,7 @@ public class AsyncProducerConsumerQueueTests
 	[Fact]
 	public async Task EnqueueAsync_SpaceAvailable_Completes()
 	{
-		var queue = new AsyncProducerConsumerQueue<int>(new[] { 13 }, 1);
+		var queue = new AsyncProducerConsumerQueue<int>([13], 1);
 		Task task = queue.EnqueueAsync(7);
 
 		await queue.DequeueAsync();
@@ -162,7 +162,7 @@ public class AsyncProducerConsumerQueueTests
 	[Fact]
 	public async Task EnqueueAsync_Cancelled_Throws()
 	{
-		var queue = new AsyncProducerConsumerQueue<int>(new[] { 13 }, 1);
+		var queue = new AsyncProducerConsumerQueue<int>([13], 1);
 		var cts = new CancellationTokenSource();
 		Task task = queue.EnqueueAsync(7, cts.Token);
 

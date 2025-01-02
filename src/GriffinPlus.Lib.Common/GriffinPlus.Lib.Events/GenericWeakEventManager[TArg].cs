@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 
 // ReSharper disable ForCanBeConvertedToForeach
 // ReSharper disable LoopCanBeConvertedToQuery
@@ -131,8 +130,10 @@ public static partial class GenericWeakEventManager<TArg>
 		{
 			if (scheduleAlways)
 			{
-				while(!ThreadPool.QueueUserWorkItem(_ => handler(arg)))
+				while (!ThreadPool.QueueUserWorkItem(_ => handler(arg)))
+				{
 					Thread.Sleep(50);
+				}
 			}
 			else
 			{
@@ -367,7 +368,9 @@ public static partial class GenericWeakEventManager<TArg>
 				if (item.ScheduleAlways)
 				{
 					while (!ThreadPool.QueueUserWorkItem(_ => item.Fire(arg)))
-							Thread.Sleep(50);
+					{
+						Thread.Sleep(50);
+					}
 				}
 				else
 				{
@@ -428,7 +431,9 @@ public static partial class GenericWeakEventManager<TArg>
 					if (itemCopy.ScheduleAlways)
 					{
 						while (!ThreadPool.QueueUserWorkItem(_ => itemCopy.Fire(arg)))
+						{
 							Thread.Sleep(50);
+						}
 					}
 					else
 					{

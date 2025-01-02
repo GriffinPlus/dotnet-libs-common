@@ -67,7 +67,7 @@ public class SecurePasswordHasherTests
 	}
 
 	/// <summary>
-	/// Regular expression matching all kinds of password hashes conforming to the pattern: '$&lt;algorithm&gt;$&lt;iterations&gt;$'
+	/// Regular expression matching all kinds of password hashes conforming to the pattern: $&lt;algorithm&gt;$&lt;iterations&gt;$&lt;hash&gt;
 	/// </summary>
 	private static readonly Regex sCommonHashRegex = new(@"^\$(?<algorithm>[^\$]*)\$(?<iterations>[^\$]*)\$(?<hash>[^\$]*)", RegexOptions.Compiled);
 

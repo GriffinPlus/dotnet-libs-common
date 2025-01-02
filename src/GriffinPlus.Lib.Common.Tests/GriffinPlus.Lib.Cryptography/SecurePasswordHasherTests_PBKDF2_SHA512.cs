@@ -26,7 +26,10 @@ namespace GriffinPlus.Lib.Cryptography
 		/// Gets the <see cref="SecurePasswordHasher_PBKDF2_SHA512"/> instance to test.
 		/// </summary>
 		/// <returns></returns>
-		protected override SecurePasswordHasher GetHasher() => SecurePasswordHasher.PBKDF2_SHA512;
+		protected override SecurePasswordHasher GetHasher()
+		{
+			return SecurePasswordHasher.PBKDF2_SHA512;
+		}
 
 		/// <summary>
 		/// Size of the salt (in bytes).

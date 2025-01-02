@@ -216,7 +216,6 @@ public sealed class CascadedConfigurationItem<T> : ICascadedConfigurationItem
 
 			try
 			{
-				T value = mValue;
 				return $"Item | Path: {mPath} | Value: <no value> (inherited: {Value})";
 			}
 			catch (ConfigurationException)

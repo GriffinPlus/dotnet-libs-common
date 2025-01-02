@@ -39,7 +39,7 @@ public sealed class DecomposedType : IEquatable<DecomposedType>
 	/// <summary>
 	/// Gets an empty array of <see cref="DecomposedType"/>.
 	/// </summary>
-	public static DecomposedType[] EmptyTypes { get; } = Array.Empty<DecomposedType>();
+	public static DecomposedType[] EmptyTypes { get; } = [];
 
 	/// <summary>
 	/// Gets the composed type, i.e. the type that is the result of recursively

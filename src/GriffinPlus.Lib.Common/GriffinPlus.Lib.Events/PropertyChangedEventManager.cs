@@ -7,7 +7,6 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Events;
 
@@ -141,7 +140,9 @@ public static class PropertyChangedEventManager
 			if (scheduleAlways)
 			{
 				while (!ThreadPool.QueueUserWorkItem(_ => handler(sender, new PropertyChangedEventArgs(propertyName))))
+				{
 					Thread.Sleep(50);
+				}
 			}
 			else
 			{
@@ -272,7 +273,9 @@ public static class PropertyChangedEventManager
 				if (item.ScheduleAlways)
 				{
 					while (!ThreadPool.QueueUserWorkItem(_ => item.Handler(obj, e)))
+					{
 						Thread.Sleep(50);
+					}
 				}
 				else
 				{
@@ -333,7 +336,9 @@ public static class PropertyChangedEventManager
 				if (item.ScheduleAlways)
 				{
 					while (!ThreadPool.QueueUserWorkItem(_ => item.Handler(obj, e)))
+					{
 						Thread.Sleep(50);
+					}
 				}
 				else
 				{
@@ -393,7 +398,9 @@ public static class PropertyChangedEventManager
 					if (itemCopy.ScheduleAlways)
 					{
 						while (!ThreadPool.QueueUserWorkItem(_ => itemCopy.Handler(sender, e)))
+						{
 							Thread.Sleep(50);
+						}
 					}
 					else
 					{

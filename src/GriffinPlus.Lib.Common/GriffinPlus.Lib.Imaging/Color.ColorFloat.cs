@@ -11,11 +11,13 @@
 //   Project: https://github.com/dotnet/wpf
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+using System;
+
 namespace GriffinPlus.Lib.Imaging;
 
 public partial struct Color
 {
-	private struct ColorFloat
+	private struct ColorFloat : IEquatable<ColorFloat>
 	{
 		public float A;
 		public float R;
@@ -32,6 +34,19 @@ public partial struct Color
 				hashCode = (hashCode * 397) ^ B.GetHashCode();
 				return hashCode;
 			}
+		}
+
+		public bool Equals(ColorFloat other)
+		{
+			return A.Equals(other.A) &&
+			       R.Equals(other.R) &&
+			       G.Equals(other.G) &&
+			       B.Equals(other.B);
+		}
+
+		public override bool Equals(object obj)
+		{
+			return obj is ColorFloat other && Equals(other);
 		}
 	}
 }

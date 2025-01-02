@@ -193,7 +193,7 @@ public abstract partial class GenericDictionaryTests_Base<TKey, TValue>
 	public void ICollection_CopyTo_InvalidArrayType()
 	{
 		var dict = GetDictionary() as ICollection;
-		int[] destination = Array.Empty<int>(); // actual collection element is always KeyValuePair<TKey,TValue>
+		int[] destination = []; // actual collection element is always KeyValuePair<TKey,TValue>
 		var exception = Assert.Throws<ArgumentException>(() => dict.CopyTo(destination, 0));
 		Assert.Equal("array", exception.ParamName);
 		Assert.StartsWith("Invalid array type.", exception.Message);

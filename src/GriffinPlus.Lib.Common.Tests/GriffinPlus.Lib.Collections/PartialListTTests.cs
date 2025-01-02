@@ -104,7 +104,7 @@ public class PartialListTTests
 	[Fact]
 	public void Create_OffsetIsNegative()
 	{
-		var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new PartialList<TestItem>(new[] { new TestItem() }, -1, 0));
+		var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new PartialList<TestItem>([new TestItem()], -1, 0));
 		Assert.Equal("offset", exception.ParamName);
 	}
 
@@ -114,7 +114,7 @@ public class PartialListTTests
 	[Fact]
 	public void Create_CountIsNegative()
 	{
-		var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new PartialList<TestItem>(new[] { new TestItem() }, 0, -1));
+		var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new PartialList<TestItem>([new TestItem()], 0, -1));
 		Assert.Equal("count", exception.ParamName);
 	}
 

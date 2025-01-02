@@ -1373,8 +1373,8 @@ public abstract class CascadedConfigurationBase
 			exists = PersistenceStrategy.PeekItem(
 				CascadedConfigurationPathHelper.CombinePath(Path, pathSegments),
 				typeof(string[]),
-				out object value,
-				out string comment);
+				out object _,
+				out string _);
 
 			if (exists)
 				return true;

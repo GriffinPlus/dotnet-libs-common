@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace GriffinPlus.Lib.Events;
 
@@ -136,8 +135,10 @@ public static class EventManager<TEventArgs> where TEventArgs : EventArgs
 		{
 			if (scheduleAlways)
 			{
-				while(!ThreadPool.QueueUserWorkItem(_ => handler(sender, e)))
+				while (!ThreadPool.QueueUserWorkItem(_ => handler(sender, e)))
+				{
 					Thread.Sleep(50);
+				}
 			}
 			else
 			{
@@ -309,8 +310,10 @@ public static class EventManager<TEventArgs> where TEventArgs : EventArgs
 				// => schedule handler in worker thread or invoke it directly
 				if (item.ScheduleAlways)
 				{
-					while(!ThreadPool.QueueUserWorkItem(_ => item.Handler(sender, e)))
+					while (!ThreadPool.QueueUserWorkItem(_ => item.Handler(sender, e)))
+					{
 						Thread.Sleep(50);
+					}
 				}
 				else
 				{
@@ -368,8 +371,10 @@ public static class EventManager<TEventArgs> where TEventArgs : EventArgs
 					// => schedule handler in worker thread or invoke it directly
 					if (itemCopy.ScheduleAlways)
 					{
-						while(!ThreadPool.QueueUserWorkItem(_ => itemCopy.Handler(sender, e)))
+						while (!ThreadPool.QueueUserWorkItem(_ => itemCopy.Handler(sender, e)))
+						{
 							Thread.Sleep(50);
+						}
 					}
 					else
 					{

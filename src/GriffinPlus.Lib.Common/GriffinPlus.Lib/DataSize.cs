@@ -123,43 +123,43 @@ public readonly struct DataSize : IComparable<DataSize>, IEquatable<DataSize>, I
 	/// </summary>
 	private static readonly Rule[] sMetricFormattingRules =
 	[
-		new Rule(
+		new(
 			DataSizeUnit.Byte,
 			1UL * 1000,
 			1UL,
 			"Byte",
 			"B"),
-		new Rule(
+		new(
 			DataSizeUnit.Kilobyte,
 			1UL * 1000 * 1000,
 			1UL * 1000,
 			"Kilobyte",
 			"KB"),
-		new Rule(
+		new(
 			DataSizeUnit.Megabyte,
 			1UL * 1000 * 1000 * 1000,
 			1UL * 1000 * 1000,
 			"Megabyte",
 			"MB"),
-		new Rule(
+		new(
 			DataSizeUnit.Gigabyte,
 			1UL * 1000 * 1000 * 1000 * 1000,
 			1UL * 1000 * 1000 * 1000,
 			"Gigabyte",
 			"GB"),
-		new Rule(
+		new(
 			DataSizeUnit.Terabyte,
 			1UL * 1000 * 1000 * 1000 * 1000 * 1000,
 			1UL * 1000 * 1000 * 1000 * 1000,
 			"Terabyte",
 			"TB"),
-		new Rule(
+		new(
 			DataSizeUnit.Petabyte,
 			1UL * 1000 * 1000 * 1000 * 1000 * 1000 * 1000,
 			1UL * 1000 * 1000 * 1000 * 1000 * 1000,
 			"Petabyte",
 			"PB"),
-		new Rule(
+		new(
 			DataSizeUnit.Exabyte,
 			ulong.MaxValue,
 			1UL * 1000 * 1000 * 1000 * 1000 * 1000 * 1000,
@@ -172,43 +172,43 @@ public readonly struct DataSize : IComparable<DataSize>, IEquatable<DataSize>, I
 	/// </summary>
 	private static readonly Rule[] sBinaryFormattingRules =
 	[
-		new Rule(
+		new(
 			DataSizeUnit.Byte,
 			1UL * 1024,
 			1UL,
 			"Byte",
 			"B"),
-		new Rule(
+		new(
 			DataSizeUnit.Kibibyte,
 			1UL * 1024 * 1024,
 			1UL * 1024,
 			"Kibibyte",
 			"KiB"),
-		new Rule(
+		new(
 			DataSizeUnit.Mebibyte,
 			1UL * 1024 * 1024 * 1024,
 			1UL * 1024 * 1024,
 			"Mebibyte",
 			"MiB"),
-		new Rule(
+		new(
 			DataSizeUnit.Gibibyte,
 			1UL * 1024 * 1024 * 1024 * 1024,
 			1UL * 1024 * 1024 * 1024,
 			"Gibibyte",
 			"GiB"),
-		new Rule(
+		new(
 			DataSizeUnit.Tebibyte,
 			1UL * 1024 * 1024 * 1024 * 1024 * 1024,
 			1UL * 1024 * 1024 * 1024 * 1024,
 			"Tebibyte",
 			"TiB"),
-		new Rule(
+		new(
 			DataSizeUnit.Pebibyte,
 			1UL * 1024 * 1024 * 1024 * 1024 * 1024 * 1024,
 			1UL * 1024 * 1024 * 1024 * 1024 * 1024,
 			"Pebibyte",
 			"PiB"),
-		new Rule(
+		new(
 			DataSizeUnit.Exbibyte,
 			1UL * 1024 * 1024 * 1024 * 1024 * 1024 * 1024,
 			1UL * 1024 * 1024 * 1024 * 1024 * 1024 * 1024,

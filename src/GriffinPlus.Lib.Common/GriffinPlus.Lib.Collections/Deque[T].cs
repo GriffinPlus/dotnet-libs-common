@@ -591,7 +591,7 @@ public sealed class Deque<T> : IList<T>, IReadOnlyList<T>, IList
 			return;
 		}
 
-		DoInsertRange(index, new[] { item });
+		DoInsertRange(index, [item]);
 	}
 
 	/// <summary>

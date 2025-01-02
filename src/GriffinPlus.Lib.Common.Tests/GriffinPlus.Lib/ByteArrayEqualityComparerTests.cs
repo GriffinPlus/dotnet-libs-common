@@ -45,7 +45,7 @@ public class ByteArrayEqualityComparerTests
 		get
 		{
 			// test passing null references
-			byte[] data = Array.Empty<byte>();
+			byte[] data = [];
 			yield return [null, null, true];
 			yield return [null, data, false];
 			yield return [data, null, false];

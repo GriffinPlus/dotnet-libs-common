@@ -157,7 +157,7 @@ public static class CascadedConfigurationPathHelper
 		return sPathSplitterRegex.IsMatch(s);
 	}
 
-	private static readonly Regex sEscapeRegex = new(@"(?<sep>[/])", RegexOptions.Compiled);
+	private static readonly Regex sEscapeRegex = new("(?<sep>[/])", RegexOptions.Compiled);
 
 	/// <summary>
 	/// Escapes the specified name for use in the configuration (avoid splitting up path segments unintentionally).

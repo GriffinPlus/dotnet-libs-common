@@ -1427,10 +1427,10 @@ public class CascadedConfigurationTests
 
 		// determine the actual items in the configuration stack
 		List<ICascadedConfigurationItem[]> actualItemsByConfigurationIndex = [];
-		for (int configurationIndex = 0; configurationIndex < rootConfigurations.Count; configurationIndex++)
+		foreach (CascadedConfigurationBase rootConfiguration in rootConfigurations)
 		{
 			// get all items in the configuration sorted by their path (uses enumerators only, items are already sorted by their path)
-			actualItemsByConfigurationIndex.Add(CollectAllItemsInConfiguration(rootConfigurations[configurationIndex]).ToArray());
+			actualItemsByConfigurationIndex.Add(CollectAllItemsInConfiguration(rootConfiguration).ToArray());
 		}
 
 		for (int configurationIndex = 0; configurationIndex < rootConfigurations.Count; configurationIndex++)
@@ -1626,9 +1626,8 @@ public class CascadedConfigurationTests
 
 		// test CascadedConfigurationBase.Children { get; }
 		// (base configuration + inheriting configurations)
-		for (int configurationIndex = 0; configurationIndex < rootConfigurations.Count; configurationIndex++)
+		foreach (CascadedConfigurationBase rootConfiguration in rootConfigurations)
 		{
-			CascadedConfigurationBase rootConfiguration = rootConfigurations[configurationIndex];
 			var actualConfigurations = new List<CascadedConfigurationBase>();
 			Collect_Base(rootConfiguration, actualConfigurations);
 			Assert.Equal(expectedConfigurationPaths, actualConfigurations.Select(x => x.Path));
@@ -3164,7 +3163,7 @@ public class CascadedConfigurationTests
 
 	private static DefaultCascadedConfiguration GetConfiguration(DefaultCascadedConfiguration configuration, string path)
 	{
-		string[] pathSegments = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries); // does not support escaping...
+		string[] pathSegments = path.Split(['/'], StringSplitOptions.RemoveEmptyEntries); // does not support escaping...
 		if (pathSegments.Length == 0) return configuration;
 		DefaultCascadedConfiguration child = configuration.Children.FirstOrDefault(x => x.Name == CascadedConfigurationPathHelper.UnescapeName(pathSegments[0]));
 		Assert.NotNull(child);
@@ -3173,7 +3172,7 @@ public class CascadedConfigurationTests
 
 	private static CascadedConfigurationBase GetConfiguration(CascadedConfigurationBase configuration, string path)
 	{
-		string[] pathSegments = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries); // does not support escaping...
+		string[] pathSegments = path.Split(['/'], StringSplitOptions.RemoveEmptyEntries); // does not support escaping...
 		if (pathSegments.Length == 0) return configuration;
 		CascadedConfigurationBase child = configuration.Children.FirstOrDefault(x => x.Name == CascadedConfigurationPathHelper.UnescapeName(pathSegments[0]));
 		Assert.NotNull(child);
@@ -3199,7 +3198,7 @@ public class CascadedConfigurationTests
 
 	private static ICascadedConfigurationItem GetItemOfConfiguration(CascadedConfigurationBase configuration, string path)
 	{
-		string[] pathSegments = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries); // does not support escaping...
+		string[] pathSegments = path.Split(['/'], StringSplitOptions.RemoveEmptyEntries); // does not support escaping...
 
 		if (pathSegments.Length > 1)
 		{

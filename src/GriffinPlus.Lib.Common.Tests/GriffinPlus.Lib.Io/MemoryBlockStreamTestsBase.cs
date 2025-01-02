@@ -855,7 +855,7 @@ public abstract class MemoryBlockStreamTestsBase : IDisposable
 
 		// try to read zero bytes (should work as well and do nothing)
 		int bytesToRead = 0;
-		int bytesRead = operation(stream, Array.Empty<byte>(), ref bytesToRead);
+		int bytesRead = operation(stream, [], ref bytesToRead);
 		Assert.Equal(0, bytesRead);
 
 		var readData = new List<byte>(expectedData.Count);
@@ -923,7 +923,7 @@ public abstract class MemoryBlockStreamTestsBase : IDisposable
 
 		// try to read zero bytes (should work as well and do nothing)
 		int bytesToRead = 0;
-		int bytesRead = await operation(stream, Array.Empty<byte>(), bytesToRead).ConfigureAwait(false);
+		int bytesRead = await operation(stream, [], bytesToRead).ConfigureAwait(false);
 		Assert.Equal(0, bytesRead);
 
 		var readData = new List<byte>(expectedData.Count);
