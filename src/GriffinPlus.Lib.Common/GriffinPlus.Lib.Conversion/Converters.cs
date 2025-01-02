@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 
@@ -78,12 +79,16 @@ public static class Converters
 	/// <summary>
 	/// A converter for translating a <see cref="System.Single"/> to a string and vice versa.
 	/// </summary>
-	public static readonly Converter<float> Single = new((s, provider) => float.Parse(s, provider));
+	public static readonly Converter<float> Single = new(
+		(s,   provider) => float.Parse(s, style: NumberStyles.Any, provider),
+		(obj, provider) => obj.ToString(format: "R", provider));
 
 	/// <summary>
 	/// A converter for translating a <see cref="System.Double"/> to a string and vice versa.
 	/// </summary>
-	public static readonly Converter<double> Double = new((s, provider) => double.Parse(s, provider));
+	public static readonly Converter<double> Double = new(
+		(s,   provider) => double.Parse(s, style: NumberStyles.Any, provider),
+		(obj, provider) => obj.ToString(format: "R", provider));
 
 	/// <summary>
 	/// The string identity conversion (the string remains the same).
