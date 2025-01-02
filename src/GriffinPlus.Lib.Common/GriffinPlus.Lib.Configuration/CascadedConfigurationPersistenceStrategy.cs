@@ -69,12 +69,5 @@ public abstract class CascadedConfigurationPersistenceStrategy : ICascadedConfig
 	public abstract void LoadItem(ICascadedConfigurationItem item);
 
 	/// <inheritdoc/>
-	public abstract bool PeekItem(
-		string     path,
-		Type       itemType,
-		out object value,
-		out string comment);
-
-	/// <inheritdoc/>
 	public abstract void Save(CascadedConfiguration configuration, CascadedConfigurationSaveFlags flags);
 }

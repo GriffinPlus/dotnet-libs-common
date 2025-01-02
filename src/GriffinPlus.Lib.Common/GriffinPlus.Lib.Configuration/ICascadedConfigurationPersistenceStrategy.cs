@@ -101,24 +101,6 @@ public interface ICascadedConfigurationPersistenceStrategy
 	void LoadItem(ICascadedConfigurationItem item);
 
 	/// <summary>
-	/// Tries to get the value and the comment of an item at the specified path.
-	/// </summary>
-	/// <param name="path">Path of the item to peek.</param>
-	/// <param name="itemType">Type of the item to peek.</param>
-	/// <param name="value">Receives the value of the item at the specified path.</param>
-	/// <param name="comment">Received the comment of the item at the specified path.</param>
-	/// <returns>
-	/// <c>true</c> if there is an item at the specified path;<br/>
-	/// otherwise <c>false</c>.
-	/// </returns>
-	/// <exception cref="ConfigurationException">Saving the configuration failed (reason depends on the persistence strategy).</exception>
-	bool PeekItem(
-		string     path,
-		Type       itemType,
-		out object value,
-		out string comment);
-
-	/// <summary>
 	/// Saves configuration data from the specified configuration into the backend storage.
 	/// </summary>
 	/// <param name="configuration">Configuration to save.</param>
