@@ -88,28 +88,30 @@ public static class Converters
 	/// <summary>
 	/// The string identity conversion (the string remains the same).
 	/// </summary>
-	public static readonly Converter<string> String = new((s, _) => s, (obj, _) => obj);
+	public static readonly Converter<string> String = new(
+		(s,   _) => s,
+		(obj, _) => obj);
 
 	/// <summary>
 	/// A converter for translating a <see cref="System.Guid"/> to a string and vice versa.
 	/// </summary>
 	public static readonly Converter<Guid> Guid = new(
 		(s,   _) => System.Guid.Parse(s),
-		(obj, _) => obj.ToString("D"));
+		(obj, _) => obj.ToString(format: "D"));
 
 	/// <summary>
 	/// A converter for translating a <see cref="System.DateTime"/> to a string and vice versa.
 	/// </summary>
 	public static readonly Converter<DateTime> DateTime = new(
 		(s,   provider) => System.DateTime.Parse(s, provider),
-		(obj, provider) => obj.ToString("o", provider));
+		(obj, provider) => obj.ToString(format: "o", provider));
 
 	/// <summary>
 	/// A converter for translating a <see cref="System.TimeSpan"/> to a string and vice versa.
 	/// </summary>
 	public static readonly Converter<TimeSpan> TimeSpan = new(
 		(s,   provider) => System.TimeSpan.Parse(s, provider),
-		(obj, provider) => obj.ToString("c", provider));
+		(obj, provider) => obj.ToString(format: "c", provider));
 
 	/// <summary>
 	/// A converter for translating a <see cref="System.Net.IPAddress"/> to a string and vice versa.

@@ -74,7 +74,11 @@ public abstract class CascadedConfigurationBase
 		// add the same child configurations as they exist in the inherited configuration
 		for (int i = 0; i < InheritedConfiguration.mChildren.Count; i++)
 		{
-			_ = new CascadedConfiguration(InheritedConfiguration.mChildren[i].Name, this); // links itself to the current configuration
+			// create a child configuration
+			// (links itself to the current configuration)
+			_ = new CascadedConfiguration(
+				name: InheritedConfiguration.mChildren[i].Name,
+				parent: this);
 		}
 
 		// add the same items as they exist in the inherited configuration
@@ -82,7 +86,10 @@ public abstract class CascadedConfigurationBase
 		{
 			string name = InheritedConfiguration.mItems[i].Name;
 			Type type = InheritedConfiguration.mItems[i].Type;
-			AddItemInternal([CascadedConfigurationPathHelper.EscapeName(name)], 0, type);
+			AddItemInternal(
+				pathSegments: [CascadedConfigurationPathHelper.EscapeName(name)],
+				startIndex: 0,
+				type);
 		}
 	}
 
@@ -131,7 +138,12 @@ public abstract class CascadedConfigurationBase
 		// (should already be there as configurations are added starting with the base configuration)
 		if (parent.InheritedConfiguration != null)
 		{
-			InheritedConfiguration = parent.InheritedConfiguration.GetChildConfigurationInternal(CascadedConfigurationPathHelper.EscapeName(name), create: false);
+			InheritedConfiguration = parent
+				.InheritedConfiguration
+				.GetChildConfigurationInternal(
+					CascadedConfigurationPathHelper.EscapeName(name),
+					create: false);
+
 			Debug.Assert(InheritedConfiguration != null);
 		}
 
@@ -142,7 +154,10 @@ public abstract class CascadedConfigurationBase
 			{
 				string itemName = InheritedConfiguration.mItems[i].Name;
 				Type itemType = InheritedConfiguration.mItems[i].Type;
-				AddItemInternal([CascadedConfigurationPathHelper.EscapeName(itemName)], 0, itemType);
+				AddItemInternal(
+					pathSegments: [CascadedConfigurationPathHelper.EscapeName(itemName)],
+					startIndex: 0,
+					itemType);
 			}
 		}
 
@@ -172,7 +187,9 @@ public abstract class CascadedConfigurationBase
 		{
 			lock (Sync)
 			{
-				IEnumerator<CascadedConfigurationBase> enumerator = new MonitorSynchronizedEnumerator<CascadedConfigurationBase>(mChildren.GetEnumerator(), Sync);
+				IEnumerator<CascadedConfigurationBase> enumerator = new MonitorSynchronizedEnumerator<CascadedConfigurationBase>(
+					inner: mChildren.GetEnumerator(),
+					sync: Sync);
 				try
 				{
 					while (enumerator.MoveNext())
@@ -242,7 +259,9 @@ public abstract class CascadedConfigurationBase
 		{
 			lock (Sync)
 			{
-				IEnumerator<ICascadedConfigurationItem> enumerator = new MonitorSynchronizedEnumerator<ICascadedConfigurationItem>(mItems.GetEnumerator(), Sync);
+				IEnumerator<ICascadedConfigurationItem> enumerator = new MonitorSynchronizedEnumerator<ICascadedConfigurationItem>(
+					inner: mItems.GetEnumerator(),
+					sync: Sync);
 				try
 				{
 					while (enumerator.MoveNext())
@@ -304,11 +323,12 @@ public abstract class CascadedConfigurationBase
 	public CascadedConfiguration AddInheritingConfiguration(ICascadedConfigurationPersistenceStrategy persistence)
 	{
 		// TODO: Check whether the persistence strategy can handle paths/types of already added items...
+
 		lock (Sync)
 		{
 			var inheritedRootConfiguration = new CascadedConfiguration(RootConfiguration, persistence);
 			return inheritedRootConfiguration.Parent != null
-				       ? (CascadedConfiguration)inheritedRootConfiguration.GetChildConfigurationInternal(Path, false)
+				       ? (CascadedConfiguration)inheritedRootConfiguration.GetChildConfigurationInternal(Path, create: false)
 				       : inheritedRootConfiguration;
 		}
 	}
@@ -339,7 +359,7 @@ public abstract class CascadedConfigurationBase
 
 		lock (Sync)
 		{
-			return GetChildConfigurationInternal(path, false);
+			return GetChildConfigurationInternal(path, create: false);
 		}
 	}
 
@@ -366,7 +386,7 @@ public abstract class CascadedConfigurationBase
 	/// </exception>
 	protected CascadedConfigurationBase GetChildConfigurationInternal(string path, bool create)
 	{
-		Debug.Assert(Monitor.IsEntered(Sync), "The configuration is expected to be locked.");
+		Debug.Assert(Monitor.IsEntered(Sync), message: "The configuration is expected to be locked.");
 		Debug.Assert(path != null);
 
 		// split the configuration path into path segments (can throw ConfigurationException)
@@ -377,7 +397,11 @@ public abstract class CascadedConfigurationBase
 			checkValidity: true);
 
 		// get/create the configuration
-		return GetChildConfigurationInternal(pathSegments, 0, pathSegments.Length, create);
+		return GetChildConfigurationInternal(
+			pathSegments,
+			startIndex: 0,
+			count: pathSegments.Length,
+			create: create);
 	}
 
 	/// <summary>
@@ -406,7 +430,7 @@ public abstract class CascadedConfigurationBase
 		int      count,
 		bool     create)
 	{
-		Debug.Assert(Monitor.IsEntered(Sync), "The configuration is expected to be locked.");
+		Debug.Assert(Monitor.IsEntered(Sync), message: "The configuration is expected to be locked.");
 		Debug.Assert(pathSegments is { Length: > 0 });
 		Debug.Assert(count > 0);
 
@@ -420,7 +444,11 @@ public abstract class CascadedConfigurationBase
 			if (configuration.Name != configurationName) continue;
 			return count == 1
 				       ? configuration
-				       : configuration.GetChildConfigurationInternal(pathSegments, startIndex: startIndex + 1, count: count - 1, create);
+				       : configuration.GetChildConfigurationInternal(
+					       pathSegments,
+					       startIndex: startIndex + 1,
+					       count: count - 1,
+					       create);
 		}
 
 		// configuration does not exist
@@ -430,7 +458,11 @@ public abstract class CascadedConfigurationBase
 
 		return count == 1
 			       ? configuration
-			       : configuration.GetChildConfigurationInternal(pathSegments, startIndex: startIndex + 1, count: count - 1, create: true);
+			       : configuration.GetChildConfigurationInternal(
+				       pathSegments,
+				       startIndex: startIndex + 1,
+				       count: count - 1,
+				       create: true);
 	}
 
 	/// <summary>
@@ -461,7 +493,7 @@ public abstract class CascadedConfigurationBase
 	/// <exception cref="ArgumentException">The configuration already contains an item at the specified path.</exception>
 	protected internal CascadedConfigurationItem<T> AddItemInternal<T>(string[] pathSegments, int startIndex)
 	{
-		Debug.Assert(Monitor.IsEntered(Sync), "The configuration is expected to be locked.");
+		Debug.Assert(Monitor.IsEntered(Sync), message: "The configuration is expected to be locked.");
 		Debug.Assert(pathSegments != null);
 
 		// create configurations down to the specified path, if necessary
@@ -475,16 +507,16 @@ public abstract class CascadedConfigurationBase
 				count: pathSegments.Length - startIndex - 1,
 				create: true);
 
-			return configuration.AddItemInternal<T>(pathSegments, pathSegments.Length - 1);
+			return configuration.AddItemInternal<T>(pathSegments, startIndex: pathSegments.Length - 1);
 		}
 
 		Debug.Assert(startIndex == pathSegments.Length - 1);
 
 		// ensure that the configuration at the current level does not contain an item with the specified name
 		string itemName = CascadedConfigurationPathHelper.UnescapeName(pathSegments[^1]);
-		if (mItems.Any(x => x.Name == itemName))
+		if (mItems.Any(item => item.Name == itemName))
 		{
-			string path = string.Join("/", pathSegments, 0, pathSegments.Length);
+			string path = string.Join("/", pathSegments, startIndex: 0, count: pathSegments.Length);
 			throw new ArgumentException($"The configuration already contains an item at the specified path ({path}).", nameof(pathSegments));
 		}
 
@@ -601,8 +633,8 @@ public abstract class CascadedConfigurationBase
 
 		// split the item path into path segments
 		string[] pathSegments = CascadedConfigurationPathHelper.SplitPath(
-			PersistenceStrategy,
-			path,
+			strategy: PersistenceStrategy,
+			path: path,
 			isItemPath: true,
 			checkValidity: false);
 
@@ -621,11 +653,18 @@ public abstract class CascadedConfigurationBase
 			// the path contains child configurations
 			// => dive into the appropriate configuration
 			CascadedConfigurationBase configuration = GetChildConfigurationInternal(
-				pathSegments,
-				startIndex,
+				pathSegments: pathSegments,
+				startIndex: startIndex,
 				count: pathSegments.Length - startIndex - 1,
 				create: false);
-			if (configuration != null) return configuration.GetItemInternal<T>(pathSegments, pathSegments.Length - 1);
+
+			if (configuration != null)
+			{
+				return configuration.GetItemInternal<T>(
+					pathSegments: pathSegments,
+					startIndex: pathSegments.Length - 1);
+			}
+
 			throw new ConfigurationException(
 				"The configuration does not contain an item at the specified path ({0}).",
 				CascadedConfigurationPathHelper.CombinePath("/", pathSegments));
@@ -700,7 +739,10 @@ public abstract class CascadedConfigurationBase
 
 		lock (Sync)
 		{
-			return TryGetItemInternal(pathSegments, 0, out item);
+			return TryGetItemInternal(
+				pathSegments: pathSegments,
+				startIndex: 0,
+				out item);
 		}
 	}
 
@@ -715,13 +757,13 @@ public abstract class CascadedConfigurationBase
 			// the path contains child configurations
 			// => dive into the appropriate configuration
 			CascadedConfigurationBase configuration = GetChildConfigurationInternal(
-				pathSegments,
-				startIndex,
+				pathSegments: pathSegments,
+				startIndex: startIndex,
 				count: pathSegments.Length - startIndex - 1,
 				create: false);
 
 			return configuration != null && configuration.TryGetItemInternal(
-				       pathSegments,
+				       pathSegments: pathSegments,
 				       startIndex: pathSegments.Length - 1,
 				       out item);
 		}
@@ -757,9 +799,9 @@ public abstract class CascadedConfigurationBase
 	/// Gets the configuration item at the specified location.
 	/// </summary>
 	/// <param name="path">
-	/// Relative path of the configuration item to get.
-	/// If a path segment contains path delimiters ('/'), escape these characters.
-	/// Otherwise, the segment will be split up.
+	/// Relative path of the configuration item to get.<br/>
+	/// If a path segment contains path delimiters ('/'), escape these characters.<br/>
+	/// Otherwise, the segment will be split up.<br/>
 	/// The configuration helper function <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
 	/// <returns>The configuration item at the specified path.</returns>
@@ -783,7 +825,7 @@ public abstract class CascadedConfigurationBase
 
 		lock (Sync)
 		{
-			return GetItemInternal(pathSegments, 0);
+			return GetItemInternal(pathSegments, startIndex: 0);
 		}
 	}
 
@@ -912,7 +954,7 @@ public abstract class CascadedConfigurationBase
 
 	/// <summary>
 	/// Gets all configuration items of the configuration and optionally all items of its child configurations
-	/// (does not dive into the configuration inheriting from, if any).
+	/// (does _not_ dive into the configuration inheriting from, if any).
 	/// </summary>
 	/// <param name="recursively">
 	/// <see langword="true"/> to get the items of the child configuration as well;<br/>
@@ -934,7 +976,7 @@ public abstract class CascadedConfigurationBase
 
 			for (int i = 0; i < mChildren.Count; i++)
 			{
-				items.AddRange(mChildren[i].GetAllItems(true));
+				items.AddRange(mChildren[i].GetAllItems(recursively: true));
 			}
 		}
 
@@ -951,9 +993,9 @@ public abstract class CascadedConfigurationBase
 	/// </summary>
 	/// <typeparam name="T">Type of the value to get.</typeparam>
 	/// <param name="path">
-	/// Relative path of the configuration item.
-	/// If a path segment contains path delimiters ('/'), escape these characters.
-	/// Otherwise, the segment will be split up.
+	/// Relative path of the configuration item.<br/>
+	/// If a path segment contains path delimiters ('/'), escape these characters.<br/>
+	/// Otherwise, the segment will be split up.<br/>
 	/// The configuration helper function <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
 	/// <param name="inherit">
@@ -1004,7 +1046,7 @@ public abstract class CascadedConfigurationBase
 			// => dive into the appropriate configuration
 			CascadedConfigurationBase configuration = GetChildConfigurationInternal(
 				pathSegments,
-				startIndex: startIndex,
+				startIndex,
 				count: pathSegments.Length - startIndex - 1,
 				create: false);
 
@@ -1068,9 +1110,9 @@ public abstract class CascadedConfigurationBase
 	/// optionally the comment of the item with the same path in an inherited configuration.
 	/// </summary>
 	/// <param name="path">
-	/// Relative path of the configuration item.
-	/// If a path segment contains path delimiters ('/'), escape these characters.
-	/// Otherwise, the segment will be split up.
+	/// Relative path of the configuration item.<br/>
+	/// If a path segment contains path delimiters ('/'), escape these characters.<br/>
+	/// Otherwise, the segment will be split up.<br/>
 	/// The configuration helper function <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
 	/// <param name="inherit">
@@ -1173,12 +1215,12 @@ public abstract class CascadedConfigurationBase
 	{
 		Type itemType = typeof(CascadedConfigurationItem<>).MakeGenericType(type);
 		ConstructorInfo constructor = itemType.GetConstructor(
-			BindingFlags.NonPublic | BindingFlags.Instance,
-			null,
-			[typeof(CascadedConfiguration), typeof(string), typeof(string)],
-			null);
+			bindingAttr: BindingFlags.NonPublic | BindingFlags.Instance,
+			binder: null,
+			types: [typeof(CascadedConfiguration), typeof(string), typeof(string)],
+			modifiers: null);
 
-		Debug.Assert(constructor != null, nameof(constructor) + " != null");
+		Debug.Assert(constructor != null, message: nameof(constructor) + " != null");
 		return (ICascadedConfigurationItem)constructor.Invoke([this, name, path]);
 	}
 
@@ -1198,12 +1240,12 @@ public abstract class CascadedConfigurationBase
 	{
 		Type itemType = typeof(CascadedConfigurationItem<>).MakeGenericType(type);
 		ConstructorInfo constructor = itemType.GetConstructor(
-			BindingFlags.NonPublic | BindingFlags.Instance,
-			null,
-			[typeof(CascadedConfiguration), typeof(string), typeof(string), type],
-			null);
+			bindingAttr: BindingFlags.NonPublic | BindingFlags.Instance,
+			binder: null,
+			types: [typeof(CascadedConfiguration), typeof(string), typeof(string), type],
+			modifiers: null);
 
-		Debug.Assert(constructor != null, nameof(constructor) + " != null");
+		Debug.Assert(constructor != null, message: nameof(constructor) + " != null");
 		return (ICascadedConfigurationItem)constructor.Invoke([this, name, path, value]);
 	}
 

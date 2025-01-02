@@ -48,8 +48,8 @@ public class DefaultCascadedConfiguration : CascadedConfigurationBase
 			lock (Sync)
 			{
 				IEnumerator<DefaultCascadedConfiguration> enumerator = new MonitorSynchronizedEnumerator<DefaultCascadedConfiguration>(
-					mChildren.Cast<DefaultCascadedConfiguration>().GetEnumerator(),
-					Sync);
+					inner: mChildren.Cast<DefaultCascadedConfiguration>().GetEnumerator(),
+					sync: Sync);
 				try
 				{
 					while (enumerator.MoveNext())
@@ -80,9 +80,9 @@ public class DefaultCascadedConfiguration : CascadedConfigurationBase
 	/// Gets the child configuration at the specified location.
 	/// </summary>
 	/// <param name="path">
-	/// Relative path of the configuration to get.
-	/// If a path segment contains path delimiters ('/'), escape these characters.
-	/// Otherwise, the segment will be split up.
+	/// Relative path of the configuration to get.<br/>
+	/// If a path segment contains path delimiters ('/'), escape these characters.<br/>
+	/// Otherwise, the segment will be split up.<br/>
 	/// The configuration helper function <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
 	/// <returns>
@@ -101,9 +101,9 @@ public class DefaultCascadedConfiguration : CascadedConfigurationBase
 	/// Gets the child configuration at the specified location (optionally creates new configurations on the path).
 	/// </summary>
 	/// <param name="path">
-	/// Relative path of the configuration to get/create.
-	/// If a path segment contains path delimiters ('/'), escape these characters.
-	/// Otherwise, the segment will be split up.
+	/// Relative path of the configuration to get/create.<br/>
+	/// If a path segment contains path delimiters ('/'), escape these characters.<br/>
+	/// Otherwise, the segment will be split up.<br/>
 	/// The configuration helper function <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
 	/// <param name="create">
@@ -132,9 +132,10 @@ public class DefaultCascadedConfiguration : CascadedConfigurationBase
 	/// </summary>
 	/// <typeparam name="T">Type of the value in the configuration item.</typeparam>
 	/// <param name="path">
-	/// Relative path of the configuration item to add. If a path segment contains path delimiters ('/'),
-	/// escape them. Otherwise, the segment will be split up. The configuration helper function
-	/// <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
+	/// Relative path of the configuration item to add.<br/>
+	/// If a path segment contains path delimiters ('/'), escape them.<br/>
+	/// Otherwise, the segment will be split up.<br/>
+	/// The configuration helper function <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
 	/// <param name="defaultValue">The value of the item in the current configuration.</param>
 	/// <returns>The added configuration item.</returns>
@@ -162,7 +163,7 @@ public class DefaultCascadedConfiguration : CascadedConfigurationBase
 				checkValidity: true);
 
 			// ensure that the item does not exist, yet
-			if (TryGetItemInternal(pathSegments, 0, out ICascadedConfigurationItem _))
+			if (TryGetItemInternal(pathSegments, startIndex: 0, out ICascadedConfigurationItem _))
 			{
 				string relativePath = string.Join("/", pathSegments);
 				throw new ArgumentException(
@@ -245,7 +246,7 @@ public class DefaultCascadedConfiguration : CascadedConfigurationBase
 
 	private CascadedConfigurationItem<T> AddItemInternal<T>(string[] pathSegments, int startIndex, T defaultValue)
 	{
-		Debug.Assert(Monitor.IsEntered(Sync), "The configuration is expected to be locked.");
+		Debug.Assert(Monitor.IsEntered(Sync), message: "The configuration is expected to be locked.");
 		Debug.Assert(pathSegments is { Length: > 0 });
 
 		// create configurations down to the specified path, if necessary
@@ -279,7 +280,10 @@ public class DefaultCascadedConfiguration : CascadedConfigurationBase
 		// add corresponding configuration items in inheriting configurations
 		for (int i = 0; i < mInheritingConfigurations.Count; i++)
 		{
-			mInheritingConfigurations[i].AddItemInternal<T>(pathSegments, startIndex: pathSegments.Length - 1);
+			mInheritingConfigurations[i]
+				.AddItemInternal<T>(
+					pathSegments,
+					startIndex: pathSegments.Length - 1);
 		}
 
 		return item;
@@ -423,7 +427,11 @@ public class DefaultCascadedConfiguration : CascadedConfigurationBase
 				count: pathSegments.Length - startIndex - 1,
 				create: true);
 
-			return configuration.AddItemDynamicallyInternal(pathSegments, pathSegments.Length - 1, type, defaultValue);
+			return configuration.AddItemDynamicallyInternal(
+				pathSegments,
+				startIndex: pathSegments.Length - 1,
+				type,
+				defaultValue);
 		}
 
 		Debug.Assert(startIndex == pathSegments.Length - 1);
@@ -440,7 +448,11 @@ public class DefaultCascadedConfiguration : CascadedConfigurationBase
 		// add corresponding configuration items in inheriting configurations
 		for (int i = 0; i < mInheritingConfigurations.Count; i++)
 		{
-			mInheritingConfigurations[i].AddItemInternal(pathSegments, pathSegments.Length - 1, type);
+			mInheritingConfigurations[i]
+				.AddItemInternal(
+					pathSegments,
+					startIndex: pathSegments.Length - 1,
+					type);
 		}
 
 		return item;

@@ -86,8 +86,8 @@ public class CascadedConfiguration : CascadedConfigurationBase
 			lock (Sync)
 			{
 				IEnumerator<CascadedConfiguration> enumerator = new MonitorSynchronizedEnumerator<CascadedConfiguration>(
-					mChildren.Cast<CascadedConfiguration>().GetEnumerator(),
-					Sync);
+					inner: mChildren.Cast<CascadedConfiguration>().GetEnumerator(),
+					sync: Sync);
 				try
 				{
 					while (enumerator.MoveNext())
@@ -122,9 +122,9 @@ public class CascadedConfiguration : CascadedConfigurationBase
 	/// Gets the child configuration at the specified location.
 	/// </summary>
 	/// <param name="path">
-	/// Relative path of the configuration to get.
-	/// If a path segment contains path delimiters ('/'), escape these characters.
-	/// Otherwise, the segment will be split up.
+	/// Relative path of the configuration to get.<br/>
+	/// If a path segment contains path delimiters ('/'), escape these characters.<br/>
+	/// Otherwise, the segment will be split up.<br/>
 	/// The configuration helper function <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
 	/// <returns>
@@ -158,7 +158,7 @@ public class CascadedConfiguration : CascadedConfigurationBase
 	/// <param name="path">
 	/// Relative path of the configuration item to set.
 	/// If a path segment contains path delimiters ('/'), escape these characters.
-	/// Otherwise, the segment will be split up.
+	/// Otherwise, the segment will be split up.<br/>
 	/// The configuration helper function <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
 	/// <param name="value">Value to set.</param>
@@ -179,7 +179,7 @@ public class CascadedConfiguration : CascadedConfigurationBase
 		if (typeof(T) != item.Type)
 		{
 			throw new ConfigurationException(
-				"The configuration contains an item at the specified path ({0}), but with a different type (configuration item: {1}, specified: {2}).",
+				format: "The configuration contains an item at the specified path ({0}), but with a different type (configuration item: {1}, specified: {2}).",
 				item.Path,
 				item.Type.FullName,
 				typeof(T).FullName);
@@ -200,7 +200,7 @@ public class CascadedConfiguration : CascadedConfigurationBase
 	/// <param name="path">
 	/// Relative path of the configuration item to set.
 	/// If a path segment contains path delimiters ('/'), escape these characters.
-	/// Otherwise, the segment will be split up.
+	/// Otherwise, the segment will be split up.<br/>
 	/// The configuration helper function <see cref="CascadedConfigurationPathHelper.EscapeName(string)"/> might come in handy for this.
 	/// </param>
 	/// <param name="value">Value to set.</param>
@@ -221,7 +221,7 @@ public class CascadedConfiguration : CascadedConfigurationBase
 			if (!item.Type.IsAssignableFrom(type))
 			{
 				throw new ConfigurationException(
-					"The configuration contains an item at the specified path ({0}), but the specified value is not assignable to it (configuration item: {1}, specified: {2}).",
+					format: "The configuration contains an item at the specified path ({0}), but the specified value is not assignable to it (configuration item: {1}, specified: {2}).",
 					item.Path,
 					item.Type.FullName,
 					type.FullName);
@@ -232,7 +232,7 @@ public class CascadedConfiguration : CascadedConfigurationBase
 			if (item.Type.IsValueType)
 			{
 				throw new ConfigurationException(
-					"The configuration contains an item at the specified path ({0}), but the specified value is not assignable to it (configuration item: {1}, specified: null).",
+					format: "The configuration contains an item at the specified path ({0}), but the specified value is not assignable to it (configuration item: {1}, specified: null).",
 					item.Path,
 					item.Type.FullName);
 			}
@@ -263,7 +263,7 @@ public class CascadedConfiguration : CascadedConfigurationBase
 				for (int i = 0; i < mChildren.Count; i++)
 				{
 					var child = (CascadedConfiguration)mChildren[i];
-					child.ResetItems(true);
+					child.ResetItems(recursively: true);
 				}
 			}
 
@@ -288,7 +288,7 @@ public class CascadedConfiguration : CascadedConfigurationBase
 		if (PersistenceStrategy == null)
 			throw new NotSupportedException("The configuration does not support persistence.");
 
-		PersistenceStrategy.Load(this);
+		PersistenceStrategy.Load(configuration: this);
 		IsModified = false; // works recursively
 	}
 
@@ -303,7 +303,7 @@ public class CascadedConfiguration : CascadedConfigurationBase
 		if (PersistenceStrategy == null)
 			throw new NotSupportedException("The configuration does not support persistence.");
 
-		PersistenceStrategy.Save(this, flags);
+		PersistenceStrategy.Save(configuration: this, flags);
 		IsModified = false; // works recursively
 	}
 
