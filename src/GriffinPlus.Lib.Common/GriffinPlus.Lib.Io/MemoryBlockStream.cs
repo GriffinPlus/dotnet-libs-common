@@ -34,9 +34,10 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 {
 	/// <summary>
 	/// Default size of block in the stream.<br/>
-	/// 80 kByte is small enough for the regular heap and avoids allocation on the large object heap.
+	/// 64 kByte is a power of two, so array pools return buffers of exactly this size without rounding up.
+	/// This avoids allocation on the large object heap (LOH threshold is ~85000 bytes).
 	/// </summary>
-	internal const int DefaultBlockSize = 80 * 1024;
+	internal const int DefaultBlockSize = 64 * 1024;
 
 	private          long                 mPosition;
 	private          long                 mLength;
@@ -54,7 +55,7 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class.<br/>
 	/// Buffers are allocated on the heap.<br/>
-	/// The block size defaults to 80 kByte.<br/>
+	/// The block size defaults to 64 kByte.<br/>
 	/// The stream is seekable and grows as data is written.
 	/// </summary>
 	public MemoryBlockStream() : this(DefaultBlockSize, null, false) { }
@@ -62,7 +63,7 @@ public sealed class MemoryBlockStream : Stream, IMemoryBlockStream
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MemoryBlockStream"/> class.<br/>
 	/// Buffers are rented from the specified array pool.<br/>
-	/// The block size defaults to 80 kByte.<br/>
+	/// The block size defaults to 64 kByte.<br/>
 	/// The stream is seekable and grows as data is written.
 	/// </summary>
 	/// <param name="pool">Array pool to use for allocating buffers.</param>

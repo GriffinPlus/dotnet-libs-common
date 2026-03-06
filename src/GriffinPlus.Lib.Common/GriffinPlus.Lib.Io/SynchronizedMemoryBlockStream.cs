@@ -25,7 +25,7 @@ public sealed class SynchronizedMemoryBlockStream : Stream, IMemoryBlockStream
 	/// <summary>
 	/// Initializes a new instance of the <see cref="SynchronizedMemoryBlockStream"/> class.<br/>
 	/// Buffers are allocated on the heap.<br/>
-	/// The block size defaults to 80 kByte.<br/>
+	/// The block size defaults to 64 kByte.<br/>
 	/// The stream is seekable and grows as data is written.
 	/// </summary>
 	public SynchronizedMemoryBlockStream() : this(MemoryBlockStream.DefaultBlockSize, null, false) { }
@@ -33,7 +33,7 @@ public sealed class SynchronizedMemoryBlockStream : Stream, IMemoryBlockStream
 	/// <summary>
 	/// Initializes a new instance of the <see cref="SynchronizedMemoryBlockStream"/> class.<br/>
 	/// Buffers are rented from the specified array pool.<br/>
-	/// The block size defaults to 80 kByte.<br/>
+	/// The block size defaults to 64 kByte.<br/>
 	/// The stream is seekable and grows as data is written.
 	/// </summary>
 	/// <param name="pool">Array pool to use for allocating buffers.</param>
