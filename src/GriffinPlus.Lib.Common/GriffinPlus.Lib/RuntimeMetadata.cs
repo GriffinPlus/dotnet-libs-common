@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+﻿///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This file is part of the Griffin+ common library suite (https://github.com/griffinplus/dotnet-libs-common)
 // The source code is licensed under the MIT license.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -539,8 +539,24 @@ public static class RuntimeMetadata
 					return;
 
 				// scan the scheduled assemblies
-				ScanScheduledAssemblies(out scannedAssemblies);
-				sScanningFinishedEvent.Set();
+				// (never let an exception escape to the thread pool as this would terminate the process)
+				try
+				{
+					ScanScheduledAssemblies(out scannedAssemblies);
+				}
+				catch (Exception ex)
+				{
+					scannedAssemblies = [];
+					sLog.Write(
+						LogLevel.Error,
+						"Scanning assemblies failed unexpectedly. The runtime metadata may be incomplete. Exception:\n{0}",
+						ex);
+				}
+				finally
+				{
+					// signal completion in any case to avoid blocking waiting threads forever
+					sScanningFinishedEvent.Set();
+				}
 			}
 			finally
 			{
@@ -595,7 +611,9 @@ public static class RuntimeMetadata
 			Debug.Assert(assembly.FullName != null, "assembly.FullName != null");
 
 			// skip, if assembly has already been inspected...
-			if (sTypesByAssembly.ContainsKey(assembly))
+			// (check the working set as the same assembly may be scheduled multiple times within the same scan,
+			// e.g. by the initial enumeration and the 'AssemblyLoad' event racing each other)
+			if (typesByAssembly.ContainsKey(assembly))
 				continue;
 
 			// log that the assembly was loaded
@@ -765,12 +783,15 @@ public static class RuntimeMetadata
 #endif
 
 		// add assembly to the table mapping assembly names to assembly objects
-		assembliesByFullName.Add(assembly.FullName, assembly);
+		// (the full name is not necessarily unique as the same assembly identity can be loaded from different
+		// locations, so the first assembly with a specific full name wins)
+		if (!assembliesByFullName.ContainsKey(assembly.FullName))
+			assembliesByFullName.Add(assembly.FullName, assembly);
 
 		// add types to the table mapping assemblies to types defined in them
 		types = types.Where(x => x != null).ToArray();
-		typesByAssembly.Add(assembly, types);
-		exportedTypesByAssembly.Add(assembly, types.Where(x => x.IsPublic).ToArray());
+		typesByAssembly[assembly] = types;
+		exportedTypesByAssembly[assembly] = types.Where(x => x.IsPublic).ToArray();
 
 		// update the table mapping type names to type objects
 		foreach (Type type in types)
