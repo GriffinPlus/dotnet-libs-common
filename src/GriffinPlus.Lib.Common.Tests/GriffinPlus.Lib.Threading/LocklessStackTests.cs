@@ -4,6 +4,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Xunit;
@@ -210,7 +211,7 @@ public class LocklessStackTests
 		// flush the stack
 		int[] items = stack.Flush();
 		Assert.Equal(itemCount, items.Length);
-		Assert.Equal(pushedItems.Reverse(), items);
+		Assert.Equal(((IEnumerable<int>)pushedItems).Reverse(), items);
 		Assert.Equal(capacity, stack.FreeItemCount);
 		Assert.Equal(0, stack.UsedItemCount);
 	}
